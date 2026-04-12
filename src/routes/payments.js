@@ -55,8 +55,14 @@ router.post('/stripe/create-payment-intent', authMiddleware, async (req, res) =>
     if (!listing.stripe_account_id) {
       return res.status(400).json({ error: 'Il venditore non ha configurato i pagamenti' });
     }
+    if (listing.type === 'auction') {
+      return res.status(400).json({ error: 'Acquisto diretto non disponibile per le aste' });
+    }
 
     const itemPrice     = parseFloat(listing.price);
+    if (!Number.isFinite(itemPrice) || itemPrice <= 0) {
+      return res.status(400).json({ error: 'Prezzo non valido per questo annuncio' });
+    }
     const shippingCost  = parseFloat(listing.shipping_cost) || 0;
     // Il 5% è a CARICO dell'acquirente (aggiunto al prezzo)
     const platformFee   = Math.round(itemPrice * 0.05 * 100) / 100;
@@ -249,8 +255,14 @@ router.post('/paypal/create-order', authMiddleware, async (req, res) => {
     );
     const listing = listingRes.rows[0];
     if (!listing) return res.status(404).json({ error: 'Annuncio non trovato' });
+    if (listing.type === 'auction') {
+      return res.status(400).json({ error: 'Acquisto diretto non disponibile per le aste' });
+    }
 
     const itemPrice   = parseFloat(listing.price);
+    if (!Number.isFinite(itemPrice) || itemPrice <= 0) {
+      return res.status(400).json({ error: 'Prezzo non valido per questo annuncio' });
+    }
     const shipping    = parseFloat(listing.shipping_cost) || 0;
     const fee         = Math.round(itemPrice * 0.05 * 100) / 100;
     const total       = (itemPrice + shipping + fee).toFixed(2);

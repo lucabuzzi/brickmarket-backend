@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
+    "seed": "node scripts/seed-dummy-data.js",
+    "client": "npm run dev --prefix client",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

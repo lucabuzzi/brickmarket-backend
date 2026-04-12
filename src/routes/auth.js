@@ -86,9 +86,12 @@ const auth = require('../middleware/auth'); // Importa il middleware se non c'è
 // GET /api/auth/me - Recupera i dati dell'utente loggato
 router.get('/me', auth, async (req, res) => {
   try {
-    // Cerchiamo l'utente nel DB usando l'ID estratto dal Token
     const result = await query(
-      'SELECT id, name, email, created_at FROM users WHERE id = $1',
+      `SELECT id, email, username, full_name, role, city, avatar_url,
+              stripe_account_id, stripe_account_status,
+              rating_avg, rating_count, sales_count, is_verified,
+              created_at, updated_at
+       FROM users WHERE id = $1`,
       [req.user.userId]
     );
 
@@ -96,11 +99,11 @@ router.get('/me', auth, async (req, res) => {
       return res.status(404).json({ error: 'Utente non trovato' });
     }
 
-    // Restituiamo i dati (SENZA la password per sicurezza!)
     res.json(result.rows[0]);
   } catch (err) {
     console.error('ERRORE PROFILO:', err.message);
     res.status(500).json({ error: 'Errore nel recupero del profilo' });
   }
 });
-  module.exports = router;
+
+module.exports = router;
