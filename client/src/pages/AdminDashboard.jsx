@@ -1,3 +1,7 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { apiFetch } from '../api';
 import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard } from 'lucide-react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, flexRender } from '@tanstack/react-table';
 import { StitchCard, AnimateCounter, PulsingGlow, StitchPageTransition, StitchBackground } from '../components/StitchComponents';

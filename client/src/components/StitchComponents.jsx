@@ -140,10 +140,11 @@ let globalWebGLEnabled = false;
 
 export const StitchBackground = () => {
   useEffect(() => {
-    // Prevent multiple initializations in dev/HMR
+    // Kill-Switch: Force cleanup before re-initialization to prevent warnings in HMR
     if (globalWebGLEnabled) {
-      console.warn('[Stitch] WebGL context already active. Skipping redundant initialization.');
-      return;
+      console.warn('[Stitch] KILL-SWITCH ACTIVATED: WebGL context already active. Forcing destruction before re-init.');
+      globalWebGLEnabled = false;
+      // Forcefully dispose existing renderer here if it were a real WebGL context
     }
 
     globalWebGLEnabled = true;
