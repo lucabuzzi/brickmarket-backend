@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  const [email, setEmail] = useState('seller@demo.brickmarket');
-  const [password, setPassword] = useState('Demo1234!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -21,33 +23,35 @@ export default function Login() {
       await login(email.trim(), password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || 'Accesso non riuscito');
+      setError(t('errors.invalid_credentials'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="page auth-page narrow">
-      <h1>Accedi</h1>
-      <p className="muted">
-        Account demo: <strong>seller@demo.brickmarket</strong> / <strong>Demo1234!</strong>
-      </p>
+    /* Ho aggiunto pt-24 per evitare che l'header copra il titolo */
+    <div className="page auth-page narrow pt-24">
+      <h1>{t('auth.login_title')}</h1>
+
       <form className="form" onSubmit={onSubmit}>
         <label>
-          Email
+          {t('auth.username_email')}
           <input
-            type="email"
-            autoComplete="email"
+            type="text"
+            name="email"
+            placeholder={t('auth.username_email')}
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </label>
         <label>
-          Password
+          {t('auth.password')}
           <input
             type="password"
+            name="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -56,11 +60,11 @@ export default function Login() {
         </label>
         {error && <p className="error-banner">{error}</p>}
         <button type="submit" className="btn btn--primary" disabled={submitting}>
-          {submitting ? 'Accesso…' : 'Entra'}
+          {submitting ? t('auth.logging_in') : t('auth.login_btn')}
         </button>
       </form>
       <p className="muted">
-        Non hai un account? <Link to="/register">Registrati</Link>
+        {t('auth.no_account')} <Link to="/register">{t('nav.register')}</Link>
       </p>
     </div>
   );

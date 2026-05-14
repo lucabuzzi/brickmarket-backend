@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home",
+    "faq": "FAQ",
+    "user_search": "USER SEARCH",
+    "legal_rules": "LEGAL RULES",
+    "terms": "LEGAL CONDITIONS",
+    "help": "HELP",
+    "jobs": "JOBS",
+    "sell": "NEW LISTING",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "profile": "My Profile",
+    "my_listings": "My Listings",
+    "account": "Account Settings",
+    "auction": "AUCTION"
+  },
+  "auction": {
+    "current_bid": "Current bid",
+    "place_bid": "Place bid",
+    "ends_in": "Ends in",
+    "bid_error": "Bid must be at least 1.00€ higher",
+    "bid_success": "Bid placed successfully!",
+    "no_bids": "No bids yet",
+    "extending": "Time extended!",
+    "winning_bid": "Won by {{username}} for {{amount}}!",
+    "outbid_warning": "You have been outbid!",
+    "ended": "Auction ended",
+    "error_expired": "The auction has expired.",
+    "winning": "Leading bid!",
+    "lost": "Auction lost",
+    "won": "Auction won!"
+  },
+  "ui": {
+    "search_placeholder": "Search LEGO sets...",
+    "dark_mode": "DARK MODE",
+    "search_20": "SEARCH 2.0",
+    "footer_demo": "BrickMarket — local demo · API on port 3000",
+    "yes": "YES",
+    "no": "NO",
+    "loading": "Loading...",
+    "language": "LANGUAGE"
+  },
+  "disclaimer": {
+    "language_note": "This changes the site interface language, but user-generated content will remain in its original language."
+  },
+  "errors": {
+    "invalid_credentials": "Invalid credentials",
+    "loading_error": "Loading error",
+    "generic": "An error occurred",
+    "passwords_dont_match": "Passwords do not match.",
+    "accept_legal": "You must accept the three legal service conditions.",
+    "upload_required": "ID scan and Business License uploads are required.",
+    "registration_failed": "Registration failed"
+  },
+  "auth": {
+    "login_title": "Login",
+    "register_title": "Register",
+    "username_email": "Username or Email",
+    "password": "Password",
+    "password_repeat": "Repeat Password",
+    "forgot": "Forgot?",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "login_btn": "Login",
+    "register_btn": "Register Now",
+    "logging_in": "Logging in...",
+    "registering": "Creating account...",
+    "private_account": "Private Account",
+    "professional_account": "Professional Account",
+    "company_info": "Company Information",
+    "company_name": "Company Name",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "full_name_optional": "Full Name (optional)",
+    "address": "Address",
+    "street": "Street",
+    "house_number": "Number",
+    "zip": "ZIP",
+    "city": "City",
+    "country": "Country",
+    "phone": "Phone",
+    "verifications": "Verifications",
+    "id_scan": "ID Card Scan",
+    "business_license": "Business Registration",
+    "gdpr_note": "Documents are stored anonymously with a private security protocol according to GDPR standards.",
+    "login_credentials": "Login Credentials",
+    "accept_tos": "I accept the General Terms and Conditions",
+    "accept_privacy": "I have read and understood the privacy protection provisions",
+    "accept_revocation": "I request explicit partial implementation by waiving the right of revocation for digital goods"
+  },
+  "notifications": {
+    "outbid": "Outbid on {{item}}!"
+  },
+  "profile": {
+    "my_bids": "My Bids"
+  }
+}

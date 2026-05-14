@@ -1,24 +1,33 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
-// Prende le chiavi dal file .env
+const hasCloudinaryConfig = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configura lo storage: dove e come salvare le foto
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'brickmarket_listings', // Nome della cartella su Cloudinary
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [{ width: 1000, height: 1000, crop: 'limit' }] // Ridimensiona se troppo grandi
-  },
-});
+let upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+let secureUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-const upload = multer({ storage: storage });
+if (hasCloudinaryConfig) {
+  console.log('[Cloudinary] Configured — memory storage active for sharp processing.');
+} else {
+  console.warn('[Cloudinary] MISSING env vars — using memory storage for disk fallback via sharp.');
+}
 
-module.exports = { cloudinary, upload };
+async function deleteSecureAsset(public_id) {
+  if (!public_id || !hasCloudinaryConfig) return;
+  await cloudinary.uploader.destroy(public_id, { type: 'private', invalidate: true });
+}
+
+module.exports = { cloudinary, upload, secureUpload, deleteSecureAsset, hasCloudinaryConfig };

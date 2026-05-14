@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   color-scheme: light dark;
   --bg: #0f1115;
@@ -23,7 +25,7 @@ body {
   margin: 0;
   min-height: 100%;
   font-family: var(--font);
-  background: var(--bg);
+  background: #0a0c10; /* Darker base background */
   color: var(--text);
   line-height: 1.5;
 }
@@ -104,10 +106,32 @@ code {
 
 .main {
   flex: 1;
-  padding: 1.5rem;
-  max-width: 1200px;
+  padding: 2rem;
+  max-width: 1440px;
   margin: 0 auto;
   width: 100%;
+  background: var(--bg); /* Main container background */
+}
+
+.api-banner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1440px;
+  padding: 0.55rem 1.5rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.api-banner--online {
+  color: #96f7a4;
+  background: rgba(43, 126, 61, 0.2);
+}
+.api-banner--offline {
+  color: #ffb4b4;
+  background: rgba(217, 58, 58, 0.2);
+}
+.api-banner--checking {
+  color: var(--muted);
+  background: rgba(154, 163, 178, 0.1);
 }
 
 .footer {
@@ -323,3 +347,5 @@ code {
   margin: 0;
   color: var(--muted);
 }
+
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.2); } }

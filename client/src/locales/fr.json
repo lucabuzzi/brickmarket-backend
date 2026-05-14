@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "faq": "FAQ",
+    "user_search": "RECHERCHE D'UTILISATEUR",
+    "legal_rules": "RÈGLES JURIDIQUES",
+    "terms": "CONDITIONS LÉGALES",
+    "help": "AIDE",
+    "jobs": "OFFRES D'EMPLOI",
+    "sell": "NOUVELLE ANNONCE",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "profile": "Mon Profil",
+    "my_listings": "Mes annonces",
+    "account": "Paramètres du compte",
+    "auction": "ENCHÈRE"
+  },
+  "auction": {
+    "current_bid": "Enchère actuelle",
+    "place_bid": "Faire une offre",
+    "ends_in": "Se termine dans",
+    "bid_error": "L'enchère doit être supérieure d'au moins 1,00€",
+    "bid_success": "Offre placée avec succès !",
+    "no_bids": "Aucune offre pour le momento",
+    "extending": "Temps prolongé !",
+    "winning_bid": "Adjugé à {{username}} pour {{amount}} !",
+    "outbid_warning": "Vous avez été surenchéri !",
+    "ended": "Enchère terminée",
+    "error_expired": "L'enchère a expiré.",
+    "winning": "En tête !",
+    "lost": "Enchère perdue",
+    "won": "Enchère gagnée !"
+  },
+  "ui": {
+    "search_placeholder": "Rechercher des sets LEGO...",
+    "dark_mode": "MODE SOMBRE",
+    "search_20": "RECHERCHE 2.0",
+    "footer_demo": "BrickMarket — démo locale · API sur port 3000",
+    "yes": "OUI",
+    "no": "NON",
+    "loading": "Chargement...",
+    "language": "LANGUE"
+  },
+  "disclaimer": {
+    "language_note": "Cela change la langue de l'interface du site, mais le contenu généré par l'utilisateur restera dans sa langue d'origine."
+  },
+  "errors": {
+    "invalid_credentials": "Identifiants invalides",
+    "loading_error": "Erreur de chargement",
+    "generic": "Une erreur est survenue",
+    "passwords_dont_match": "Les mots de passe ne correspondent pas.",
+    "accept_legal": "Vous devez accepter les trois conditions juridiques du service.",
+    "upload_required": "Le scan de la pièce d'identité et de la licence commerciale sont requis.",
+    "registration_failed": "L'inscription a échoué"
+  },
+  "auth": {
+    "login_title": "Connexion",
+    "register_title": "S'inscrire",
+    "username_email": "Nom d'utilisateur ou Email",
+    "password": "Mot de passe",
+    "password_repeat": "Répéter le mot de passe",
+    "forgot": "Oublié?",
+    "no_account": "Pas encore de compte ?",
+    "have_account": "Déjà un compte ?",
+    "login_btn": "Se connecter",
+    "register_btn": "S'inscrire maintenant",
+    "logging_in": "Connexion en cours...",
+    "registering": "Création du compte...",
+    "private_account": "Compte Privé",
+    "professional_account": "Compte Professionnel",
+    "company_info": "Informations sur l'entreprise",
+    "company_name": "Nom de l'entreprise",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "full_name_optional": "Nom complet (optionnel)",
+    "address": "Adresse",
+    "street": "Rue",
+    "house_number": "Numéro",
+    "zip": "Code postal",
+    "city": "Ville",
+    "country": "Pays",
+    "phone": "Téléphone",
+    "verifications": "Vérifications",
+    "id_scan": "Scan de la carte d'identité",
+    "business_license": "Enregistrement de l'entreprise",
+    "gdpr_note": "Les documents sont stockés de manière anonyme avec un protocole de sécurité privé selon les normes RGPD.",
+    "login_credentials": "Identifiants de connexion",
+    "accept_tos": "J'accepte les conditions générales",
+    "accept_privacy": "J'ai lu et compris les dispositions relatives à la protection de la vie privée",
+    "accept_revocation": "Je demande une mise en œuvre partielle explicite en renonçant au droit de rétractation pour les biens numériques"
+  },
+  "notifications": {
+    "outbid": "Surenchéri sur {{item}} !"
+  },
+  "profile": {
+    "my_bids": "Mes Enchères"
+  }
+}

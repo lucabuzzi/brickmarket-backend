@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home",
+    "faq": "FAQ",
+    "user_search": "RICERCA UTENTE",
+    "legal_rules": "NORME LEGALI",
+    "terms": "CONDIZIONI LEGALI",
+    "help": "AIUTO",
+    "jobs": "OFFERTE DI LAVORO",
+    "sell": "NUOVO ANNUNCIO",
+    "login": "Login",
+    "register": "Registrati",
+    "logout": "Esci",
+    "profile": "Il mio Profilo",
+    "my_listings": "I miei annunci",
+    "account": "Impostazioni Account",
+    "auction": "ASTA"
+  },
+  "auction": {
+    "current_bid": "Offerta corrente",
+    "place_bid": "Fai un'offerta",
+    "ends_in": "Scade tra",
+    "bid_error": "L'offerta deve essere superiore di almeno 1,00€",
+    "bid_success": "Offerta piazzata con successo!",
+    "no_bids": "Nessuna offerta ancora",
+    "extending": "Tempo esteso!",
+    "winning_bid": "Aggiudicato a {{username}} per {{amount}}!",
+    "outbid_warning": "Sei stato superato!",
+    "ended": "Asta conclusa",
+    "error_expired": "L'asta è scaduta.",
+    "winning": "Stai vincendo!",
+    "lost": "Asta persa",
+    "won": "Asta vinta!"
+  },
+  "ui": {
+    "search_placeholder": "Cerca set LEGO...",
+    "dark_mode": "DARK MODE",
+    "search_20": "CERCA 2.0",
+    "footer_demo": "BrickMarket — demo locale · API su porta 3000",
+    "yes": "SÌ",
+    "no": "NO",
+    "loading": "Caricamento...",
+    "language": "LINGUA"
+  },
+  "disclaimer": {
+    "language_note": "Cambierai la lingua dell'interfaccia, ma i contenuti inseriti dagli utenti rimarranno nella lingua originale."
+  },
+  "errors": {
+    "invalid_credentials": "Credenziali errate",
+    "loading_error": "Errore di caricamento",
+    "generic": "Si è verificato un errore",
+    "passwords_dont_match": "Le password non corrispondono.",
+    "accept_legal": "Devi accettare le tre condizioni di servizio legali.",
+    "upload_required": "Upload Documento Identità e Licenza Aziendale richiesti.",
+    "registration_failed": "Registrazione non riuscita"
+  },
+  "auth": {
+    "login_title": "Accedi",
+    "register_title": "Registrazione",
+    "username_email": "Username o Email",
+    "password": "Password",
+    "password_repeat": "Ripeti Password",
+    "forgot": "Dimenticato?",
+    "no_account": "Non hai un account?",
+    "have_account": "Hai già un account?",
+    "login_btn": "Entra",
+    "register_btn": "Registrati Subito",
+    "logging_in": "Accesso…",
+    "registering": "Creazione in corso...",
+    "private_account": "Conto Privato",
+    "professional_account": "Conto Professionale",
+    "company_info": "Informazioni Aziendali",
+    "company_name": "Nome Azienda",
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "full_name_optional": "Nome Completo (opzionale)",
+    "address": "Indirizzo",
+    "street": "Via",
+    "house_number": "Numero",
+    "zip": "CAP",
+    "city": "Città",
+    "country": "Nazione",
+    "phone": "Telefono",
+    "verifications": "Verifiche",
+    "id_scan": "Scan Carta d'Identità",
+    "business_license": "Registrazione Impresa",
+    "gdpr_note": "I documenti vengono archiviati in modo anonimo con protocollo di sicurezza privato secondo gli standard GDPR.",
+    "login_credentials": "Credenziali Login",
+    "accept_tos": "Accetto le Condizioni Generali",
+    "accept_privacy": "Ho letto e compreso le disposizioni sulla tutela della privacy",
+    "accept_revocation": "Richiedo l'esplicita attuazione parziale per rinuncia al diritto di revoca per beni digitali"
+  },
+  "notifications": {
+    "outbid": "Offerta superata su {{item}}!"
+  },
+  "profile": {
+    "my_bids": "Le Mie Offerte"
+  }
+}

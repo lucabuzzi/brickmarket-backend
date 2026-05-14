@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Home",
+    "faq": "FAQ",
+    "user_search": "BENUTZERSUCHE",
+    "legal_rules": "RECHTLICHE REGELN",
+    "terms": "RECHTLICHE BEDINGUNGEN",
+    "help": "HILFE",
+    "jobs": "JOBS",
+    "sell": "NEUES ANGEBOT",
+    "login": "Anmeldung",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "profile": "Mein Profil",
+    "my_listings": "Meine Anzeigen",
+    "account": "Konto-Einstellungen",
+    "auction": "AUKTION"
+  },
+  "auction": {
+    "current_bid": "Aktuelles Gebot",
+    "place_bid": "Gebot abgeben",
+    "ends_in": "Endet in",
+    "bid_error": "Das Gebot muss mindestens 1,00€ höher sein",
+    "bid_success": "Gebot erfolgreich abgegeben!",
+    "no_bids": "Noch keine Gebote",
+    "extending": "Zeit verlängert!",
+    "winning_bid": "Vergeben an {{username}} für {{amount}}!",
+    "outbid_warning": "Sie wurden überboten!",
+    "ended": "Auktion beendet",
+    "error_expired": "Die Auktion ist abgelaufen.",
+    "winning": "Höchstbietender!",
+    "lost": "Auktion verloren",
+    "won": "Auktion gewonnen!"
+  },
+  "ui": {
+    "search_placeholder": "LEGO-Sets suchen...",
+    "dark_mode": "DUNKLER MODUS",
+    "search_20": "SUCHE 2.0",
+    "footer_demo": "BrickMarket — lokale Demo · API auf Port 3000",
+    "yes": "JA",
+    "no": "NEIN",
+    "loading": "Laden...",
+    "language": "SPRACHE"
+  },
+  "disclaimer": {
+    "language_note": "Dadurch wird die Sprache der Benutzeroberfläche geändert, benutzergenerierte Inhalte bleiben jedoch in ihrer Originalsprache."
+  },
+  "errors": {
+    "invalid_credentials": "Ungültige Anmeldedaten",
+    "loading_error": "Ladefehler",
+    "generic": "Ein Fehler ist aufgetreten",
+    "passwords_dont_match": "Passwörter stimmen nicht überein.",
+    "accept_legal": "Sie müssen die drei rechtlichen Servicebedingungen akzeptieren.",
+    "upload_required": "Ausweis-Scan und Gewerbeanmeldung sind erforderlich.",
+    "registration_failed": "Registrierung fehlgeschlagen"
+  },
+  "auth": {
+    "login_title": "Anmelden",
+    "register_title": "Registrieren",
+    "username_email": "Benutzername oder E-Mail",
+    "password": "Passwort",
+    "password_repeat": "Passwort wiederholen",
+    "forgot": "Vergessen?",
+    "no_account": "Haben Sie noch kein Konto?",
+    "have_account": "Haben Sie bereits ein Konto?",
+    "login_btn": "Anmelden",
+    "register_btn": "Jetzt registrieren",
+    "logging_in": "Anmeldung läuft...",
+    "registering": "Konto wird erstellt...",
+    "private_account": "Privates Konto",
+    "professional_account": "Gewerbliches Konto",
+    "company_info": "Unternehmensinformationen",
+    "company_name": "Unternehmensname",
+    "first_name": "Vorname",
+    "last_name": "Nachname",
+    "full_name_optional": "Vollständiger Name (optional)",
+    "address": "Adresse",
+    "street": "Straße",
+    "house_number": "Hausnummer",
+    "zip": "PLZ",
+    "city": "Stadt",
+    "country": "Land",
+    "phone": "Telefon",
+    "verifications": "Überprüfungen",
+    "id_scan": "Scan des Personalausweises",
+    "business_license": "Gewerbeanmeldung",
+    "gdpr_note": "Dokumente werden anonym mit einem privaten Sicherheitsprotokoll gemäß DSGVO-Standards gespeichert.",
+    "login_credentials": "Anmeldedaten",
+    "accept_tos": "Ich akzeptiere die Allgemeinen Geschäftsbedingungen",
+    "accept_privacy": "Ich habe die Datenschutzbestimmungen gelesen und verstanden",
+    "accept_revocation": "Ich beantrage die ausdrückliche teilweise Umsetzung durch Verzicht auf das Widerrufsrecht für digitale Güter"
+  },
+  "notifications": {
+    "outbid": "Überboten bei {{item}}!"
+  },
+  "profile": {
+    "my_bids": "Meine Gebote"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "faq": "FAQ",
+    "user_search": "BÚSQUEDA DE USUARIOS",
+    "legal_rules": "NORMAS LEGALES",
+    "terms": "CONDICIONES LEGALES",
+    "help": "AYUDA",
+    "jobs": "EMPLEO",
+    "sell": "NUEVO ANUNCIO",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "profile": "Mi Perfil",
+    "my_listings": "Mis anuncios",
+    "account": "Configuración",
+    "auction": "SUBASTA"
+  },
+  "auction": {
+    "current_bid": "Puja actual",
+    "place_bid": "Realizar puja",
+    "ends_in": "Termina en",
+    "bid_error": "La puja debe ser al menos 1,00€ superior",
+    "bid_success": "¡Puja realizada con éxito!",
+    "no_bids": "Aún no hay pujas",
+    "extending": "¡Tiempo añadido!",
+    "winning_bid": "¡Adjudicado a {{username}} por {{amount}}!",
+    "outbid_warning": "¡Te han superado!",
+    "ended": "Subasta finalizada",
+    "error_expired": "La subasta ha expirado.",
+    "winning": "¡Ganando!",
+    "lost": "Subasta perdida",
+    "won": "¡Subasta ganada!"
+  },
+  "ui": {
+    "search_placeholder": "Buscar sets LEGO...",
+    "dark_mode": "MODO OSCURO",
+    "search_20": "BÚSQUEDA 2.0",
+    "footer_demo": "BrickMarket — demo local · API en puerto 3000",
+    "yes": "SÍ",
+    "no": "NO",
+    "loading": "Cargando...",
+    "language": "IDIOMA"
+  },
+  "disclaimer": {
+    "language_note": "Esto cambia el idioma de la interfaz del sitio, pero el contenido generado por el usuario permanecerá en su idioma original."
+  },
+  "errors": {
+    "invalid_credentials": "Credenciales inválidas",
+    "loading_error": "Error de carga",
+    "generic": "Ha ocurrido un error",
+    "passwords_dont_match": "Las contraseñas no coinciden.",
+    "accept_legal": "Debe aceptar las tres condiciones legales del servicio.",
+    "upload_required": "Se requiere la carga del escaneo del ID y la licencia comercial.",
+    "registration_failed": "Error en el registro"
+  },
+  "auth": {
+    "login_title": "Iniciar sesión",
+    "register_title": "Registrarse",
+    "username_email": "Usuario o Email",
+    "password": "Contraseña",
+    "password_repeat": "Repetir Contraseña",
+    "forgot": "¿Olvidaste?",
+    "no_account": "¿No tienes una cuenta?",
+    "have_account": "¿Ya tienes una cuenta?",
+    "login_btn": "Entrar",
+    "register_btn": "Registrarse Ahora",
+    "logging_in": "Iniciando sesión...",
+    "registering": "Creando cuenta...",
+    "private_account": "Cuenta Privada",
+    "professional_account": "Cuenta Profesional",
+    "company_info": "Información de la Empresa",
+    "company_name": "Nombre de la Empresa",
+    "first_name": "Nombre",
+    "last_name": "Apellido",
+    "full_name_optional": "Nombre Completo (opcional)",
+    "address": "Dirección",
+    "street": "Calle",
+    "house_number": "Número",
+    "zip": "Código Postal",
+    "city": "Ciudad",
+    "country": "País",
+    "phone": "Teléfono",
+    "verifications": "Verificaciones",
+    "id_scan": "Escaneo de Identificación",
+    "business_license": "Registro comercial",
+    "gdpr_note": "Los documentos se almacenan de forma anónima con un protocolo de seguridad privado de acuerdo con los estándares GDPR.",
+    "login_credentials": "Credenciales de acceso",
+    "accept_tos": "Acepto los Términos y Condiciones Generales",
+    "accept_privacy": "He leído y comprendido las disposiciones de protección de la privacidad",
+    "accept_revocation": "Solicito la implementación parcial explícita renunciando al derecho de revocación de bienes digitales"
+  },
+  "notifications": {
+    "outbid": "¡Superado en {{item}}!"
+  },
+  "profile": {
+    "my_bids": "Mis Pujas"
+  }
+}

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { apiFetch } from '../api';
+import { apiFetch, AUTH_ENDPOINTS, TOKEN_STORAGE_KEY } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -8,22 +8,22 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('brickmarket_token');
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setUser(null);
   }, []);
 
   const refreshMe = useCallback(async () => {
-    const token = localStorage.getItem('brickmarket_token');
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!token) {
       setUser(null);
       setLoading(false);
       return;
     }
     try {
-      const me = await apiFetch('/api/auth/me');
+      const me = await apiFetch(AUTH_ENDPOINTS.me);
       setUser(me);
     } catch {
-      localStorage.removeItem('brickmarket_token');
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
       setUser(null);
     } finally {
       setLoading(false);
@@ -35,22 +35,28 @@ export function AuthProvider({ children }) {
   }, [refreshMe]);
 
   const login = useCallback(async (email, password) => {
-    const data = await apiFetch('/api/auth/login', {
+    const data = await apiFetch(AUTH_ENDPOINTS.login, {
       method: 'POST',
       body: { email, password },
     });
-    localStorage.setItem('brickmarket_token', data.token);
-    setUser(await apiFetch('/api/auth/me'));
+    if (!data?.token) {
+      throw new Error('Token non ricevuto dal backend');
+    }
+    localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+    setUser(await apiFetch(AUTH_ENDPOINTS.me));
     return data;
   }, []);
 
   const register = useCallback(async (payload) => {
-    const data = await apiFetch('/api/auth/register', {
+    const data = await apiFetch(AUTH_ENDPOINTS.register, {
       method: 'POST',
       body: payload,
     });
-    localStorage.setItem('brickmarket_token', data.token);
-    setUser(await apiFetch('/api/auth/me'));
+    if (!data?.token) {
+      throw new Error('Token non ricevuto dal backend');
+    }
+    localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+    setUser(await apiFetch(AUTH_ENDPOINTS.me));
     return data;
   }, []);
 
