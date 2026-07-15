@@ -161,11 +161,7 @@ router.post('/', auth, async (req, res) => {
     return res.status(500).json({ error: 'Errore caricamento immagini: ' + uploadErr.message });
   }
 
-  console.log('\n=== POST /api/listings RECEIVED ===');
-  console.log('REQ BODY:', JSON.stringify(req.body, null, 2));
-  console.log('FILES COUNT:', req.files ? req.files.length : 0);
-  console.log('HAS CLOUDINARY:', hasCloudinaryConfig);
-  console.log('USER:', req.user?.userId);
+
   const raw = normalizeListingBody(req.body);
   const isDraft = raw.status === 'draft';
   const { error, value } = isDraft ? validateDraftListing(raw) : validatePublishListing(raw);
@@ -673,7 +669,7 @@ router.delete('/:id', auth, async (req, res) => {
  * Piazzamento offerta per un'asta
  */
 router.post('/:id/bid', auth, async (req, res) => {
-  console.log("CRITICAL DEBUG - BODY:", req.body);
+
   const { id } = req.params;
   const bidderId = req.user.userId;
 
@@ -799,7 +795,7 @@ router.post('/:id/bid', auth, async (req, res) => {
  * Versione semplificata senza alcuna validazione per test forense
  */
 router.post('/:id/bid-debug', async (req, res) => {
-  console.log("DEBUG ROUTE - BODY:", req.body);
+
   const { id } = req.params;
   const { amount } = req.body;
   

@@ -132,16 +132,10 @@ export default function Layout() {
       {/* Drawer */}
       {isMenuOpen && (
         <div 
-          style={{ 
-            position: 'fixed', top: 0, right: 0, bottom: 0, width: '320px', 
-            backgroundColor: '#0f172a', zIndex: 50, 
-            display: 'flex', flexDirection: 'column', 
-            borderLeft: '1px solid #1e293b', 
-            boxShadow: '-10px 0 30px rgba(0,0,0,0.5)',
-            animation: 'slideInRight 0.3s ease-out'
-          }}
+          className="fixed top-0 right-0 bottom-0 w-[320px] glass-effect-strong z-50 flex flex-col shadow-2xl shadow-black/60 animate-[slideInRight_0.3s_ease-out]"
+          style={{ borderRight: 'none' }}
         >
-           <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #1e293b', height: '73px', alignItems: 'center' }}>
+           <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', height: '73px', alignItems: 'center' }}>
              <button onClick={() => setIsMenuOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                <X size={28} />
              </button>
@@ -150,20 +144,35 @@ export default function Layout() {
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
              <Link to="/catalog" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => setIsMenuOpen(false)}>
-               <BookOpen size={20} className="text-sky-400" /> Catalogo
+               <BookOpen size={20} className="text-sky-400" /> {t('nav.catalog')}
              </Link>
+             <Link to="/annunci" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
+             <Link to="/aste" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
              <Link to="/ricerca-utente" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
              <Link to="/norme-legali" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
              <Link to="/terms" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.terms')}</Link>
              <Link to="/help" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
              <Link to="/faq" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
              <Link to="/jobs" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.jobs')}</Link>
+             
+             {!user ? (
+               <>
+                 <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
+                 <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.register')}</Link>
+               </>
+             ) : (user.role === 'seller' || user.role === 'both') ? (
+               <>
+                 <Link to="/sell" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
+                 <Link to="/create-auction" style={{ color: '#fbbf24', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
+               </>
+             ) : null}
+
              {user && user.role === 'admin' && (
-               <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>Admin Panel</Link>
+               <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
              )}
            </div>
            
-           <hr style={{ border: 'none', borderTop: '1px solid #1e293b', margin: '0 -1.5rem 1.5rem -1.5rem' }} />
+           <hr style={{ border: 'none', borderTop: '1px solid rgba(255, 255, 255, 0.05)', margin: '0 -1.5rem 1.5rem -1.5rem' }} />
 
 
            {/* Language Selector Section */}
@@ -193,14 +202,14 @@ export default function Layout() {
              </div>
              
              {/* Disclaimer Note */}
-             <div style={{ marginTop: '1.25rem', padding: '0.75rem', backgroundColor: 'rgba(30, 41, 59, 0.5)', borderRadius: '8px', border: '1px solid #1e293b' }}>
+             <div style={{ marginTop: '1.25rem', padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
                 <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.75rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '400' }}>
                   {t('disclaimer.language_note')}
                 </p>
              </div>
            </div>
 
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #1e293b' }}>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
              <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>news</span></a>
              <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>spoilers</span></a>
              <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>insight</span></a>
@@ -211,7 +220,7 @@ export default function Layout() {
       </div>
       )}
 
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 z-[60]">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#070913]/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 z-[60] shadow-lg shadow-black/25">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shadow-lg shadow-red-900/20">
@@ -230,7 +239,7 @@ export default function Layout() {
             value={topbarQuery}
             onChange={e => setTopbarQuery(e.target.value)}
             placeholder={t('ui.search_placeholder')}
-            className="w-full px-4 py-1.5 pr-10 text-sm rounded-full border border-slate-700 bg-slate-900/50 text-white outline-none focus:border-sky-500 transition-all"
+            className="w-full px-4 py-1.5 pr-10 text-sm rounded-full border border-white/10 bg-[#0d1224]/50 text-white outline-none focus:border-sky-500 transition-all backdrop-blur-md"
           />
           <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-sky-400">
             <Search size={16} strokeWidth={3} />
@@ -238,14 +247,20 @@ export default function Layout() {
         </form>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-1 min-[350px]:gap-2 md:gap-4">
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 mr-4 border-r border-slate-800 pr-6">
+          <nav className="hidden md:flex items-center gap-6 mr-4 border-r border-white/5 pr-6">
             <NavLink to="/" end className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'}`}>
               {t('nav.home')}
             </NavLink>
             <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'} flex items-center gap-1.5`}>
-               <BookOpen size={14} /> Catalogo
+               <BookOpen size={14} /> {t('nav.catalog')}
+            </NavLink>
+            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'}`}>
+              {t('nav.listings')}
+            </NavLink>
+            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-amber-400' : 'text-slate-400 hover:text-amber-300'}`}>
+              {t('nav.auctions')}
             </NavLink>
             {user && (user.role === 'seller' || user.role === 'both') && (
               <>
@@ -253,13 +268,13 @@ export default function Layout() {
                   {t('nav.sell')}
                 </NavLink>
                 <NavLink to="/create-auction" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-amber-400' : 'text-slate-400 hover:text-amber-300'}`}>
-                  Nuova Asta
+                  {t('nav.new_auction')}
                 </NavLink>
               </>
             )}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 min-[350px]:gap-2 md:gap-3">
             {!user ? (
               <div className="hidden sm:flex items-center gap-3">
                 <Link to="/login" className="text-xs font-bold text-slate-400 hover:text-white uppercase tracking-widest">{t('nav.login')}</Link>
@@ -269,7 +284,7 @@ export default function Layout() {
               <div ref={userDropdownRef} className="relative">
                 <button 
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-8 h-8 rounded-full border border-slate-700 overflow-hidden shrink-0 focus:ring-2 ring-sky-500 ring-offset-2 ring-offset-[#0f172a] transition-all"
+                  className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0 focus:ring-2 ring-sky-500 ring-offset-2 ring-offset-[#070913] transition-all"
                 >
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -281,31 +296,31 @@ export default function Layout() {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute top-full right-0 mt-3 w-48 bg-[#0f172a] border border-slate-800 rounded-xl shadow-2xl py-2 z-[60]">
-                    <div className="px-4 py-2 border-b border-slate-800 mb-1">
+                  <div className="absolute top-full right-0 mt-3 w-48 bg-[#0d1224]/85 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl py-2 z-[60]">
+                    <div className="px-4 py-2 border-b border-white/5 mb-1">
                       <p className="text-xs font-bold text-white truncate">{user.username}</p>
                       <p className="text-[10px] text-slate-500">{user.email}</p>
                     </div>
-                    <Link to="/profile" className="block px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
-                    <Link to="/my-listings" className="block px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
-                    <Link to="/account" className="block px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
+                    <Link to="/profile" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
+                    <Link to="/my-listings" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
+                    <Link to="/account" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
                     {user.role === 'admin' && (
-                      <Link to="/admin" className="block px-4 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 font-bold" onClick={() => setDropdownOpen(false)}>Admin Panel</Link>
+                      <Link to="/admin" className="block px-4 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 font-bold" onClick={() => setDropdownOpen(false)}>{t('nav.admin_panel')}</Link>
                     )}
-                    <hr className="border-slate-800 my-1" />
+                    <hr className="border-white/5 my-1" />
                     <button onClick={logout} className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 font-bold">{t('nav.logout')}</button>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="flex items-center gap-1.5 md:gap-3 border-l border-slate-800 pl-3 md:pl-4 ml-1">
+            <div className="flex items-center gap-0.5 min-[350px]:gap-1.5 md:gap-3 border-l border-white/5 pl-1.5 min-[350px]:pl-3 md:pl-4 ml-0.5 min-[350px]:ml-1">
               <NotificationBell onNewNotification={handleNewNotification} />
               
               <Link to="/cart" className="relative p-1.5 text-slate-400 hover:text-white transition-colors shrink-0">
                 <ShoppingCart size={20} className={cartIsAnimating ? 'scale-125' : ''} />
                 {cart?.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#0f172a]">
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#070913]">
                     {cart.length}
                   </span>
                 )}
@@ -340,7 +355,7 @@ export default function Layout() {
           animation: 'pulse 1.5s infinite' // Using a generic attention animation we have available
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <strong style={{ color: '#ef4444', fontSize: '1.05rem' }}>Attenzione!</strong>
+            <strong style={{ color: '#ef4444', fontSize: '1.05rem' }}>{t('ui.attention')}</strong>
             <button onClick={() => setToastNotif(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
               <X size={16} />
             </button>
@@ -349,7 +364,7 @@ export default function Layout() {
             {t(toastNotif.message_key, { item: toastNotif.listing_title })}
           </p>
           <Link to={`/product/${toastNotif.listing_id}`} style={{ display: 'inline-block', marginTop: '0.75rem', color: '#38bdf8', fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none' }} onClick={() => setToastNotif(null)}>
-             Vai all'asta &gt;
+             {t('ui.go_to_auction')}
           </Link>
         </div>
       )}

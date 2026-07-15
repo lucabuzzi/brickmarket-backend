@@ -14,7 +14,12 @@
     "profile": "Mein Profil",
     "my_listings": "Meine Anzeigen",
     "account": "Konto-Einstellungen",
-    "auction": "AUKTION"
+    "auction": "AUKTION",
+    "catalog": "Katalog",
+    "listings": "Anzeigen",
+    "auctions": "Auktionen",
+    "new_auction": "Neue Auktion",
+    "admin_panel": "Admin-Bereich"
   },
   "auction": {
     "current_bid": "Aktuelles Gebot",
@@ -40,7 +45,9 @@
     "yes": "JA",
     "no": "NEIN",
     "loading": "Laden...",
-    "language": "SPRACHE"
+    "language": "SPRACHE",
+    "attention": "Achtung!",
+    "go_to_auction": "Zur Auktion gehen >"
   },
   "disclaimer": {
     "language_note": "Dadurch wird die Sprache der Benutzeroberfläche geändert, benutzergenerierte Inhalte bleiben jedoch in ihrer Originalsprache."
@@ -52,7 +59,8 @@
     "passwords_dont_match": "Passwörter stimmen nicht überein.",
     "accept_legal": "Sie müssen die drei rechtlichen Servicebedingungen akzeptieren.",
     "upload_required": "Ausweis-Scan und Gewerbeanmeldung sind erforderlich.",
-    "registration_failed": "Registrierung fehlgeschlagen"
+    "registration_failed": "Registrierung fehlgeschlagen",
+    "unable_to_load_listings": "Anzeigen konnten nicht geladen werden"
   },
   "auth": {
     "login_title": "Anmelden",
@@ -95,5 +103,30 @@
   },
   "profile": {
     "my_bids": "Meine Gebote"
+  },
+  "home": {
+    "no_listings": "Zurzeit sind keine Anzeigen verfügbar.",
+    "no_featured_listings": "Keine hervorgehobenen Anzeigen.",
+    "no_active_auctions": "Zurzeit keine aktiven Auktionen.",
+    "no_recent_listings": "Keine aktuellen Artikel.",
+    "explore_more_listings": "Weitere Anzeigen durchsuchen →",
+    "marketplace": "Marktplatz",
+    "hero_title_mobile_1": "Kaufen, verkaufen und entdecken Sie",
+    "hero_title_mobile_2": "einzigartige Teile",
+    "hero_subtitle_mobile": "Der Treffpunkt für Brick-Sammler.",
+    "explore": "Entdecken",
+    "sell_now": "Jetzt verkaufen",
+    "welcome": "Willkommen bei BrickMarket",
+    "hero_title_desktop_1": "Ein Ort zum Kaufen, Verkaufen und Handeln von",
+    "hero_title_desktop_2": "Bricks!",
+    "hero_subtitle_desktop": "Die ultimative Plattform für Sammler. Entdecken Sie seltene Sets, nehmen Sie an exklusiven Auktionen teil und verkaufen Sie Ihre Bricks auf einem sicheren und verifizierten Marktplatz.",
+    "search_by_category": "Nach Kategorie suchen",
+    "sell_now_btn": "Jetzt verkaufen!",
+    "featured_listings": "Hervorgehobene Anzeigen",
+    "see_all": "Alle anzeigen",
+    "featured_auctions": "Hervorgehobene Auktionen",
+    "open_auctions": "Auktionen öffnen",
+    "recent_listings": "Neueste Ankünfte",
+    "most_recent": "Neueste zuerst"
   }
 }

@@ -280,7 +280,7 @@ export default function SearchResults() {
               50% { opacity: 0.4; }
             }
           `}</style>
-          <ul className="grid">
+          <ul className="cards-grid">
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </ul>
         </>
@@ -320,7 +320,7 @@ export default function SearchResults() {
 
       {/* ── Results grid ──────────────────────────────────── */}
       {!loading && !error && results.length > 0 && (
-        <ul className="grid">
+        <ul className="cards-grid">
           {results.map(l => <ListingCard key={l.id} l={l} />)}
         </ul>
       )}

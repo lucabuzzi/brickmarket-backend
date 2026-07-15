@@ -293,7 +293,7 @@ export default function PublicProfile() {
                 <p>Questo utente non ha ancora caricato annunci.</p>
               </div>
             ) : (
-              <ul className="grid">
+              <ul className="cards-grid">
                 {listings.active.map(l => (
                   <ListingCard key={l.id} l={{ ...l, seller_username: user.username, seller_is_pro: user.is_pro, seller_is_verified: user.is_verified, seller_rating_avg: user.rating_avg, seller_sales_count: user.sales_count, seller_rating_count: user.rating_count }} />
                 ))}
@@ -311,7 +311,7 @@ export default function PublicProfile() {
               </div>
             ) : (
               <div style={{ filter: 'grayscale(0.8)', opacity: 0.7 }}>
-                <ul className="grid">
+                <ul className="cards-grid">
                   {listings.sold.map(l => (
                     <ListingCard key={l.id} l={{ ...l, seller_username: user.username, seller_is_pro: user.is_pro, seller_is_verified: user.is_verified, seller_rating_avg: user.rating_avg, seller_sales_count: user.sales_count, seller_rating_count: user.rating_count }} />
                   ))}

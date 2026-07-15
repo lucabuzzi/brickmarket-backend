@@ -116,6 +116,8 @@ const modernRows = (sellerId) => [
     price: 649.99,
     shipping_cost: 12.9,
     shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
     images: [
       'https://picsum.photos/seed/bm1/800/600',
       'https://picsum.photos/seed/bm2/800/600',
@@ -133,6 +135,8 @@ const modernRows = (sellerId) => [
     price: 289.0,
     shipping_cost: 9.9,
     shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm3/800/600'],
   },
   {
@@ -147,6 +151,8 @@ const modernRows = (sellerId) => [
     price: 175.5,
     shipping_cost: 11.0,
     shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
     images: [
       'https://picsum.photos/seed/bm4/800/600',
       'https://picsum.photos/seed/bm5/800/600',
@@ -163,6 +169,8 @@ const modernRows = (sellerId) => [
     price: 89.0,
     shipping_cost: 7.5,
     shipping_method: 'Posta',
+    category: 'mocs',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm6/800/600'],
   },
   {
@@ -177,6 +185,8 @@ const modernRows = (sellerId) => [
     auction_reserve: 80.0,
     shipping_cost: 6.0,
     shipping_method: 'Ritiro',
+    category: 'sets',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm7/800/600'],
   },
   {
@@ -190,7 +200,41 @@ const modernRows = (sellerId) => [
     auction_end: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     shipping_cost: 15.0,
     shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm10/800/600'],
+  },
+  {
+    title: 'Asta Concorrente Rapida 5m',
+    description: `Asta a scadenza molto breve (5 minuti) per testare la concorrenza. ${DEMO_TAG}`,
+    theme: 'Speed Champions',
+    year: 2024,
+    type: 'auction',
+    condition: 'new',
+    auction_start: 15.0,
+    auction_end: new Date(Date.now() + 5 * 60 * 1000),
+    auction_reserve: 25.0,
+    shipping_cost: 5.5,
+    shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
+    images: ['https://picsum.photos/seed/bm12/800/600'],
+  },
+  {
+    title: 'Asta Concorrente Rapida 10m',
+    description: `Asta a scadenza molto breve (10 minuti) per testare la concorrenza. ${DEMO_TAG}`,
+    theme: 'Technic',
+    year: 2024,
+    type: 'auction',
+    condition: 'new',
+    auction_start: 30.0,
+    auction_end: new Date(Date.now() + 10 * 60 * 1000),
+    auction_reserve: 50.0,
+    shipping_cost: 7.5,
+    shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
+    images: ['https://picsum.photos/seed/bm13/800/600'],
   },
   {
     title: 'Asta — Torre Eiffel (Scaduta)',
@@ -203,8 +247,11 @@ const modernRows = (sellerId) => [
     auction_end: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Nel passato
     current_bid: 550.0,
     bids_count: 2,
+    status: 'expired',
     shipping_cost: 20.0,
     shipping_method: 'Corriere',
+    category: 'sets',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm11/800/600'],
   },
   {
@@ -220,6 +267,8 @@ const modernRows = (sellerId) => [
     status: 'sold',
     shipping_cost: 5.0,
     shipping_method: 'Posta',
+    category: 'sets',
+    location: 'Italia',
     images: ['https://picsum.photos/seed/bm8/800/600'],
   },
 ];
@@ -286,65 +335,49 @@ async function insertLegacy(client, sellerId, cols) {
   }
 }
 
-async function insertModern(client, sellerId) {
+async function insertModern(client, sellerId, cols) {
+  const hasCategory = cols.has('category');
+  const hasLocation = cols.has('location');
+
   for (const L of modernRows(sellerId)) {
-    if (L.type === 'auction') {
-      await client.query(
-        `INSERT INTO listings (
-          seller_id, title, description, set_number, theme, year, pieces,
-          type, condition,
-          price, auction_start, auction_end, auction_reserve, current_bid,
-          status, images, shipping_cost, shipping_method
-        ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'active',$15,$16,$17
-        )`,
-        [
-          sellerId,
-          L.title,
-          L.description,
-          L.set_number || null,
-          L.theme || null,
-          L.year ?? null,
-          L.pieces ?? null,
-          'auction',
-          L.condition,
-          null,
-          L.auction_start,
-          L.auction_end,
-          L.auction_reserve ?? null,
-          L.auction_start,
-          L.images,
-          L.shipping_cost,
-          L.shipping_method,
-        ]
-      );
-    } else {
-      await client.query(
-        `INSERT INTO listings (
-          seller_id, title, description, set_number, theme, year, pieces,
-          type, condition,
-          price, auction_start, auction_end, auction_reserve, current_bid,
-          status, images, shipping_cost, shipping_method
-        ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,null,null,null,null,'active',$11,$12,$13
-        )`,
-        [
-          sellerId,
-          L.title,
-          L.description,
-          L.set_number || null,
-          L.theme || null,
-          L.year ?? null,
-          L.pieces ?? null,
-          L.type,
-          L.condition,
-          L.price,
-          L.images,
-          L.shipping_cost,
-          L.shipping_method,
-        ]
-      );
+    const fields = [
+      'seller_id', 'title', 'description', 'set_number', 'theme', 'year', 'pieces',
+      'type', 'condition', 'price', 'auction_start', 'auction_end', 'auction_reserve',
+      'current_bid', 'status', 'images', 'shipping_cost', 'shipping_method'
+    ];
+    const vals = [
+      sellerId,
+      L.title,
+      L.description,
+      L.set_number || null,
+      L.theme || null,
+      L.year ?? null,
+      L.pieces ?? null,
+      L.type,
+      L.condition,
+      L.type === 'auction' ? null : L.price,
+      L.type === 'auction' ? L.auction_start : null,
+      L.type === 'auction' ? L.auction_end : null,
+      L.type === 'auction' ? (L.auction_reserve ?? null) : null,
+      L.type === 'auction' ? L.auction_start : null,
+      L.status || 'active',
+      L.images,
+      L.shipping_cost,
+      L.shipping_method
+    ];
+
+    if (hasCategory) {
+      fields.push('category');
+      vals.push(L.category || 'sets');
     }
+    if (hasLocation) {
+      fields.push('location');
+      vals.push(L.location || 'Italia');
+    }
+
+    const placeholders = vals.map((_, i) => `$${i + 1}`).join(',');
+    const queryStr = `INSERT INTO listings (${fields.join(',')}) VALUES (${placeholders})`;
+    await client.query(queryStr, vals);
   }
 }
 
@@ -362,7 +395,7 @@ async function main() {
     await client.query('BEGIN');
 
     const cols = await getListingColumns(client);
-    const isLegacy = cols.has('category') && cols.has('location');
+    const isLegacy = !cols.has('theme') || !cols.has('auction_end');
 
     const ids = {};
     for (const u of demoUsers) {
@@ -390,7 +423,7 @@ async function main() {
       await insertLegacy(client, sellerId, cols);
     } else {
       console.log('Schema listings: moderno (schema.sql) — inserimento demo completo.');
-      await insertModern(client, sellerId);
+      await insertModern(client, sellerId, cols);
     }
 
     await client.query('COMMIT');

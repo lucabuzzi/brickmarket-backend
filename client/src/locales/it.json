@@ -14,7 +14,12 @@
     "profile": "Il mio Profilo",
     "my_listings": "I miei annunci",
     "account": "Impostazioni Account",
-    "auction": "ASTA"
+    "auction": "ASTA",
+    "catalog": "Catalogo",
+    "listings": "Annunci",
+    "auctions": "Aste",
+    "new_auction": "Nuova Asta",
+    "admin_panel": "Admin Panel"
   },
   "auction": {
     "current_bid": "Offerta corrente",
@@ -40,7 +45,9 @@
     "yes": "SÌ",
     "no": "NO",
     "loading": "Caricamento...",
-    "language": "LINGUA"
+    "language": "LINGUA",
+    "attention": "Attenzione!",
+    "go_to_auction": "Vai all'asta >"
   },
   "disclaimer": {
     "language_note": "Cambierai la lingua dell'interfaccia, ma i contenuti inseriti dagli utenti rimarranno nella lingua originale."
@@ -52,7 +59,8 @@
     "passwords_dont_match": "Le password non corrispondono.",
     "accept_legal": "Devi accettare le tre condizioni di servizio legali.",
     "upload_required": "Upload Documento Identità e Licenza Aziendale richiesti.",
-    "registration_failed": "Registrazione non riuscita"
+    "registration_failed": "Registrazione non riuscita",
+    "unable_to_load_listings": "Impossibile caricare gli annunci"
   },
   "auth": {
     "login_title": "Accedi",
@@ -95,5 +103,30 @@
   },
   "profile": {
     "my_bids": "Le Mie Offerte"
+  },
+  "home": {
+    "no_listings": "Nessun annuncio disponibile al momento.",
+    "no_featured_listings": "Nessun annuncio in evidenza.",
+    "no_active_auctions": "Nessun'asta attiva al momento.",
+    "no_recent_listings": "Nessun articolo recente.",
+    "explore_more_listings": "Esplora altri annunci →",
+    "marketplace": "Marketplace",
+    "hero_title_mobile_1": "Compra, vendi e scopri",
+    "hero_title_mobile_2": "pezzi unici",
+    "hero_subtitle_mobile": "Il punto d'incontro per i collezionisti di Brick.",
+    "explore": "Esplora",
+    "sell_now": "Vendi ora",
+    "welcome": "Welcome to BrickMarket",
+    "hero_title_desktop_1": "A place to buy, sell and trade",
+    "hero_title_desktop_2": "Bricks!",
+    "hero_subtitle_desktop": "La piattaforma definitiva per collezionisti. Esplora set rari, partecipa ad aste esclusive e vendi i tuoi Brick in un marketplace sicuro e verificato.",
+    "search_by_category": "Cerca per Categoria",
+    "sell_now_btn": "Vendi Ora!",
+    "featured_listings": "Annunci in evidenza",
+    "see_all": "Vedi tutti",
+    "featured_auctions": "Aste in evidenza",
+    "open_auctions": "Apri aste",
+    "recent_listings": "Ultimi arrivi",
+    "most_recent": "Più recenti"
   }
 }

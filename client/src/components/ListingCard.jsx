@@ -21,9 +21,9 @@ function formatPrice(v) {
 
 function conditionClasses(c = '') {
   const lc = c.toLowerCase();
-  if (lc === 'new' || lc === 'complete') return 'bg-emerald-600 text-white';
-  if (lc === 'good') return 'bg-amber-600 text-white';
-  return 'bg-slate-500 text-white';
+  if (lc === 'new' || lc === 'complete') return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white';
+  if (lc === 'good') return 'bg-gradient-to-r from-amber-500 to-orange-600 text-white';
+  return 'bg-gradient-to-r from-slate-500 to-slate-600 text-slate-200';
 }
 
 export default function ListingCard({ l, isFeatured = false, isCompact = false, isMini = false }) {
@@ -51,13 +51,13 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
   const isActive = l.status === 'active';
 
   return (
-    <article className="w-full h-full flex flex-col bg-[#0f172a] rounded-lg overflow-hidden border border-slate-700 hover:border-slate-500 transition-all">
+    <article className="w-full h-full flex flex-col bg-[#0d1224]/40 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 hover:border-sky-500/30 hover:shadow-[0_15px_30px_-10px_rgba(56,189,248,0.12)] transition-all duration-300 group/card">
 
       {/* Header: Mostra il Timer solo se l'asta è ATTIVA */}
-      <div className={`flex justify-between items-center px-2 py-1 ${isFeatured ? 'bg-amber-600/10' : 'bg-slate-800/50'}`}>
+      <div className={`flex justify-between items-center px-3 py-1.5 ${isFeatured ? 'bg-amber-600/10' : 'bg-white/2'}`}>
         {isAuction && isActive ? (
           <div className="flex items-center gap-2">
-            <span className="bg-amber-500 text-black px-1.5 py-0.5 text-[10px] font-black rounded uppercase tracking-tighter">
+            <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-black px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-sm">
               ASTA
             </span>
             <AuctionTimer endDate={l.auction_end} />
@@ -68,42 +68,42 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
         )}
 
         {isFeatured && (
-          <Star size={14} className="fill-amber-600 text-amber-600 ml-auto" />
+          <Star size={14} className="fill-amber-500 text-amber-500 ml-auto" />
         )}
       </div>
 
       {/* Immagine */}
-      <Link to={`/product/${l.id}`} className="block w-full">
+      <Link to={`/product/${l.id}`} className="block w-full overflow-hidden">
         <img
           src={listingImage(l)}
           alt={l.title}
           loading="lazy"
-          className="w-full aspect-[4/3] md:aspect-[3/2] object-cover hover:scale-105 transition-transform duration-500"
+          className="w-full aspect-[4/3] md:aspect-[3/2] object-cover group-hover/card:scale-105 transition-transform duration-500"
         />
       </Link>
 
       {/* Contenuto Card */}
-      <div className="p-2.5 flex flex-col flex-1 gap-0.5">
+      <div className="p-3.5 flex flex-col flex-1 gap-1">
         <div className="flex gap-1.5 items-center">
           {/* LOGICA BADGE: Gestione differenziata per aste scadute senza offerte vs vendute */}
           {(() => {
             if (l.status === 'sold') {
-              return <span className="bg-red-500 text-white px-1.5 py-0.5 text-[10px] font-bold rounded uppercase shadow-sm">VENDUTO</span>;
+              return <span className="bg-gradient-to-r from-rose-500 to-red-600 text-white px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-md shadow-red-900/10">VENDUTO</span>;
             }
             if (l.status === 'ended' || l.status === 'closed' || l.status === 'expired') {
               if (isAuction && !(Number(l.bids_count) > 0 || Number(l.current_bid) > Number(l.auction_start))) {
-                return <span className="bg-slate-500 text-white px-1.5 py-0.5 text-[10px] font-bold rounded uppercase shadow-sm">SCADUTO</span>;
+                return <span className="bg-gradient-to-r from-slate-600 to-slate-700 text-slate-200 px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-sm">SCADUTO</span>;
               }
-              return <span className="bg-red-500 text-white px-1.5 py-0.5 text-[10px] font-bold rounded uppercase shadow-sm">VENDUTO</span>;
+              return <span className="bg-gradient-to-r from-rose-500 to-red-600 text-white px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-md shadow-red-900/10">VENDUTO</span>;
             }
             if (!isActive) {
-              return <span className="bg-red-500 text-white px-1.5 py-0.5 text-[10px] font-bold rounded uppercase shadow-sm">VENDUTO</span>;
+              return <span className="bg-gradient-to-r from-rose-500 to-red-600 text-white px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-md shadow-red-900/10">VENDUTO</span>;
             }
-            return <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded uppercase ${condClasses}`}>{condition}</span>;
+            return <span className={`px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-sm ${condClasses}`}>{condition}</span>;
           })()}
         </div>
 
-        <h2 className="font-bold text-white leading-tight truncate text-sm sm:text-base mt-1">
+        <h2 className="font-bold text-slate-100 leading-snug truncate text-sm sm:text-base mt-1">
           <Link to={`/product/${l.id}`} className="hover:text-sky-400 transition-colors">
             {l.title}
           </Link>
@@ -116,7 +116,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
         )}
 
         {/* Footer Card */}
-        <div className="mt-auto flex justify-between items-end">
+        <div className="mt-auto flex justify-between items-end pt-2">
           <div className="flex flex-col">
             {isAuction && isActive && (
               <span className="text-[9px] text-amber-400 uppercase font-bold tracking-tighter leading-none mb-1">
@@ -135,7 +135,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
                 {/* LEGENDARY: emerald glow — shown before other badges for impact */}
                 {isLegendary && (
                   <span
-                    className="px-1 py-0.5 text-[9px] rounded font-black uppercase tracking-tight"
+                    className="px-1.5 py-0.5 text-[9px] rounded-md font-black uppercase tracking-tight"
                     style={{
                       background: 'linear-gradient(90deg, #059669, #10b981)',
                       color: '#fff',
@@ -149,21 +149,21 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
 
                 {/* PRO: gold badge */}
                 {isPro && !isLegendary && (
-                  <span className="bg-amber-500 text-black px-1 py-0.5 text-[9px] rounded font-black uppercase">
+                  <span className="bg-amber-500 text-black px-1.5 py-0.5 text-[9px] rounded-md font-black uppercase">
                     PRO
                   </span>
                 )}
 
                 {/* VERIFIED: blue badge */}
                 {isVerified && (
-                  <span className="bg-sky-500 text-white px-1 py-0.5 text-[9px] rounded font-black uppercase">
+                  <span className="bg-sky-500 text-white px-1.5 py-0.5 text-[9px] rounded-md font-black uppercase">
                     ✓ ID
                   </span>
                 )}
 
                 {/* NEW USER: grey label — only shown when no other positive badge applies */}
                 {isNewUser && !isPro && !isVerified && !isLegendary && (
-                  <span className="bg-slate-600 text-slate-300 px-1 py-0.5 text-[9px] rounded font-semibold uppercase">
+                  <span className="bg-slate-600 text-slate-300 px-1.5 py-0.5 text-[9px] rounded-md font-semibold uppercase">
                     NUOVO
                   </span>
                 )}

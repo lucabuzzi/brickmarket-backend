@@ -14,7 +14,12 @@
     "profile": "Mon Profil",
     "my_listings": "Mes annonces",
     "account": "Paramètres du compte",
-    "auction": "ENCHÈRE"
+    "auction": "ENCHÈRE",
+    "catalog": "Catalogue",
+    "listings": "Annonces",
+    "auctions": "Enchères",
+    "new_auction": "Nouvelle Enchère",
+    "admin_panel": "Panneau Admin"
   },
   "auction": {
     "current_bid": "Enchère actuelle",
@@ -40,7 +45,9 @@
     "yes": "OUI",
     "no": "NON",
     "loading": "Chargement...",
-    "language": "LANGUE"
+    "language": "LANGUE",
+    "attention": "Attention !",
+    "go_to_auction": "Aller à l'enchère >"
   },
   "disclaimer": {
     "language_note": "Cela change la langue de l'interface du site, mais le contenu généré par l'utilisateur restera dans sa langue d'origine."
@@ -52,7 +59,8 @@
     "passwords_dont_match": "Les mots de passe ne correspondent pas.",
     "accept_legal": "Vous devez accepter les trois conditions juridiques du service.",
     "upload_required": "Le scan de la pièce d'identité et de la licence commerciale sont requis.",
-    "registration_failed": "L'inscription a échoué"
+    "registration_failed": "L'inscription a échoué",
+    "unable_to_load_listings": "Impossible de charger les annonces"
   },
   "auth": {
     "login_title": "Connexion",
@@ -88,12 +96,37 @@
     "login_credentials": "Identifiants de connexion",
     "accept_tos": "J'accepte les conditions générales",
     "accept_privacy": "J'ai lu et compris les dispositions relatives à la protection de la vie privée",
-    "accept_revocation": "Je demande une mise en œuvre partielle explicite en renonçant au droit de rétractation pour les biens numériques"
+    "accept_revocation": "Je demande une mise en œuvre partielle explicite en renonçant au droit de rétraction pour les biens numériques"
   },
   "notifications": {
     "outbid": "Surenchéri sur {{item}} !"
   },
   "profile": {
     "my_bids": "Mes Enchères"
+  },
+  "home": {
+    "no_listings": "Aucune annonce disponible pour le moment.",
+    "no_featured_listings": "Aucune annonce en vedette.",
+    "no_active_auctions": "Aucune enchère active pour le moment.",
+    "no_recent_listings": "Aucun article récent.",
+    "explore_more_listings": "Explorer d'autres annonces →",
+    "marketplace": "Marché",
+    "hero_title_mobile_1": "Achetez, vendez et découvrez des",
+    "hero_title_mobile_2": "pièces uniques",
+    "hero_subtitle_mobile": "Le point de rencontre des collectionneurs de Brick.",
+    "explore": "Explorer",
+    "sell_now": "Vendre maintenant",
+    "welcome": "Bienvenue sur BrickMarket",
+    "hero_title_desktop_1": "Un endroit pour acheter, vendre et échanger des",
+    "hero_title_desktop_2": "Bricks !",
+    "hero_subtitle_desktop": "La plateforme ultime pour les collectionneurs. Explorez des ensembles rares, participez à des enchères exclusives et vendez vos Bricks sur un marché sécurisé et vérifié.",
+    "search_by_category": "Rechercher par catégorie",
+    "sell_now_btn": "Vendez maintenant !",
+    "featured_listings": "Annonces en vedette",
+    "see_all": "Voir tout",
+    "featured_auctions": "Enchères en vedette",
+    "open_auctions": "Ouvrir les enchères",
+    "recent_listings": "Dernières arrivées",
+    "most_recent": "Plus récents"
   }
 }

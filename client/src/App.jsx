@@ -26,7 +26,10 @@ import AdminArchive from './pages/AdminArchive';
 import AdminInteractions from './pages/AdminInteractions';
 import CatalogPage from './pages/CatalogPage';
 import CatalogIndex from './pages/CatalogIndex';
+import CatalogSearchResults from './pages/CatalogSearchResults';
 import Archive from './pages/Archive';
+import Annunci from './pages/Annunci';
+import Aste from './pages/Aste';
 
 export default function App() {
   const location = useLocation();
@@ -38,10 +41,13 @@ export default function App() {
         <Routes location={location} key={location.pathname}>
           <Route element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="annunci" element={<Annunci />} />
+          <Route path="aste" element={<Aste />} />
           <Route path="category/:slug" element={<CategoryPage />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="archive" element={<Archive />} />
           <Route path="catalog" element={<CatalogIndex />} />
+          <Route path="catalog/search" element={<CatalogSearchResults />} />
           <Route path="catalog/:setNum" element={<CatalogPage />} />
           <Route path="ricerca-utente" element={<UserSearch />} />
           <Route path="user/:username" element={<PublicProfile />} />

@@ -97,10 +97,8 @@ export default function CreateAuction() {
   async function submit(mode) {
     setError('');
     
-    console.log("Auction creation initiated");
 
     if (durationMode === 'custom') {
-      console.log('Checking user tokens...');
       /* Next step: block if tokens < 1 */
     }
 

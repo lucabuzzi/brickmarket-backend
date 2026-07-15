@@ -10,6 +10,7 @@
  */
 
 const { query } = require('../db');
+const { translateSetName } = require('./gemini');
 
 const REBRICKABLE_BASE = 'https://rebrickable.com/api/v3/lego';
 const CACHE_TTL_DAYS = 30; // Refresh cached sets older than 30 days
@@ -146,13 +147,62 @@ async function lookupSet(rawSetNum) {
 }
 
 /**
+ * Search sets externally on Rebrickable.
+ * Useful for keywords like "Ford" or "Porsche" when local DB is empty.
+ *
+ * @param {string} q — search query
+ * @param {number} limit — max results
+ */
+async function searchSetsExternal(q, limit = 10) {
+  const apiKey = process.env.REBRICKABLE_API_KEY;
+  if (!apiKey) return [];
+
+  const url = `${REBRICKABLE_BASE}/sets/?search=${encodeURIComponent(q)}&page_size=${limit}&ordering=-num_parts`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `key ${apiKey}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.results) return [];
+
+    const mapped = data.results.map(mapApiResponseToDb);
+    return await bulkUpsertSets(mapped);
+  } catch (err) {
+    console.error(`[Rebrickable] External search error for "${q}":`, err.message);
+    return [];
+  }
+}
+
+/**
+ * Upserts multiple sets into the master_sets cache.
+ */
+async function bulkUpsertSets(setsData) {
+  // Use Promise.all for concurrent ingestion and translation
+  return await Promise.all(setsData.map(set => upsertAndReturn(set)));
+}
+
+/**
  * Upserts a set into the master_sets cache and returns the stored row.
+ * Now with on-the-fly Gemini translation for multilingual support.
  */
 async function upsertAndReturn(setData) {
   try {
+    // 1. Check if we already have translations
+    const existing = await query('SELECT names FROM master_sets WHERE set_num = $1', [setData.set_num]);
+    let names = existing.rows[0]?.names;
+
+    // 2. If new or missing translations, trigger Gemini
+    if (!names || Object.keys(names).length <= 1) {
+      names = await translateSetName(setData.name);
+    }
+
     const result = await query(
-      `INSERT INTO master_sets (set_num, name, year, theme_id, num_parts, img_url, rebrickable_url, fetched_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+      `INSERT INTO master_sets (set_num, name, year, theme_id, num_parts, img_url, rebrickable_url, names, fetched_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
        ON CONFLICT (set_num)
        DO UPDATE SET
          name = EXCLUDED.name,
@@ -161,6 +211,7 @@ async function upsertAndReturn(setData) {
          num_parts = EXCLUDED.num_parts,
          img_url = EXCLUDED.img_url,
          rebrickable_url = EXCLUDED.rebrickable_url,
+         names = EXCLUDED.names,
          fetched_at = NOW()
        RETURNING *`,
       [
@@ -171,15 +222,14 @@ async function upsertAndReturn(setData) {
         setData.num_parts,
         setData.img_url,
         setData.rebrickable_url,
+        JSON.stringify(names)
       ]
     );
-    console.info(`[Rebrickable] Cached set "${setData.set_num}" in master_sets.`);
     return result.rows[0];
   } catch (dbErr) {
     console.error('[Rebrickable] Failed to upsert into master_sets:', dbErr.message);
-    // Return the mapped data anyway so the frontend still works
     return setData;
   }
 }
 
-module.exports = { lookupSet, normalizeSetNum };
+module.exports = { lookupSet, normalizeSetNum, searchSetsExternal, bulkUpsertSets };

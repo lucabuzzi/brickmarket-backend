@@ -1,17 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light dark;
-  --bg: #0f1115;
-  --bg-elevated: #171a21;
-  --surface: #1e232d;
-  --border: #2a3140;
-  --text: #e8eaef;
-  --muted: #9aa3b2;
-  --accent: #d93a3a;
-  --accent-hover: #e85555;
-  --radius: 12px;
-  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+  --bg: #070913; /* Deep saturated midnight blue-black */
+  --bg-elevated: #0d1224; /* Elevated container with dark rich saturation */
+  --surface: #141b36; /* Deep surface */
+  --border: rgba(255, 255, 255, 0.08); /* Semi-transparent border for glassmorphism */
+  --border-glow: rgba(56, 189, 248, 0.15); /* Sky blue glow for active states */
+  --text: #f8fafc; /* Very light slate */
+  --muted: #64748b; /* Slate-500 */
+  --accent: #38bdf8; /* Sky-400 for accent */
+  --accent-hover: #7dd3fc; /* Sky-300 */
+  --radius-bento: 24px; /* Larger rounded corners for bento style */
+  --radius: 16px;
+  --font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  
+  /* Deep soft shadows and glow */
+  --shadow-bento: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(255, 255, 255, 0.05) inset;
+  --shadow-bento-hover: 0 20px 40px -15px rgba(56, 189, 248, 0.12), 0 0 0 1px rgba(56, 189, 248, 0.2);
+}
+
+/* Glassmorphism utility classes */
+.glass-effect {
+  background: rgba(13, 18, 36, 0.45);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-effect-strong {
+  background: rgba(9, 13, 26, 0.75);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Bento elements */
+.bento-card {
+  background: rgba(13, 18, 36, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-bento);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-bento);
+}
+
+.bento-card:hover {
+  transform: translateY(-4px) scale(1.005);
+  background: rgba(17, 24, 48, 0.55);
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: var(--shadow-bento-hover);
+}
+
+/* Micro-animations and transitions */
+.transition-all-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Elegant glow for titles and hover states */
+.text-gradient-sky {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hover glow effect for buttons or elements */
+.hover-glow-accent:hover {
+  box-shadow: 0 0 20px 2px rgba(56, 189, 248, 0.3);
+}
+
+/* Smooth active state scaling */
+.active-shrink:active {
+  transform: scale(0.97);
 }
 
 *,
@@ -25,10 +108,15 @@ body {
   margin: 0;
   min-height: 100%;
   font-family: var(--font);
-  background: #0a0c10; /* Darker base background */
+  background: #05070f; /* Very deep saturated dark */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.04) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
 }
+
 
 a {
   color: #8ab4ff;
@@ -110,7 +198,7 @@ code {
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
-  background: var(--bg); /* Main container background */
+  background: transparent;
 }
 
 .api-banner {
@@ -167,7 +255,7 @@ code {
   border-radius: var(--radius);
 }
 
-.grid {
+.cards-grid {
   list-style: none;
   margin: 0;
   padding: 0;

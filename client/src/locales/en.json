@@ -14,7 +14,12 @@
     "profile": "My Profile",
     "my_listings": "My Listings",
     "account": "Account Settings",
-    "auction": "AUCTION"
+    "auction": "AUCTION",
+    "catalog": "Catalog",
+    "listings": "Listings",
+    "auctions": "Auctions",
+    "new_auction": "New Auction",
+    "admin_panel": "Admin Panel"
   },
   "auction": {
     "current_bid": "Current bid",
@@ -40,7 +45,9 @@
     "yes": "YES",
     "no": "NO",
     "loading": "Loading...",
-    "language": "LANGUAGE"
+    "language": "LANGUAGE",
+    "attention": "Attention!",
+    "go_to_auction": "Go to auction >"
   },
   "disclaimer": {
     "language_note": "This changes the site interface language, but user-generated content will remain in its original language."
@@ -52,7 +59,8 @@
     "passwords_dont_match": "Passwords do not match.",
     "accept_legal": "You must accept the three legal service conditions.",
     "upload_required": "ID scan and Business License uploads are required.",
-    "registration_failed": "Registration failed"
+    "registration_failed": "Registration failed",
+    "unable_to_load_listings": "Unable to load listings"
   },
   "auth": {
     "login_title": "Login",
@@ -95,5 +103,30 @@
   },
   "profile": {
     "my_bids": "My Bids"
+  },
+  "home": {
+    "no_listings": "No listings available at the moment.",
+    "no_featured_listings": "No featured listings.",
+    "no_active_auctions": "No active auctions at the moment.",
+    "no_recent_listings": "No recent items.",
+    "explore_more_listings": "Explore other listings →",
+    "marketplace": "Marketplace",
+    "hero_title_mobile_1": "Buy, sell and discover",
+    "hero_title_mobile_2": "unique items",
+    "hero_subtitle_mobile": "The meeting place for Brick collectors.",
+    "explore": "Explore",
+    "sell_now": "Sell now",
+    "welcome": "Welcome to BrickMarket",
+    "hero_title_desktop_1": "A place to buy, sell and trade",
+    "hero_title_desktop_2": "Bricks!",
+    "hero_subtitle_desktop": "The ultimate platform for collectors. Explore rare sets, participate in exclusive auctions, and sell your Bricks in a safe and verified marketplace.",
+    "search_by_category": "Search by Category",
+    "sell_now_btn": "Sell Now!",
+    "featured_listings": "Featured Listings",
+    "see_all": "See all",
+    "featured_auctions": "Featured Auctions",
+    "open_auctions": "Open auctions",
+    "recent_listings": "Recent Arrivals",
+    "most_recent": "Most recent"
   }
 }

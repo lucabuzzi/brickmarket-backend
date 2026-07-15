@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../api';
 import ListingCard from '../components/ListingCard';
 import { SearchX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 function SectionTitle({
   title,
@@ -11,10 +12,10 @@ function SectionTitle({
   action,
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-slate-700/50 pb-3">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
       <div className="flex items-center gap-2 min-w-0">
         <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${dotClass}`} style={{ boxShadow: `0 0 10px var(--tw-shadow-color)`, '--tw-shadow-color': 'currentColor' }} />
-        <h2 className={`text-sm font-black uppercase tracking-[0.18em] ${textClass}`}>
+        <h2 className={`text-xs min-[360px]:text-sm font-bold uppercase tracking-wider min-[360px]:tracking-[0.18em] ${textClass}`}>
           {title}
         </h2>
       </div>
@@ -22,7 +23,7 @@ function SectionTitle({
       {action ? (
         <Link
           to={action.to}
-          className="text-[11px] md:text-xs font-bold text-slate-400 hover:text-white transition-colors whitespace-nowrap bg-slate-800/50 px-3 py-1.5 rounded-full hover:bg-slate-700"
+          className="self-start sm:self-auto text-[10px] min-[360px]:text-[11px] md:text-xs font-bold text-slate-300 hover:text-white transition-colors whitespace-nowrap bg-white/5 border border-white/5 px-3 py-1 min-[360px]:px-3.5 min-[360px]:py-1.5 rounded-full hover:bg-white/10 active-shrink"
         >
           {action.label}
         </Link>
@@ -31,19 +32,22 @@ function SectionTitle({
   );
 }
 
-function BentoListingGrid({ items, loading, slots = 8, featured = false, emptyMessage = "Nessun annuncio disponibile al momento." }) {
+function BentoListingGrid({ items, loading, slots = 8, featured = false, emptyMessage }) {
+  const { t } = useTranslation();
+  const finalEmptyMessage = emptyMessage || t('home.no_listings');
+
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 min-[380px]:gap-3 md:gap-4">
         {Array.from({ length: Math.min(slots, 4) }).map((_, i) => (
           <div key={i} className="w-full">
-            <div className="w-full overflow-hidden rounded-xl border border-slate-800 bg-[#0f172a] shadow-sm">
-              <div className="aspect-[4/3] md:aspect-[3/2] animate-pulse bg-slate-800/80" />
-              <div className="space-y-2 p-3">
-                <div className="h-2.5 w-16 rounded bg-slate-800 animate-pulse" />
-                <div className="h-3 w-full rounded bg-slate-800 animate-pulse mt-2" />
-                <div className="h-3 w-2/3 rounded bg-slate-800 animate-pulse" />
-                <div className="h-4 w-20 rounded bg-slate-800 animate-pulse mt-4" />
+            <div className="w-full overflow-hidden rounded-2xl border border-white/5 bg-[#0d1224]/40 shadow-sm">
+              <div className="aspect-[4/3] md:aspect-[3/2] animate-pulse bg-white/5" />
+              <div className="space-y-2 p-4">
+                <div className="h-2.5 w-16 rounded bg-white/10 animate-pulse" />
+                <div className="h-3 w-full rounded bg-white/10 animate-pulse mt-2" />
+                <div className="h-3 w-2/3 rounded bg-white/10 animate-pulse" />
+                <div className="h-4 w-20 rounded bg-white/10 animate-pulse mt-4" />
               </div>
             </div>
           </div>
@@ -54,12 +58,12 @@ function BentoListingGrid({ items, loading, slots = 8, featured = false, emptyMe
 
   if (!items || items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center bg-[#0f172a]/40 border border-slate-800 border-dashed rounded-xl">
-        <div className="w-12 h-12 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-500 mb-3 shadow-inner">
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-white/2 border border-white/5 border-dashed rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-500 mb-3 shadow-inner">
           <SearchX size={24} />
         </div>
-        <p className="text-slate-400 text-sm font-medium">{emptyMessage}</p>
-        <Link to="/search-results" className="mt-4 text-xs font-black text-sky-400 hover:text-sky-300 transition-colors uppercase tracking-wider">Esplora altri annunci →</Link>
+        <p className="text-slate-400 text-sm font-medium">{finalEmptyMessage}</p>
+        <Link to="/annunci" className="mt-4 text-xs font-black text-sky-400 hover:text-sky-300 transition-colors uppercase tracking-wider">{t('home.explore_more_listings')}</Link>
       </div>
     );
   }
@@ -67,7 +71,7 @@ function BentoListingGrid({ items, loading, slots = 8, featured = false, emptyMe
   const visibleItems = items?.slice(0, slots) || [];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 items-start">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 min-[380px]:gap-3 md:gap-4 items-start">
       {visibleItems?.map((item) => (
         <div key={item.id} className="w-full h-full">
           <ListingCard l={item} isFeatured={featured} />
@@ -78,36 +82,38 @@ function BentoListingGrid({ items, loading, slots = 8, featured = false, emptyMe
 }
 
 function MobileHero() {
+  const { t } = useTranslation();
+
   return (
     <section className="block md:hidden">
-      <div className="rounded-2xl border border-slate-700/50 bg-[#0f172a] p-5 relative overflow-hidden shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="bento-card p-5 min-[380px]:p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 backdrop-blur-sm">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
-            Marketplace
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 min-[380px]:px-3 min-[380px]:py-1 text-[9px] min-[380px]:text-[10px] font-black uppercase tracking-[0.18em] text-sky-300">
+            {t('home.marketplace')}
           </div>
 
-          <h1 className="mt-4 text-3xl font-black tracking-tight text-white leading-none">
-            Compra, vendi e scopri pezzi unici
+          <h1 className="mt-4 text-2xl min-[380px]:text-3xl font-black tracking-tight text-white leading-tight">
+            {t('home.hero_title_mobile_1')} <span className="text-gradient-sky">{t('home.hero_title_mobile_2')}</span>
           </h1>
 
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            Il punto d'incontro per i collezionisti di Brick.
+          <p className="mt-3 text-xs min-[380px]:text-sm leading-relaxed text-slate-400">
+            {t('home.hero_subtitle_mobile')}
           </p>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-5 flex flex-col min-[380px]:flex-row gap-3 w-full min-[380px]:w-auto">
             <Link
-              to="/search-results"
-              className="min-h-[44px] flex items-center justify-center rounded-xl bg-cyan-500 px-4 py-3 text-sm font-bold text-slate-950 active:scale-[0.98] transition-transform shadow-lg shadow-cyan-500/20"
+              to="/annunci"
+              className="min-h-[40px] min-[380px]:min-h-[44px] flex items-center justify-center rounded-xl bg-sky-500 px-4 py-2.5 min-[380px]:py-3 text-xs min-[380px]:text-sm font-bold text-slate-950 active-shrink hover-glow-accent transition-all duration-300 shadow-lg shadow-sky-500/20"
             >
-              Esplora
+              {t('home.explore')}
             </Link>
             <Link
               to="/sell"
-              className="min-h-[44px] flex items-center justify-center rounded-xl border border-slate-600 bg-slate-800/80 px-4 py-3 text-sm font-bold text-white active:scale-[0.98] transition-all backdrop-blur-md"
+              className="min-h-[40px] min-[380px]:min-h-[44px] flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 min-[380px]:py-3 text-xs min-[380px]:text-sm font-bold text-white active-shrink transition-all hover:bg-white/10"
             >
-              Vendi ora
+              {t('home.sell_now')}
             </Link>
           </div>
         </div>
@@ -117,39 +123,41 @@ function MobileHero() {
 }
 
 function DesktopHero() {
+  const { t } = useTranslation();
+
   return (
     <section className="hidden md:block group">
-      <div className="rounded-2xl border border-slate-700/50 bg-[#0f172a] p-6 lg:p-8 relative overflow-hidden shadow-sm hover:border-slate-500 hover:scale-[1.01] transition-all duration-500">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/20 transition-colors duration-700" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-blue-500/20 transition-colors duration-700" />
+      <div className="bento-card p-8 lg:p-10 relative overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-sky-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-sky-500/20 transition-colors duration-700" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-700" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 backdrop-blur-sm">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300 backdrop-blur-md">
-              Welcome to Brick Market
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-sky-300 backdrop-blur-md">
+              {t('home.welcome')}
             </div>
 
-            <h1 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight text-white leading-none">
-              A place where buy, sell and trade Bricks!
+            <h1 className="mt-5 text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+              {t('home.hero_title_desktop_1')} <span className="text-gradient-sky">{t('home.hero_title_desktop_2')}</span>
             </h1>
 
-            <p className="mt-4 text-base text-slate-300 max-w-2xl leading-7">
-              La piattaforma definitiva per collezionisti. Esplora set rari, partecipa ad aste esclusive e vendi i tuoi Brick in un marketplace sicuro e verificato.
+            <p className="mt-4 text-base text-slate-400 max-w-2xl leading-relaxed">
+              {t('home.hero_subtitle_desktop')}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap lg:flex-col xl:flex-row gap-3 shrink-0">
             <Link
-              to="/search-results"
-              className="min-h-[44px] flex items-center justify-center rounded-xl border border-slate-600 hover:border-slate-400 bg-slate-800/80 px-6 py-3 text-sm font-bold text-yellow transition-all backdrop-blur-md"
+              to="/annunci"
+              className="min-h-[44px] flex items-center justify-center rounded-xl border border-white/10 hover:border-sky-500/50 bg-white/5 hover:bg-white/10 px-6 py-3 text-sm font-bold text-white transition-all duration-300 active-shrink"
             >
-              Search by Category
+              {t('home.search_by_category')}
             </Link>
             <Link
               to="/sell"
-              className="min-h-[44px] flex items-center justify-center rounded-xl border border-slate-600 hover:border-slate-400 bg-slate-800/80 px-6 py-3 text-sm font-bold text-yellow transition-all backdrop-blur-md"
+              className="min-h-[44px] flex items-center justify-center rounded-xl bg-sky-500 hover:bg-sky-400 px-6 py-3 text-sm font-bold text-slate-950 transition-all duration-300 hover-glow-accent active-shrink shadow-lg shadow-sky-500/15"
             >
-              Sell Now!
+              {t('home.sell_now_btn')}
             </Link>
           </div>
         </div>
@@ -159,6 +167,8 @@ function DesktopHero() {
 }
 
 function MainHome({ featuredFixed, featuredAuctions, recentFeed, loading }) {
+  const { t } = useTranslation();
+
   return (
     <div className="w-full font-sans">
       <main className="flex flex-col gap-6 w-full">
@@ -166,44 +176,50 @@ function MainHome({ featuredFixed, featuredAuctions, recentFeed, loading }) {
         <DesktopHero />
 
         {/* Annunci in evidenza */}
-        <section className="rounded-2xl border border-slate-700/50 hover:border-slate-500 bg-[#0f172a] p-4 lg:p-6 shadow-sm transition-colors duration-300">
-          <SectionTitle
-            title="Annunci in evidenza"
-            dotClass="bg-orange-500 text-orange-500"
-            textClass="text-orange-400"
-            action={{ to: '/search-results?featured=1', label: 'Vedi tutti' }}
-          />
-          <div className="mt-5">
-            <BentoListingGrid items={featuredFixed} loading={loading} slots={8} featured emptyMessage="Nessun annuncio in evidenza." />
+        <section className="bento-card p-5 lg:p-8 relative overflow-hidden group/evidenza">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl pointer-events-none group-hover/evidenza:bg-orange-500/10 transition-colors duration-700" />
+          <div className="relative z-10">
+            <SectionTitle
+              title={t('home.featured_listings')}
+              dotClass="bg-orange-500 text-orange-500"
+              textClass="text-orange-400"
+              action={{ to: '/annunci', label: t('home.see_all') }}
+            />
+            <div className="mt-5">
+              <BentoListingGrid items={featuredFixed} loading={loading} slots={8} featured emptyMessage={t('home.no_featured_listings')} />
+            </div>
           </div>
         </section>
 
         {/* Aste in evidenza */}
-        <section className="rounded-2xl border border-slate-700/50 hover:border-slate-500 bg-[#0f172a] p-4 lg:p-6 shadow-sm transition-colors duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/10 transition-colors duration-700" />
+        <section className="bento-card p-5 lg:p-8 relative overflow-hidden group/aste">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none group-hover/aste:bg-emerald-500/10 transition-colors duration-700" />
           <div className="relative z-10">
             <SectionTitle
-              title="Aste in evidenza"
+              title={t('home.featured_auctions')}
               dotClass="bg-emerald-400 text-emerald-400"
               textClass="text-emerald-400"
-              action={{ to: '/search-results?type=auction', label: 'Apri aste' }}
+              action={{ to: '/aste', label: t('home.open_auctions') }}
             />
             <div className="mt-5">
-              <BentoListingGrid items={featuredAuctions} loading={loading} slots={8} emptyMessage="Nessun'asta attiva al momento." />
+              <BentoListingGrid items={featuredAuctions} loading={loading} slots={8} emptyMessage={t('home.no_active_auctions')} />
             </div>
           </div>
         </section>
 
         {/* Ultimi arrivi */}
-        <section className="rounded-2xl border border-slate-700/50 hover:border-slate-500 bg-[#0f172a] p-4 lg:p-6 shadow-sm transition-colors duration-300">
-          <SectionTitle
-            title="Ultimi arrivi"
-            dotClass="bg-indigo-400 text-indigo-400"
-            textClass="text-indigo-400"
-            action={{ to: '/search-results?sort=recent', label: 'Più recenti' }}
-          />
-          <div className="mt-5">
-            <BentoListingGrid items={recentFeed} loading={loading} slots={8} emptyMessage="Nessun articolo recente." />
+        <section className="bento-card p-5 lg:p-8 relative overflow-hidden group/arrivi">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none group-hover/arrivi:bg-indigo-500/10 transition-colors duration-700" />
+          <div className="relative z-10">
+            <SectionTitle
+              title={t('home.recent_listings')}
+              dotClass="bg-indigo-400 text-indigo-400"
+              textClass="text-indigo-400"
+              action={{ to: '/annunci', label: t('home.most_recent') }}
+            />
+            <div className="mt-5">
+              <BentoListingGrid items={recentFeed} loading={loading} slots={8} emptyMessage={t('home.no_recent_listings')} />
+            </div>
           </div>
         </section>
       </main>
@@ -217,6 +233,7 @@ export default function Home() {
   const [recentFeed, setRecentFeed] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -239,7 +256,7 @@ export default function Home() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e.message || 'Impossibile caricare gli annunci');
+          setError(e.message || t('errors.unable_to_load_listings'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -249,10 +266,10 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   return (
-    <div className="page home max-w-[1500px] mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16">
+    <div className="page home max-w-[1500px] mx-auto px-4 md:px-6 pt-4 pb-16">
       {error ? (
         <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-300">
           {error}
