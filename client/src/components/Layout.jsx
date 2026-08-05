@@ -155,7 +155,7 @@ export default function Layout() {
              </Link>
              <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
              <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
-             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>🎮 {t('nav.skill_zone') || 'Skill Zone'}</Link>
+             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
              <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
              <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
              <Link to="/terms" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.terms')}</Link>
@@ -218,10 +218,10 @@ export default function Layout() {
            </div>
 
            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>news</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>spoilers</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>insight</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d946ef' }}>sponsorship</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>news</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>spoilers</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>insight</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d946ef' }}>sponsorship</span></a>
            </div>
 
          </div>
@@ -235,7 +235,7 @@ export default function Layout() {
             <LegoHeadIcon size={20} color="#100d07" />
           </div>
           <span className="hidden min-[400px]:block text-lg font-black tracking-tighter text-white">
-            BrickMarket
+            CardBrix
           </span>
         </Link>
 
@@ -271,7 +271,7 @@ export default function Layout() {
               {t('nav.auctions')}
             </NavLink>
             <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pink-400 font-extrabold' : 'text-stone-400 hover:text-pink-300'}`}>
-              🎮 {t('nav.skill_zone') || 'Skill Zone'}
+              {t('nav.skill_zone') || 'Puzzle Arena'}
             </NavLink>
             {user && (user.role === 'seller' || user.role === 'both') && (
               <>

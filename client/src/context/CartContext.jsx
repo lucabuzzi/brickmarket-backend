@@ -9,7 +9,7 @@ export function useCart() {
 export function CartProvider({ children }) {
   const [cart, setCart] = useState(() => {
     try {
-      const localData = localStorage.getItem('brickmarket_cart');
+      const localData = localStorage.getItem('cardbrix_cart');
       return localData ? JSON.parse(localData) : [];
     } catch {
       return [];
@@ -19,7 +19,7 @@ export function CartProvider({ children }) {
   const [cartIsAnimating, setCartIsAnimating] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('brickmarket_cart', JSON.stringify(cart));
+    localStorage.setItem('cardbrix_cart', JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (listing) => {

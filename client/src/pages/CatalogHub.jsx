@@ -80,7 +80,7 @@ export default function CatalogHub() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = 'Catalogo - Scegli il tuo gioco | BrickMarket';
+    document.title = 'Catalogo - Scegli il tuo gioco | CardBrix';
   }, []);
 
   return (
@@ -105,7 +105,7 @@ export default function CatalogHub() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter leading-[0.9] italic"
           >
-            {t('hubs.catalog.title_pre')} <span className="text-gold-500">BrickMarket</span>
+            {t('hubs.catalog.title_pre')} <span className="text-gold-500">CardBrix</span>
           </motion.h1>
 
           <motion.p

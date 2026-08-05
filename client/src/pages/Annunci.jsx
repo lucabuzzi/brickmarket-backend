@@ -39,7 +39,7 @@ export default function Annunci({ productType = 'lego', game = null }) {
   const backTo = productType === 'tcg' ? '/annunci/carte-collezionabili' : '/annunci';
 
   useEffect(() => {
-    document.title = `Annunci ${pageTitle} | BrickMarket`;
+    document.title = `Annunci ${pageTitle} | CardBrix`;
     let cancelled = false;
 
     const fetchListings = async () => {

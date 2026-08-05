@@ -17,7 +17,7 @@ export default function AnnunciHub() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = 'Annunci - Scegli la categoria | BrickMarket';
+    document.title = 'Annunci - Scegli la categoria | CardBrix';
   }, []);
 
   return (
@@ -42,7 +42,7 @@ export default function AnnunciHub() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter leading-[0.9] italic"
           >
-            {t('hubs.annunci.title_pre')} <span className="text-gold-500">BrickMarket</span>
+            {t('hubs.annunci.title_pre')} <span className="text-gold-500">CardBrix</span>
           </motion.h1>
 
           <motion.p

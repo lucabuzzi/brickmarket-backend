@@ -10,7 +10,7 @@ export default function CatalogComingSoon() {
   const game = getCatalogGame(slug);
 
   useEffect(() => {
-    if (game) document.title = `${game.name} - Prossimamente | BrickMarket`;
+    if (game) document.title = `${game.name} - Prossimamente | CardBrix`;
   }, [game]);
 
   // Unknown slug or an already-active game landing here by mistake: bounce to the hub.

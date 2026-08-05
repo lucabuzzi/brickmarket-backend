@@ -17,7 +17,7 @@ export default function AsteHub() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = 'Aste - Scegli la categoria | BrickMarket';
+    document.title = 'Aste - Scegli la categoria | CardBrix';
   }, []);
 
   return (
@@ -42,7 +42,7 @@ export default function AsteHub() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter leading-[0.9] italic"
           >
-            {t('hubs.aste.title_pre')} <span className="text-gold-500">BrickMarket</span>
+            {t('hubs.aste.title_pre')} <span className="text-gold-500">CardBrix</span>
           </motion.h1>
 
           <motion.p

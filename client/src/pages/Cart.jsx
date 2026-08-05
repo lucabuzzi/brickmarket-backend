@@ -68,7 +68,7 @@ export default function Cart() {
     try {
       const res = await fetch(apiUrl('/api/listings/checkout'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('brickmarket_token')}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('cardbrix_token')}` },
         body: JSON.stringify({ itemIds: cart.map(c => c.id), shippingSelections })
       });
       if (res.ok) {

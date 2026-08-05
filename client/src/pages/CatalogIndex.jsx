@@ -17,7 +17,7 @@ export default function CatalogIndex() {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    document.title = "Knowledge Vault - BrickMarket Catalog Terminal";
+    document.title = "Knowledge Vault - CardBrix Catalog Terminal";
     
     const fetchRecent = async () => {
       try {

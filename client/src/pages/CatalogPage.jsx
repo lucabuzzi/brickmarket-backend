@@ -20,10 +20,10 @@ export default function CatalogPage() {
         const res = await apiFetch(`/api/catalog/${setNum}`);
         setData(res);
         // SEO: set dynamic document title
-        document.title = `LEGO ${res.name} ${res.set_num} - Valore di Mercato e Dettagli | BrickMarket`;
+        document.title = `LEGO ${res.name} ${res.set_num} - Valore di Mercato e Dettagli | CardBrix`;
         
         // SEO: set dynamic meta description
-        const description = `Scopri il valore di mercato attuale (€${res.pricing.marketValue}), pezzi (${res.num_parts}) e anno di uscita (${res.year}) del set LEGO ${res.name} (${res.set_num}) su BrickMarket.`;
+        const description = `Scopri il valore di mercato attuale (€${res.pricing.marketValue}), pezzi (${res.num_parts}) e anno di uscita (${res.year}) del set LEGO ${res.name} (${res.set_num}) su CardBrix.`;
         let metaDesc = document.querySelector('meta[name="description"]');
         if (!metaDesc) {
           metaDesc = document.createElement('meta');

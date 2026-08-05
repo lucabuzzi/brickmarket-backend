@@ -21,7 +21,7 @@ export default function TcgCardPage({ gameSlug }) {
         setLoading(true);
         const res = await apiFetch(`${game.apiBase}/${cardId}`);
         setData(res);
-        document.title = `${res.name} - ${game.name} | BrickMarket`;
+        document.title = `${res.name} - ${game.name} | CardBrix`;
       } catch (err) {
         setError(t('tcg.card_load_error'));
       } finally {

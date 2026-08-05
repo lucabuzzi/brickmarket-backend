@@ -20,7 +20,7 @@ export default function TcgSearchResults({ gameSlug }) {
   useEffect(() => {
     if (!game || !query) return;
 
-    document.title = `${query} - ${game.name} | BrickMarket`;
+    document.title = `${query} - ${game.name} | CardBrix`;
 
     const fetchResults = async () => {
       setLoading(true);

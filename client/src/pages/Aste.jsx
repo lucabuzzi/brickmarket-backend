@@ -39,7 +39,7 @@ export default function Aste({ productType = 'lego', game = null }) {
   const backTo = productType === 'tcg' ? '/aste/carte-collezionabili' : '/aste';
 
   useEffect(() => {
-    document.title = `Aste ${pageTitle} | BrickMarket`;
+    document.title = `Aste ${pageTitle} | CardBrix`;
     let cancelled = false;
 
     const fetchAuctions = async () => {

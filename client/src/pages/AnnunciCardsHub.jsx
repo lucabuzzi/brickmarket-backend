@@ -17,7 +17,7 @@ export default function AnnunciCardsHub() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = 'Carte Collezionabili - Annunci | BrickMarket';
+    document.title = 'Carte Collezionabili - Annunci | CardBrix';
   }, []);
 
   return (

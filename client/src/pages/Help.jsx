@@ -187,7 +187,7 @@ export default function Help() {
           title={t('help.email_card_title')}
           desc={t('help.email_card_desc')}
           cta={t('help.email_card_cta')}
-          href="mailto:support@brickmarket.com"
+          href="mailto:support@cardbrix.com"
           color="text-gold-400 bg-gold-500/10 border-gold-500/20"
         />
         <QuickLinkCard

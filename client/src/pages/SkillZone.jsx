@@ -5,7 +5,7 @@ import JigsawPuzzle from '../components/JigsawPuzzle';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
-  Layers, Hammer, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, Flame
+  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,8 +15,9 @@ export default function SkillZone() {
   const navigate = useNavigate();
 
   // App Layout States
-  const [activeDivision, setActiveDivision] = useState('lego'); // lego | pokemon
-  const [activeTab, setActiveTab] = useState('lobby'); // lobby (contests) | auctions (live bids)
+  // Division switch buttons were removed from the UI; this is now fixed to its former
+  // default rather than stateful, since nothing sets it anymore.
+  const activeDivision = 'lego'; // lego | pokemon
 
   // Admin Upload form state
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
@@ -33,7 +34,6 @@ export default function SkillZone() {
 
   // Catalog Data Lists
   const [contests, setContests] = useState([]);
-  const [auctions, setAuctions] = useState([]);
   const [leaderboards, setLeaderboards] = useState({}); // key: contestId -> []
   
   // Game Session States
@@ -51,13 +51,8 @@ export default function SkillZone() {
   // Fetch all initial metadata
   const fetchCatalogData = async () => {
     try {
-      // 1. Contests
       const contData = await apiFetch('/api/contest/list');
       if (contData && contData.contests) setContests(contData.contests);
-
-      // 2. Auctions
-      const aucData = await apiFetch('/api/auctions');
-      if (aucData && aucData.auctions) setAuctions(aucData.auctions);
     } catch (err) {
       console.error('Error loading catalogs:', err);
     }
@@ -95,17 +90,6 @@ export default function SkillZone() {
       try {
         const message = JSON.parse(event.data);
         console.log('📡 WS Received event:', message);
-
-        if (message.type === 'BID_PLACED') {
-          const { auctionId, currentBid, highestBidderId, highestBidderName } = message.payload;
-          setAuctions(prev => prev.map(auc => {
-            if (auc.id === auctionId) {
-              return { ...auc, currentBid, highestBidderId, highestBidderName };
-            }
-            return auc;
-          }));
-          triggerSystemAlert(t('skill_zone.alerts.new_bid', { amount: currentBid }));
-        }
 
         if (message.type === 'SLOT_FILLED') {
           const { contestId, filledSlots, contestStatus } = message.payload;
@@ -270,42 +254,6 @@ export default function SkillZone() {
     }
   };
 
-  // Place Bid on Auction
-  const handlePlaceBid = async (auctionId, bidAmount) => {
-    if (!user) return;
-
-    try {
-      const data = await apiFetch('/api/auctions/bid', {
-        method: 'POST',
-        body: { auctionId, bidAmount }
-      });
-
-      refreshWallet();
-      fetchCatalogData();
-      triggerSystemSuccess(data.message);
-    } catch (err) {
-      triggerSystemAlert(err.message || t('skill_zone.alerts.bid_error'));
-    }
-  };
-
-  // Direct Buy Checkout (used by the auctions "Buy Instantly" action)
-  const handleDirectBuy = async (productId) => {
-    if (!user) return;
-
-    try {
-      const data = await apiFetch('/api/wallet/buy-product', {
-        method: 'POST',
-        body: { productId }
-      });
-
-      refreshWallet();
-      fetchCatalogData();
-      triggerSystemSuccess(data.message);
-    } catch (err) {
-      triggerSystemAlert(err.message || t('skill_zone.alerts.purchase_error'));
-    }
-  };
-
   // Admin jigsaw creation upload handler
   const handleCreateContestSubmit = async (e) => {
     e.preventDefault();
@@ -389,7 +337,6 @@ export default function SkillZone() {
 
   // Segment catalogs by category (LEGO vs Pokémon)
   const filteredContests = contests.filter(c => c.category === activeDivision);
-  const filteredAuctions = auctions.filter(a => a.category === activeDivision);
 
   return (
     <div className="min-h-screen pb-16 bg-[#05050a] text-stone-100 px-4 md:px-6 max-w-[1400px] mx-auto pt-6">
@@ -414,38 +361,12 @@ export default function SkillZone() {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-pink-400">
-              <Flame className="h-3.5 w-3.5 animate-pulse text-pink-500" /> {t('skill_zone.banner.badge')}
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black uppercase font-mono tracking-wider text-white mt-4">
+            <h1 className="text-2xl md:text-3xl font-black uppercase font-mono tracking-wider text-white">
               {t('skill_zone.banner.title')}
             </h1>
             <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-xl leading-relaxed">
               {t('skill_zone.banner.subtitle')}
             </p>
-          </div>
-
-          <div className="flex items-center gap-3 bg-black/40 p-1.5 rounded-xl border border-white/5 shrink-0 self-start md:self-auto">
-            <button
-              onClick={() => setActiveDivision('lego')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all duration-300 ${
-                activeDivision === 'lego'
-                  ? 'bg-gold-500 text-white font-extrabold shadow-lg shadow-gold-500/15'
-                  : 'text-stone-400 hover:text-white'
-              }`}
-            >
-              🧱 {t('skill_zone.division.lego')}
-            </button>
-            <button
-              onClick={() => setActiveDivision('pokemon')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all duration-300 ${
-                activeDivision === 'pokemon'
-                  ? 'bg-pink-500 text-white font-extrabold shadow-lg shadow-pink-500/15'
-                  : 'text-stone-400 hover:text-white'
-              }`}
-            >
-              🃏 {t('skill_zone.division.pokemon')}
-            </button>
           </div>
         </div>
       </div>
@@ -546,34 +467,7 @@ export default function SkillZone() {
           {!playingContest && (
             <>
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 mb-8 gap-4">
-                <div className="flex items-center gap-1 p-1 bg-black/40 rounded-lg border border-white/5 w-full sm:w-auto sm:max-w-sm">
-              <button
-                onClick={() => setActiveTab('lobby')}
-                className={`flex-1 sm:flex-none flex items-center justify-center space-x-1 sm:space-x-1.5 px-2 sm:px-4 py-2 rounded-md text-[10px] sm:text-xs font-bold uppercase transition-all duration-300 ${
-                  activeTab === 'lobby'
-                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/15'
-                    : 'text-stone-400 hover:text-white'
-                }`}
-              >
-                <Trophy className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">{t('skill_zone.tabs.arena_full')}</span>
-                <span className="sm:hidden">{t('skill_zone.tabs.arena_short')}</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('auctions')}
-                className={`flex-1 sm:flex-none flex items-center justify-center space-x-1 sm:space-x-1.5 px-2 sm:px-4 py-2 rounded-md text-[10px] sm:text-xs font-bold uppercase transition-all duration-300 ${
-                  activeTab === 'auctions'
-                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/15'
-                    : 'text-stone-400 hover:text-white'
-                }`}
-              >
-                <Hammer className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">{t('skill_zone.tabs.drops_full')}</span>
-                <span className="sm:hidden">{t('skill_zone.tabs.drops_short')}</span>
-              </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               {true && (
                 <button
                   onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
@@ -756,7 +650,6 @@ export default function SkillZone() {
           )}
 
           {/* ================= SKILL ZONE LOBBY ================= */}
-          {activeTab === 'lobby' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {filteredContests.length === 0 ? (
                 <div className="col-span-2 text-center py-20 border border-dashed border-white/5 rounded-xl bg-[#14120b]/10">
@@ -886,105 +779,6 @@ export default function SkillZone() {
                 })
               )}
             </div>
-          )}
-
-          {/* ================= LIVE AUCTIONS VIEW ================= */}
-          {activeTab === 'auctions' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAuctions.length === 0 ? (
-                <div className="col-span-3 text-center py-20 border border-dashed border-white/5 rounded-xl bg-[#14120b]/10">
-                  <Hammer className="h-12 w-12 text-stone-500 mx-auto mb-3" />
-                  <h3 className="font-bold text-white uppercase font-mono">{t('skill_zone.auctions.empty_title')}</h3>
-                  <p className="text-xs text-stone-400 mt-1">{t('skill_zone.auctions.empty_text')}</p>
-                </div>
-              ) : (
-                filteredAuctions.map(auc => {
-                  const timeLeft = Math.max(0, Math.round((new Date(auc.endsAt) - Date.now()) / 1000));
-                  const formatTimeRemaining = (seconds) => {
-                    if (seconds <= 0) return t('skill_zone.auctions.time_ended');
-                    const hrs = Math.floor(seconds / 3600);
-                    const mins = Math.floor((seconds % 3600) / 60);
-                    const secs = seconds % 60;
-                    return t('skill_zone.auctions.time_format', { h: hrs, m: mins, s: secs });
-                  };
-
-                  return (
-                    <div key={auc.id} className="bento-card border border-white/5 bg-[#14120b]/20 rounded-xl overflow-hidden hover:border-pink-500/30 transition-all duration-300 flex flex-col justify-between shadow-lg">
-                      
-                      {/* Image Header */}
-                      <div className="h-48 relative bg-black">
-                        <img 
-                          src={normalizeImageUrl(auc.imageUrl)} 
-                          alt={auc.title} 
-                          className="w-full h-full object-cover opacity-85"
-                        />
-                        <div className="absolute top-2 left-2 flex flex-col space-y-1">
-                          <span className="text-[9px] bg-black/80 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded font-bold font-mono">
-                            {auc.condition}
-                          </span>
-                          <span className="text-[9px] bg-black/80 text-gold-400 border border-gold-500/30 px-2 py-0.5 rounded font-bold font-mono">
-                            {t('skill_zone.auctions.value', { value: auc.marketValue })}
-                          </span>
-                        </div>
-
-                        {/* Live Ticker Clock */}
-                        <div className="absolute bottom-2 right-2 bg-black/80 px-2.5 py-1 rounded border border-red-500/30 text-pink-500 font-mono text-[10px] font-bold tracking-wider">
-                          ⏳ {formatTimeRemaining(timeLeft)}
-                        </div>
-                      </div>
-
-                      {/* Content Body */}
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-base font-extrabold text-white leading-tight uppercase font-mono">{auc.title}</h3>
-                          <p className="text-[10px] text-stone-400 mt-1 leading-snug">
-                            {auc.description || t('skill_zone.auctions.description_fallback')}
-                          </p>
-
-                          <div className="grid grid-cols-2 gap-4 mt-5 bg-black/30 p-3 rounded-lg border border-white/5 font-mono text-center">
-                            <div>
-                              <div className="text-[9px] uppercase text-stone-400 leading-none">{t('skill_zone.auctions.current_bid')}</div>
-                              <span className="text-gold-400 font-extrabold text-sm">{auc.currentBid} CR</span>
-                            </div>
-                            <div>
-                              <div className="text-[9px] uppercase text-stone-400 leading-none">{t('skill_zone.auctions.instant_purchase')}</div>
-                              <span className="text-gold-400 font-extrabold text-sm">{auc.buyNowPrice} CR</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bid placement inputs */}
-                        <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handlePlaceBid(auc.id, auc.currentBid + 10)}
-                              className="flex-1 py-2 border border-pink-500 hover:bg-pink-500/20 text-pink-400 hover:text-white rounded-lg font-bold font-mono text-[10px] uppercase transition-all duration-300 active-shrink"
-                            >
-                              {t('skill_zone.auctions.bid_10')}
-                            </button>
-                            <button
-                              onClick={() => handlePlaceBid(auc.id, auc.currentBid + 50)}
-                              className="flex-1 py-2 border border-pink-500 hover:bg-pink-500/20 text-pink-400 hover:text-white rounded-lg font-bold font-mono text-[10px] uppercase transition-all duration-300 active-shrink"
-                            >
-                              {t('skill_zone.auctions.bid_50')}
-                            </button>
-                          </div>
-
-                          <button
-                            onClick={() => handleDirectBuy(auc.productId)}
-                            className="w-full py-2 bg-gold-500 hover:bg-gold-400 text-white font-extrabold rounded-lg font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15 active-shrink"
-                          >
-                            {t('skill_zone.auctions.buy_instantly', { price: auc.buyNowPrice })}
-                          </button>
-                        </div>
-                      </div>
-
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
         </>
       )}
 

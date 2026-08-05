@@ -20,7 +20,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
 
   useEffect(() => {
     if (!game) return;
-    document.title = `${game.name} - Catalogo | BrickMarket`;
+    document.title = `${game.name} - Catalogo | CardBrix`;
 
     const fetchRecent = async () => {
       try {

@@ -17,7 +17,7 @@ export default function AsteCardsHub() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = 'Carte Collezionabili - Aste | BrickMarket';
+    document.title = 'Carte Collezionabili - Aste | CardBrix';
   }, []);
 
   return (

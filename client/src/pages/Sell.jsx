@@ -266,7 +266,7 @@ export default function Sell() {
     try {
       if (editId) {
         // Direct PATCH with FormData
-        const token = localStorage.getItem('brickmarket_token');
+        const token = localStorage.getItem('cardbrix_token');
         const res = await fetch(`${SERVER_URL}/api/listings/${editId}`, {
           method: 'PATCH',
           headers: { 'Authorization': `Bearer ${token}` },

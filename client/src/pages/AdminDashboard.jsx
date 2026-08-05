@@ -186,7 +186,7 @@ export default function AdminDashboard() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "brickmarket_users_crm.csv");
+    link.setAttribute("download", "cardbrix_users_crm.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

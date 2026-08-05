@@ -3,7 +3,7 @@
 // so this works from localhost, a LAN IP (e.g. viewing the site from a phone), or in production.
 export const SERVER_URL = '';
 export const API_BASE = `${SERVER_URL}/api`;
-export const TOKEN_STORAGE_KEY = 'brickmarket_token';
+export const TOKEN_STORAGE_KEY = 'cardbrix_token';
 export const AUTH_ENDPOINTS = {
   register: '/api/auth/register',
   login: '/api/auth/login',

@@ -79,7 +79,7 @@ export default function ForgotPassword() {
 
       <div style={{ marginTop: '2rem', textAlign: 'center', borderTop: '1px solid #292524', paddingTop: '1.5rem' }}>
         <p style={{ fontSize: '0.85rem', color: '#a8a29e' }}>
-          {t('auth.need_help')} <a href="mailto:support@brickmarket.com" style={{ color: '#d4af37' }}>support@brickmarket.com</a>
+          {t('auth.need_help')} <a href="mailto:support@cardbrix.com" style={{ color: '#d4af37' }}>support@cardbrix.com</a>
         </p>
       </div>
     </div>
