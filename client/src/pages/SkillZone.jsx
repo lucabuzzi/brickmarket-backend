@@ -14,11 +14,6 @@ export default function SkillZone() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // App Layout States
-  // Division switch buttons were removed from the UI; this is now fixed to its former
-  // default rather than stateful, since nothing sets it anymore.
-  const activeDivision = 'lego'; // lego | pokemon
-
   // Admin Upload form state
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
   const [newContestTitle, setNewContestTitle] = useState('');
@@ -335,8 +330,9 @@ export default function SkillZone() {
     }
   };
 
-  // Segment catalogs by category (LEGO vs Pokémon)
-  const filteredContests = contests.filter(c => c.category === activeDivision);
+  // Every open contest is shown here regardless of category — the LEGO/Pokémon
+  // division toggle was removed from the UI, so filtering by it would silently
+  // hide contests instead of just not letting users switch views.
 
   return (
     <div className="min-h-screen pb-16 bg-[#05050a] text-stone-100 px-4 md:px-6 max-w-[1400px] mx-auto pt-6">
@@ -651,14 +647,14 @@ export default function SkillZone() {
 
           {/* ================= SKILL ZONE LOBBY ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {filteredContests.length === 0 ? (
+              {contests.length === 0 ? (
                 <div className="col-span-2 text-center py-20 border border-dashed border-white/5 rounded-xl bg-[#14120b]/10">
                   <Trophy className="h-12 w-12 text-stone-500 mx-auto mb-3" />
                   <h3 className="font-bold text-white uppercase font-mono">{t('skill_zone.lobby.empty_title')}</h3>
                   <p className="text-xs text-stone-400 mt-1">{t('skill_zone.lobby.empty_text')}</p>
                 </div>
               ) : (
-                filteredContests.map(con => {
+                contests.map(con => {
                   const leaderboard = leaderboards[con.id] || [];
                   const isParticipating = leaderboard.some(p => p.userId === user.id);
 
