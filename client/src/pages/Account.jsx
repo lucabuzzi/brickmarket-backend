@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { Link, Navigate } from 'react-router-dom';
 import { apiPostForm } from '../api';
+import { useTranslation } from 'react-i18next';
 
 export default function Account() {
   const { user, loading, refreshMe } = useAuth();
+  const { t } = useTranslation();
   
   const [role, setRole] = useState('buyer');
   const [city, setCity] = useState('');
@@ -25,7 +27,7 @@ export default function Account() {
     }
   }, [user]);
 
-  if (loading) return <p className="muted">Caricamento profilo…</p>;
+  if (loading) return <p className="muted">{t('profile.account_loading')}</p>;
   if (!user) return <Navigate to="/login" replace state={{ from: { pathname: '/account' } }} />;
 
   const handleAvatarChange = (e) => {
@@ -56,10 +58,10 @@ export default function Account() {
       await apiPostForm('/api/auth/me', formData, { method: 'PATCH' });
       await refreshMe(); // Aggiorna il contesto e fa apparire/scomparire il bottone Nuovo Annuncio
       
-      setSuccess('Profilo aggiornato con successo!');
+      setSuccess(t('profile.update_success'));
       setAvatarFile(null);
     } catch (err) {
-      setError(err.message || 'Errore durante l\'aggiornamento del profilo');
+      setError(err.message || t('profile.update_error'));
     } finally {
       setSubmitting(false);
     }
@@ -67,7 +69,7 @@ export default function Account() {
 
   return (
     <div className="page narrow">
-      <h1>Il tuo Profilo</h1>
+      <h1>{t('profile.account_title')}</h1>
       
       <form className="form" onSubmit={handleSubmit}>
         
@@ -76,12 +78,12 @@ export default function Account() {
             {avatarPreview ? (
               <img src={avatarPreview} alt="Avatar preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <span style={{ color: '#888', fontSize: '0.8rem' }}>Nessuna<br/>Immagine</span>
+              <span style={{ color: '#888', fontSize: '0.8rem' }}>{t('profile.no_avatar')}</span>
             )}
           </div>
           <div>
             <label>
-              <span className="btn btn--small btn--ghost" style={{ cursor: 'pointer' }}>Carica Avatar</span>
+              <span className="btn btn--small btn--ghost" style={{ cursor: 'pointer' }}>{t('profile.upload_avatar')}</span>
               <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleAvatarChange} />
             </label>
           </div>
@@ -89,27 +91,27 @@ export default function Account() {
 
         <dl className="facts" style={{ marginBottom: '1rem', padding: '1rem', background: '#1c1c1c', borderRadius: '8px' }}>
           <div>
-            <dt>Email</dt>
+            <dt>{t('profile.email_label')}</dt>
             <dd>{user.email}</dd>
           </div>
           <div>
-            <dt>Username</dt>
+            <dt>{t('profile.username_label')}</dt>
             <dd>{user.username}</dd>
           </div>
         </dl>
 
         <label>
-          Ruolo
+          {t('profile.role_label')}
           <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="buyer">Acquirente</option>
-            <option value="seller">Venditore</option>
-            <option value="both">Entrambi</option>
+            <option value="buyer">{t('profile.role_buyer')}</option>
+            <option value="seller">{t('profile.role_seller')}</option>
+            <option value="both">{t('profile.role_both')}</option>
           </select>
         </label>
 
         <label>
-          Nome / Ragione Sociale
-          <input 
+          {t('profile.full_name_label')}
+          <input
             type="text" 
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -118,8 +120,8 @@ export default function Account() {
 
         {(role === 'seller' || role === 'both') && (
           <label>
-            Città (opzionale)
-            <input 
+            {t('auth.city')} {t('review.comment_optional')}
+            <input
               type="text" 
               value={city}
               onChange={(e) => setCity(e.target.value)}
@@ -131,12 +133,12 @@ export default function Account() {
         {success && <p className="success-banner" style={{ color: '#4ade80', background: '#14532d', padding: '0.75rem', borderRadius: '0.25rem', marginTop: '1rem' }}>{success}</p>}
 
         <button type="submit" className="btn btn--primary" disabled={submitting} style={{ marginTop: '1rem' }}>
-          {submitting ? 'Caricamento...' : 'Salva Modifiche'}
+          {submitting ? t('ui.loading') : t('profile.save_changes_button')}
         </button>
       </form>
-      
+
       <p className="muted" style={{ marginTop: '2rem' }}>
-        <Link to="/">← Torna alla Home</Link>
+        <Link to="/">← {t('profile.back_to_home')}</Link>
       </p>
     </div>
   );

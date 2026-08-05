@@ -11,7 +11,8 @@ const auth = require('../middleware/auth');
 router.get('/list', async (req, res) => {
   try {
     const result = await query(
-      `SELECT username, avatar_url, rating_avg, rating_count, address_country as country, city, is_verified, is_pro
+      `SELECT username, avatar_url, rating_avg, rating_count, address_country as country, city, is_verified, is_pro,
+              seller_type, company_name
        FROM users
        WHERE address_country IS NOT NULL
        ORDER BY address_country ASC, rating_avg DESC`
@@ -33,7 +34,7 @@ router.get('/profile/:username', async (req, res) => {
     // 1. Fetch user data (expose id so frontend can call /api/reviews/user/:id)
     const userRes = await query(
       `SELECT id, username, avatar_url, rating_avg, rating_count, address_country, city,
-              is_verified, is_pro, bio, created_at
+              is_verified, is_pro, bio, created_at, seller_type, company_name
        FROM users
        WHERE username = $1`,
       [username]

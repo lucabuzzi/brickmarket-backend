@@ -26,7 +26,7 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return <AlertCircle size={18} className="text-red-400" />;
       default:
-        return <Info size={18} className="text-sky-400" />;
+        return <Info size={18} className="text-gold-400" />;
     }
   };
 
@@ -37,7 +37,7 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return 'border-red-500/50';
       default:
-        return 'border-sky-500/50';
+        return 'border-gold-500/50';
     }
   };
 
@@ -48,13 +48,13 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return 'shadow-red-500/10';
       default:
-        return 'shadow-sky-500/10';
+        return 'shadow-gold-500/10';
     }
   };
 
   return (
     <div
-      className={`relative flex items-start gap-3 w-full max-w-sm bg-[#0f172a]/90 backdrop-blur-md border ${getBorderColor()} rounded-xl p-4 mb-3 shadow-lg ${getShadowColor()} pointer-events-auto transition-all duration-300 ease-in-out origin-bottom ${
+      className={`relative flex items-start gap-3 w-full max-w-sm bg-[#120f0a]/90 backdrop-blur-md border ${getBorderColor()} rounded-xl p-4 mb-3 shadow-lg ${getShadowColor()} pointer-events-auto transition-all duration-300 ease-in-out origin-bottom ${
         isClosing ? 'opacity-0 scale-95 translate-x-4' : 'opacity-100 scale-100 translate-x-0'
       }`}
       style={{
@@ -67,13 +67,13 @@ const Toast = ({ toast, removeToast }) => {
       </div>
       <button
         onClick={handleClose}
-        className="shrink-0 text-slate-400 hover:text-white transition-colors p-1 -mr-2 -mt-2 rounded-lg hover:bg-slate-800/50"
+        className="shrink-0 text-stone-400 hover:text-white transition-colors p-1 -mr-2 -mt-2 rounded-lg hover:bg-stone-800/50"
       >
         <X size={16} />
       </button>
 
       {/* Subtle background glow */}
-      <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-2xl pointer-events-none ${toast.type === 'error' ? 'bg-red-500/10' : toast.type === 'success' ? 'bg-emerald-500/10' : 'bg-sky-500/10'}`}></div>
+      <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-2xl pointer-events-none ${toast.type === 'error' ? 'bg-red-500/10' : toast.type === 'success' ? 'bg-emerald-500/10' : 'bg-gold-500/10'}`}></div>
 
       <style>{`
         @keyframes slideIn {

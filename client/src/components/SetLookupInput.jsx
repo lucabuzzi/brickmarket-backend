@@ -14,10 +14,12 @@
 
 import { useState, useRef } from 'react';
 import { Search, Loader2, CheckCircle, AlertCircle, X, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../api';
 import MarketValueBadge from './MarketValueBadge';
 
 export default function SetLookupInput({ onSetFound, onClear, condition = '', className = '' }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | found | not_found | error
   const [foundSet, setFoundSet] = useState(null);
@@ -42,10 +44,10 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
     } catch (err) {
       if (err.status === 404) {
         setStatus('not_found');
-        setErrorMsg(err.message || `Set "${trimmed}" non trovato.`);
+        setErrorMsg(err.message || t('set_lookup.not_found_error', { setNum: trimmed }));
       } else {
         setStatus('error');
-        setErrorMsg('Errore di connessione. Puoi inserire i dati manualmente.');
+        setErrorMsg(t('set_lookup.connection_error'));
       }
     }
   };
@@ -84,10 +86,10 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
     <div className={`space-y-3 ${className}`}>
       {/* Label */}
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-          Ricerca Set LEGO
+        <span className="text-xs font-bold uppercase tracking-widest text-stone-400">
+          {t('set_lookup.label')}
         </span>
-        <span className="text-[10px] text-slate-600 italic">(opzionale)</span>
+        <span className="text-[10px] text-stone-600 italic">{t('set_lookup.optional')}</span>
       </div>
 
       {/* Input Row */}
@@ -98,15 +100,15 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
             id="set-lookup-input"
             value={query}
             onChange={handleInputChange}
-            placeholder="Inserisci numero set (es. 10281)"
+            placeholder={t('set_lookup.placeholder')}
             maxLength={20}
-            className="w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-slate-500 outline-none focus:border-cyan-500/70 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-200"
+            className="w-full bg-stone-900/60 border border-stone-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-stone-500 outline-none focus:border-gold-500/70 focus:ring-2 focus:ring-gold-500/20 transition-all duration-200"
           />
           {query && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white transition-colors"
             >
               <X size={14} />
             </button>
@@ -116,31 +118,31 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
         <button
           type="submit"
           disabled={!query.trim() || status === 'loading'}
-          className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all duration-200 shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all duration-200 shrink-0"
         >
           {status === 'loading' ? (
             <Loader2 size={16} className="animate-spin" />
           ) : (
             <Search size={16} />
           )}
-          <span className="hidden sm:inline">Cerca</span>
+          <span className="hidden sm:inline">{t('set_lookup.search_button')}</span>
         </button>
       </form>
 
       {/* Status Feedback */}
       {status === 'loading' && (
-        <div className="flex items-center gap-2 text-xs text-slate-400 animate-pulse">
-          <Loader2 size={13} className="animate-spin text-cyan-400" />
-          <span>Ricerca in corso su Rebrickable...</span>
+        <div className="flex items-center gap-2 text-xs text-stone-400 animate-pulse">
+          <Loader2 size={13} className="animate-spin text-gold-400" />
+          <span>{t('set_lookup.searching')}</span>
         </div>
       )}
 
       {status === 'not_found' && (
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-gold-500/10 border border-gold-500/30 text-xs text-gold-300">
           <AlertCircle size={14} className="shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Set non trovato. </span>
-            <span className="text-amber-400/80">Puoi comunque inserire i dettagli manualmente qui sotto.</span>
+            <span className="font-bold">{t('set_lookup.not_found_title')}</span>
+            <span className="text-gold-400/80">{t('set_lookup.not_found_subtitle')}</span>
           </div>
         </div>
       )}
@@ -160,11 +162,11 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
             <img
               src={foundSet.img_url}
               alt={foundSet.name}
-              className="w-16 h-16 object-contain rounded-lg bg-slate-800 border border-slate-700 shrink-0"
+              className="w-16 h-16 object-contain rounded-lg bg-stone-800 border border-stone-700 shrink-0"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 shrink-0 flex items-center justify-center text-slate-600 text-xs">
+            <div className="w-16 h-16 rounded-lg bg-stone-800 border border-stone-700 shrink-0 flex items-center justify-center text-stone-600 text-xs">
               N/A
             </div>
           )}
@@ -174,20 +176,20 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle size={13} className="text-emerald-400 shrink-0" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                Set trovato!
+                {t('set_lookup.found_title')}
               </span>
-              <span className="text-[10px] text-slate-600 ml-auto">
-                {foundSet.source === 'cache' ? '📦 cache' : '🌐 API'}
+              <span className="text-[10px] text-stone-600 ml-auto">
+                {foundSet.source === 'cache' ? t('set_lookup.cache_source') : t('set_lookup.api_source')}
               </span>
             </div>
             <p className="text-sm font-bold text-white truncate">{foundSet.name}</p>
-            <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-400">
+            <div className="flex items-center gap-3 mt-1 text-[11px] text-stone-400">
               <span>{foundSet.set_num}</span>
               {foundSet.year && <span>·  {foundSet.year}</span>}
-              {foundSet.num_parts && <span>· {foundSet.num_parts.toLocaleString()} pz</span>}
+              {foundSet.num_parts && <span>· {foundSet.num_parts.toLocaleString()} {t('set_lookup.pieces_suffix')}</span>}
             </div>
             <p className="text-[11px] text-emerald-300/70 mt-1">
-              I campi del form sono stati precompilati ↓
+              {t('set_lookup.prefilled_note')}
             </p>
           </div>
 
@@ -197,8 +199,8 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
               href={foundSet.rebrickable_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-cyan-400 transition-colors shrink-0"
-              title="Vedi su Rebrickable"
+              className="text-stone-500 hover:text-gold-400 transition-colors shrink-0"
+              title={t('set_lookup.rebrickable_link_title')}
             >
               <ExternalLink size={14} />
             </a>

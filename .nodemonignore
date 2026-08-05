@@ -1,0 +1,4 @@
+client/*
+uploads/*
+node_modules/*
+.git/*

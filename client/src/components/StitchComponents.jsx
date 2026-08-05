@@ -17,11 +17,11 @@ function cn(...inputs) {
 export const StitchCard = ({ children, className, glowColor = 'blue', onClick, flash = false }) => {
   const shouldReduceMotion = useReducedMotion();
   const glowStyles = {
-    blue: 'hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] border-blue-500/20',
+    blue: 'hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] border-gold-500/20',
     emerald: 'hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] border-emerald-500/20',
-    amber: 'hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] border-amber-500/20',
+    amber: 'hover:shadow-[0_0_20px_rgba(228,200,115,0.15)] border-gold-500/20',
     rose: 'hover:shadow-[0_0_20px_rgba(244,63,94,0.15)] border-rose-500/20',
-    purple: 'hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] border-purple-500/20',
+    purple: 'hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] border-gold-500/20',
   };
 
   return (
@@ -33,7 +33,7 @@ export const StitchCard = ({ children, className, glowColor = 'blue', onClick, f
       animate={flash && !shouldReduceMotion ? { borderColor: 'rgba(255, 255, 255, 0.1)', borderWidth: '1px' } : {}}
       onClick={onClick}
       className={cn(
-        'relative overflow-hidden rounded-2xl border bg-slate-900/40 p-6 backdrop-blur-xl transition-shadow duration-500',
+        'relative overflow-hidden rounded-2xl border bg-stone-900/40 p-6 backdrop-blur-xl transition-shadow duration-500',
         glowStyles[glowColor] || glowStyles.blue,
         onClick && 'cursor-pointer',
         className
@@ -160,9 +160,9 @@ export const StitchBackground = () => {
   }, []); // Array di dipendenze vuoto per inizializzazione singola
 
   return (
-    <div className="fixed inset-0 -z-10 bg-[#020617] overflow-hidden">
+    <div className="fixed inset-0 -z-10 bg-[#050402] overflow-hidden">
       {/* Animated Gradient Grids (Noir style) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.05),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,175,55,0.06),transparent_50%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
     </div>
   );

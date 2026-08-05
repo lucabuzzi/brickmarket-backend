@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const FAQItem = ({ question, answer }) => {
@@ -44,61 +45,26 @@ const FAQItem = ({ question, answer }) => {
 };
 
 export default function FAQ() {
+  const { t } = useTranslation();
   const faqs = [
-    {
-      question: "Who can use the marketplace?",
-      answer: "All adults can register. You can create an account as a buyer, a seller, or both."
-    },
-    {
-      question: "Can I sell only original LEGO sets?",
-      answer: "The marketplace is primarily designed for original LEGO products. Any compatible products must be clearly labeled as such in the description."
-    },
-    {
-      question: "How do auctions work?",
-      answer: "The seller sets a starting price and a duration. Buyers place binding bids. When the auction expires, the highest bidder wins, provided the reserve price (if any) is met."
-    },
-    {
-      question: "What is a reserve price?",
-      answer: "It is the minimum amount the seller is willing to accept. If bids do not reach this amount, the item will not be sold."
-    },
-    {
-      question: "Can I use 'Buy It Now'?",
-      answer: "If the seller enables it, you can purchase the product immediately at the indicated price, closing the auction."
-    },
-    {
-      question: "How do payments work?",
-      answer: "Payments are handled through secure methods supported by the platform (e.g., Stripe, PayPal)."
-    },
-    {
-      question: "Does the marketplace charge a commission?",
-      answer: "Yes, a commission is deducted from each sale, which is visible to the seller before publishing the listing."
-    },
-    {
-      question: "Who handles shipping?",
-      answer: "Shipping is the seller's responsibility. The buyer will receive tracking information, if available."
-    },
-    {
-      question: "What should I do if the product arrives damaged?",
-      answer: "Contact the seller immediately through the platform. If you cannot reach an agreement, you can open a dispute in the 'Support' section."
-    },
-    {
-      question: "Can I leave a review?",
-      answer: "Yes, after every transaction, you can leave a truthful and respectful review of the seller."
-    },
-    {
-      question: "Can I have multiple accounts?",
-      answer: "No, creating multiple accounts to bypass rules or manipulate auctions/reviews is not allowed."
-    },
-    {
-      question: "How is my personal data handled?",
-      answer: "Your data is processed according to the Privacy Policy available on the site, in compliance with current regulations."
-    }
+    { question: t('faq.q1_question'), answer: t('faq.q1_answer') },
+    { question: t('faq.q2_question'), answer: t('faq.q2_answer') },
+    { question: t('faq.q3_question'), answer: t('faq.q3_answer') },
+    { question: t('faq.q4_question'), answer: t('faq.q4_answer') },
+    { question: t('faq.q5_question'), answer: t('faq.q5_answer') },
+    { question: t('faq.q6_question'), answer: t('faq.q6_answer') },
+    { question: t('faq.q7_question'), answer: t('faq.q7_answer') },
+    { question: t('faq.q8_question'), answer: t('faq.q8_answer') },
+    { question: t('faq.q9_question'), answer: t('faq.q9_answer') },
+    { question: t('faq.q10_question'), answer: t('faq.q10_answer') },
+    { question: t('faq.q11_question'), answer: t('faq.q11_answer') },
+    { question: t('faq.q12_question'), answer: t('faq.q12_answer') },
   ];
 
   return (
     <div className="page" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
-      <h2 style={{ fontSize: '2rem', marginBottom: '2.5rem', textAlign: 'center' }}>FAQ – Domande frequenti</h2>
-      
+      <h2 style={{ fontSize: '2rem', marginBottom: '2.5rem', textAlign: 'center' }}>{t('faq.title')}</h2>
+
       <div style={{ marginBottom: '3rem' }}>
         {faqs.map((faq, index) => (
           <FAQItem key={index} question={faq.question} answer={faq.answer} />
@@ -106,19 +72,19 @@ export default function FAQ() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}>
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="btn btn--primary"
-          style={{ 
-            padding: '0.75rem 2rem', 
-            fontSize: '1rem', 
+          style={{
+            padding: '0.75rem 2rem',
+            fontSize: '1rem',
             fontWeight: 'bold',
             borderRadius: '12px',
             textDecoration: 'none',
             display: 'inline-block'
           }}
         >
-          Back to Home
+          {t('ui.back_to_home')}
         </Link>
       </div>
     </div>

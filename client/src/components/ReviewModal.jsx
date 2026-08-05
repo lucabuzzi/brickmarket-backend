@@ -12,10 +12,12 @@
 
 import { useState } from 'react';
 import { X, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiFetch, normalizeImageUrl } from '../api';
 import BrickRating from './BrickRating';
 
 export default function ReviewModal({ order, onClose, onSubmitted }) {
+  const { t } = useTranslation();
   const [rating, setRating]     = useState(0);
   const [comment, setComment]   = useState('');
   const [status, setStatus]     = useState('idle'); // idle | submitting | success | error
@@ -28,7 +30,7 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (rating === 0) {
-      setErrorMsg('Seleziona almeno 1 mattoncino per procedere.');
+      setErrorMsg(t('review.rating_required_error'));
       return;
     }
     setStatus('submitting');
@@ -45,7 +47,7 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
       }, 2000);
     } catch (err) {
       setStatus('error');
-      setErrorMsg(err.message || 'Errore durante l\'invio. Riprova.');
+      setErrorMsg(err.message || t('review.submit_error'));
     }
   }
 
@@ -69,8 +71,8 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: '480px',
-          backgroundColor: '#0f172a',
-          border: '1px solid #1e293b',
+          backgroundColor: '#120f0a',
+          border: '1px solid #292524',
           borderRadius: '20px',
           boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
           overflow: 'hidden',
@@ -81,24 +83,24 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid #1e293b',
-          background: 'linear-gradient(135deg, rgba(56,189,248,0.05) 0%, transparent 100%)',
+          borderBottom: '1px solid #292524',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.05) 0%, transparent 100%)',
         }}>
           <div>
-            <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.1em', color: '#38bdf8', textTransform: 'uppercase' }}>
-              Lascia un Feedback
+            <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.1em', color: '#d4af37', textTransform: 'uppercase' }}>
+              {t('review.title')}
             </p>
             <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#f8fafc' }}>
-              Com'è andata?
+              {t('review.subtitle')}
             </h2>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(30,41,59,0.8)', border: '1px solid #334155',
+              background: 'rgba(22, 19, 14,0.8)', border: '1px solid #44403c',
               borderRadius: '8px', width: '34px', height: '34px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#94a3b8', cursor: 'pointer',
+              color: '#a8a29e', cursor: 'pointer',
             }}
           >
             <X size={16} />
@@ -112,16 +114,16 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: '1rem',
             padding: '1rem', borderRadius: '12px',
-            backgroundColor: '#1e293b', border: '1px solid #334155',
+            backgroundColor: '#292524', border: '1px solid #44403c',
             marginBottom: '1.5rem',
           }}>
             {/* Avatar */}
             <div style={{
               width: '52px', height: '52px', borderRadius: '50%',
-              backgroundColor: '#334155', overflow: 'hidden', flexShrink: 0,
+              backgroundColor: '#44403c', overflow: 'hidden', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.4rem', fontWeight: '700', color: '#94a3b8',
-              border: '2px solid #475569',
+              fontSize: '1.4rem', fontWeight: '700', color: '#a8a29e',
+              border: '2px solid #57534e',
             }}>
               {avatarSrc
                 ? <img src={avatarSrc} alt={counterpart_username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -133,8 +135,8 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
               <p style={{ margin: 0, fontWeight: '800', color: '#f8fafc', fontSize: '1rem' }}>
                 {counterpart_username}
               </p>
-              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {listing_set_number && <span style={{ color: '#38bdf8', marginRight: '0.4rem' }}>{listing_set_number}</span>}
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: '#78716c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {listing_set_number && <span style={{ color: '#d4af37', marginRight: '0.4rem' }}>{listing_set_number}</span>}
                 {listing_title}
               </p>
             </div>
@@ -147,8 +149,8 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
               gap: '0.75rem', padding: '2rem 0', textAlign: 'center',
             }}>
               <CheckCircle size={48} color="#10b981" />
-              <p style={{ margin: 0, fontWeight: '700', color: '#f8fafc', fontSize: '1.1rem' }}>Recensione inviata!</p>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>Grazie per il tuo feedback.</p>
+              <p style={{ margin: 0, fontWeight: '700', color: '#f8fafc', fontSize: '1.1rem' }}>{t('review.success_title')}</p>
+              <p style={{ margin: 0, color: '#78716c', fontSize: '0.85rem' }}>{t('review.success_subtitle')}</p>
             </div>
           )}
 
@@ -156,42 +158,42 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
             <>
               {/* Star Rating */}
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                  Il tuo voto
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#a8a29e', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                  {t('review.your_rating')}
                 </label>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <BrickRating value={rating} interactive onChange={setRating} />
                 </div>
                 {rating > 0 && (
                   <p style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: rating >= 4 ? '#10b981' : rating >= 3 ? '#eab308' : '#f87171', fontWeight: '600' }}>
-                    {['', 'Pessimo', 'Scarso', 'Nella media', 'Ottimo!', 'Eccellente! ⭐'][rating]}
+                    {t(`review.rating_${rating}`)}
                   </p>
                 )}
               </div>
 
               {/* Comment */}
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                  Commento <span style={{ color: '#475569', fontWeight: '400', textTransform: 'none' }}>(opzionale)</span>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#a8a29e', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  {t('review.comment_label')} <span style={{ color: '#57534e', fontWeight: '400', textTransform: 'none' }}>{t('review.comment_optional')}</span>
                 </label>
                 <textarea
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   maxLength={1000}
                   rows={3}
-                  placeholder={`Condividi la tua esperienza con ${counterpart_username}...`}
+                  placeholder={t('review.comment_placeholder', { username: counterpart_username })}
                   style={{
                     width: '100%', boxSizing: 'border-box',
                     padding: '0.75rem 1rem', borderRadius: '10px',
-                    backgroundColor: '#1e293b', border: '1px solid #334155',
+                    backgroundColor: '#292524', border: '1px solid #44403c',
                     color: '#f8fafc', fontSize: '0.9rem', lineHeight: '1.5',
                     resize: 'vertical', outline: 'none', fontFamily: 'inherit',
                     transition: 'border-color 0.2s',
                   }}
-                  onFocus={e => e.target.style.borderColor = '#38bdf8'}
-                  onBlur={e => e.target.style.borderColor = '#334155'}
+                  onFocus={e => e.target.style.borderColor = '#d4af37'}
+                  onBlur={e => e.target.style.borderColor = '#44403c'}
                 />
-                <p style={{ textAlign: 'right', margin: '0.25rem 0 0 0', fontSize: '0.65rem', color: '#475569' }}>
+                <p style={{ textAlign: 'right', margin: '0.25rem 0 0 0', fontSize: '0.65rem', color: '#57534e' }}>
                   {comment.length}/1000
                 </p>
               </div>
@@ -215,19 +217,19 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
                 disabled={status === 'submitting'}
                 style={{
                   width: '100%', padding: '0.9rem',
-                  backgroundColor: rating > 0 ? '#38bdf8' : '#1e293b',
-                  border: `1px solid ${rating > 0 ? '#38bdf8' : '#334155'}`,
-                  borderRadius: '12px', color: rating > 0 ? '#0f172a' : '#475569',
+                  backgroundColor: rating > 0 ? '#d4af37' : '#292524',
+                  border: `1px solid ${rating > 0 ? '#d4af37' : '#44403c'}`,
+                  borderRadius: '12px', color: rating > 0 ? '#120f0a' : '#57534e',
                   fontWeight: '800', fontSize: '0.95rem', cursor: rating > 0 ? 'pointer' : 'default',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                   transition: 'all 0.2s',
-                  boxShadow: rating > 0 ? '0 4px 16px rgba(56,189,248,0.25)' : 'none',
+                  boxShadow: rating > 0 ? '0 4px 16px rgba(212,175,55,0.25)' : 'none',
                 }}
               >
                 {status === 'submitting' ? (
-                  <span style={{ opacity: 0.7 }}>Invio in corso...</span>
+                  <span style={{ opacity: 0.7 }}>{t('review.submitting')}</span>
                 ) : (
-                  <><Send size={16} /> Invia Recensione</>
+                  <><Send size={16} /> {t('review.submit_button')}</>
                 )}
               </button>
             </>

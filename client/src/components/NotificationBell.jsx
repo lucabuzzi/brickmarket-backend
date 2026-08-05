@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import { apiFetch } from '../api';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -85,7 +85,7 @@ export default function NotificationBell({ onNewNotification }) {
           <span style={{
             position: 'absolute', top: '2px', right: '4px',
             width: '10px', height: '10px', backgroundColor: '#ef4444', 
-            borderRadius: '50%', border: '2px solid #0f172a'
+            borderRadius: '50%', border: '2px solid #120f0a'
           }} />
         )}
       </button>
@@ -93,25 +93,25 @@ export default function NotificationBell({ onNewNotification }) {
       {isOpen && (
         <div style={{
           position: 'absolute', top: '45px', right: '0', width: '320px',
-          backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px',
+          backgroundColor: '#292524', border: '1px solid #44403c', borderRadius: '8px',
           boxShadow: '0 10px 25px rgba(0,0,0,0.5)', zIndex: 50, padding: '1rem',
           maxHeight: '400px', overflowY: 'auto',
           animation: 'fadeIn 0.2s ease-out'
         }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: '#fff', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
+          <h4 style={{ margin: '0 0 1rem 0', color: '#fff', borderBottom: '1px solid #44403c', paddingBottom: '0.5rem' }}>
             Notifiche
           </h4>
           {notifications.length === 0 ? (
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>Nessuna nuova notifica.</p>
+            <p style={{ color: '#a8a29e', fontSize: '0.9rem', margin: 0 }}>{t('notifications.empty')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {notifications.map(n => (
                 <Link to={`/product/${n.listing_id}`} key={n.id} style={{ display: 'block', textDecoration: 'none' }} onClick={() => setIsOpen(false)}>
-                  <div style={{ backgroundColor: '#0f172a', padding: '0.75rem', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
+                  <div style={{ backgroundColor: '#120f0a', padding: '0.75rem', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
                     <p style={{ margin: '0 0 0.25rem 0', color: '#fff', fontSize: '0.95rem' }}>
                       {t(n.message_key, { item: n.listing_title })}
                     </p>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#78716c' }}>
                       {new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </span>
                   </div>

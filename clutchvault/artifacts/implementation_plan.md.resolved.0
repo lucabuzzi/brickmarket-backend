@@ -1,0 +1,66 @@
+# Auction System Phase 3 - Real-Time Engagement
+
+This plan outlines the architecture for introducing high-engagement features: Outbid Notifications, a My Bids (Le Mie Offerte) dashboard for users, and real-time polling to create a high-pressure auction environment.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Since we use polling instead of websockets currently, the notification bell will refresh every 10 seconds. When the client detects a new notification, it will display a toast popup. Do you approve this polling frequency (10 seconds) for real-time responsiveness?
+
+## Proposed Changes
+
+### Database Layer
+A new script `src/db/migrate_notifications.sql` will be executed to create the necessary persistence layer.
+
+#### [NEW] `notifications` table
+Create a postgres table linking `user_id`, `listing_id`, `message_key` (for i18n), and `is_read` to track Outbid events securely.
+
+---
+
+### Backend API
+
+#### [MODIFY] `src/routes/listings.js`
+In the `POST /:id/bid` route, before inserting the new bid:
+- Calculate the `previous_highest_bidder`.
+- If the new bid outbids them, `INSERT INTO notifications` for the previous user.
+
+#### [NEW] `src/routes/notifications.js`
+Create API endpoints to `GET /` unread notifications and `POST /:id/read` to mark as read. Wire this new route into `server.js`.
+
+#### [MODIFY] `src/routes/users.js`
+Add `GET /bids` to fetch all listings the user has participated in. The route will cross-check the user's bids against the `listings.highest_bidder` to tag each listing with dynamic statuses: `winning`, `outbid`, `lost`, or `won`.
+
+---
+
+### Frontend UI
+
+#### [MODIFY] `client/src/locales/*.json`
+Add the new i18n keys for 5 languages: `notifications.outbid`, `profile.my_bids`, `auction.winning`, `auction.lost`.
+
+#### [NEW] `client/src/components/NotificationBell.jsx`
+A Bell 🔔 icon with a flashing red dot overlay. It polls `GET /api/notifications` every 10 seconds. When new outbids are detected, it triggers a dynamic Toast notification (`notifica a scomparsa`).
+
+#### [MODIFY] `client/src/components/Layout.jsx`
+Mount the `NotificationBell` exactly next to the Cart in the top navigation bar.
+
+#### [MODIFY] `client/src/pages/Profile.jsx`
+Add the "Le Mie Offerte" tab. Render the list of bidded items with visual badges:
+- **Green Border/Badge**: "Stai vincendo!"
+- **Red Border/Badge**: "Offerta superata!" (Hyperlinked back to the auction to encourage rapid re-bidding).
+
+## Open Questions
+
+> [!WARNING]
+> Do you want the "Le Mie Offerte" (My Bids) tab to replace "I Miei Acquisti" (My Purchases) on the profile screen, or should they all stack together as standard vertical sections? By default, I will stack them vertically.
+
+## Verification Plan
+
+### Automated Tests
+- N/A
+
+### Manual Verification
+1. Log into two separate accounts simultaneously (e.g. Chrome and Edge).
+2. Place a bid on Account A.
+3. Outbid Account A using Account B.
+4. Verify Account A receives the 🔔 Notification Red Dot and a live Toast pop-up within 10 seconds.
+5. Check Account A's Profile -> "Le Mie Offerte", ensuring the item shows "Offerta superata!" (Outbid) in red.

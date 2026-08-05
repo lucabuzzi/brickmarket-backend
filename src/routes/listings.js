@@ -22,6 +22,9 @@ function runUpload(req, res) {
 const LISTING_TYPES_DB = ['used', 'sealed', 'moc', 'auction'];
 /** Alias legacy ancora accettato in input, normalizzato prima dell'INSERT */
 const LISTING_TYPE_LEGACY_ALIASES = ['fixed'];
+/** Valori ammessi per la categoria di prodotto e, se product_type='tcg', per il gioco specifico */
+const PRODUCT_TYPES = ['lego', 'funko', 'tcg'];
+const TCG_GAMES = ['pokemon', 'magic', 'lorcana', 'yugioh', 'onepiece', 'dragonball'];
 
 /** Normalizza campi numerici inviati come stringhe vuote da multipart/form-data */
 function normalizeListingBody(body) {
@@ -80,6 +83,8 @@ function validateDraftListing(body) {
     shippingOptions: Joi.string().allow('', null),
     packageSize: Joi.string().valid('small', 'medium', 'large').default('medium'),
     category: Joi.string().valid('sets', 'mocs', 'minifigures').default('sets'),
+    productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
+    game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
     status: Joi.string().valid('draft').required(),
   });
 
@@ -104,7 +109,8 @@ function validatePublishListing(body) {
     instructions: Joi.string().max(100).allow('', null),
     proNotes: Joi.string().max(2000).allow('', null),
     isComplete: Joi.boolean().default(false),
-    price: Joi.number().positive().required(),
+    // price is optional for auctions; required for all other types
+    price: Joi.number().positive().allow(null),
     auctionStart: Joi.number().positive().allow(null),
     auctionEnd: Joi.date().iso().allow(null),
     auctionReserve: Joi.number().min(0).allow(null),
@@ -113,6 +119,8 @@ function validatePublishListing(body) {
     shippingOptions: Joi.string().allow('', null),
     packageSize: Joi.string().valid('small', 'medium', 'large').required(),
     category: Joi.string().valid('sets', 'mocs', 'minifigures').required(),
+    productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
+    game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
     status: Joi.string().valid('active').required(),
   });
 
@@ -121,14 +129,29 @@ function validatePublishListing(body) {
     return { error: error.details[0].message, value: null };
   }
 
-  if (value.type === 'auction') {
-    if (value.auctionStart == null || value.auctionEnd == null) {
-      return { error: 'Per le aste servono auctionStart e auctionEnd', value: null };
+  const isAuction = value.type === 'auction';
+
+  if (isAuction) {
+    // Auctions require auctionStart and auctionEnd instead of price
+    if (value.auctionStart == null || value.auctionStart <= 0) {
+      return { error: 'Per le aste è obbligatorio specificare la base d\'asta (auctionStart > 0)', value: null };
+    }
+    if (value.auctionEnd == null) {
+      return { error: 'Per le aste è obbligatoria la data di scadenza (auctionEnd)', value: null };
+    }
+    if (new Date(value.auctionEnd) <= new Date()) {
+      return { error: 'La data di fine asta deve essere nel futuro', value: null };
+    }
+  } else {
+    // Non-auction listings require a price
+    if (value.price == null || value.price <= 0) {
+      return { error: 'Il prezzo è obbligatorio per gli annunci a prezzo fisso', value: null };
     }
   }
 
   return { error: null, value };
 }
+
 
 const patchSchema = Joi.object({
   title: Joi.string().min(5).max(300),
@@ -148,6 +171,8 @@ const patchSchema = Joi.object({
   shippingOptions: Joi.string().allow('', null),
   packageSize: Joi.string().valid('small', 'medium', 'large'),
   category: Joi.string().valid('sets', 'mocs', 'minifigures'),
+  productType: Joi.string().valid(...PRODUCT_TYPES),
+  game: Joi.string().valid(...TCG_GAMES).allow('', null),
   status: Joi.string().valid('draft', 'active', 'removed'),
 });
 
@@ -216,9 +241,9 @@ router.post('/', auth, async (req, res) => {
         price, auction_start, auction_end, auction_reserve, current_bid,
         status, images, shipping_cost, shipping_method, shipping_options,
         box_condition, instructions, pro_notes, is_complete,
-        category, package_size
+        category, package_size, product_type, game
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27
       ) RETURNING *`,
       [
         req.user.userId,
@@ -245,7 +270,9 @@ router.post('/', auth, async (req, res) => {
         v.proNotes || null,
         v.isComplete ?? false,
         v.category,
-        v.packageSize || 'medium'
+        v.packageSize || 'medium',
+        v.productType || 'lego',
+        v.productType === 'tcg' ? (v.game || null) : null
       ]
     );
 
@@ -274,7 +301,7 @@ router.get('/user/me', auth, async (req, res) => {
 
 // Lista pubblica (default: solo active; ?status=all per tutti gli stati, ESCLUSO draft)
 router.get('/', async (req, res) => {
-  const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category } = req.query;
+  const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category, product_type, game } = req.query;
   try {
     // Auto-Expire Logic: Check for expired auctions and mark them as expired
     await query(`UPDATE listings SET status = 'expired' WHERE status = 'active' AND type = 'auction' AND auction_end < NOW()`);
@@ -322,6 +349,16 @@ router.get('/', async (req, res) => {
       parts.push(`l.category = $${params.length}`);
     }
 
+    if (product_type) {
+      params.push(product_type);
+      parts.push(`l.product_type = $${params.length}`);
+    }
+
+    if (game) {
+      params.push(game);
+      parts.push(`l.game = $${params.length}`);
+    }
+
     const where = parts.length ? `WHERE ${parts.join(' AND ')}` : '';
     
     let orderBy = 'ORDER BY l.created_at DESC';
@@ -345,7 +382,9 @@ router.get('/', async (req, res) => {
               u.avatar_url as seller_avatar,
               u.rating_avg as seller_rating,
               u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro
+              u.is_pro as seller_is_pro,
+              u.seller_type as seller_seller_type,
+              u.company_name as seller_company_name
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        ${where} 
@@ -356,7 +395,10 @@ router.get('/', async (req, res) => {
 
     // Mappiamo i dati per farli digerire al frontend (che si aspetta l.seller.username)
     const formatted = result.rows.map(row => {
-      const { seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro, ...listing } = row;
+      const {
+        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
+        seller_seller_type, seller_company_name, ...listing
+      } = row;
       return {
         ...listing,
         seller: {
@@ -365,6 +407,8 @@ router.get('/', async (req, res) => {
           rating_avg: seller_rating,
           is_verified: seller_is_verified ?? false,
           is_pro: seller_is_pro ?? false,
+          seller_type: seller_seller_type ?? null,
+          company_name: seller_company_name ?? null,
         }
       };
     });
@@ -387,7 +431,9 @@ router.get('/archive', async (req, res) => {
               u.avatar_url as seller_avatar,
               u.rating_avg as seller_rating,
               u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro
+              u.is_pro as seller_is_pro,
+              u.seller_type as seller_seller_type,
+              u.company_name as seller_company_name
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        WHERE l.status IN ('sold', 'expired')
@@ -395,7 +441,10 @@ router.get('/archive', async (req, res) => {
     );
 
     const formatted = result.rows.map(row => {
-      const { seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro, ...listing } = row;
+      const {
+        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
+        seller_seller_type, seller_company_name, ...listing
+      } = row;
       return {
         ...listing,
         seller: {
@@ -404,6 +453,8 @@ router.get('/archive', async (req, res) => {
           rating_avg: seller_rating,
           is_verified: seller_is_verified ?? false,
           is_pro: seller_is_pro ?? false,
+          seller_type: seller_seller_type ?? null,
+          company_name: seller_company_name ?? null,
         }
       };
     });
@@ -427,7 +478,9 @@ router.get('/search', async (req, res) => {
               u.avatar_url as seller_avatar,
               u.rating_avg as seller_rating,
               u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro
+              u.is_pro as seller_is_pro,
+              u.seller_type as seller_seller_type,
+              u.company_name as seller_company_name
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        WHERE (l.title ILIKE $1 OR l.set_number ILIKE $1 OR l.theme ILIKE $1)
@@ -436,7 +489,10 @@ router.get('/search', async (req, res) => {
       [`%${q}%`]
     );
     const formatted = result.rows.map(row => {
-      const { seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro, ...listing } = row;
+      const {
+        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
+        seller_seller_type, seller_company_name, ...listing
+      } = row;
       return {
         ...listing,
         seller: {
@@ -445,6 +501,8 @@ router.get('/search', async (req, res) => {
           rating_avg: seller_rating,
           is_verified: seller_is_verified ?? false,
           is_pro: seller_is_pro ?? false,
+          seller_type: seller_seller_type ?? null,
+          company_name: seller_company_name ?? null,
         }
       };
     });
@@ -500,6 +558,8 @@ router.get('/:id', async (req, res) => {
               u.rating_avg as seller_rating,
               u.is_verified as seller_is_verified,
               u.is_pro as seller_is_pro,
+              u.seller_type as seller_seller_type,
+              u.company_name as seller_company_name,
               (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username
        FROM listings l
        JOIN users u ON l.seller_id = u.id
@@ -513,8 +573,11 @@ router.get('/:id', async (req, res) => {
     query(`UPDATE listings SET views_count = views_count + 1 WHERE id = $1`, [req.params.id]).catch(console.error);
 
     const row = result.rows[0];
-    const { seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro, highest_bidder_username, ...listing } = row;
-    
+    const {
+      seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
+      seller_seller_type, seller_company_name, highest_bidder_username, ...listing
+    } = row;
+
     const formatted = {
       ...listing,
       highest_bidder_username,
@@ -524,6 +587,8 @@ router.get('/:id', async (req, res) => {
         rating_avg: seller_rating,
         is_verified: seller_is_verified ?? false,
         is_pro: seller_is_pro ?? false,
+        seller_type: seller_seller_type ?? null,
+        company_name: seller_company_name ?? null,
         country: 'it'  // default
       }
     };
@@ -595,6 +660,8 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
     status: 'status',
     category: 'category',
     packageSize: 'package_size',
+    productType: 'product_type',
+    game: 'game',
   };
 
   const sets = [];

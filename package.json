@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
+    "start:prod": "node server.js",
+    "build": "npm install --prefix client && npm run build --prefix client",
     "seed": "node scripts/seed-dummy-data.js",
     "client": "npm run dev --prefix client",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,19 +19,25 @@
     "axios": "^1.16.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.2.0",
+    "geoip-lite": "^2.0.3",
+    "google-auth-library": "^10.9.1",
     "helmet": "^7.1.0",
     "joi": "^18.1.2",
     "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.1.0",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-cron": "^4.6.0",
     "nodemailer": "^8.0.5",
     "pg": "^8.11.5",
     "sharp": "^0.34.5",
-    "stripe": "^22.0.0"
+    "stripe": "^22.0.0",
+    "ws": "^8.21.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

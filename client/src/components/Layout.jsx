@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { apiUrl } from '../api';
-import { Menu, X, Key, ShoppingCart, Search, BookOpen } from 'lucide-react';
+import { Menu, X, Key, ShoppingCart, Search, BookOpen, Coins } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell';
+import CookieConsent from './CookieConsent';
+import GeoLanguageSuggestion from './GeoLanguageSuggestion';
+import { hasConsent, trackPageview } from '../analytics';
 
 const LegoHeadIcon = ({ size = 16, color = "currentColor", strokeWidth = 2 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
@@ -25,7 +28,7 @@ const LANGUAGES = [
 ];
 
 export default function Layout() {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, wallet } = useAuth();
   const { cart, cartIsAnimating } = useCart();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -76,6 +79,10 @@ export default function Layout() {
       setTopbarQuery('');
     }
   }, [location.pathname, searchParams]);
+
+  useEffect(() => {
+    if (hasConsent()) trackPageview(location.pathname);
+  }, [location.pathname]);
 
   const handleTopbarSearch = (e) => {
     e.preventDefault();
@@ -143,27 +150,28 @@ export default function Layout() {
 
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-             <Link to="/catalog" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => setIsMenuOpen(false)}>
-               <BookOpen size={20} className="text-sky-400" /> {t('nav.catalog')}
+             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => setIsMenuOpen(false)}>
+               <BookOpen size={20} className="text-gold-400" /> {t('nav.catalog')}
              </Link>
-             <Link to="/annunci" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
-             <Link to="/aste" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
-             <Link to="/ricerca-utente" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
-             <Link to="/norme-legali" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
-             <Link to="/terms" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.terms')}</Link>
-             <Link to="/help" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
-             <Link to="/faq" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
-             <Link to="/jobs" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.jobs')}</Link>
+             <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
+             <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
+             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>🎮 {t('nav.skill_zone') || 'Skill Zone'}</Link>
+             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
+             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
+             <Link to="/terms" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.terms')}</Link>
+             <Link to="/help" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
+             <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
+             <Link to="/jobs" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.jobs')}</Link>
              
              {!user ? (
                <>
-                 <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
-                 <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.register')}</Link>
+                 <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
+                 <Link to="/register" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.register')}</Link>
                </>
              ) : (user.role === 'seller' || user.role === 'both') ? (
                <>
-                 <Link to="/sell" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
-                 <Link to="/create-auction" style={{ color: '#fbbf24', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
+                 <Link to="/sell" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
+                 <Link to="/create-auction" style={{ color: '#e4c159', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
                </>
              ) : null}
 
@@ -177,7 +185,7 @@ export default function Layout() {
 
            {/* Language Selector Section */}
            <div style={{ marginBottom: '2rem' }}>
-             <h4 style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem', letterSpacing: '1px' }}>{t('ui.language')}</h4>
+             <h4 style={{ color: '#a89a7f', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem', letterSpacing: '1px' }}>{t('ui.language')}</h4>
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                {LANGUAGES.map((lang) => (
                  <button 
@@ -188,9 +196,9 @@ export default function Layout() {
                    }}
                    style={{ 
                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.65rem 1rem', borderRadius: '8px', 
-                     backgroundColor: i18n.language === lang.code ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
-                     border: i18n.language === lang.code ? '1px solid #38bdf8' : '1px solid transparent',
-                     cursor: 'pointer', color: i18n.language === lang.code ? '#38bdf8' : '#e2e8f0',
+                     backgroundColor: i18n.language === lang.code ? 'rgba(212,175,55, 0.1)' : 'transparent',
+                     border: i18n.language === lang.code ? '1px solid #d4af37' : '1px solid transparent',
+                     cursor: 'pointer', color: i18n.language === lang.code ? '#d4af37' : '#f0e9d8',
                      transition: 'all 0.2s', textAlign: 'left'
                    }}
                    className="lang-option"
@@ -203,28 +211,28 @@ export default function Layout() {
              
              {/* Disclaimer Note */}
              <div style={{ marginTop: '1.25rem', padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.75rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '400' }}>
+                <p style={{ margin: 0, color: '#a89a7f', fontSize: '0.75rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '400' }}>
                   {t('disclaimer.language_note')}
                 </p>
              </div>
            </div>
 
            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>news</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>spoilers</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#38bdf8' }}>insight</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d946ef' }}>sponsorship</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>news</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>spoilers</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d4af37' }}>insight</span></a>
+             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@brickmarket<span style={{ color: '#d946ef' }}>sponsorship</span></a>
            </div>
 
          </div>
       </div>
       )}
 
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#070913]/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 z-[60] shadow-lg shadow-black/25">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0a0806]/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 z-[60] shadow-lg shadow-black/25">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shadow-lg shadow-red-900/20">
-            <LegoHeadIcon size={20} color="white" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-900/30">
+            <LegoHeadIcon size={20} color="#100d07" />
           </div>
           <span className="hidden min-[400px]:block text-lg font-black tracking-tighter text-white">
             BrickMarket
@@ -239,9 +247,9 @@ export default function Layout() {
             value={topbarQuery}
             onChange={e => setTopbarQuery(e.target.value)}
             placeholder={t('ui.search_placeholder')}
-            className="w-full px-4 py-1.5 pr-10 text-sm rounded-full border border-white/10 bg-[#0d1224]/50 text-white outline-none focus:border-sky-500 transition-all backdrop-blur-md"
+            className="w-full px-4 py-1.5 pr-10 text-sm rounded-full border border-white/10 bg-[#14120b]/50 text-white outline-none focus:border-gold-500 transition-all backdrop-blur-md"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-sky-400">
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-gold-400">
             <Search size={16} strokeWidth={3} />
           </button>
         </form>
@@ -250,60 +258,81 @@ export default function Layout() {
         <div className="flex items-center gap-1 min-[350px]:gap-2 md:gap-4">
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-6 mr-4 border-r border-white/5 pr-6">
-            <NavLink to="/" end className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'}`}>
+            <NavLink to="/" end className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.home')}
             </NavLink>
-            <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'} flex items-center gap-1.5`}>
+            <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'} flex items-center gap-1.5`}>
                <BookOpen size={14} /> {t('nav.catalog')}
             </NavLink>
-            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'}`}>
+            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.listings')}
             </NavLink>
-            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-amber-400' : 'text-slate-400 hover:text-amber-300'}`}>
+            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-gold-300'}`}>
               {t('nav.auctions')}
+            </NavLink>
+            <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pink-400 font-extrabold' : 'text-stone-400 hover:text-pink-300'}`}>
+              🎮 {t('nav.skill_zone') || 'Skill Zone'}
             </NavLink>
             {user && (user.role === 'seller' || user.role === 'both') && (
               <>
-                <NavLink to="/sell" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-sky-400' : 'text-slate-400 hover:text-white'}`}>
+                <NavLink to="/sell" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
                   {t('nav.sell')}
                 </NavLink>
-                <NavLink to="/create-auction" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-amber-400' : 'text-slate-400 hover:text-amber-300'}`}>
+                <NavLink to="/create-auction" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-gold-300'}`}>
                   {t('nav.new_auction')}
                 </NavLink>
               </>
             )}
           </nav>
 
-          <div className="flex items-center gap-1 min-[350px]:gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 min-[350px]:gap-2 md:gap-3">
             {!user ? (
               <div className="hidden sm:flex items-center gap-3">
-                <Link to="/login" className="text-xs font-bold text-slate-400 hover:text-white uppercase tracking-widest">{t('nav.login')}</Link>
-                <Link to="/register" className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-black rounded uppercase transition-colors">{t('nav.register')}</Link>
+                <Link to="/login" className="text-xs font-bold text-stone-400 hover:text-white uppercase tracking-widest">{t('nav.login')}</Link>
+                <Link to="/register" className="px-3 py-1.5 bg-gold-600 hover:bg-gold-500 text-white text-[10px] font-black rounded uppercase transition-colors">{t('nav.register')}</Link>
               </div>
             ) : (
-              <div ref={userDropdownRef} className="relative">
+              <>
+                {/* Balance counters wrapped inside container */}
+                <div className="flex items-center gap-1 min-[450px]:gap-2 mr-1">
+                  <div
+                    onClick={() => navigate('/crediti')}
+                    className="flex items-center gap-1 min-[450px]:gap-1.5 rounded-lg border border-gold-500/30 bg-gold-500/5 px-1 py-0.5 min-[450px]:px-2 min-[450px]:py-1 cursor-pointer hover:border-gold-500 transition-all duration-300 group"
+                    title={t('nav.wallet_tooltip')}
+                  >
+                    <Coins className="h-3.5 w-3.5 text-gold-400 group-hover:scale-110 transition-transform" />
+                    <div className="text-right">
+                      <div className="hidden min-[500px]:block text-[8px] uppercase text-stone-400 font-bold leading-none">{t('nav.wallet_label')}</div>
+                      <span className="font-mono text-xs font-bold text-gold-400 text-glow-cyan">
+                        {wallet.balanceCredits?.toFixed(0) || '0'} <span className="text-[9px]">CR</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div ref={userDropdownRef} className="relative">
                 <button 
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0 focus:ring-2 ring-sky-500 ring-offset-2 ring-offset-[#070913] transition-all"
+                  className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0 focus:ring-2 ring-gold-500 ring-offset-2 ring-offset-[#0a0806] transition-all"
                 >
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase">
+                    <div className="w-full h-full bg-stone-800 flex items-center justify-center text-[10px] font-bold text-stone-400 uppercase">
                       {user.username.charAt(0)}
                     </div>
                   )}
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute top-full right-0 mt-3 w-48 bg-[#0d1224]/85 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl py-2 z-[60]">
+                  <div className="absolute top-full right-0 mt-3 w-48 bg-[#14120b]/85 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl py-2 z-[60]">
                     <div className="px-4 py-2 border-b border-white/5 mb-1">
                       <p className="text-xs font-bold text-white truncate">{user.username}</p>
-                      <p className="text-[10px] text-slate-500">{user.email}</p>
+                      <p className="text-[10px] text-stone-500">{user.email}</p>
                     </div>
-                    <Link to="/profile" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
-                    <Link to="/my-listings" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
-                    <Link to="/account" className="block px-4 py-2 text-xs text-slate-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
+                    <Link to="/profile" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
+                    <Link to="/my-listings" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
+                    <Link to="/account" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
                     {user.role === 'admin' && (
                       <Link to="/admin" className="block px-4 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 font-bold" onClick={() => setDropdownOpen(false)}>{t('nav.admin_panel')}</Link>
                     )}
@@ -312,15 +341,16 @@ export default function Layout() {
                   </div>
                 )}
               </div>
-            )}
+            </>
+          )}
 
             <div className="flex items-center gap-0.5 min-[350px]:gap-1.5 md:gap-3 border-l border-white/5 pl-1.5 min-[350px]:pl-3 md:pl-4 ml-0.5 min-[350px]:ml-1">
               <NotificationBell onNewNotification={handleNewNotification} />
               
-              <Link to="/cart" className="relative p-1.5 text-slate-400 hover:text-white transition-colors shrink-0">
+              <Link to="/cart" className="relative p-1.5 text-stone-400 hover:text-white transition-colors shrink-0">
                 <ShoppingCart size={20} className={cartIsAnimating ? 'scale-125' : ''} />
                 {cart?.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#070913]">
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#0a0806]">
                     {cart.length}
                   </span>
                 )}
@@ -328,7 +358,7 @@ export default function Layout() {
 
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-1.5 text-slate-400 hover:text-white transition-colors shrink-0"
+                className="p-1.5 text-stone-400 hover:text-white transition-colors shrink-0"
               >
                 {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
@@ -341,7 +371,7 @@ export default function Layout() {
       <div 
         className={`fixed top-1 left-1 w-2 h-2 rounded-full z-[100] border border-black/20 ${
           apiStatus === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 
-          apiStatus === 'offline' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-slate-500 animate-pulse'
+          apiStatus === 'offline' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-stone-500 animate-pulse'
         }`}
         title={`API Status: ${apiStatus}`}
       />
@@ -349,25 +379,28 @@ export default function Layout() {
       {toastNotif && (
         <div style={{
           position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 100,
-          backgroundColor: '#0f172a', border: '1px solid #ef4444', borderLeft: '4px solid #ef4444',
+          backgroundColor: '#120f0a', border: '1px solid #ef4444', borderLeft: '4px solid #ef4444',
           borderRadius: '8px', padding: '1rem', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
           maxWidth: '300px',
           animation: 'pulse 1.5s infinite' // Using a generic attention animation we have available
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
             <strong style={{ color: '#ef4444', fontSize: '1.05rem' }}>{t('ui.attention')}</strong>
-            <button onClick={() => setToastNotif(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+            <button onClick={() => setToastNotif(null)} style={{ background: 'none', border: 'none', color: '#a89a7f', cursor: 'pointer' }}>
               <X size={16} />
             </button>
           </div>
           <p style={{ margin: 0, fontSize: '0.95rem' }}>
             {t(toastNotif.message_key, { item: toastNotif.listing_title })}
           </p>
-          <Link to={`/product/${toastNotif.listing_id}`} style={{ display: 'inline-block', marginTop: '0.75rem', color: '#38bdf8', fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none' }} onClick={() => setToastNotif(null)}>
+          <Link to={`/product/${toastNotif.listing_id}`} style={{ display: 'inline-block', marginTop: '0.75rem', color: '#d4af37', fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none' }} onClick={() => setToastNotif(null)}>
              {t('ui.go_to_auction')}
           </Link>
         </div>
       )}
+
+      <CookieConsent />
+      <GeoLanguageSuggestion />
 
       <main className="main pt-16"><Outlet /></main>
 
@@ -377,8 +410,8 @@ export default function Layout() {
 
       <style>{`
         .lang-option:hover {
-          background-color: rgba(56, 189, 248, 0.05) !important;
-          border-color: rgba(56, 189, 248, 0.3) !important;
+          background-color: rgba(212,175,55, 0.05) !important;
+          border-color: rgba(212,175,55, 0.3) !important;
         }
         @keyframes slideInRight {
           from { transform: translateX(100%); }

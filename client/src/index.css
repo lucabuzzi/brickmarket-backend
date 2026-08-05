@@ -1,35 +1,50 @@
 @import "tailwindcss";
 
+/* Luxury gold palette, exposed as Tailwind utilities: bg-gold-500, text-gold-400, border-gold-600, etc. */
+@theme {
+  --color-gold-50: #fbf4e3;
+  --color-gold-100: #f7e8bf;
+  --color-gold-200: #eed690;
+  --color-gold-300: #e4c159;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #bf9a2e;
+  --color-gold-600: #a17e22;
+  --color-gold-700: #7d611b;
+  --color-gold-800: #5c4714;
+  --color-gold-900: #3d2f0d;
+  --color-gold-950: #241b08;
+}
+
 :root {
   color-scheme: dark;
-  --bg: #070913; /* Deep saturated midnight blue-black */
-  --bg-elevated: #0d1224; /* Elevated container with dark rich saturation */
-  --surface: #141b36; /* Deep surface */
-  --border: rgba(255, 255, 255, 0.08); /* Semi-transparent border for glassmorphism */
-  --border-glow: rgba(56, 189, 248, 0.15); /* Sky blue glow for active states */
-  --text: #f8fafc; /* Very light slate */
-  --muted: #64748b; /* Slate-500 */
-  --accent: #38bdf8; /* Sky-400 for accent */
-  --accent-hover: #7dd3fc; /* Sky-300 */
+  --bg: #050403; /* True near-black */
+  --bg-elevated: #0e0c08; /* Elevated warm-black container */
+  --surface: #161209; /* Warm charcoal surface */
+  --border: rgba(212,175,55, 0.16); /* Gold-tinted glass border */
+  --border-glow: rgba(212,175,55, 0.25); /* Gold glow for active states */
+  --text: #f8f5ec; /* Warm ivory white */
+  --muted: #9c9280; /* Warm taupe grey */
+  --accent: #d4af37; /* Signature metallic gold */
+  --accent-hover: #e9cd6f; /* Brighter champagne gold on hover */
   --radius-bento: 24px; /* Larger rounded corners for bento style */
   --radius: 16px;
   --font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  
-  /* Deep soft shadows and glow */
-  --shadow-bento: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(255, 255, 255, 0.05) inset;
-  --shadow-bento-hover: 0 20px 40px -15px rgba(56, 189, 248, 0.12), 0 0 0 1px rgba(56, 189, 248, 0.2);
+
+  /* Deep soft shadows and gold glow */
+  --shadow-bento: 0 10px 30px -10px rgba(0, 0, 0, 0.85), 0 1px 1px rgba(212,175,55, 0.05) inset;
+  --shadow-bento-hover: 0 20px 40px -15px rgba(212,175,55, 0.18), 0 0 0 1px rgba(212,175,55, 0.3);
 }
 
 /* Glassmorphism utility classes */
 .glass-effect {
-  background: rgba(13, 18, 36, 0.45);
+  background: rgba(14, 12, 8, 0.45);
   backdrop-filter: blur(16px) saturate(120%);
   -webkit-backdrop-filter: blur(16px) saturate(120%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-effect-strong {
-  background: rgba(9, 13, 26, 0.75);
+  background: rgba(9, 8, 6, 0.75);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -41,7 +56,7 @@
 
 /* Bento elements */
 .bento-card {
-  background: rgba(13, 18, 36, 0.4);
+  background: rgba(14, 12, 8, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -52,8 +67,8 @@
 
 .bento-card:hover {
   transform: translateY(-4px) scale(1.005);
-  background: rgba(17, 24, 48, 0.55);
-  border-color: rgba(56, 189, 248, 0.25);
+  background: rgba(22, 18, 11, 0.6);
+  border-color: rgba(212,175,55, 0.35);
   box-shadow: var(--shadow-bento-hover);
 }
 
@@ -64,13 +79,13 @@
 
 /* Elegant glow for titles and hover states */
 .text-gradient-sky {
-  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  background: linear-gradient(135deg, #f3dd93 0%, #d4af37 45%, #a17e22 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-orange {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #eed690 0%, #bf9a2e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -82,14 +97,14 @@
 }
 
 .text-gradient-indigo {
-  background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #eed690 0%, #7d611b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* Hover glow effect for buttons or elements */
 .hover-glow-accent:hover {
-  box-shadow: 0 0 20px 2px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 20px 2px rgba(212,175,55, 0.3);
 }
 
 /* Smooth active state scaling */
@@ -108,22 +123,25 @@ body {
   margin: 0;
   min-height: 100%;
   font-family: var(--font);
-  background: #05070f; /* Very deep saturated dark */
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.04) 0px, transparent 50%);
+  background: #030201; /* True black */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(212,175,55, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(191,154,46, 0.04) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
 }
 
 
-a {
-  color: #8ab4ff;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+/* @layer base so Tailwind text-color utilities (e.g. text-white on a <Link>-as-button) can still win the cascade */
+@layer base {
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 code {
@@ -146,7 +164,7 @@ code {
   gap: 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 17, 21, 0.85);
+  background: rgba(12, 10, 7, 0.85);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
@@ -171,7 +189,7 @@ code {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), #7c2d12);
+  background: linear-gradient(135deg, #eed690, var(--accent) 55%, #7d611b);
   box-shadow: 0 0 0 2px var(--border);
 }
 
@@ -337,7 +355,8 @@ code {
 .btn--primary {
   background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: #ffffff;
+  font-weight: 700;
 }
 .btn--primary:hover {
   background: var(--accent-hover);
@@ -366,12 +385,37 @@ code {
   margin-top: 1.5rem;
 }
 
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.oauth-divider::before {
+  margin-right: 1rem;
+}
+
+.oauth-divider::after {
+  margin-left: 1rem;
+}
+
 .form label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.9rem;
   color: var(--muted);
+  min-width: 0;
 }
 
 .form input {
@@ -381,6 +425,9 @@ code {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .breadcrumb {

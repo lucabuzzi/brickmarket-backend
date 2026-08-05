@@ -20,7 +20,7 @@ const BrickSVG = ({ filledPerc, color, isHovered, onMouseEnter, onMouseLeave, on
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset={`${filledPerc * 100}%`} stopColor={color} />
-            <stop offset={`${filledPerc * 100}%`} stopColor="#334155" />
+            <stop offset={`${filledPerc * 100}%`} stopColor="#44403c" />
           </linearGradient>
         </defs>
         

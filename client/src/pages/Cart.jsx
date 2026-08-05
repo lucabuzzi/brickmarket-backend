@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { apiFetch, apiUrl } from '../api';
 import { Trash2, AlertTriangle, CheckCircle2, Truck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CARRIERS } from './Sell';
 
 export default function Cart() {
+  const { t } = useTranslation();
   const { cart, removeFromCart, clearCart } = useCart();
   const [checking, setChecking] = useState(false);
   const [soldItems, setSoldItems] = useState([]);
@@ -77,10 +79,10 @@ export default function Cart() {
           navigate('/', { replace: true });
         }, 3000);
       } else {
-        alert('Si è verificato un errore durante il checkout.');
+        alert(t('cart.checkout_error'));
       }
-    } catch (err) {
-      alert('Impossibile completare il checkout al momento.');
+    } catch {
+      alert(t('cart.checkout_unavailable'));
     } finally {
       setChecking(false);
     }
@@ -93,21 +95,21 @@ export default function Cart() {
       
       {showSuccessModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #22c55e', padding: '3rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', maxWidth: '400px' }}>
+          <div style={{ backgroundColor: '#292524', border: '1px solid #22c55e', padding: '3rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', maxWidth: '400px' }}>
              <CheckCircle2 color="#22c55e" size={64} style={{ marginBottom: '1rem' }} />
-             <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Acquisto Completato!</h2>
-             <p style={{ color: '#94a3b8' }}>L'articolo è ora segnato come venduto. Sarai reindirizzato alla Home.</p>
+             <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('cart.purchase_complete_title')}</h2>
+             <p style={{ color: '#a8a29e' }}>{t('cart.purchase_complete_subtitle')}</p>
           </div>
         </div>
       )}
 
-      <h1 style={{ fontSize: '2rem', color: '#fff', marginBottom: '2rem' }}>Il tuo Carrello</h1>
+      <h1 style={{ fontSize: '2rem', color: '#fff', marginBottom: '2rem' }}>{t('cart.title')}</h1>
 
       {cart.length === 0 ? (
-        <div style={{ backgroundColor: '#1e293b', padding: '3rem', borderRadius: '12px', border: '1px solid #334155', textAlign: 'center' }}>
-          <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '1.5rem' }}>Il tuo carrello è attualmente vuoto.</p>
-          <Link to="/" style={{ display: 'inline-block', backgroundColor: '#38bdf8', color: '#0f172a', padding: '0.75rem 2rem', borderRadius: '8px', fontWeight: 'bold', textDecoration: 'none' }}>
-            Continua lo shopping
+        <div style={{ backgroundColor: '#292524', padding: '3rem', borderRadius: '12px', border: '1px solid #44403c', textAlign: 'center' }}>
+          <p style={{ color: '#a8a29e', fontSize: '1.1rem', marginBottom: '1.5rem' }}>{t('cart.empty_message')}</p>
+          <Link to="/" style={{ display: 'inline-block', backgroundColor: '#d4af37', color: '#fff', padding: '0.75rem 2rem', borderRadius: '8px', fontWeight: 'bold', textDecoration: 'none' }}>
+            {t('cart.continue_shopping')}
           </Link>
         </div>
       ) : (
@@ -117,8 +119,8 @@ export default function Cart() {
             {cart.map((item) => {
               const isSold = soldItems.includes(item.id);
               return (
-                <div key={item.id} style={{ display: 'flex', backgroundColor: '#1e293b', borderRadius: '12px', border: isSold ? '1px solid #ef4444' : '1px solid #334155', overflow: 'hidden', opacity: isSold ? 0.7 : 1 }}>
-                  <div style={{ width: '150px', height: '120px', flexShrink: 0, backgroundColor: '#0f172a' }}>
+                <div key={item.id} style={{ display: 'flex', backgroundColor: '#292524', borderRadius: '12px', border: isSold ? '1px solid #ef4444' : '1px solid #44403c', overflow: 'hidden', opacity: isSold ? 0.7 : 1 }}>
+                  <div style={{ width: '150px', height: '120px', flexShrink: 0, backgroundColor: '#120f0a' }}>
                     <img src={Array.isArray(item.images) ? item.images[0] : item.image_url || 'https://picsum.photos/seed/placeholder/800/600'} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div style={{ padding: '1rem', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -129,13 +131,13 @@ export default function Cart() {
                       </button>
                     </div>
                     
-                    <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>Venditore: {item.seller?.username || 'Sconosciuto'}</p>
+                    <p style={{ margin: 0, color: '#a8a29e', fontSize: '0.85rem' }}>{t('cart.seller_label')}: {item.seller?.username || t('details.unknown_seller')}</p>
                     
                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#38bdf8' }}>{formatPrice(item.price)}</span>
+                      <span style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#d4af37' }}>{formatPrice(item.price)}</span>
                       {isSold && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#ef4444', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                          <AlertTriangle size={16} /> ARTICOLO ESAURITO
+                          <AlertTriangle size={16} /> {t('cart.item_unavailable')}
                         </div>
                       )}
                     </div>
@@ -143,9 +145,9 @@ export default function Cart() {
                   
                   {/* Shipping Options */}
                   {!isSold && fullItems[item.id]?.shipping_options?.length > 0 && (
-                    <div style={{ borderTop: '1px solid #334155', backgroundColor: '#0f172a', padding: '1rem' }}>
-                      <p style={{ margin: '0 0 0.75rem 0', color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Truck size={14} /> Scegli la Spedizione:
+                    <div style={{ borderTop: '1px solid #44403c', backgroundColor: '#120f0a', padding: '1rem' }}>
+                      <p style={{ margin: '0 0 0.75rem 0', color: '#d6d3d1', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Truck size={14} /> {t('cart.choose_shipping')}
                       </p>
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         {fullItems[item.id].shipping_options.map((opt) => {
@@ -156,8 +158,8 @@ export default function Cart() {
                             <label key={opt.carrier} style={{ 
                               display: 'flex', alignItems: 'center', gap: '0.5rem', 
                               padding: '0.5rem 0.75rem', borderRadius: '8px', 
-                              border: isSelected ? '1px solid #38bdf8' : '1px solid #334155',
-                              backgroundColor: isSelected ? 'rgba(56,189,248,0.1)' : '#1e293b',
+                              border: isSelected ? '1px solid #d4af37' : '1px solid #44403c',
+                              backgroundColor: isSelected ? 'rgba(212,175,55,0.1)' : '#292524',
                               cursor: 'pointer', transition: 'all 0.2s', flex: '1 1 auto'
                             }}>
                               <input 
@@ -165,15 +167,15 @@ export default function Cart() {
                                 name={`shipping-${item.id}`} 
                                 checked={isSelected}
                                 onChange={() => setShippingSelections(prev => ({ ...prev, [item.id]: { carrier: opt.carrier, cost: opt.cost } }))}
-                                style={{ accentColor: '#38bdf8', margin: 0 }}
+                                style={{ accentColor: '#d4af37', margin: 0 }}
                               />
                               {carrierInfo && <img src={carrierInfo.icon} alt={carrierInfo.name} style={{ height: '14px', width: 'auto', backgroundColor: '#fff', borderRadius: '2px', padding: '1px' }} />}
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ color: isSelected ? '#fff' : '#cbd5e1', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                <span style={{ color: isSelected ? '#fff' : '#d6d3d1', fontSize: '0.8rem', fontWeight: 'bold' }}>
                                   {carrierInfo?.name || opt.carrier}
                                 </span>
-                                <span style={{ color: '#38bdf8', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                                  {opt.cost == 0 ? 'GRATIS' : `+ ${formatPrice(opt.cost)}`}
+                                <span style={{ color: '#d4af37', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                  {opt.cost == 0 ? t('cart.free_shipping') : `+ ${formatPrice(opt.cost)}`}
                                 </span>
                               </div>
                             </label>
@@ -187,33 +189,33 @@ export default function Cart() {
             })}
           </div>
 
-          <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '12px', border: '1px solid #334155', position: 'sticky', top: '100px' }}>
-            <h2 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0', color: '#fff' }}>Riepilogo Ordine</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: '#94a3b8' }}>
-              <span>Articoli ({cart.length}):</span>
+          <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #44403c', position: 'sticky', top: '100px' }}>
+            <h2 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0', color: '#fff' }}>{t('cart.order_summary')}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: '#a8a29e' }}>
+              <span>{t('cart.items_count_label', { count: cart.length })}</span>
               <span>{formatPrice(total)}</span>
             </div>
-            
-            <hr style={{ border: 'none', borderTop: '1px solid #334155', margin: '1rem 0' }} />
-            
+
+            <hr style={{ border: 'none', borderTop: '1px solid #44403c', margin: '1rem 0' }} />
+
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', color: '#fff', fontSize: '1.4rem', fontWeight: 'bold' }}>
-              <span>Totale:</span>
-              <span style={{ color: '#38bdf8' }}>{formatPrice(total)}</span>
+              <span>{t('cart.total_label')}</span>
+              <span style={{ color: '#d4af37' }}>{formatPrice(total)}</span>
             </div>
 
             {hasUnavailableItems && (
               <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '8px', color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
                 <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-                <span>Rimuovi gli articoli esauriti per poter procedere con l'acquisto.</span>
+                <span>{t('cart.remove_unavailable_notice')}</span>
               </div>
             )}
 
-            <button 
-              onClick={handleCheckout} 
+            <button
+              onClick={handleCheckout}
               disabled={checking || hasUnavailableItems}
-              style={{ width: '100%', backgroundColor: hasUnavailableItems ? '#475569' : '#22c55e', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: hasUnavailableItems ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s' }}
+              style={{ width: '100%', backgroundColor: hasUnavailableItems ? '#57534e' : '#22c55e', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: hasUnavailableItems ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s' }}
             >
-              {checking ? 'Elaborazione...' : "Procedi all'acquisto"}
+              {checking ? t('cart.processing') : t('cart.checkout_button')}
             </button>
           </div>
 

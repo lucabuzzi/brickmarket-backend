@@ -37,7 +37,7 @@ export default function MarketValueBadge({ pricing, condition }) {
 
   // Trend icon
   let TrendIcon = Minus;
-  let trendColor = '#94a3b8';
+  let trendColor = '#a8a29e';
   let trendText = 'Valore stabile';
 
   if (appreciationPct >= 50) {
@@ -46,7 +46,7 @@ export default function MarketValueBadge({ pricing, condition }) {
     trendText = `+${appreciationPct}% sul prezzo originale`;
   } else if (appreciationPct >= 15) {
     TrendIcon = TrendingUp;
-    trendColor = '#38bdf8';
+    trendColor = '#d4af37';
     trendText = `+${appreciationPct}% sul prezzo originale`;
   } else if (appreciationPct < 0) {
     TrendIcon = TrendingDown;
@@ -61,8 +61,8 @@ export default function MarketValueBadge({ pricing, condition }) {
       style={{
         marginTop: '0.75rem',
         padding: '1rem 1.25rem',
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        border: `1px solid ${isTrending ? 'rgba(16,185,129,0.4)' : 'rgba(56,189,248,0.25)'}`,
+        backgroundColor: 'rgba(12, 10, 8, 0.9)',
+        border: `1px solid ${isTrending ? 'rgba(16,185,129,0.4)' : 'rgba(212,175,55,0.25)'}`,
         borderRadius: '12px',
         backdropFilter: 'blur(8px)',
         boxShadow: isTrending ? '0 0 20px rgba(16,185,129,0.12)' : 'none',
@@ -102,28 +102,28 @@ export default function MarketValueBadge({ pricing, condition }) {
       </div>
 
       {/* Condition selector row */}
-      <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.5rem' }}>
-        Condizione selezionata: <span style={{ color: '#e2e8f0', fontWeight: '600' }}>
+      <div style={{ fontSize: '0.7rem', color: '#78716c', marginBottom: '0.5rem' }}>
+        Condizione selezionata: <span style={{ color: '#e7e5e4', fontWeight: '600' }}>
           {CONDITION_LABELS[conditionKey]?.label || 'Usato'}
         </span>
       </div>
 
       {/* Price Range */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.5rem' }}>
-        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Range:</span>
-        <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{fmt(adjustedLow)}</span>
-        <span style={{ fontSize: '0.7rem', color: '#475569' }}>—</span>
+        <span style={{ fontSize: '0.8rem', color: '#78716c' }}>Range:</span>
+        <span style={{ fontSize: '0.9rem', color: '#a8a29e' }}>{fmt(adjustedLow)}</span>
+        <span style={{ fontSize: '0.7rem', color: '#57534e' }}>—</span>
         <span style={{ fontSize: '1.5rem', fontWeight: '800', color: '#f8fafc', letterSpacing: '-0.02em' }}>
           {fmt(adjustedMid)}
         </span>
-        <span style={{ fontSize: '0.7rem', color: '#475569' }}>—</span>
-        <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{fmt(adjustedHigh)}</span>
+        <span style={{ fontSize: '0.7rem', color: '#57534e' }}>—</span>
+        <span style={{ fontSize: '0.9rem', color: '#a8a29e' }}>{fmt(adjustedHigh)}</span>
       </div>
 
       {/* Retail reference */}
       {pricing.retailPrice != null && (
-        <div style={{ fontSize: '0.7rem', color: '#475569', marginBottom: '0.5rem' }}>
-          Prezzo originale LEGO (stimato): <span style={{ color: '#64748b' }}>{fmt(pricing.retailPrice)}</span>
+        <div style={{ fontSize: '0.7rem', color: '#57534e', marginBottom: '0.5rem' }}>
+          Prezzo originale LEGO (stimato): <span style={{ color: '#78716c' }}>{fmt(pricing.retailPrice)}</span>
         </div>
       )}
 
@@ -131,19 +131,19 @@ export default function MarketValueBadge({ pricing, condition }) {
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.35rem',
         marginTop: '0.75rem', paddingTop: '0.75rem',
-        borderTop: '1px solid rgba(30,41,59,0.8)',
+        borderTop: '1px solid rgba(22, 19, 14,0.8)',
       }}>
         {Object.entries(CONDITION_LABELS).map(([key, { label, multiplier: m }]) => (
           <div
             key={key}
             style={{
               textAlign: 'center', padding: '0.4rem 0.25rem', borderRadius: '8px',
-              backgroundColor: conditionKey === key ? 'rgba(56,189,248,0.08)' : 'transparent',
-              border: conditionKey === key ? '1px solid rgba(56,189,248,0.2)' : '1px solid transparent',
+              backgroundColor: conditionKey === key ? 'rgba(212,175,55,0.08)' : 'transparent',
+              border: conditionKey === key ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
             }}
           >
-            <div style={{ fontSize: '0.6rem', color: '#64748b', marginBottom: '0.2rem' }}>{label}</div>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: conditionKey === key ? '#38bdf8' : '#94a3b8' }}>
+            <div style={{ fontSize: '0.6rem', color: '#78716c', marginBottom: '0.2rem' }}>{label}</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: conditionKey === key ? '#d4af37' : '#a8a29e' }}>
               {fmt(Math.round(pricing.marketValue * m))}
             </div>
           </div>
@@ -154,13 +154,13 @@ export default function MarketValueBadge({ pricing, condition }) {
       <div style={{
         display: 'flex', alignItems: 'flex-start', gap: '0.4rem',
         marginTop: '0.75rem', padding: '0.5rem 0.75rem',
-        backgroundColor: 'rgba(30,41,59,0.5)', borderRadius: '8px',
+        backgroundColor: 'rgba(22, 19, 14,0.5)', borderRadius: '8px',
       }}>
         {isEstimated
-          ? <AlertTriangle size={11} color="#f59e0b" style={{ flexShrink: 0, marginTop: '1px' }} />
-          : <Info size={11} color="#475569" style={{ flexShrink: 0, marginTop: '1px' }} />
+          ? <AlertTriangle size={11} color="#bf9a2e" style={{ flexShrink: 0, marginTop: '1px' }} />
+          : <Info size={11} color="#57534e" style={{ flexShrink: 0, marginTop: '1px' }} />
         }
-        <p style={{ margin: 0, fontSize: '0.65rem', lineHeight: '1.4', color: isEstimated ? '#92400e' : '#475569', fontStyle: 'italic' }}>
+        <p style={{ margin: 0, fontSize: '0.65rem', lineHeight: '1.4', color: isEstimated ? '#92400e' : '#57534e', fontStyle: 'italic' }}>
           {isEstimated
             ? 'Stima basata su prezzo al pezzo (RRP non disponibile). Verifica su BrickLink per conferma.'
             : 'Stima algoritmica basata su dati storici del mercato secondario LEGO. A scopo indicativo.'

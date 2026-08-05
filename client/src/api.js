@@ -1,10 +1,15 @@
-export const SERVER_URL = 'http://localhost:3000';
+// Relative on purpose: Vite's dev proxy (and the production server) forward
+// /api, /uploads and /health to the backend on whatever host served this page,
+// so this works from localhost, a LAN IP (e.g. viewing the site from a phone), or in production.
+export const SERVER_URL = '';
 export const API_BASE = `${SERVER_URL}/api`;
 export const TOKEN_STORAGE_KEY = 'brickmarket_token';
 export const AUTH_ENDPOINTS = {
   register: '/api/auth/register',
   login: '/api/auth/login',
   me: '/api/auth/me',
+  google: '/api/auth/google',
+  apple: '/api/auth/apple',
 };
 
 export const LISTING_ENDPOINTS = {
@@ -30,8 +35,17 @@ export function normalizeImageUrl(url) {
     path = `uploads/${path}`;
   }
   
-  // 4. Combine with SERVER_URL
-  return `${SERVER_URL}/${path}`;
+  return `/${path}`;
+}
+
+/** Formats a duration in milliseconds as an F1-style race clock: M:SS.CC (minutes:seconds.centiseconds) */
+export function formatRaceTime(ms) {
+  if (ms === null || ms === undefined || isNaN(ms)) return '-:--.--';
+  const totalCentis = Math.round(ms / 10);
+  const minutes = Math.floor(totalCentis / 6000);
+  const seconds = Math.floor((totalCentis % 6000) / 100);
+  const centis = totalCentis % 100;
+  return `${minutes}:${String(seconds).padStart(2, '0')}.${String(centis).padStart(2, '0')}`;
 }
 
 export function apiUrl(path) {
@@ -56,7 +70,7 @@ export async function apiFetch(path, { body, ...options } = {}) {
     finalBody = JSON.stringify(body);
   }
 
-  const res = await fetch(apiUrl(path), { ...options, headers, body: finalBody });
+  const res = await fetch(apiUrl(path), { ...options, headers, body: finalBody, credentials: 'include' });
   const text = await res.text();
   let data;
   try {
@@ -83,6 +97,7 @@ export async function apiPostForm(path, formData, options = {}) {
     method: 'POST',
     body: formData,
     headers,
+    credentials: 'include',
     ...options,
   });
   const text = await res.text();

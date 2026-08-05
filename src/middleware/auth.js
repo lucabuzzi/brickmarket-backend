@@ -2,9 +2,11 @@ const jwt = require('jsonwebtoken');
 const { query } = require('../db');
 
 /**
- * Standard auth middleware — verifies the JWT and attaches req.user.
+ * Standard auth middleware — verifies the JWT, attaches req.user, and
+ * re-checks is_active from the DB so a soft-deleted/disabled account
+ * can't keep using a still-valid token issued before deactivation.
  */
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   const authHeader = req.header('Authorization');
 
   if (!authHeader) {
@@ -18,6 +20,17 @@ const auth = (req, res, next) => {
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
+
+    const result = await query('SELECT is_active FROM users WHERE id = $1', [verified.userId]);
+    const dbUser = result.rows[0];
+
+    if (!dbUser) {
+      return res.status(403).json({ error: 'Utente non trovato.' });
+    }
+    if (dbUser.is_active === false) {
+      return res.status(403).json({ error: 'Account disabilitato.' });
+    }
+
     next();
   } catch (err) {
     console.error('JWT verify failed:', err.message);

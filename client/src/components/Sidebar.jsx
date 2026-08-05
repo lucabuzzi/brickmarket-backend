@@ -28,9 +28,9 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-[172px] shrink-0 gap-7 border-r border-[#1f2937] pr-3">
+    <aside className="hidden md:flex flex-col w-[172px] shrink-0 gap-7 border-r border-[#2a2416] pr-3">
       <section>
-        <h2 className="text-[12px] font-bold text-slate-500 uppercase tracking-[2.2px] mb-3">
+        <h2 className="text-[12px] font-bold text-stone-500 uppercase tracking-[2.2px] mb-3">
           Categorie
         </h2>
 
@@ -43,12 +43,12 @@ export default function Sidebar() {
                 key={idx}
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={`flex items-center gap-2.5 p-1.5 rounded-lg transition-colors text-left ${isActive
-                    ? 'bg-sky-500/10 text-sky-400'
-                    : 'text-slate-300 hover:bg-slate-800'
+                    ? 'bg-gold-500/10 text-gold-400'
+                    : 'text-stone-300 hover:bg-stone-800'
                   }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full overflow-hidden border shrink-0 ${isActive ? 'border-sky-500' : 'border-[#1f2937]'
+                  className={`w-6 h-6 rounded-full overflow-hidden border shrink-0 ${isActive ? 'border-gold-500' : 'border-[#2a2416]'
                     }`}
                 >
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
@@ -64,7 +64,7 @@ export default function Sidebar() {
       </section>
 
       <section>
-        <h2 className="text-[12px] font-bold text-slate-500 uppercase tracking-[2.2px] mb-3">
+        <h2 className="text-[12px] font-bold text-stone-500 uppercase tracking-[2.2px] mb-3">
           Temi Popolari
         </h2>
 
@@ -73,9 +73,9 @@ export default function Sidebar() {
             <button
               key={idx}
               onClick={() => handleThemeClick(theme.name)}
-              className="flex items-center gap-2.5 p-1.5 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors text-left"
+              className="flex items-center gap-2.5 p-1.5 rounded-lg text-stone-300 hover:bg-stone-800 transition-colors text-left"
             >
-              <div className="w-6 h-6 rounded-full overflow-hidden border border-[#1f2937] shrink-0">
+              <div className="w-6 h-6 rounded-full overflow-hidden border border-[#2a2416] shrink-0">
                 <img src={theme.img} alt={theme.name} className="w-full h-full object-cover" />
               </div>
 
