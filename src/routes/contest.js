@@ -415,8 +415,13 @@ router.post('/create', authenticateToken, upload.single('image'), async (req, re
       imageUrl = 'https://images.unsplash.com/photo-1585336139080-b019d07c312e?auto=format&fit=crop&w=800&q=80';
     }
 
-    const newContestId = `c1000000-0000-0000-0000-${crypto.randomBytes(6).toString('hex')}`;
-    const newProductId = `p1000000-0000-0000-0000-${crypto.randomBytes(6).toString('hex')}`;
+    // Must be real UUIDs, not just UUID-shaped strings: the products/contests id
+    // columns are typed UUID in Postgres, which rejects anything non-hex (the old
+    // 'c'/'p' prefix here — copied from the mock DB's placeholder ids, which don't
+    // enforce a format — caused every real upload to fail with "invalid input
+    // syntax for type uuid").
+    const newContestId = crypto.randomUUID();
+    const newProductId = crypto.randomUUID();
 
     if (db.isMock) {
       const mockDb = db.getMockDbState();
