@@ -80,10 +80,6 @@ app.use(rateLimit({
   message: { error: 'Troppe richieste, riprova tra poco.' }
 }));
 
-app.get('/', (req, res) => {
-  res.send('Benvenuto su BrickMarket API! Il server risponde correttamente.');
-});
-
 // Serve uploaded local images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
