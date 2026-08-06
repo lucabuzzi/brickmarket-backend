@@ -118,15 +118,26 @@ const { upload } = require('./src/services/cloudinary');
 const { uploadOrSaveProcessedImage } = require('./src/services/image');
 const crypto = require('crypto');
 
-app.post('/api/admin/upload-puzzle-image', upload.single('image'), async (req, res) => {
+// Keep in sync with client/src/config/catalogGames.js CATALOG_GAMES slugs
+// and the products.category CHECK constraint (src/db/migrate_products_category_all_games.js).
+const ALLOWED_PUZZLE_CATEGORIES = ['lego', 'magic', 'yugioh', 'lorcana', 'pokemon', 'onepiece', 'dragonball', 'funko'];
+
+app.post('/api/admin/upload-puzzle-image', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-    const { 
-      title, description, category = 'lego', marketValue = 100, 
-      slotCostCredits = 10, condition = 'New in Box', gradingInfo = 'Ungraded', totalSlots = 5 
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin permissions required to create contests.' });
+    }
+
+    const {
+      title, description, category = 'lego', marketValue = 100,
+      slotCostCredits = 10, condition = 'New in Box', gradingInfo = 'Ungraded', totalSlots = 5
     } = req.body;
-    
+
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
+    }
+    if (!ALLOWED_PUZZLE_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: `Invalid category. Must be one of: ${ALLOWED_PUZZLE_CATEGORIES.join(', ')}` });
     }
 
     let imageUrl = null;

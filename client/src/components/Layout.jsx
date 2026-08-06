@@ -405,7 +405,7 @@ export default function Layout() {
       <main className="main pt-16"><Outlet /></main>
 
       <footer className="footer">
-        <p>{t('ui.footer_demo')}</p>
+        <p>{t('ui.footer_copyright', { year: new Date().getFullYear() })}</p>
       </footer>
 
       <style>{`

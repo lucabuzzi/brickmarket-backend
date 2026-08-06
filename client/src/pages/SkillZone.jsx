@@ -8,11 +8,15 @@ import {
   Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { CATALOG_GAMES } from '../config/catalogGames';
 
 export default function SkillZone() {
   const { user, refreshWallet } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  // Lobby category filter — 'all' or a CATALOG_GAMES slug
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Admin Upload form state
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
@@ -26,6 +30,15 @@ export default function SkillZone() {
   const [newContestSlots, setNewContestSlots] = useState(5);
   const [newContestFile, setNewContestFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState('');
+
+  // Reference-item price lookup — searches the real catalog APIs (LEGO/Rebrickable,
+  // TCGs via Scryfall/PokemonTCG/etc.) to suggest a market value, slot count, and
+  // entry ticket cost consistent with real average sale prices, instead of the admin
+  // guessing numbers blind.
+  const [refQuery, setRefQuery] = useState('');
+  const [refResults, setRefResults] = useState([]);
+  const [refSearching, setRefSearching] = useState(false);
+  const [refSelected, setRefSelected] = useState(null); // { name, imgUrl, priceEur: number|null }
 
   // Catalog Data Lists
   const [contests, setContests] = useState([]);
@@ -324,6 +337,9 @@ export default function SkillZone() {
       setNewContestFile(null);
       setUploadProgress('');
       setIsAdminFormOpen(false);
+      setRefQuery('');
+      setRefResults([]);
+      setRefSelected(null);
 
       // Refresh catalog data
       fetchCatalogData();
@@ -333,9 +349,84 @@ export default function SkillZone() {
     }
   };
 
-  // Every open contest is shown here regardless of category — the LEGO/Pokémon
-  // division toggle was removed from the UI, so filtering by it would silently
-  // hide contests instead of just not letting users switch views.
+  // Clear a stale reference selection when the category changes, since a price/image
+  // tied to the previous category no longer describes the newly selected division.
+  useEffect(() => {
+    setRefSelected(null);
+    setRefQuery('');
+    setRefResults([]);
+  }, [newContestCat]);
+
+  // Debounced reference-item search against the real catalog APIs, scoped to the
+  // currently selected category (LEGO uses /api/catalog/search, every other game
+  // uses its dedicated /api/catalog/<game>/search endpoint from CATALOG_GAMES).
+  useEffect(() => {
+    if (!isAdminFormOpen || refQuery.trim().length < 2) {
+      setRefResults([]);
+      return;
+    }
+
+    const game = CATALOG_GAMES.find(g => g.slug === newContestCat);
+    const searchPath = newContestCat === 'lego'
+      ? `/api/catalog/search?q=${encodeURIComponent(refQuery)}`
+      : `${game?.apiBase}/search?q=${encodeURIComponent(refQuery)}`;
+
+    const timer = setTimeout(async () => {
+      setRefSearching(true);
+      try {
+        const results = await apiFetch(searchPath);
+        setRefResults(Array.isArray(results) ? results.slice(0, 8) : []);
+      } catch {
+        setRefResults([]);
+      } finally {
+        setRefSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [refQuery, newContestCat, isAdminFormOpen]);
+
+  // Derives a suggested slot count and entry ticket cost from a market value: aims
+  // for total entry fees around ~50% of the item's value (the rest is the platform's
+  // margin, the winner takes the item), scaling slot count up for pricier items so
+  // the per-ticket cost stays in a reasonable credits range.
+  const suggestSlotsAndCost = (marketValue) => {
+    const totalSlots = Math.min(50, Math.max(3, Math.round(Math.sqrt(marketValue) * 1.4)));
+    const slotCostCredits = Math.max(1, Math.round((marketValue * 0.5) / totalSlots));
+    return { totalSlots, slotCostCredits };
+  };
+
+  const applyPriceSuggestion = (marketValue) => {
+    const val = Math.round(marketValue * 100) / 100;
+    const { totalSlots, slotCostCredits } = suggestSlotsAndCost(val);
+    setNewContestVal(val);
+    setNewContestSlots(totalSlots);
+    setNewContestCost(slotCostCredits);
+  };
+
+  const handleSelectRefItem = async (item) => {
+    setRefResults([]);
+    setRefQuery(item.name);
+    setNewContestTitle(item.name);
+
+    if (newContestCat === 'lego') {
+      setRefSelected({ name: item.name, imgUrl: item.img_url, priceEur: null });
+      try {
+        const detail = await apiFetch(`/api/catalog/${item.set_num}`);
+        const marketValue = detail?.pricing?.marketValue;
+        if (marketValue) {
+          applyPriceSuggestion(marketValue);
+          setRefSelected({ name: item.name, imgUrl: item.img_url, priceEur: marketValue });
+        }
+      } catch {
+        // No pricing available for this set — admin sets value manually.
+      }
+    } else {
+      const priceEur = item.details?.priceEur ? parseFloat(item.details.priceEur) : null;
+      if (priceEur) applyPriceSuggestion(priceEur);
+      setRefSelected({ name: item.name, imgUrl: item.img_url, priceEur });
+    }
+  };
 
   return (
     <div className="min-h-screen pb-16 bg-[#05050a] text-stone-100 px-4 md:px-6 max-w-[1400px] mx-auto pt-6">
@@ -513,6 +604,69 @@ export default function SkillZone() {
                 🧩 {t('skill_zone.form.heading')}
               </h2>
 
+              {/* Reference item price lookup — search real catalog data to suggest
+                  a market value, slot count, and entry cost instead of guessing blind. */}
+              <div className="mb-5 p-4 bg-black/30 border border-pink-500/20 rounded-xl relative">
+                <label className="block text-stone-300 font-bold uppercase mb-1 text-xs">
+                  {t('skill_zone.form.ref_search_label')}
+                </label>
+                <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.form.ref_search_hint')}</p>
+                <input
+                  type="text"
+                  value={refQuery}
+                  onChange={e => setRefQuery(e.target.value)}
+                  placeholder={t('skill_zone.form.ref_search_placeholder')}
+                  className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white outline-none focus:border-pink-500 font-mono text-xs"
+                />
+
+                {refSearching && (
+                  <div className="mt-2 text-[10px] text-stone-500 font-mono">{t('skill_zone.form.ref_searching')}</div>
+                )}
+
+                {refResults.length > 0 && (
+                  <div className="mt-2 max-h-56 overflow-y-auto border border-white/10 rounded bg-[#0a0806] divide-y divide-white/5">
+                    {refResults.map((item, i) => (
+                      <button
+                        type="button"
+                        key={item.set_num || item.external_id || item.id || i}
+                        onClick={() => handleSelectRefItem(item)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-pink-500/10 transition-colors text-left"
+                      >
+                        {item.img_url ? (
+                          <img src={item.img_url} alt={item.name} className="w-8 h-8 object-contain rounded bg-black/40 shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-black/40 shrink-0" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[11px] font-bold text-white truncate">{item.name}</div>
+                          {item.details?.priceEur ? (
+                            <div className="text-[10px] text-emerald-400 font-mono">~€{parseFloat(item.details.priceEur).toFixed(2)}</div>
+                          ) : item.year ? (
+                            <div className="text-[10px] text-stone-500 font-mono">{item.year}</div>
+                          ) : null}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {refSelected && (
+                  <div className="mt-3 flex items-center gap-3 p-2 bg-emerald-950/20 border border-emerald-500/30 rounded">
+                    {refSelected.imgUrl && (
+                      <img src={refSelected.imgUrl} alt={refSelected.name} className="w-10 h-10 object-contain rounded bg-black/40 shrink-0" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-bold text-emerald-400 truncate">✓ {refSelected.name}</div>
+                      <div className="text-[10px] text-stone-400 font-mono">
+                        {refSelected.priceEur
+                          ? t('skill_zone.form.ref_suggestion_applied', { price: refSelected.priceEur.toFixed(2) })
+                          : t('skill_zone.form.ref_no_price')}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <form onSubmit={handleCreateContestSubmit} className="space-y-4 font-sans text-xs">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Left Column */}
@@ -548,8 +702,9 @@ export default function SkillZone() {
                           onChange={e => setNewContestCat(e.target.value)}
                           className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white outline-none focus:border-pink-500 font-mono"
                         >
-                          <option value="lego">🧱 {t('skill_zone.form.category_lego')}</option>
-                          <option value="pokemon">🃏 {t('skill_zone.form.category_pokemon')}</option>
+                          {CATALOG_GAMES.map(game => (
+                            <option key={game.slug} value={game.slug}>{game.emoji} {game.name}</option>
+                          ))}
                         </select>
                       </div>
 
@@ -651,16 +806,78 @@ export default function SkillZone() {
             </div>
           )}
 
+          {user?.role !== 'admin' && (
+            /* ================= HOW IT WORKS (public / non-admin) ================= */
+            <div className="mb-8 bento-card border border-white/5 rounded-2xl p-6 md:p-8 bg-[#14120b]/30">
+              <h3 className="font-extrabold text-white uppercase font-mono text-base flex items-center gap-2 mb-6">
+                <Trophy className="h-5 w-5 text-gold-400" />
+                <span>{t('skill_zone.how_it_works.title')}</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Coins className="h-6 w-6 text-gold-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step1_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step1_text')}</p>
+                </div>
+
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Zap className="h-6 w-6 text-pink-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step2_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step2_text')}</p>
+                </div>
+
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Trophy className="h-6 w-6 text-gold-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step3_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step3_text')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Category Filter */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-5 -mx-1 px-1 scrollbar-thin">
+            <button
+              onClick={() => setCategoryFilter('all')}
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider border transition-all duration-300 ${
+                categoryFilter === 'all'
+                  ? 'bg-gold-500 border-gold-500 text-white'
+                  : 'bg-black/20 border-white/10 text-stone-400 hover:border-gold-500/40'
+              }`}
+            >
+              {t('skill_zone.lobby.filter_all')}
+            </button>
+            {CATALOG_GAMES.map(game => (
+              <button
+                key={game.slug}
+                onClick={() => setCategoryFilter(game.slug)}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider border transition-all duration-300 flex items-center gap-1.5 ${
+                  categoryFilter === game.slug
+                    ? 'bg-gold-500 border-gold-500 text-white'
+                    : 'bg-black/20 border-white/10 text-stone-400 hover:border-gold-500/40'
+                }`}
+              >
+                <span>{game.emoji}</span>
+                <span>{game.name}</span>
+              </button>
+            ))}
+          </div>
+
           {/* ================= SKILL ZONE LOBBY ================= */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {contests.length === 0 ? (
+              {contests.filter(con => categoryFilter === 'all' || con.category === categoryFilter).length === 0 ? (
                 <div className="col-span-2 text-center py-20 border border-dashed border-white/5 rounded-xl bg-[#14120b]/10">
                   <Trophy className="h-12 w-12 text-stone-500 mx-auto mb-3" />
-                  <h3 className="font-bold text-white uppercase font-mono">{t('skill_zone.lobby.empty_title')}</h3>
-                  <p className="text-xs text-stone-400 mt-1">{t('skill_zone.lobby.empty_text')}</p>
+                  <h3 className="font-bold text-white uppercase font-mono">
+                    {contests.length === 0 ? t('skill_zone.lobby.empty_title') : t('skill_zone.lobby.empty_filtered_title')}
+                  </h3>
+                  <p className="text-xs text-stone-400 mt-1">
+                    {contests.length === 0 ? t('skill_zone.lobby.empty_text') : t('skill_zone.lobby.empty_filtered_text')}
+                  </p>
                 </div>
               ) : (
-                contests.map(con => {
+                contests.filter(con => categoryFilter === 'all' || con.category === categoryFilter).map(con => {
                   const leaderboard = leaderboards[con.id] || [];
                   const isParticipating = !!user && leaderboard.some(p => p.userId === user.id);
 
@@ -793,7 +1010,7 @@ export default function SkillZone() {
         </>
       )}
 
-          {user?.role === 'admin' ? (
+          {user?.role === 'admin' && (
             /* ================= ADMIN DIAGNOSTICS & SANDBOX CONTROLS ================= */
             <div className="mt-16 bento-card border border-white/5 border-dashed rounded-xl p-5 font-mono text-xs bg-[#14120b]/10">
               <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
@@ -849,34 +1066,6 @@ export default function SkillZone() {
                     <RefreshCw className="h-3 w-3 mr-1" />
                     <span>{t('skill_zone.diagnostics.sync_button')}</span>
                   </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* ================= HOW IT WORKS (public / non-admin) ================= */
-            <div className="mt-16 bento-card border border-white/5 rounded-2xl p-6 md:p-8 bg-[#14120b]/30">
-              <h3 className="font-extrabold text-white uppercase font-mono text-base flex items-center gap-2 mb-6">
-                <Trophy className="h-5 w-5 text-gold-400" />
-                <span>{t('skill_zone.how_it_works.title')}</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Coins className="h-6 w-6 text-gold-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step1_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step1_text')}</p>
-                </div>
-
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Zap className="h-6 w-6 text-pink-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step2_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step2_text')}</p>
-                </div>
-
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Trophy className="h-6 w-6 text-gold-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step3_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step3_text')}</p>
                 </div>
               </div>
             </div>
