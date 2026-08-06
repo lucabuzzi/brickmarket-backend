@@ -534,6 +534,15 @@
       "reset_text": "Ricarica i cataloghi e aggiorna gli stati.",
       "sync_button": "Sincronizza API Core"
     },
+    "how_it_works": {
+      "title": "Come Funziona",
+      "step1_title": "1. Acquista Crediti",
+      "step1_text": "Acquista e utilizza i crediti per giocare alle sfide puzzle.",
+      "step2_title": "2. Gioca e Scala la Classifica",
+      "step2_text": "Fai le tue giocate e posizionati al primo posto per vincere.",
+      "step3_title": "3. Vinci il Premio",
+      "step3_text": "Finiti gli slot, il primo in classifica si porta a casa il premio."
+    },
     "alerts": {
       "new_bid": "Nuova offerta più alta di {{amount}} CR piazzata sull'asta!",
       "new_contest": "Nuovo contest puzzle \"{{title}}\" pubblicato!",

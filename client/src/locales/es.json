@@ -534,6 +534,15 @@
       "reset_text": "Recarga los catálogos y actualiza los estados.",
       "sync_button": "Sincronizar API Central"
     },
+    "how_it_works": {
+      "title": "Cómo Funciona",
+      "step1_title": "1. Compra Créditos",
+      "step1_text": "Compra y usa créditos para jugar a los desafíos de puzzles.",
+      "step2_title": "2. Juega y Sube en la Clasificación",
+      "step2_text": "Haz tus intentos y ponte en primer lugar de la clasificación para ganar.",
+      "step3_title": "3. Gana el Premio",
+      "step3_text": "Cuando se agotan las plazas, quien esté primero en la clasificación se lleva el premio."
+    },
     "alerts": {
       "new_bid": "¡Nueva oferta más alta de {{amount}} CR realizada en la subasta!",
       "new_contest": "¡Nuevo concurso de puzle \"{{title}}\" publicado!",

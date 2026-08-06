@@ -5,7 +5,7 @@ import JigsawPuzzle from '../components/JigsawPuzzle';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
-  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle
+  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -190,7 +190,10 @@ export default function SkillZone() {
   // Combined play handler — every play is a new paid entry (credits are deducted from the
   // wallet on each attempt), repeatable by the same user until the contest's slots fill up.
   const handlePlayContest = async (con) => {
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     if (con.status !== 'open') {
       triggerSystemAlert(t('skill_zone.alerts.contest_closed'));
@@ -367,23 +370,26 @@ export default function SkillZone() {
         </div>
       </div>
 
-      {/* User check */}
-      {!user ? (
-        <div className="bento-card p-12 text-center rounded-2xl border border-white/5 bg-[#14120b]/30 max-w-md mx-auto my-12">
-          <ShieldAlert className="h-12 w-12 text-pink-400 mx-auto mb-4" />
-          <h2 className="text-lg font-bold uppercase font-mono text-white">{t('skill_zone.access.title')}</h2>
-          <p className="text-xs text-stone-400 mt-2 mb-6">
-            {t('skill_zone.access.text')}
-          </p>
+      {/* Guest banner — lobby stays browsable without an account; only playing requires login */}
+      {!user && (
+        <div className="bento-card p-5 mb-8 rounded-2xl border border-white/5 bg-[#14120b]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <ShieldAlert className="h-8 w-8 text-pink-400 shrink-0" />
+            <div>
+              <h2 className="text-sm font-bold uppercase font-mono text-white">{t('skill_zone.access.title')}</h2>
+              <p className="text-xs text-stone-400 mt-0.5">{t('skill_zone.access.text')}</p>
+            </div>
+          </div>
           <Link
             to="/login"
-            className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all shadow-lg shadow-gold-500/25 active-shrink"
+            className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all shadow-lg shadow-gold-500/25 active-shrink text-center shrink-0"
           >
             {t('skill_zone.access.cta')}
           </Link>
         </div>
-      ) : (
-        <>
+      )}
+
+      <>
           {/* Play Area Overlay Panel */}
           {playingContest ? (
             <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl">
@@ -464,7 +470,7 @@ export default function SkillZone() {
             <>
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 mb-8 gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-              {true && (
+              {user?.role === 'admin' && (
                 <button
                   onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
                   className="flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/40 text-pink-400 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300"
@@ -492,7 +498,7 @@ export default function SkillZone() {
           </div>
 
           {/* Admin Create/Upload Contest Form */}
-          {isAdminFormOpen && (
+          {user?.role === 'admin' && isAdminFormOpen && (
             <div className="bento-card p-6 mb-8 border border-pink-500/30 bg-[#14120b]/50 rounded-2xl relative shadow-xl">
               <div className="absolute top-4 right-4 z-20">
                 <button 
@@ -656,7 +662,7 @@ export default function SkillZone() {
               ) : (
                 contests.map(con => {
                   const leaderboard = leaderboards[con.id] || [];
-                  const isParticipating = leaderboard.some(p => p.userId === user.id);
+                  const isParticipating = !!user && leaderboard.some(p => p.userId === user.id);
 
                   return (
                     <div 
@@ -667,11 +673,18 @@ export default function SkillZone() {
                       
                       {/* Image Block */}
                       <div className="w-full md:w-48 h-48 md:h-auto relative flex-shrink-0 bg-black">
-                        <img 
-                          src={normalizeImageUrl(con.imageUrl)} 
-                          alt={con.title} 
+                        <img
+                          src={normalizeImageUrl(con.imageUrl)}
+                          alt={con.title}
                           className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-all duration-500"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }}
                         />
+                        <div className="hidden w-full h-full items-center justify-center text-white/30 absolute inset-0">
+                          <ImageOff className="h-8 w-8" />
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-col space-y-1">
                           <span className="text-[9px] bg-black/80 text-gold-400 border border-gold-500/30 px-2 py-0.5 rounded font-bold font-mono">
                             {t('skill_zone.lobby.value', { value: con.marketValue })}
@@ -719,7 +732,9 @@ export default function SkillZone() {
                               onClick={(e) => { e.stopPropagation(); handlePlayContest(con); }}
                               className="w-full py-2 bg-gold-500 hover:bg-gold-400 text-white font-extrabold rounded font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15 active-shrink"
                             >
-                              {isParticipating ? `🕹️ ${t('skill_zone.lobby.play_again')}` : t('skill_zone.lobby.buy_slot_play')} ({con.slotCostCredits} CR)
+                              {!user
+                                ? t('skill_zone.access.cta')
+                                : `${isParticipating ? `🕹️ ${t('skill_zone.lobby.play_again')}` : t('skill_zone.lobby.buy_slot_play')} (${con.slotCostCredits} CR)`}
                             </button>
                           ) : (
                             <span className="inline-flex items-center text-[10px] text-stone-400 font-mono uppercase bg-black/40 px-3 py-1.5 rounded">
@@ -778,66 +793,95 @@ export default function SkillZone() {
         </>
       )}
 
-          {/* ================= DEVELOPMENT DIAGNOSTICS CONTROL PANEL ================= */}
-          <div className="mt-16 bento-card border border-white/5 border-dashed rounded-xl p-5 font-mono text-xs bg-[#14120b]/10">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
-              <h3 className="font-extrabold text-white uppercase flex items-center space-x-2">
-                <Layers className="h-4 w-4 text-gold-400" />
-                <span>{t('skill_zone.diagnostics.title')}</span>
-              </h3>
-              <span className="text-[10px] bg-gold-950 border border-gold-500 text-gold-400 px-2 py-0.5 rounded font-bold">
-                {t('skill_zone.diagnostics.badge')}
-              </span>
-            </div>
+          {user?.role === 'admin' ? (
+            /* ================= ADMIN DIAGNOSTICS & SANDBOX CONTROLS ================= */
+            <div className="mt-16 bento-card border border-white/5 border-dashed rounded-xl p-5 font-mono text-xs bg-[#14120b]/10">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
+                <h3 className="font-extrabold text-white uppercase flex items-center space-x-2">
+                  <Layers className="h-4 w-4 text-gold-400" />
+                  <span>{t('skill_zone.diagnostics.title')}</span>
+                </h3>
+                <span className="text-[10px] bg-gold-950 border border-gold-500 text-gold-400 px-2 py-0.5 rounded font-bold">
+                  {t('skill_zone.diagnostics.badge')}
+                </span>
+              </div>
 
-            <p className="text-[10px] text-stone-400 mb-4 leading-normal">
-              {t('skill_zone.diagnostics.description')}
-            </p>
+              <p className="text-[10px] text-stone-400 mb-4 leading-normal">
+                {t('skill_zone.diagnostics.description')}
+              </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-3 bg-black/40 rounded border border-white/5">
-                <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.user_info_title')}</div>
-                <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.user_info_text')}</p>
-                <div className="text-[10px] font-semibold text-emerald-400 mb-2">
-                  ✅ {t('skill_zone.diagnostics.logged_as')} <span className="text-white font-bold">{user.username}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-3 bg-black/40 rounded border border-white/5">
+                  <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.user_info_title')}</div>
+                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.user_info_text')}</p>
+                  <div className="text-[10px] font-semibold text-emerald-400 mb-2">
+                    ✅ {t('skill_zone.diagnostics.logged_as')} <span className="text-white font-bold">{user.username}</span>
+                  </div>
+                  <button
+                    onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[9px] uppercase font-bold transition-all block w-full text-center"
+                  >
+                    {isAdminFormOpen ? t('skill_zone.diagnostics.close_puzzle_creator') : t('skill_zone.diagnostics.open_puzzle_creator')}
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
-                  className="px-2.5 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[9px] uppercase font-bold transition-all block w-full text-center"
-                >
-                  {isAdminFormOpen ? t('skill_zone.diagnostics.close_puzzle_creator') : t('skill_zone.diagnostics.open_puzzle_creator')}
-                </button>
-              </div>
 
-              <div className="p-3 bg-black/40 rounded border border-white/5">
-                <div className="font-bold text-pink-400 uppercase mb-1">{t('skill_zone.diagnostics.buy_mock_title')}</div>
-                <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.buy_mock_text')}</p>
-                <button
-                  onClick={() => navigate('/crediti/acquista?amount=50')}
-                  className="px-3 py-1 bg-white/5 hover:bg-pink-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all"
-                >
-                  {t('skill_zone.diagnostics.buy_mock_button')}
-                </button>
-              </div>
+                <div className="p-3 bg-black/40 rounded border border-white/5">
+                  <div className="font-bold text-pink-400 uppercase mb-1">{t('skill_zone.diagnostics.buy_mock_title')}</div>
+                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.buy_mock_text')}</p>
+                  <button
+                    onClick={() => navigate('/crediti/acquista?amount=50')}
+                    className="px-3 py-1 bg-white/5 hover:bg-pink-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all"
+                  >
+                    {t('skill_zone.diagnostics.buy_mock_button')}
+                  </button>
+                </div>
 
-              <div className="p-3 bg-black/40 rounded border border-white/5">
-                <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.reset_title')}</div>
-                <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.reset_text')}</p>
-                <button
-                  onClick={() => {
-                    fetchCatalogData();
-                    triggerSystemSuccess(t('skill_zone.alerts.sync_success'));
-                  }}
-                  className="px-3 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all flex items-center space-x-1"
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  <span>{t('skill_zone.diagnostics.sync_button')}</span>
-                </button>
+                <div className="p-3 bg-black/40 rounded border border-white/5">
+                  <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.reset_title')}</div>
+                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.reset_text')}</p>
+                  <button
+                    onClick={() => {
+                      fetchCatalogData();
+                      triggerSystemSuccess(t('skill_zone.alerts.sync_success'));
+                    }}
+                    className="px-3 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all flex items-center space-x-1"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    <span>{t('skill_zone.diagnostics.sync_button')}</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          ) : (
+            /* ================= HOW IT WORKS (public / non-admin) ================= */
+            <div className="mt-16 bento-card border border-white/5 rounded-2xl p-6 md:p-8 bg-[#14120b]/30">
+              <h3 className="font-extrabold text-white uppercase font-mono text-base flex items-center gap-2 mb-6">
+                <Trophy className="h-5 w-5 text-gold-400" />
+                <span>{t('skill_zone.how_it_works.title')}</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Coins className="h-6 w-6 text-gold-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step1_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step1_text')}</p>
+                </div>
+
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Zap className="h-6 w-6 text-pink-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step2_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step2_text')}</p>
+                </div>
+
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
+                  <Trophy className="h-6 w-6 text-gold-400 mb-2" />
+                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step3_title')}</div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step3_text')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+      </>
     </div>
   );
 }

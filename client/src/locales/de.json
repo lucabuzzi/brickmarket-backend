@@ -534,6 +534,15 @@
       "reset_text": "Kataloge neu laden und Zustände aktualisieren.",
       "sync_button": "Core-API synchronisieren"
     },
+    "how_it_works": {
+      "title": "So Funktioniert's",
+      "step1_title": "1. Guthaben Kaufen",
+      "step1_text": "Kaufe und nutze Guthaben, um an den Puzzle-Challenges teilzunehmen.",
+      "step2_title": "2. Spielen und in der Rangliste Aufsteigen",
+      "step2_text": "Spiele deine Versuche und erreiche Platz 1 der Rangliste, um zu gewinnen.",
+      "step3_title": "3. Gewinne den Preis",
+      "step3_text": "Sind alle Plätze vergeben, nimmt der Erstplatzierte der Rangliste den Preis mit nach Hause."
+    },
     "alerts": {
       "new_bid": "Neues Höchstgebot von {{amount}} CR auf die Auktion abgegeben!",
       "new_contest": "Neuer Puzzle-Contest „{{title}}\" veröffentlicht!",

@@ -534,6 +534,15 @@
       "reset_text": "Recharge les catalogues et actualise les états.",
       "sync_button": "Synchroniser l'API Centrale"
     },
+    "how_it_works": {
+      "title": "Comment ça Marche",
+      "step1_title": "1. Achetez des Crédits",
+      "step1_text": "Achetez et utilisez des crédits pour jouer aux défis puzzle.",
+      "step2_title": "2. Jouez et Grimpez au Classement",
+      "step2_text": "Tentez votre chance et placez-vous en tête du classement pour gagner.",
+      "step3_title": "3. Remportez le Prix",
+      "step3_text": "Une fois les places épuisées, le premier du classement remporte le prix."
+    },
     "alerts": {
       "new_bid": "Nouvelle enchère la plus élevée de {{amount}} CR placée sur la vente !",
       "new_contest": "Nouveau concours de puzzle « {{title}} » publié !",

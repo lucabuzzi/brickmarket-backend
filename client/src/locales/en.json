@@ -534,6 +534,15 @@
       "reset_text": "Reload catalogs and refresh states.",
       "sync_button": "Sync Core API"
     },
+    "how_it_works": {
+      "title": "How It Works",
+      "step1_title": "1. Buy Credits",
+      "step1_text": "Buy and use credits to play the puzzle challenges.",
+      "step2_title": "2. Play and Climb the Leaderboard",
+      "step2_text": "Make your attempts and reach the top of the leaderboard to win.",
+      "step3_title": "3. Win the Prize",
+      "step3_text": "Once the slots run out, whoever is first on the leaderboard takes the prize home."
+    },
     "alerts": {
       "new_bid": "New high bid of {{amount}} CR placed on auction!",
       "new_contest": "New Jigsaw contest \"{{title}}\" published!",

@@ -16,6 +16,7 @@ export default function JigsawPuzzle({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isPortrait, setIsPortrait] = useState(false);
   const [imageReady, setImageReady] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Anti-cheat stats
   const blurCountRef = useRef(0);
@@ -279,12 +280,16 @@ export default function JigsawPuzzle({
 
   // Load and cache product image, detecting its orientation before the board is built
   useEffect(() => {
+    setImageError(false);
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       imageRef.current = img;
       setIsPortrait(img.naturalHeight > img.naturalWidth);
       setImageReady(true);
+    };
+    img.onerror = () => {
+      setImageError(true);
     };
     img.src = imageUrl;
   }, [imageUrl]);
@@ -582,6 +587,26 @@ export default function JigsawPuzzle({
     });
   };
 
+  if (imageError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 p-10 w-full text-center">
+        <AlertTriangle className="h-12 w-12 text-cyber-neonMagenta" />
+        <h3 className="text-lg font-extrabold text-cyber-neonMagenta uppercase tracking-wider">
+          Puzzle Image Unavailable
+        </h3>
+        <p className="max-w-md text-sm text-cyber-muted">
+          The reference image for this puzzle could not be loaded. Please go back and try another contest.
+        </p>
+        <button
+          onClick={onCancel}
+          className="px-6 py-2 border border-cyber-neonMagenta text-cyber-neonMagenta hover:bg-cyber-neonMagenta hover:text-white rounded uppercase text-xs font-bold font-mono transition-all duration-300"
+        >
+          Back to Lobby
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef} className="flex flex-col lg:flex-row items-start justify-center gap-6 p-4 w-full">
       <div className="flex flex-col items-center w-full lg:w-auto">
@@ -668,6 +693,7 @@ export default function JigsawPuzzle({
               src={imageUrl}
               alt="Original puzzle reference"
               className="w-full h-auto object-cover"
+              onError={() => setImageError(true)}
             />
           </div>
           <p className="text-[10px] text-cyber-muted mt-2 leading-snug">
