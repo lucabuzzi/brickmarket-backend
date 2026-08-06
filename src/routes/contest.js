@@ -49,6 +49,7 @@ router.get('/list', async (req, res) => {
       `SELECT c.*, p.title, p.image_url, p.category, p.market_value, p.condition, p.grading_info
        FROM public.contests c
        JOIN public.products p ON c.product_id = p.id
+       WHERE c.status != 'cancelled'
        ORDER BY c.created_at DESC`
     );
 
