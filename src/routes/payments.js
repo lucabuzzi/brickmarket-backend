@@ -126,6 +126,102 @@ router.post('/stripe/create-payment-intent', authMiddleware, async (req, res) =>
   }
 });
 
+// 2b. Crea un PaymentIntent per il checkout multi-articolo del carrello
+// (può includere annunci di venditori diversi: l'incasso va comunque prima
+// sul saldo della piattaforma, i trasferimenti ai singoli venditori avvengono
+// via webhook/confirm-delivery esattamente come per l'acquisto singolo).
+router.post('/stripe/create-cart-payment-intent', authMiddleware, async (req, res) => {
+  const { itemIds, shippingSelections = {} } = req.body;
+  if (!Array.isArray(itemIds) || itemIds.length === 0) {
+    return res.status(400).json({ error: 'Nessun articolo selezionato' });
+  }
+
+  try {
+    const listingsRes = await query(
+      `SELECT l.*, u.stripe_account_id
+       FROM listings l JOIN users u ON l.seller_id = u.id
+       WHERE l.id = ANY($1) AND l.status = 'active'`,
+      [itemIds]
+    );
+    const listings = listingsRes.rows;
+    if (listings.length !== itemIds.length) {
+      return res.status(400).json({ error: 'Uno o più articoli non sono più disponibili' });
+    }
+
+    const orderRows = [];
+    let totalCents = 0;
+
+    for (const listing of listings) {
+      if (!listing.stripe_account_id) {
+        return res.status(400).json({ error: `Il venditore di "${listing.title}" non ha configurato i pagamenti` });
+      }
+      if (listing.type === 'auction') {
+        return res.status(400).json({ error: `"${listing.title}" è un'asta: non è disponibile l'acquisto diretto` });
+      }
+      const itemPrice = parseFloat(listing.price);
+      if (!Number.isFinite(itemPrice) || itemPrice <= 0) {
+        return res.status(400).json({ error: `Prezzo non valido per "${listing.title}"` });
+      }
+
+      const shipping      = shippingSelections[listing.id] || {};
+      const shippingCost  = Number(shipping.cost) || 0;
+      const platformFee   = Math.round(itemPrice * 0.05 * 100) / 100;
+      const sellerFee     = platformFee;
+      const sellerPayout  = itemPrice - sellerFee;
+      const totalBuyer    = itemPrice + shippingCost + platformFee;
+
+      orderRows.push({
+        listing, shippingCost,
+        selectedCarrier: shipping.carrier || null,
+        itemPrice, platformFee, sellerFee, sellerPayout, totalBuyer,
+      });
+      totalCents += Math.round(totalBuyer * 100);
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalCents,
+      currency: 'eur',
+      metadata: {
+        buyerId: req.user.userId,
+        itemIds: itemIds.join(','),
+      },
+      automatic_payment_methods: { enabled: true },
+    });
+
+    const orderIds = [];
+    for (const o of orderRows) {
+      const orderRes = await query(`
+        INSERT INTO orders
+          (buyer_id, seller_id, listing_id,
+           item_price, shipping_cost, platform_fee, seller_fee,
+           total_buyer, seller_payout,
+           status, stripe_payment_intent_id, payment_gateway,
+           selected_carrier, confirm_deadline)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,
+                'pending_payment',$10,'stripe',
+                $11, NOW() + INTERVAL '5 days')
+        RETURNING id
+      `, [
+        req.user.userId, o.listing.seller_id, o.listing.id,
+        o.itemPrice, o.shippingCost, o.platformFee, o.sellerFee,
+        o.totalBuyer, o.sellerPayout,
+        paymentIntent.id, o.selectedCarrier,
+      ]);
+      orderIds.push(orderRes.rows[0].id);
+    }
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      orderIds,
+      total: (totalCents / 100).toFixed(2),
+    });
+
+  } catch (err) {
+    console.error('Cart PaymentIntent error:', err);
+    res.status(500).json({ error: 'Errore creazione pagamento' });
+  }
+});
+
 // 3. Acquirente conferma la ricezione → libera i fondi al venditore
 router.post('/confirm-delivery/:orderId', authMiddleware, async (req, res) => {
   const client = await getClient();
@@ -203,26 +299,32 @@ const webhook = async (req, res) => {
   switch (event.type) {
     case 'payment_intent.succeeded': {
       const pi = event.data.object;
-      const { listingId, shippingCost } = pi.metadata;
 
-      // Aggiorna ordine a 'payment_received'
+      // Aggiorna tutti gli ordini legati a questo PaymentIntent (uno per articolo:
+      // un acquisto singolo ne crea uno solo, un checkout da carrello più d'uno)
       await query(
         "UPDATE orders SET status='payment_received' WHERE stripe_payment_intent_id=$1",
         [pi.id]
       );
 
-      // Trasferisci subito il costo spedizione al venditore
-      if (parseFloat(shippingCost) > 0) {
-        const orderRes = await query(
-          `SELECT o.*, u.stripe_account_id FROM orders o
-           JOIN users u ON o.seller_id=u.id
-           WHERE o.stripe_payment_intent_id=$1`,
-          [pi.id]
+      const ordersRes = await query(
+        `SELECT o.*, u.stripe_account_id FROM orders o
+         JOIN users u ON o.seller_id=u.id
+         WHERE o.stripe_payment_intent_id=$1`,
+        [pi.id]
+      );
+
+      for (const order of ordersRes.rows) {
+        // Il pagamento è confermato: l'annuncio non è più acquistabile da altri
+        await query(
+          "UPDATE listings SET status='sold', updated_at=NOW() WHERE id=$1",
+          [order.listing_id]
         );
-        const order = orderRes.rows[0];
-        if (order?.stripe_account_id) {
+
+        // Trasferisci subito il costo spedizione al venditore
+        if (parseFloat(order.shipping_cost) > 0 && order.stripe_account_id) {
           await stripe.transfers.create({
-            amount:      Math.round(parseFloat(shippingCost) * 100),
+            amount:      Math.round(parseFloat(order.shipping_cost) * 100),
             currency:    'eur',
             destination: order.stripe_account_id,
             metadata:    { type: 'shipping', orderId: order.id },

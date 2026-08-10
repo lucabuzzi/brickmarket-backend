@@ -513,40 +513,10 @@ router.get('/search', async (req, res) => {
   }
 });
 
-router.post('/checkout', auth, async (req, res) => {
-  const { itemIds, shippingSelections = {} } = req.body;
-  if (!Array.isArray(itemIds) || itemIds.length === 0) {
-    return res.status(400).json({ error: 'Nessun articolo selezionato' });
-  }
-  try {
-    const itemsResult = await query(`SELECT id, seller_id, price FROM listings WHERE id = ANY($1)`, [itemIds]);
-    
-    for (const item of itemsResult.rows) {
-      const price = item.price || 0;
-      const platformFee = price * 0.05;
-      
-      const shipping = shippingSelections[item.id] || { carrier: null, cost: 0 };
-      const selectedCarrier = shipping.carrier;
-      const shippingCost = Number(shipping.cost);
-
-      const totalBuyer = Number(price) + Number(platformFee) + shippingCost;
-      await query(
-        `INSERT INTO orders (buyer_id, seller_id, listing_id, item_price, platform_fee, seller_fee, total_buyer, seller_payout, status, selected_carrier, shipping_cost)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'completed', $9, $10)`,
-        [req.user.userId, item.seller_id, item.id, price, platformFee, platformFee, totalBuyer, price - platformFee, selectedCarrier, shippingCost]
-      );
-    }
-
-    const result = await query(
-      `UPDATE listings SET status = 'sold', updated_at = NOW() WHERE id = ANY($1) RETURNING id`,
-      [itemIds]
-    );
-    res.json({ success: true, updated: result.rows.length });
-  } catch (err) {
-    console.error('CHECKOUT ERROR:', err.message);
-    res.status(500).json({ error: 'Errore durante il checkout' });
-  }
-});
+// NOTE: cart checkout now goes through a real Stripe PaymentIntent —
+// see POST /api/payments/stripe/create-cart-payment-intent. This route used
+// to mark orders 'completed' and listings 'sold' directly with no payment
+// collection at all; removed rather than left as a free-checkout backdoor.
 
 router.get('/:id', async (req, res) => {
   try {

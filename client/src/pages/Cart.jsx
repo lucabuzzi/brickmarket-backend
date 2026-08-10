@@ -1,15 +1,119 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
-import { apiFetch, apiUrl } from '../api';
+import { apiFetch } from '../api';
 import { Trash2, AlertTriangle, CheckCircle2, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CARRIERS } from './Sell';
 
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+
+const cardElementOptions = {
+  style: {
+    base: {
+      color: '#f5f5f4',
+      fontSize: '16px',
+      '::placeholder': { color: '#78716c' },
+    },
+    invalid: { color: '#fb7185' },
+  },
+};
+
+function CheckoutSidebar({ cart, total, shippingSelections, hasUnavailableItems, formatPrice, onSuccess }) {
+  const { t } = useTranslation();
+  const stripe = useStripe();
+  const elements = useElements();
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleCheckout = async () => {
+    if (cart.length === 0 || hasUnavailableItems || !stripe || !elements) return;
+
+    setChecking(true);
+    setError('');
+    try {
+      const { clientSecret } = await apiFetch('/api/payments/stripe/create-cart-payment-intent', {
+        method: 'POST',
+        body: { itemIds: cart.map(c => c.id), shippingSelections },
+      });
+
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: elements.getElement(CardElement) },
+      });
+
+      if (result.error) {
+        setError(result.error.message || t('wallet.payment_failed'));
+        return;
+      }
+
+      onSuccess();
+    } catch (err) {
+      setError(err.message || t('wallet.payment_comm_error'));
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #44403c', position: 'sticky', top: '100px' }}>
+      <h2 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0', color: '#fff' }}>{t('cart.order_summary')}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: '#a8a29e' }}>
+        <span>{t('cart.items_count_label', { count: cart.length })}</span>
+        <span>{formatPrice(total)}</span>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid #44403c', margin: '1rem 0' }} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', color: '#fff', fontSize: '1.4rem', fontWeight: 'bold' }}>
+        <span>{t('cart.total_label')}</span>
+        <span style={{ color: '#d4af37' }}>{formatPrice(total)}</span>
+      </div>
+
+      {hasUnavailableItems && (
+        <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '8px', color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
+          <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+          <span>{t('cart.remove_unavailable_notice')}</span>
+        </div>
+      )}
+
+      {!hasUnavailableItems && (
+        <>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#a8a29e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+            {t('wallet.card_details_label')}
+          </label>
+          <div style={{ backgroundColor: '#120f0a', border: '1px solid #44403c', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1rem' }}>
+            <CardElement options={cardElementOptions} />
+          </div>
+        </>
+      )}
+
+      {error && (
+        <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '8px', color: '#fb7185', fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>
+          {error}
+        </div>
+      )}
+
+      <button
+        onClick={handleCheckout}
+        disabled={checking || hasUnavailableItems || !stripe}
+        style={{ width: '100%', backgroundColor: hasUnavailableItems ? '#57534e' : '#22c55e', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: hasUnavailableItems ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s' }}
+      >
+        {checking ? t('cart.processing') : t('cart.checkout_button')}
+      </button>
+
+      <p style={{ fontSize: '0.7rem', color: '#78716c', textAlign: 'center', marginTop: '1rem', lineHeight: '1.4' }}>
+        {t('wallet.secure_payment_notice')}
+      </p>
+    </div>
+  );
+}
+
 export default function Cart() {
   const { t } = useTranslation();
   const { cart, removeFromCart, clearCart } = useCart();
-  const [checking, setChecking] = useState(false);
   const [soldItems, setSoldItems] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
@@ -60,32 +164,13 @@ export default function Cart() {
     return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(v);
   };
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
-    if (soldItems.length > 0) return; // Prevent checkout if there are sold items
-    
-    setChecking(true);
-    try {
-      const res = await fetch(apiUrl('/api/listings/checkout'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('cardbrix_token')}` },
-        body: JSON.stringify({ itemIds: cart.map(c => c.id), shippingSelections })
-      });
-      if (res.ok) {
-        clearCart();
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-          navigate('/', { replace: true });
-        }, 3000);
-      } else {
-        alert(t('cart.checkout_error'));
-      }
-    } catch {
-      alert(t('cart.checkout_unavailable'));
-    } finally {
-      setChecking(false);
-    }
+  const handlePurchaseSuccess = () => {
+    clearCart();
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      navigate('/', { replace: true });
+    }, 3000);
   };
 
   const hasUnavailableItems = soldItems.length > 0;
@@ -189,35 +274,22 @@ export default function Cart() {
             })}
           </div>
 
-          <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #44403c', position: 'sticky', top: '100px' }}>
-            <h2 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0', color: '#fff' }}>{t('cart.order_summary')}</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: '#a8a29e' }}>
-              <span>{t('cart.items_count_label', { count: cart.length })}</span>
-              <span>{formatPrice(total)}</span>
+          {stripePromise ? (
+            <Elements stripe={stripePromise}>
+              <CheckoutSidebar
+                cart={cart}
+                total={total}
+                shippingSelections={shippingSelections}
+                hasUnavailableItems={hasUnavailableItems}
+                formatPrice={formatPrice}
+                onSuccess={handlePurchaseSuccess}
+              />
+            </Elements>
+          ) : (
+            <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ef4444', color: '#fb7185', textAlign: 'center' }}>
+              {t('wallet.stripe_not_configured')}
             </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid #44403c', margin: '1rem 0' }} />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', color: '#fff', fontSize: '1.4rem', fontWeight: 'bold' }}>
-              <span>{t('cart.total_label')}</span>
-              <span style={{ color: '#d4af37' }}>{formatPrice(total)}</span>
-            </div>
-
-            {hasUnavailableItems && (
-              <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1rem', borderRadius: '8px', color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
-                <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-                <span>{t('cart.remove_unavailable_notice')}</span>
-              </div>
-            )}
-
-            <button
-              onClick={handleCheckout}
-              disabled={checking || hasUnavailableItems}
-              style={{ width: '100%', backgroundColor: hasUnavailableItems ? '#57534e' : '#22c55e', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: hasUnavailableItems ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s' }}
-            >
-              {checking ? t('cart.processing') : t('cart.checkout_button')}
-            </button>
-          </div>
+          )}
 
         </div>
       )}
