@@ -45,16 +45,11 @@ router.post('/stripe/create-payment-intent', authMiddleware, async (req, res) =>
   try {
     // Recupera annuncio e venditore
     const listingRes = await query(
-      `SELECT l.*, u.stripe_account_id, u.stripe_account_status
-       FROM listings l JOIN users u ON l.seller_id = u.id
-       WHERE l.id=$1 AND l.status='active'`,
+      `SELECT l.* FROM listings l WHERE l.id=$1 AND l.status='active'`,
       [listingId]
     );
     const listing = listingRes.rows[0];
     if (!listing) return res.status(404).json({ error: 'Annuncio non trovato' });
-    if (!listing.stripe_account_id) {
-      return res.status(400).json({ error: 'Il venditore non ha configurato i pagamenti' });
-    }
     if (listing.type === 'auction') {
       return res.status(400).json({ error: 'Acquisto diretto non disponibile per le aste' });
     }
@@ -127,9 +122,9 @@ router.post('/stripe/create-payment-intent', authMiddleware, async (req, res) =>
 });
 
 // 2b. Crea un PaymentIntent per il checkout multi-articolo del carrello
-// (può includere annunci di venditori diversi: l'incasso va comunque prima
-// sul saldo della piattaforma, i trasferimenti ai singoli venditori avvengono
-// via webhook/confirm-delivery esattamente come per l'acquisto singolo).
+// (può includere annunci di venditori diversi: l'incasso finisce sempre
+// sul saldo della piattaforma — CardBrix paga poi ciascun venditore
+// separatamente, fuori da Stripe; vedi payout tracking in admin.js).
 router.post('/stripe/create-cart-payment-intent', authMiddleware, async (req, res) => {
   const { itemIds, shippingSelections = {} } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0) {
@@ -138,9 +133,7 @@ router.post('/stripe/create-cart-payment-intent', authMiddleware, async (req, re
 
   try {
     const listingsRes = await query(
-      `SELECT l.*, u.stripe_account_id
-       FROM listings l JOIN users u ON l.seller_id = u.id
-       WHERE l.id = ANY($1) AND l.status = 'active'`,
+      `SELECT l.* FROM listings l WHERE l.id = ANY($1) AND l.status = 'active'`,
       [itemIds]
     );
     const listings = listingsRes.rows;
@@ -152,9 +145,6 @@ router.post('/stripe/create-cart-payment-intent', authMiddleware, async (req, re
     let totalCents = 0;
 
     for (const listing of listings) {
-      if (!listing.stripe_account_id) {
-        return res.status(400).json({ error: `Il venditore di "${listing.title}" non ha configurato i pagamenti` });
-      }
       if (listing.type === 'auction') {
         return res.status(400).json({ error: `"${listing.title}" è un'asta: non è disponibile l'acquisto diretto` });
       }
@@ -222,16 +212,16 @@ router.post('/stripe/create-cart-payment-intent', authMiddleware, async (req, re
   }
 });
 
-// 3. Acquirente conferma la ricezione → libera i fondi al venditore
+// 3. Acquirente conferma la ricezione → l'ordine è concluso. Il payout al
+// venditore NON è più un trasferimento Stripe automatico: è un'operazione
+// che CardBrix esegue fuori piattaforma e registra da /admin/payouts.
 router.post('/confirm-delivery/:orderId', authMiddleware, async (req, res) => {
   const client = await getClient();
   try {
     await client.query('BEGIN');
 
     const orderRes = await client.query(
-      `SELECT o.*, u.stripe_account_id
-       FROM orders o JOIN users u ON o.seller_id = u.id
-       WHERE o.id=$1 AND o.buyer_id=$2 AND o.status='shipped'`,
+      `SELECT * FROM orders WHERE id=$1 AND buyer_id=$2 AND status='shipped'`,
       [req.params.orderId, req.user.userId]
     );
     const order = orderRes.rows[0];
@@ -240,23 +230,10 @@ router.post('/confirm-delivery/:orderId', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Ordine non trovato o già confermato' });
     }
 
-    // Trasferisci i fondi al venditore (solo l'importo netto, senza la spedizione già accreditata)
-    const transferAmount = Math.round(order.seller_payout * 100); // in centesimi
-    const transfer = await stripe.transfers.create({
-      amount:      transferAmount,
-      currency:    'eur',
-      destination: order.stripe_account_id,
-      metadata:    { orderId: order.id },
-    });
-
-    // Aggiorna l'ordine
-    await client.query(`
-      UPDATE orders SET
-        status='completed',
-        stripe_transfer_id=$1,
-        confirmed_at=NOW()
-      WHERE id=$2
-    `, [transfer.id, order.id]);
+    await client.query(
+      "UPDATE orders SET status='completed', confirmed_at=NOW() WHERE id=$1",
+      [order.id]
+    );
 
     // Aggiorna statistiche venditore
     await client.query(
@@ -264,14 +241,8 @@ router.post('/confirm-delivery/:orderId', authMiddleware, async (req, res) => {
       [order.seller_id]
     );
 
-    // Segna l'annuncio come venduto
-    await client.query(
-      "UPDATE listings SET status='sold' WHERE id=$1",
-      [order.listing_id]
-    );
-
     await client.query('COMMIT');
-    res.json({ success: true, message: 'Consegna confermata. Venditore pagato.' });
+    res.json({ success: true, message: 'Consegna confermata.' });
 
   } catch (err) {
     await client.query('ROLLBACK');
@@ -308,28 +279,18 @@ const webhook = async (req, res) => {
       );
 
       const ordersRes = await query(
-        `SELECT o.*, u.stripe_account_id FROM orders o
-         JOIN users u ON o.seller_id=u.id
-         WHERE o.stripe_payment_intent_id=$1`,
+        `SELECT * FROM orders WHERE stripe_payment_intent_id=$1`,
         [pi.id]
       );
 
+      // Il pagamento è confermato: gli annunci non sono più acquistabili da altri.
+      // Il payout al venditore resta 'pending' finché non lo si registra da
+      // /admin/payouts (CardBrix paga fuori Stripe, non un transfer automatico).
       for (const order of ordersRes.rows) {
-        // Il pagamento è confermato: l'annuncio non è più acquistabile da altri
         await query(
           "UPDATE listings SET status='sold', updated_at=NOW() WHERE id=$1",
           [order.listing_id]
         );
-
-        // Trasferisci subito il costo spedizione al venditore
-        if (parseFloat(order.shipping_cost) > 0 && order.stripe_account_id) {
-          await stripe.transfers.create({
-            amount:      Math.round(parseFloat(order.shipping_cost) * 100),
-            currency:    'eur',
-            destination: order.stripe_account_id,
-            metadata:    { type: 'shipping', orderId: order.id },
-          });
-        }
       }
       break;
     }

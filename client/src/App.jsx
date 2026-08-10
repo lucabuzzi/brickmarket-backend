@@ -29,6 +29,7 @@ import AsteCardsHub from './pages/AsteCardsHub';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminArchive from './pages/AdminArchive';
 import AdminWalletTransactions from './pages/AdminWalletTransactions';
+import AdminPayouts from './pages/AdminPayouts';
 import AdminUsersList from './pages/AdminUsersList';
 import AdminInteractions from './pages/AdminInteractions';
 import AdminAnalytics from './pages/AdminAnalytics';
@@ -147,6 +148,7 @@ export default function App() {
           <Route path="admin" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
           <Route path="admin/archive" element={<ProtectedRoute adminOnly={true}><AdminArchive /></ProtectedRoute>} />
           <Route path="admin/wallet-transactions" element={<ProtectedRoute adminOnly={true}><AdminWalletTransactions /></ProtectedRoute>} />
+          <Route path="admin/payouts" element={<ProtectedRoute adminOnly={true}><AdminPayouts /></ProtectedRoute>} />
           <Route path="admin/users" element={<ProtectedRoute adminOnly={true}><AdminUsersList /></ProtectedRoute>} />
           <Route path="admin/interactions" element={<ProtectedRoute adminOnly={true}><AdminInteractions /></ProtectedRoute>} />
           <Route path="admin/analytics" element={<ProtectedRoute adminOnly={true}><AdminAnalytics /></ProtectedRoute>} />

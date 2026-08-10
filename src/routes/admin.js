@@ -299,6 +299,123 @@ router.get('/wallet/transactions', adminAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/admin/payouts
+ * Orders where the buyer has paid (via Stripe, straight to the platform
+ * balance — no Stripe Connect involved) and CardBrix therefore owes the
+ * seller a payout, done off-Stripe (bank transfer, PayPal, etc.).
+ * ?status=pending|paid|archived filters by payout_status (default: pending).
+ */
+router.get('/payouts', adminAuth, async (req, res) => {
+  const status = ['pending', 'paid', 'archived'].includes(req.query.status) ? req.query.status : 'pending';
+  try {
+    const result = await query(`
+      SELECT
+        o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status,
+        o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at,
+        l.title AS listing_title, l.set_number,
+        us.username AS seller_username, us.id AS seller_id,
+        ub.username AS buyer_username
+      FROM orders o
+      JOIN listings l ON l.id = o.listing_id
+      JOIN users us ON us.id = o.seller_id
+      JOIN users ub ON ub.id = o.buyer_id
+      WHERE o.status IN ('payment_received', 'completed')
+        AND o.payout_status = $1
+      ORDER BY o.created_at DESC
+    `, [status]);
+
+    res.json({
+      payouts: result.rows.map(r => ({
+        orderId: r.id,
+        itemPrice: parseFloat(r.item_price),
+        shippingCost: parseFloat(r.shipping_cost),
+        sellerPayout: parseFloat(r.seller_payout),
+        orderStatus: r.order_status,
+        payoutStatus: r.payout_status,
+        payoutPaidAt: r.payout_paid_at,
+        payoutNotes: r.payout_notes,
+        createdAt: r.created_at,
+        listingTitle: r.listing_title,
+        setNumber: r.set_number,
+        sellerId: r.seller_id,
+        sellerUsername: r.seller_username,
+        buyerUsername: r.buyer_username,
+      })),
+    });
+  } catch (err) {
+    console.error('ADMIN PAYOUTS LIST ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero dei payout venditori.' });
+  }
+});
+
+/**
+ * POST /api/admin/payouts/:orderId/mark-paid
+ * Records that CardBrix has paid the seller for this order, off-Stripe.
+ */
+router.post('/payouts/:orderId/mark-paid', adminAuth, async (req, res) => {
+  const { notes } = req.body;
+  try {
+    const result = await query(
+      `UPDATE orders SET payout_status='paid', payout_paid_at=NOW(), payout_notes=$1
+       WHERE id=$2 AND payout_status='pending'
+       RETURNING id`,
+      [notes || null, req.params.orderId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ordine non trovato o payout già registrato.' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('ADMIN PAYOUT MARK-PAID ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nella registrazione del payout.' });
+  }
+});
+
+/**
+ * POST /api/admin/payouts/:orderId/unmark
+ * Reverts a payout mistakenly marked paid, back to pending.
+ */
+router.post('/payouts/:orderId/unmark', adminAuth, async (req, res) => {
+  try {
+    const result = await query(
+      `UPDATE orders SET payout_status='pending', payout_paid_at=NULL, payout_notes=NULL
+       WHERE id=$1 AND payout_status='paid'
+       RETURNING id`,
+      [req.params.orderId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ordine non trovato o non è in stato "pagato".' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('ADMIN PAYOUT UNMARK ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'annullamento del payout.' });
+  }
+});
+
+/**
+ * POST /api/admin/payouts/:orderId/archive
+ * Moves a paid payout out of the active list once fully reconciled.
+ */
+router.post('/payouts/:orderId/archive', adminAuth, async (req, res) => {
+  try {
+    const result = await query(
+      `UPDATE orders SET payout_status='archived'
+       WHERE id=$1 AND payout_status='paid'
+       RETURNING id`,
+      [req.params.orderId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ordine non trovato o non è ancora stato pagato.' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('ADMIN PAYOUT ARCHIVE ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'archiviazione del payout.' });
+  }
+});
+
+/**
  * GET /api/admin/archive
  * Returns all non-active listings with sensitive transaction data (Buyer, Seller, Fees).
  */
