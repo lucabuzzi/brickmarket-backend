@@ -340,6 +340,10 @@ code {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   font: inherit;
   cursor: pointer;
   border-radius: 10px;
