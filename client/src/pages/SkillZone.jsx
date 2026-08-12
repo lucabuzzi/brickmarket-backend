@@ -5,13 +5,13 @@ import JigsawPuzzle from '../components/JigsawPuzzle';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
-  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff
+  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
 
 export default function SkillZone() {
-  const { user, refreshWallet } = useAuth();
+  const { user, wallet, refreshWallet } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -45,6 +45,8 @@ export default function SkillZone() {
   const [leaderboards, setLeaderboards] = useState({}); // key: contestId -> []
   
   // Game Session States
+  const [confirmingContest, setConfirmingContest] = useState(null); // contest pending purchase confirmation (table screen)
+  const [reservedContest, setReservedContest] = useState(null); // slot bought, waiting for the player to press Start
   const [playingContest, setPlayingContest] = useState(null); // contest details
   const [attemptToken, setAttemptToken] = useState(null); // anti-cheat start token
   const [gameResult, setGameResult] = useState(null); // leaderboard status after submission
@@ -164,54 +166,27 @@ export default function SkillZone() {
     setTimeout(() => setSysSuccess(null), 4000);
   };
 
-  // Buy Slot Handler
-  const handleBuySlot = async (contestId) => {
-    if (!user) return;
-
-    try {
-      const data = await apiFetch('/api/contest/buy-slot', {
-        method: 'POST',
-        body: { contestId }
-      });
-
-      refreshWallet();
-      fetchCatalogData();
-      fetchLeaderboard(contestId);
-      triggerSystemSuccess(data.message);
-    } catch (err) {
-      triggerSystemAlert(err.message || t('skill_zone.alerts.buy_slot_failed'));
-    }
-  };
-
-  // Start attempt handler (Anti-cheat JWT)
-  const handleStartAttempt = async (contestId) => {
-    try {
-      const data = await apiFetch('/api/contest/start', {
-        method: 'POST',
-        body: { contestId }
-      });
-
-      const contestDetails = contests.find(c => c.id === contestId);
-      setPlayingContest(contestDetails);
-      setAttemptToken(data.attemptToken);
-      setGameResult(null);
-    } catch (err) {
-      triggerSystemAlert(err.message || t('skill_zone.alerts.start_error'));
-    }
-  };
-
-  // Combined play handler — every play is a new paid entry (credits are deducted from the
-  // wallet on each attempt), repeatable by the same user until the contest's slots fill up.
-  const handlePlayContest = async (con) => {
+  // Step 1: clicking a contest card/button opens the confirmation table instead of
+  // charging credits immediately — no purchase happens until the user explicitly confirms.
+  const openConfirm = (con) => {
     if (!user) {
       navigate('/login');
       return;
     }
-
     if (con.status !== 'open') {
       triggerSystemAlert(t('skill_zone.alerts.contest_closed'));
       return;
     }
+    setConfirmingContest(con);
+  };
+
+  const cancelConfirm = () => setConfirmingContest(null);
+
+  // Step 2: user confirms on the table — this is the only place that actually spends
+  // credits. On success the slot is reserved but the attempt/timer has NOT started yet.
+  const handleConfirmPurchase = async () => {
+    const con = confirmingContest;
+    if (!con) return;
 
     try {
       setUploadProgress(t('skill_zone.alerts.acquiring_ticket'));
@@ -220,26 +195,52 @@ export default function SkillZone() {
         body: { contestId: con.id }
       });
       refreshWallet();
+      fetchCatalogData();
+      fetchLeaderboard(con.id);
       triggerSystemSuccess(buyData.message);
 
+      setConfirmingContest(null);
+      setReservedContest(con);
+      setUploadProgress('');
+    } catch (err) {
+      setUploadProgress('');
+      triggerSystemAlert(err.message || t('skill_zone.alerts.buy_slot_failed'));
+    }
+  };
+
+  // The slot is already paid for at this point — backing out doesn't refund it, it just
+  // leaves the reserved attempt unstarted (still resumable later since /start picks up
+  // the caller's most recent unstarted participant row).
+  const cancelReserved = () => {
+    setReservedContest(null);
+    fetchCatalogData();
+  };
+
+  // Step 3: explicit Start press — this is the moment the server records started_at and
+  // mints the anti-cheat attempt token, so the race clock and the official server time
+  // begin together instead of during the purchase/confirmation screens.
+  const handleStartAttempt = async () => {
+    const con = reservedContest;
+    if (!con) return;
+
+    try {
       setUploadProgress(t('skill_zone.alerts.preparing_engine'));
       const startData = await apiFetch('/api/contest/start', {
         method: 'POST',
         body: { contestId: con.id }
       });
-      
-      // Refresh local states
+
       fetchCatalogData();
       fetchLeaderboard(con.id);
 
-      // Start gameplay canvas
+      setReservedContest(null);
       setPlayingContest(con);
       setAttemptToken(startData.attemptToken);
       setGameResult(null);
       setUploadProgress('');
     } catch (err) {
       setUploadProgress('');
-      triggerSystemAlert(err.message || t('skill_zone.alerts.launch_error'));
+      triggerSystemAlert(err.message || t('skill_zone.alerts.start_error'));
     }
   };
 
@@ -481,6 +482,129 @@ export default function SkillZone() {
       )}
 
       <>
+          {/* Slot Purchase Confirmation Table — no credits move until this is confirmed */}
+          {confirmingContest && (
+            <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl max-w-xl mx-auto">
+              <h2 className="text-lg font-extrabold tracking-wide uppercase text-white font-mono text-center mb-5">
+                {t('skill_zone.confirm.heading')}
+              </h2>
+
+              <div className="flex items-center gap-4 mb-5">
+                <img
+                  src={normalizeImageUrl(confirmingContest.imageUrl)}
+                  alt={confirmingContest.title}
+                  className="w-20 h-20 object-cover rounded-lg border border-white/10 bg-black shrink-0"
+                />
+                <div className="min-w-0">
+                  <div className="text-white font-extrabold uppercase font-mono text-sm truncate">{confirmingContest.title}</div>
+                  <div className="text-[10px] text-stone-400 mt-1">{confirmingContest.gradingInfo || t('skill_zone.lobby.condition_fallback')}</div>
+                </div>
+              </div>
+
+              <table className="w-full text-xs font-mono border-collapse mb-5">
+                <tbody>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_category')}</td>
+                    <td className="py-2 text-right text-white font-bold">{confirmingContest.category}</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_market_value')}</td>
+                    <td className="py-2 text-right text-gold-400 font-bold">{confirmingContest.marketValue} CR</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_slots_left')}</td>
+                    <td className="py-2 text-right text-white font-bold">{confirmingContest.totalSlots - confirmingContest.filledSlots} / {confirmingContest.totalSlots}</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_slot_cost')}</td>
+                    <td className="py-2 text-right text-pink-400 font-bold">{confirmingContest.slotCostCredits} CR</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_balance_current')}</td>
+                    <td className="py-2 text-right text-white font-bold">{wallet.balanceCredits} CR</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_balance_after')}</td>
+                    <td className={`py-2 text-right font-bold ${wallet.balanceCredits - confirmingContest.slotCostCredits < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {(wallet.balanceCredits - confirmingContest.slotCostCredits).toFixed(2)} CR
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {wallet.balanceCredits < confirmingContest.slotCostCredits ? (
+                <p className="text-[11px] text-red-400 mb-4 text-center">{t('skill_zone.confirm.insufficient_balance')}</p>
+              ) : (
+                <p className="text-[11px] text-stone-400 mb-4 text-center leading-relaxed">{t('skill_zone.confirm.warning')}</p>
+              )}
+
+              {uploadProgress && (
+                <div className="p-3 mb-4 bg-pink-950/20 border border-pink-500/20 text-pink-400 text-center font-bold font-mono text-[10px] rounded animate-pulse">
+                  ⏳ {uploadProgress}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={cancelConfirm}
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300"
+                >
+                  {t('skill_zone.confirm.cancel_button')}
+                </button>
+                <button
+                  onClick={handleConfirmPurchase}
+                  disabled={wallet.balanceCredits < confirmingContest.slotCostCredits || !!uploadProgress}
+                  className="flex-1 py-2.5 bg-gold-500 hover:bg-gold-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15"
+                >
+                  {t('skill_zone.confirm.confirm_button', { cost: confirmingContest.slotCostCredits })}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Ready-To-Start Screen — slot already bought; the timer/attempt only begins
+              once the player presses Start, so purchase confirmation delay never counts
+              against their race time. */}
+          {reservedContest && (
+            <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl max-w-xl mx-auto text-center">
+              <h2 className="text-lg font-extrabold tracking-wide uppercase text-white font-mono mb-2">
+                {t('skill_zone.confirm.ready_heading')}
+              </h2>
+              <p className="text-xs text-stone-400 mb-5 leading-relaxed">
+                {t('skill_zone.confirm.ready_text')}
+              </p>
+
+              <img
+                src={normalizeImageUrl(reservedContest.imageUrl)}
+                alt={reservedContest.title}
+                className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
+              />
+
+              {uploadProgress && (
+                <div className="p-3 mb-4 bg-pink-950/20 border border-pink-500/20 text-pink-400 text-center font-bold font-mono text-[10px] rounded animate-pulse">
+                  ⏳ {uploadProgress}
+                </div>
+              )}
+
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={cancelReserved}
+                  className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300"
+                >
+                  {t('skill_zone.confirm.cancel_reserved_button')}
+                </button>
+                <button
+                  onClick={handleStartAttempt}
+                  disabled={!!uploadProgress}
+                  className="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-white rounded-lg font-black font-mono text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shadow-emerald-500/25 active-shrink flex items-center gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  {t('skill_zone.confirm.start_button')}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Play Area Overlay Panel */}
           {playingContest ? (
             <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl">
@@ -557,7 +681,7 @@ export default function SkillZone() {
           ) : null}
 
           {/* Dashboard Tabs & Toggles */}
-          {!playingContest && (
+          {!confirmingContest && !reservedContest && !playingContest && (
             <>
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 mb-8 gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -884,7 +1008,7 @@ export default function SkillZone() {
                   return (
                     <div 
                       key={con.id} 
-                      onClick={() => handlePlayContest(con)}
+                      onClick={() => openConfirm(con)}
                       className="bento-card border border-white/5 bg-[#14120b]/20 rounded-2xl overflow-hidden hover:border-gold-500/30 transition-all duration-300 flex flex-col md:flex-row shadow-lg cursor-pointer group"
                     >
                       
@@ -946,7 +1070,7 @@ export default function SkillZone() {
                         <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                           {con.status === 'open' ? (
                             <button
-                              onClick={(e) => { e.stopPropagation(); handlePlayContest(con); }}
+                              onClick={(e) => { e.stopPropagation(); openConfirm(con); }}
                               className="w-full py-2 bg-gold-500 hover:bg-gold-400 text-white font-extrabold rounded font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15 active-shrink"
                             >
                               {!user

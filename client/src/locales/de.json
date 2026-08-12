@@ -444,6 +444,24 @@
       "text": "Bitte registriere dich oder melde dich an, um dein Wallet-Guthaben (doppelte Buchführung) zu prüfen und Spiel-Tickets zu kaufen.",
       "cta": "Profil authentifizieren"
     },
+    "confirm": {
+      "heading": "Kauf des Startplatzes Bestätigen",
+      "table_title": "Spiel",
+      "table_category": "Kategorie",
+      "table_market_value": "Marktwert",
+      "table_slot_cost": "Platzkosten",
+      "table_slots_left": "Verbleibende Plätze",
+      "table_balance_current": "Dein Aktuelles Guthaben",
+      "table_balance_after": "Guthaben Nach dem Kauf",
+      "insufficient_balance": "Nicht genügend Credits — lade dein Guthaben auf, um diesen Platz zu kaufen.",
+      "warning": "Der Kauf eines Platzes belastet dein Guthaben sofort und ist nicht erstattungsfähig. Ein Tab-Wechsel während der Partie macht den Versuch ungültig.",
+      "confirm_button": "Bestätigen und Platz Reservieren ({{cost}} CR)",
+      "cancel_button": "Abbrechen",
+      "ready_heading": "Platz Reserviert — Bereit, Wann Immer Du Willst",
+      "ready_text": "Dein Platz ist reserviert. Die Uhr startet in dem Moment, in dem du Start drückst — nimm dir also einen Moment, um das Referenzbild zu studieren.",
+      "start_button": "Puzzle Starten",
+      "cancel_reserved_button": "Zurück zur Lobby"
+    },
     "play": {
       "secure_room": "GESICHERTER ARCADE-RAUM",
       "heading": "Skill Zone: {{title}}",

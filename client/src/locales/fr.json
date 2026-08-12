@@ -444,6 +444,24 @@
       "text": "Inscrivez-vous ou connectez-vous pour vérifier le solde de votre portefeuille en partie double et acheter des tickets de participation.",
       "cta": "Authentifier le Profil"
     },
+    "confirm": {
+      "heading": "Confirmer l'Achat de la Place",
+      "table_title": "Partie",
+      "table_category": "Catégorie",
+      "table_market_value": "Valeur Marchande",
+      "table_slot_cost": "Coût de la Place",
+      "table_slots_left": "Places Restantes",
+      "table_balance_current": "Votre Solde Actuel",
+      "table_balance_after": "Solde Après Achat",
+      "insufficient_balance": "Crédits insuffisants — rechargez votre portefeuille pour acheter cette place.",
+      "warning": "L'achat d'une place débite immédiatement les crédits de votre portefeuille et n'est pas remboursable. Changer d'onglet pendant la partie annulera la tentative.",
+      "confirm_button": "Confirmer et Réserver la Place ({{cost}} CR)",
+      "cancel_button": "Annuler",
+      "ready_heading": "Place Réservée — Prêt Quand Vous Voulez",
+      "ready_text": "Votre place est réservée. Le chronomètre démarre à l'instant où vous appuyez sur Start, alors prenez un moment pour étudier l'image de référence.",
+      "start_button": "Démarrer le Puzzle",
+      "cancel_reserved_button": "Retour à la Lobby"
+    },
     "play": {
       "secure_room": "SALLE ARCADE SÉCURISÉE",
       "heading": "Skill Zone : {{title}}",

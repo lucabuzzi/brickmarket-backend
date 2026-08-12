@@ -274,9 +274,18 @@ export default function JigsawPuzzle({
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [gameState]);
+
+  // Tear down the race-clock interval only on unmount — this used to live in the
+  // anti-cheat effect's cleanup above, but that effect re-runs on every gameState
+  // change (including idle -> playing), so its cleanup was clearing the interval
+  // startGame() had just created, freezing the TICKER at 0 for the whole match.
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, []);
 
   // Load and cache product image, detecting its orientation before the board is built
   useEffect(() => {

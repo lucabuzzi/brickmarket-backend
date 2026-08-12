@@ -444,6 +444,24 @@
       "text": "Regístrate o inicia sesión para verificar el saldo de tu wallet de doble entrada y comprar entradas para las partidas.",
       "cta": "Autenticar Perfil"
     },
+    "confirm": {
+      "heading": "Confirmar Compra de Plaza",
+      "table_title": "Partida",
+      "table_category": "Categoría",
+      "table_market_value": "Valor de Mercado",
+      "table_slot_cost": "Coste de la Plaza",
+      "table_slots_left": "Plazas Restantes",
+      "table_balance_current": "Tu Saldo Actual",
+      "table_balance_after": "Saldo Después de la Compra",
+      "insufficient_balance": "Créditos insuficientes — recarga tu monedero para comprar esta plaza.",
+      "warning": "Comprar una plaza descuenta los créditos de tu monedero de inmediato y no es reembolsable. Cambiar de pestaña durante la partida anulará el intento.",
+      "confirm_button": "Confirmar y Reservar Plaza ({{cost}} CR)",
+      "cancel_button": "Cancelar",
+      "ready_heading": "Plaza Reservada — Listo Cuando Quieras",
+      "ready_text": "Tu plaza está reservada. El cronómetro empieza en el instante en que pulses Start, así que tómate un momento para estudiar la imagen de referencia.",
+      "start_button": "Iniciar Puzzle",
+      "cancel_reserved_button": "Volver a la Lobby"
+    },
     "play": {
       "secure_room": "SALA ARCADE SEGURA",
       "heading": "Skill Zone: {{title}}",
