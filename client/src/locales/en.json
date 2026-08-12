@@ -444,6 +444,24 @@
       "text": "Please register or sign in to verify your double-entry wallet balance and buy game slot tickets.",
       "cta": "Authenticate Profile"
     },
+    "confirm": {
+      "heading": "Confirm Slot Purchase",
+      "table_title": "Game",
+      "table_category": "Category",
+      "table_market_value": "Market Value",
+      "table_slot_cost": "Slot Cost",
+      "table_slots_left": "Slots Remaining",
+      "table_balance_current": "Your Current Balance",
+      "table_balance_after": "Balance After Purchase",
+      "insufficient_balance": "Insufficient credits — top up your wallet to buy this slot.",
+      "warning": "Buying a slot immediately deducts credits from your wallet and is non-refundable. Leaving the tab once the puzzle starts will void your attempt.",
+      "confirm_button": "Confirm & Reserve Slot ({{cost}} CR)",
+      "cancel_button": "Cancel",
+      "ready_heading": "Slot Reserved — Ready When You Are",
+      "ready_text": "Your slot is reserved. The race clock starts the instant you press Start, so take a moment to study the reference image first.",
+      "start_button": "Start Puzzle",
+      "cancel_reserved_button": "Back to Lobby"
+    },
     "play": {
       "secure_room": "SECURE ARCADE ROOM",
       "heading": "Skill Zone: {{title}}",

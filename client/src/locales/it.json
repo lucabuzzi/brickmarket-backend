@@ -444,6 +444,24 @@
       "text": "Registrati o accedi per verificare il saldo del tuo wallet a doppia entrata e acquistare i biglietti per le partite.",
       "cta": "Autentica il Profilo"
     },
+    "confirm": {
+      "heading": "Conferma Acquisto Posto",
+      "table_title": "Partita",
+      "table_category": "Categoria",
+      "table_market_value": "Valore di Mercato",
+      "table_slot_cost": "Costo Posto",
+      "table_slots_left": "Posti Rimanenti",
+      "table_balance_current": "Il Tuo Saldo Attuale",
+      "table_balance_after": "Saldo Dopo l'Acquisto",
+      "insufficient_balance": "Crediti insufficienti — ricarica il tuo portafoglio per acquistare questo posto.",
+      "warning": "L'acquisto del posto addebita subito i crediti dal tuo portafoglio e non è rimborsabile. Cambiare scheda durante la partita annullerà il tentativo.",
+      "confirm_button": "Conferma e Prenota Posto ({{cost}} CR)",
+      "cancel_button": "Annulla",
+      "ready_heading": "Posto Prenotato — Pronto Quando Vuoi",
+      "ready_text": "Il tuo posto è prenotato. Il cronometro parte nell'istante in cui premi Start, quindi prenditi un momento per studiare l'immagine di riferimento.",
+      "start_button": "Avvia Puzzle",
+      "cancel_reserved_button": "Torna alla Lobby"
+    },
     "play": {
       "secure_room": "SALA ARCADE SICURA",
       "heading": "Skill Zone: {{title}}",
