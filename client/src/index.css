@@ -123,13 +123,125 @@ body {
   margin: 0;
   min-height: 100%;
   font-family: var(--font);
-  background: #030201; /* True black */
-  background-image:
-    radial-gradient(at 0% 0%, rgba(212,175,55, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(191,154,46, 0.04) 0px, transparent 50%);
-  background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
+}
+
+html {
+  background: #030201; /* True black */
+}
+
+/* Transparent on purpose: body is an ancestor of the z-index:-1 .site-aurora
+   layer, so an opaque background here would paint over it and hide it. */
+body {
+  background: transparent;
+}
+
+/* Animated background: drifting brand-color blobs + rising sparkles, sitting
+   behind all page content. See components/SiteAurora.jsx for the markup. */
+.site-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.62;
+  will-change: transform;
+}
+
+.aurora-blob-1 {
+  width: 46vw;
+  height: 46vw;
+  top: -10%;
+  left: -8%;
+  background: radial-gradient(circle, #9d3bff 0%, #9d3bff 35%, transparent 68%);
+  animation: auroraFloat1 24s ease-in-out infinite alternate;
+}
+
+.aurora-blob-2 {
+  width: 42vw;
+  height: 42vw;
+  top: 48%;
+  left: 56%;
+  background: radial-gradient(circle, #47bfff 0%, #47bfff 35%, transparent 68%);
+  animation: auroraFloat2 28s ease-in-out infinite alternate;
+}
+
+.aurora-blob-3 {
+  width: 34vw;
+  height: 34vw;
+  top: 60%;
+  left: -8%;
+  background: radial-gradient(circle, #e9c25f 0%, #e9c25f 35%, transparent 68%);
+  animation: auroraFloat3 20s ease-in-out infinite alternate;
+}
+
+.aurora-blob-4 {
+  width: 30vw;
+  height: 30vw;
+  top: -8%;
+  left: 66%;
+  background: radial-gradient(circle, #ff4fa8 0%, #ff4fa8 35%, transparent 68%);
+  animation: auroraFloat4 22s ease-in-out infinite alternate;
+}
+
+@keyframes auroraFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(8vw, 10vh) scale(1.15); }
+}
+
+@keyframes auroraFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-10vw, -6vh) scale(1.1); }
+}
+
+@keyframes auroraFloat3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(6vw, -8vh) scale(1.2); }
+}
+
+@keyframes auroraFloat4 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-6vw, 8vh) scale(1.1); }
+}
+
+.sparkle-field {
+  position: absolute;
+  inset: 0;
+}
+
+.sparkle {
+  position: absolute;
+  top: 100%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f3dd93;
+  box-shadow: 0 0 6px 2px rgba(243, 221, 147, 0.8);
+  opacity: 0;
+  animation-name: sparkleFloat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes sparkleFloat {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-110vh); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob,
+  .sparkle {
+    animation: none !important;
+  }
 }
 
 

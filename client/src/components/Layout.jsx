@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell';
 import CookieConsent from './CookieConsent';
 import GeoLanguageSuggestion from './GeoLanguageSuggestion';
+import SiteAurora from './SiteAurora';
 import { hasConsent, trackPageview } from '../analytics';
 
 const LegoHeadIcon = ({ size = 16, color = "currentColor", strokeWidth = 2 }) => (
@@ -142,6 +143,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell" style={{ overflowX: 'hidden', position: 'relative' }}>
+      <SiteAurora />
       {isMenuOpen && (
         <div 
           onClick={() => setIsMenuOpen(false)}
