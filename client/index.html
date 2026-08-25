@@ -6,6 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests." />
     <title>CardBrix</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://cardbrix.com/#organization",
+            "name": "CardBrix",
+            "url": "https://cardbrix.com",
+            "logo": "https://cardbrix.com/favicon.svg"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://cardbrix.com/#website",
+            "name": "CardBrix",
+            "url": "https://cardbrix.com",
+            "publisher": { "@id": "https://cardbrix.com/#organization" },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://cardbrix.com/search-results?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root">
