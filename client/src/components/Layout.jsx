@@ -84,6 +84,19 @@ export default function Layout() {
     if (hasConsent()) trackPageview(location.pathname);
   }, [location.pathname]);
 
+  // Self-referencing canonical: index.html ships a static one for "/" (what
+  // non-JS crawlers see), this keeps it in sync with the actual route for
+  // real browsers/Googlebot so deep pages don't canonicalize to the homepage.
+  useEffect(() => {
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', `${window.location.origin}${location.pathname}`);
+  }, [location.pathname]);
+
   const handleTopbarSearch = (e) => {
     e.preventDefault();
     const q = topbarQuery.trim();
