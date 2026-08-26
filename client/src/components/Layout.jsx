@@ -98,6 +98,10 @@ export default function Layout() {
     link.setAttribute('href', `${window.location.origin}${location.pathname}`);
   }, [location.pathname]);
 
+  useEffect(() => {
+    document.documentElement.lang = i18n.language || 'it';
+  }, [i18n.language]);
+
   const handleTopbarSearch = (e) => {
     e.preventDefault();
     const q = topbarQuery.trim();

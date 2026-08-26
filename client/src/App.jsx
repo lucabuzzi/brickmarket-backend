@@ -1,56 +1,70 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ListingDetail from './pages/ListingDetail';
-import Account from './pages/Account';
-import Sell from './pages/Sell';
-import CreateAuction from './pages/CreateAuction';
-import MyListings from './pages/MyListings';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Cart from './pages/Cart';
-import Profile from './pages/Profile';
-import FAQ from './pages/FAQ';
-import Help from './pages/Help';
-import SearchResults from './pages/SearchResults';
-import UserSearch from './pages/UserSearch';
-import LegalRules from './pages/LegalRules';
-import PublicProfile from './pages/PublicProfile';
-import CategoryPage from './pages/CategoryPage';
-import AnnunciHub from './pages/AnnunciHub';
-import AnnunciCardsHub from './pages/AnnunciCardsHub';
-import AsteHub from './pages/AsteHub';
-import AsteCardsHub from './pages/AsteCardsHub';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminArchive from './pages/AdminArchive';
-import AdminWalletTransactions from './pages/AdminWalletTransactions';
-import AdminPayouts from './pages/AdminPayouts';
-import AdminUsersList from './pages/AdminUsersList';
-import AdminInteractions from './pages/AdminInteractions';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminAnalyticsCalendar from './pages/AdminAnalyticsCalendar';
-import CatalogPage from './pages/CatalogPage';
-import CatalogIndex from './pages/CatalogIndex';
-import CatalogSearchResults from './pages/CatalogSearchResults';
-import CatalogHub from './pages/CatalogHub';
-import CatalogComingSoon from './pages/CatalogComingSoon';
-import TcgCatalogIndex from './pages/TcgCatalogIndex';
-import TcgSearchResults from './pages/TcgSearchResults';
-import TcgCardPage from './pages/TcgCardPage';
-import Archive from './pages/Archive';
-import Annunci from './pages/Annunci';
-import Aste from './pages/Aste';
-import SkillZone from './pages/SkillZone';
-import WalletInfo from './pages/WalletInfo';
-import WalletPurchase from './pages/WalletPurchase';
-import WalletConvert from './pages/WalletConvert';
-import StripeOnboardingStatus from './pages/StripeOnboardingStatus';
-import HowItWorks from './pages/HowItWorks';
+
+// Every other route is code-split: without this the whole app (including admin, wallet and
+// TCG catalog pages most visitors never open) shipped as a single ~1.3MB JS bundle. Home stays
+// a static import since it's the most common entry point and shouldn't wait on a chunk fetch.
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ListingDetail = lazy(() => import('./pages/ListingDetail'));
+const Account = lazy(() => import('./pages/Account'));
+const Sell = lazy(() => import('./pages/Sell'));
+const CreateAuction = lazy(() => import('./pages/CreateAuction'));
+const MyListings = lazy(() => import('./pages/MyListings'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Profile = lazy(() => import('./pages/Profile'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Help = lazy(() => import('./pages/Help'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
+const UserSearch = lazy(() => import('./pages/UserSearch'));
+const LegalRules = lazy(() => import('./pages/LegalRules'));
+const PublicProfile = lazy(() => import('./pages/PublicProfile'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const AnnunciHub = lazy(() => import('./pages/AnnunciHub'));
+const AnnunciCardsHub = lazy(() => import('./pages/AnnunciCardsHub'));
+const AsteHub = lazy(() => import('./pages/AsteHub'));
+const AsteCardsHub = lazy(() => import('./pages/AsteCardsHub'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminArchive = lazy(() => import('./pages/AdminArchive'));
+const AdminWalletTransactions = lazy(() => import('./pages/AdminWalletTransactions'));
+const AdminPayouts = lazy(() => import('./pages/AdminPayouts'));
+const AdminUsersList = lazy(() => import('./pages/AdminUsersList'));
+const AdminInteractions = lazy(() => import('./pages/AdminInteractions'));
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const AdminAnalyticsCalendar = lazy(() => import('./pages/AdminAnalyticsCalendar'));
+const CatalogPage = lazy(() => import('./pages/CatalogPage'));
+const CatalogIndex = lazy(() => import('./pages/CatalogIndex'));
+const CatalogSearchResults = lazy(() => import('./pages/CatalogSearchResults'));
+const CatalogHub = lazy(() => import('./pages/CatalogHub'));
+const CatalogComingSoon = lazy(() => import('./pages/CatalogComingSoon'));
+const TcgCatalogIndex = lazy(() => import('./pages/TcgCatalogIndex'));
+const TcgSearchResults = lazy(() => import('./pages/TcgSearchResults'));
+const TcgCardPage = lazy(() => import('./pages/TcgCardPage'));
+const Archive = lazy(() => import('./pages/Archive'));
+const Annunci = lazy(() => import('./pages/Annunci'));
+const Aste = lazy(() => import('./pages/Aste'));
+const SkillZone = lazy(() => import('./pages/SkillZone'));
+const WalletInfo = lazy(() => import('./pages/WalletInfo'));
+const WalletPurchase = lazy(() => import('./pages/WalletPurchase'));
+const WalletConvert = lazy(() => import('./pages/WalletConvert'));
+const StripeOnboardingStatus = lazy(() => import('./pages/StripeOnboardingStatus'));
+const HowItWorks = lazy(() => import('./pages/HowItWorks'));
+
+function RouteLoader() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--muted)' }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 export default function App() {
   const location = useLocation();
@@ -59,6 +73,7 @@ export default function App() {
     <>
       <ScrollToTop />
       <AnimatePresence mode="wait">
+        <Suspense fallback={<RouteLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route element={<Layout />}>
           <Route index element={<Home />} />
@@ -181,6 +196,7 @@ export default function App() {
           />
           </Route>
         </Routes>
+        </Suspense>
       </AnimatePresence>
     </>
   );
