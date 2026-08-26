@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
-import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound } from 'lucide-react';
+import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound, Award, Trash2 } from 'lucide-react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, flexRender } from '@tanstack/react-table';
 import { StitchCard, AnimateCounter, PulsingGlow, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import SellerTypeBadge from '../components/SellerTypeBadge';
@@ -40,19 +40,30 @@ export default function AdminDashboard() {
   const [userHistory, setUserHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // Badge Management State
+  const [badgeCatalog, setBadgeCatalog] = useState([]);
+  const [userBadges, setUserBadges] = useState(null);
+  const [badgesLoading, setBadgesLoading] = useState(false);
+  const [assignBadgeKey, setAssignBadgeKey] = useState('');
+  const [assignBadgeNote, setAssignBadgeNote] = useState('');
+  const [badgeActionError, setBadgeActionError] = useState('');
+  const [badgeActionBusy, setBadgeActionBusy] = useState(false);
+
   // Fetch initial data
   useEffect(() => {
     if (!user || user.role !== 'admin') return;
 
     const fetchData = async () => {
       try {
-        const [statsRes, detailedRes] = await Promise.all([
+        const [statsRes, detailedRes, badgesRes] = await Promise.all([
           apiFetch('/api/admin/stats'),
-          apiFetch('/api/admin/users/detailed?limit=500') // fetching a larger batch for client-side CRM testing
+          apiFetch('/api/admin/users/detailed?limit=500'), // fetching a larger batch for client-side CRM testing
+          apiFetch('/api/admin/badges'),
         ]);
         setStats(statsRes);
         setCrmData(detailedRes.users || []);
         setGeoData(detailedRes.geoData || []);
+        setBadgeCatalog(badgesRes || []);
       } catch (err) {
         setError(err.message || 'Errore durante il caricamento delle statistiche.');
       } finally {
@@ -75,13 +86,70 @@ export default function AdminDashboard() {
     setSelectedUser(userData);
     setHistoryLoading(true);
     setUserHistory(null);
+    setBadgesLoading(true);
+    setUserBadges(null);
+    setBadgeActionError('');
+    setAssignBadgeKey('');
+    setAssignBadgeNote('');
     try {
-      const history = await apiFetch(`/api/admin/users/${userData.id}/history`);
+      const [history, badges] = await Promise.all([
+        apiFetch(`/api/admin/users/${userData.id}/history`),
+        apiFetch(`/api/admin/users/${userData.id}/badges`),
+      ]);
       setUserHistory(history);
+      setUserBadges(badges);
     } catch (err) {
       console.error(err);
     } finally {
       setHistoryLoading(false);
+      setBadgesLoading(false);
+    }
+  };
+
+  const refreshUserBadges = async (userId) => {
+    const badges = await apiFetch(`/api/admin/users/${userId}/badges`);
+    setUserBadges(badges);
+  };
+
+  // Keeps the CRM table's PRO/✓ ID pills in sync immediately, without waiting for a full re-fetch.
+  const patchCrmLegacyFlags = (userId, badgeKey, value) => {
+    if (badgeKey !== 'pro' && badgeKey !== 'verified') return;
+    const column = badgeKey === 'pro' ? 'is_pro' : 'is_verified';
+    setCrmData(prev => prev.map(u => (u.id === userId ? { ...u, [column]: value } : u)));
+  };
+
+  const handleAssignBadge = async () => {
+    if (!assignBadgeKey || !selectedUser) return;
+    setBadgeActionBusy(true);
+    setBadgeActionError('');
+    try {
+      await apiFetch(`/api/admin/users/${selectedUser.id}/badges`, {
+        method: 'POST',
+        body: { badgeKey: assignBadgeKey, note: assignBadgeNote.trim() || undefined },
+      });
+      await refreshUserBadges(selectedUser.id);
+      patchCrmLegacyFlags(selectedUser.id, assignBadgeKey, true);
+      setAssignBadgeKey('');
+      setAssignBadgeNote('');
+    } catch (err) {
+      setBadgeActionError(err.message || 'Errore nell\'assegnazione del badge.');
+    } finally {
+      setBadgeActionBusy(false);
+    }
+  };
+
+  const handleRevokeBadge = async (badgeKey) => {
+    if (!selectedUser) return;
+    setBadgeActionBusy(true);
+    setBadgeActionError('');
+    try {
+      await apiFetch(`/api/admin/users/${selectedUser.id}/badges/${badgeKey}`, { method: 'DELETE' });
+      await refreshUserBadges(selectedUser.id);
+      patchCrmLegacyFlags(selectedUser.id, badgeKey, false);
+    } catch (err) {
+      setBadgeActionError(err.message || 'Errore nella revoca del badge.');
+    } finally {
+      setBadgeActionBusy(false);
     }
   };
 
@@ -486,6 +554,84 @@ export default function AdminDashboard() {
                   <h2 style={{ margin: 0, fontSize: '1.8rem', color: '#fff' }}>{selectedUser.username}</h2>
                   <p style={{ margin: 0, color: '#a8a29e' }}>{selectedUser.email} • {selectedUser.address_country?.toUpperCase()}</p>
                </div>
+            </div>
+
+            {/* BADGE MANAGEMENT */}
+            <div style={{ backgroundColor: '#292524', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1rem 0', color: '#f5f5f4', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Award size={18} className="text-gold-400" /> Badge
+              </h3>
+
+              {badgesLoading ? (
+                <p style={{ color: '#a8a29e', margin: 0 }}>Caricamento badge...</p>
+              ) : userBadges ? (
+                <>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                    {userBadges.manual.length === 0 && userBadges.automatic.every(a => !a.active) && (
+                      <span style={{ color: '#78716c', fontSize: '0.85rem' }}>Nessun badge assegnato.</span>
+                    )}
+                    {userBadges.manual.map(b => (
+                      <span
+                        key={b.badge_key}
+                        title={`${b.note ? b.note + ' — ' : ''}Assegnato ${b.awarded_by_username ? `da ${b.awarded_by_username} ` : ''}il ${new Date(b.awarded_at).toLocaleDateString('it-IT')}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', backgroundColor: `${b.color}20`, color: b.color, border: `1px solid ${b.color}40`, padding: '0.35rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold' }}
+                      >
+                        {b.label}
+                        <button
+                          onClick={() => handleRevokeBadge(b.badge_key)}
+                          disabled={badgeActionBusy}
+                          title="Revoca badge"
+                          style={{ background: 'none', border: 'none', color: 'inherit', cursor: badgeActionBusy ? 'not-allowed' : 'pointer', padding: 0, display: 'flex', opacity: 0.7 }}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    {userBadges.automatic.filter(a => a.active).map(a => (
+                      <span
+                        key={a.key}
+                        title="Badge automatico: calcolato da rating e vendite, non revocabile manualmente."
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'linear-gradient(90deg, #059669, #10b981)', color: '#fff', padding: '0.35rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold' }}
+                      >
+                        ★ {a.label} <span style={{ opacity: 0.75, fontWeight: 'normal' }}>(automatico)</span>
+                      </span>
+                    ))}
+                  </div>
+
+                  {badgeActionError && (
+                    <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: '0 0 0.75rem 0' }}>{badgeActionError}</p>
+                  )}
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <select
+                      value={assignBadgeKey}
+                      onChange={e => setAssignBadgeKey(e.target.value)}
+                      style={{ backgroundColor: '#171412', color: '#e7e5e4', border: '1px solid #44403c', borderRadius: '8px', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                    >
+                      <option value="">Assegna badge...</option>
+                      {badgeCatalog
+                        .filter(b => b.is_manual && !userBadges.manual.some(m => m.badge_key === b.key))
+                        .map(b => (
+                          <option key={b.key} value={b.key}>{b.label}</option>
+                        ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Nota (opzionale)"
+                      value={assignBadgeNote}
+                      onChange={e => setAssignBadgeNote(e.target.value)}
+                      style={{ flex: 1, minWidth: '160px', backgroundColor: '#171412', color: '#e7e5e4', border: '1px solid #44403c', borderRadius: '8px', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                    />
+                    <button
+                      onClick={handleAssignBadge}
+                      disabled={!assignBadgeKey || badgeActionBusy}
+                      style={{ backgroundColor: '#d4af37', color: '#171412', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: 'bold', cursor: (!assignBadgeKey || badgeActionBusy) ? 'not-allowed' : 'pointer', opacity: (!assignBadgeKey || badgeActionBusy) ? 0.5 : 1 }}
+                    >
+                      Assegna
+                    </button>
+                  </div>
+                </>
+              ) : null}
             </div>
 
             {historyLoading ? (
