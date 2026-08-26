@@ -123,6 +123,36 @@ export default function ListingDetail() {
     };
   }, [id, t]);
 
+  // Server-side rendering already sets correct title/OG tags on first load (see
+  // src/services/seoMeta.js) for bots and link unfurlers, but client-side SPA navigation between
+  // listings doesn't reload the page, so the tags need updating here too for the browser tab
+  // title and for the meta tags Google reads after executing the client JS.
+  useEffect(() => {
+    if (!listing) return;
+
+    const effectivePrice = listing.type === 'auction' ? (listing.current_bid ?? listing.auction_start) : listing.price;
+    const priceText = effectivePrice != null ? formatPrice(effectivePrice) : '';
+    const title = `${listing.title} | CardBrix`;
+    const description = (
+      listing.description || `${listing.title}${priceText ? ` a ${priceText}` : ''} su CardBrix. Compra o fai un'offerta in sicurezza.`
+    ).slice(0, 160);
+    const image = listingImage(listing)[0];
+
+    document.title = title;
+
+    const setMeta = (selector, content) => {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute('content', content);
+    };
+    setMeta('meta[name="description"]', description);
+    setMeta('meta[property="og:title"]', title);
+    setMeta('meta[property="og:description"]', description);
+    setMeta('meta[property="og:image"]', image);
+    setMeta('meta[name="twitter:title"]', title);
+    setMeta('meta[name="twitter:description"]', description);
+    setMeta('meta[name="twitter:image"]', image);
+  }, [listing]);
+
   useEffect(() => {
     if (!listing || (listing.type !== 'auction' && !listing.is_auction) || !listing.auction_end) return;
 

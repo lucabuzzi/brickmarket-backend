@@ -5,7 +5,9 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 const payments = require('./src/routes/payments');
+const { renderIndexHtmlForRequest } = require('./src/services/seoMeta');
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -112,6 +114,8 @@ const { authenticateToken } = require('./src/routes/contest');
 app.use('/api/wallet', require('./src/routes/wallet'));
 app.use('/api/contest', require('./src/routes/contest').router);
 app.use('/api/webhooks', require('./src/routes/stripe')); // simulate-checkout
+
+app.use(require('./src/routes/sitemap'));
 
 // Admin Jigsaw Puzzle Image Upload Router
 const { upload } = require('./src/services/cloudinary');
@@ -334,12 +338,28 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 // Serve the built React app (client/dist, produced by `npm run build`) and fall back to
 // index.html for any non-API, non-uploads GET path so React Router's client-side routes
 // (e.g. /product/:id) work on a hard refresh or a direct link, not just via in-app navigation.
+// The fallback rewrites canonical/OG meta tags per-request (and injects Product JSON-LD for
+// listings) since the static template always declares them as "/" — see src/services/seoMeta.js.
 const clientDistPath = path.join(__dirname, 'client', 'dist');
 app.use(express.static(clientDistPath));
-app.get(/^\/(?!api\/|uploads\/).*/, (req, res) => {
-  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
-    if (err) res.status(404).send('Frontend build not found — run `npm run build` first.');
-  });
+app.get(/^\/(?!api\/|uploads\/).*/, async (req, res) => {
+  const indexPath = path.join(clientDistPath, 'index.html');
+  let baseHtml;
+  try {
+    baseHtml = fs.readFileSync(indexPath, 'utf-8');
+  } catch (err) {
+    return res.status(404).send('Frontend build not found — run `npm run build` first.');
+  }
+
+  try {
+    const html = await renderIndexHtmlForRequest(req.path, baseHtml);
+    res.set('Content-Type', 'text/html; charset=UTF-8');
+    res.send(html);
+  } catch (err) {
+    console.error('index.html render error:', err.message);
+    res.set('Content-Type', 'text/html; charset=UTF-8');
+    res.send(baseHtml);
+  }
 });
 
 app.use((err, req, res, next) => {

@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /account
+Disallow: /admin
+Disallow: /profile
+Disallow: /cart
+Disallow: /sell
+Disallow: /create-auction
+Disallow: /my-listings
+Disallow: /seller/onboarding-complete
+Disallow: /seller/onboarding-retry
+
+Sitemap: https://cardbrix.com/sitemap.xml
