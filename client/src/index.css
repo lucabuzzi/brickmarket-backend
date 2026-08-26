@@ -155,9 +155,12 @@ body {
   will-change: transform;
 }
 
+/* Sized in vmax (not vw) so blobs scale off the larger viewport dimension -
+   on a tall narrow phone that's vh, not vw, which keeps them big enough to
+   cover the screen instead of shrinking to tiny corner dots. */
 .aurora-blob-1 {
-  width: 46vw;
-  height: 46vw;
+  width: 46vmax;
+  height: 46vmax;
   top: -10%;
   left: -8%;
   background: radial-gradient(circle, #9d3bff 0%, #9d3bff 35%, transparent 68%);
@@ -165,8 +168,8 @@ body {
 }
 
 .aurora-blob-2 {
-  width: 42vw;
-  height: 42vw;
+  width: 42vmax;
+  height: 42vmax;
   top: 48%;
   left: 56%;
   background: radial-gradient(circle, #47bfff 0%, #47bfff 35%, transparent 68%);
@@ -174,8 +177,8 @@ body {
 }
 
 .aurora-blob-3 {
-  width: 34vw;
-  height: 34vw;
+  width: 34vmax;
+  height: 34vmax;
   top: 60%;
   left: -8%;
   background: radial-gradient(circle, #e9c25f 0%, #e9c25f 35%, transparent 68%);
@@ -183,8 +186,8 @@ body {
 }
 
 .aurora-blob-4 {
-  width: 30vw;
-  height: 30vw;
+  width: 30vmax;
+  height: 30vmax;
   top: -8%;
   left: 66%;
   background: radial-gradient(circle, #ff4fa8 0%, #ff4fa8 35%, transparent 68%);
