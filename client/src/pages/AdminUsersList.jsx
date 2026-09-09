@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api';
 import { ArrowLeft, Users, Coins, ShieldCheck } from 'lucide-react';
 
 export default function AdminUsersList() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -112,7 +113,11 @@ export default function AdminUsersList() {
             </thead>
             <tbody className="divide-y divide-stone-800/50">
               {users.map((u) => (
-                <tr key={u.id} className="hover:bg-stone-800/20 transition-colors">
+                <tr
+                  key={u.id}
+                  onClick={() => navigate(`/admin/users/${u.id}`)}
+                  className="hover:bg-stone-800/20 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-white flex items-center gap-1.5">

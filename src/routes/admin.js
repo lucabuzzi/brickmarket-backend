@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../db');
 const { adminAuth } = require('../middleware/auth');
 const { computeDaySnapshot, backfillSnapshots } = require('../services/analyticsSnapshot');
+const { updateUserSchema, validate } = require('../validators/adminUserValidators');
 
 /**
  * GET /api/admin/stats
@@ -233,6 +234,164 @@ router.get('/users', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('ADMIN USERS LIST ERROR:', err.message);
     res.status(500).json({ error: 'Errore nel recupero dell\'elenco utenti.' });
+  }
+});
+
+/**
+ * GET /api/admin/users/:id
+ * Full profile for the admin user-detail page: identity, editable role/status,
+ * seller/verification flags, and wallet balance (LEFT JOIN so a user who never
+ * touched ClutchVault still returns a row, balance null).
+ */
+router.get('/users/:id', adminAuth, async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT u.id, u.username, u.email, u.full_name, u.avatar_url, u.role,
+             u.is_active, u.account_status, u.is_verified, u.is_pro,
+             u.seller_type, u.company_name, u.address_country, u.city,
+             u.rating_avg, u.rating_count, u.sales_count, u.created_at,
+             w.balance_credits
+      FROM users u
+      LEFT JOIN public.user_wallets w ON w.user_id = u.id
+      WHERE u.id = $1
+    `, [req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Utente non trovato.' });
+    }
+
+    const u = result.rows[0];
+    res.json({
+      id: u.id,
+      username: u.username,
+      email: u.email,
+      fullName: u.full_name,
+      avatarUrl: u.avatar_url,
+      role: u.role,
+      isActive: u.is_active,
+      accountStatus: u.account_status || 'active',
+      isVerified: u.is_verified,
+      isPro: u.is_pro,
+      sellerType: u.seller_type,
+      companyName: u.company_name,
+      country: u.address_country,
+      city: u.city,
+      ratingAvg: u.rating_avg !== null ? parseFloat(u.rating_avg) : null,
+      ratingCount: u.rating_count,
+      salesCount: u.sales_count,
+      createdAt: u.created_at,
+      balanceCredits: u.balance_credits !== null ? parseFloat(u.balance_credits) : null,
+    });
+  } catch (err) {
+    console.error('ADMIN USER DETAIL ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero del profilo utente.' });
+  }
+});
+
+/**
+ * GET /api/admin/users/:id/activity
+ * Site-usage counters for this user: pages visited, total time on site, session
+ * count, and their most-visited pages — derived from analytics_sessions/
+ * analytics_pageviews (the same tables behind /analytics/overview and
+ * /analytics/behavior), scoped to this one user_id.
+ */
+router.get('/users/:id/activity', adminAuth, async (req, res) => {
+  try {
+    const [summaryRes, pageviewsRes, topPathsRes] = await Promise.all([
+      query(`
+        SELECT
+          COUNT(*)::int AS session_count,
+          COALESCE(SUM(duration_seconds), 0)::int AS total_time_seconds,
+          MIN(started_at) AS first_seen_at,
+          MAX(last_seen_at) AS last_seen_at
+        FROM analytics_sessions
+        WHERE user_id = $1
+      `, [req.params.id]),
+      query(`
+        SELECT COUNT(*)::int AS total_pageviews
+        FROM analytics_pageviews p
+        JOIN analytics_sessions s ON s.id = p.session_id
+        WHERE s.user_id = $1
+      `, [req.params.id]),
+      query(`
+        SELECT p.path, COUNT(*)::int AS views
+        FROM analytics_pageviews p
+        JOIN analytics_sessions s ON s.id = p.session_id
+        WHERE s.user_id = $1
+        GROUP BY p.path
+        ORDER BY views DESC
+        LIMIT 10
+      `, [req.params.id]),
+    ]);
+
+    res.json({
+      sessionCount: summaryRes.rows[0].session_count,
+      totalTimeSeconds: summaryRes.rows[0].total_time_seconds,
+      totalPageviews: pageviewsRes.rows[0].total_pageviews,
+      firstSeenAt: summaryRes.rows[0].first_seen_at,
+      lastSeenAt: summaryRes.rows[0].last_seen_at,
+      topPages: topPathsRes.rows,
+    });
+  } catch (err) {
+    console.error('ADMIN USER ACTIVITY ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero dell\'attività utente.' });
+  }
+});
+
+/**
+ * PATCH /api/admin/users/:id
+ * Body: { role?, status? } — admin-editable role (buyer/seller/both/shop/admin)
+ * and account status (active/banned/deleted). is_active is kept in sync with
+ * status (true only when active) so every existing is_active check elsewhere
+ * — login, stats, listings — keeps working unchanged.
+ */
+router.patch('/users/:id', adminAuth, async (req, res) => {
+  const { error, value } = validate(updateUserSchema, req.body);
+  if (error) {
+    return res.status(400).json({ error });
+  }
+
+  if (req.params.id === req.user.userId && value.status && value.status !== 'active') {
+    return res.status(400).json({ error: 'Non puoi bannare o cancellare il tuo stesso account.' });
+  }
+
+  const sets = [];
+  const params = [];
+  if (value.role) {
+    params.push(value.role);
+    sets.push(`role = $${params.length}`);
+  }
+  if (value.status) {
+    params.push(value.status);
+    sets.push(`account_status = $${params.length}`);
+    params.push(value.status === 'active');
+    sets.push(`is_active = $${params.length}`);
+  }
+
+  params.push(req.params.id);
+
+  try {
+    const result = await query(
+      `UPDATE users SET ${sets.join(', ')} WHERE id = $${params.length}
+       RETURNING id, username, role, is_active, account_status`,
+      params
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Utente non trovato.' });
+    }
+    res.json({
+      success: true,
+      user: {
+        id: result.rows[0].id,
+        username: result.rows[0].username,
+        role: result.rows[0].role,
+        isActive: result.rows[0].is_active,
+        accountStatus: result.rows[0].account_status,
+      },
+    });
+  } catch (err) {
+    console.error('ADMIN USER UPDATE ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'aggiornamento dell\'utente.' });
   }
 });
 
