@@ -2,6 +2,7 @@
 const express = require('express');
 const Stripe = require('stripe');
 const db = require('../db/clutchvault-db');
+const { authenticateToken } = require('./contest');
 
 const router = express.Router();
 const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -76,10 +77,19 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
   return res.status(200).json({ received: true });
 });
 
-router.post('/simulate-checkout', express.json(), async (req, res) => {
-  const { userId, amountEuros } = req.body;
-  if (!userId || !amountEuros || amountEuros <= 0) {
-    return res.status(400).json({ error: 'userId and valid amountEuros are required.' });
+// Dev-only stand-in for the real Stripe top-up flow (create-topup-intent +
+// confirm-topup in wallet.js): only usable when no Stripe key is configured,
+// and always credits the authenticated caller — never an arbitrary userId —
+// so it can't be used to mint credits into someone else's wallet.
+router.post('/simulate-checkout', authenticateToken, express.json(), async (req, res) => {
+  if (stripe) {
+    return res.status(403).json({ error: 'Simulated checkout is disabled: Stripe is configured on this server.' });
+  }
+
+  const userId = req.user.id;
+  const amountEuros = parseFloat(req.body.amountEuros);
+  if (!Number.isFinite(amountEuros) || amountEuros <= 0) {
+    return res.status(400).json({ error: 'A valid amountEuros is required.' });
   }
 
   const cents = Math.round(amountEuros * 100);
