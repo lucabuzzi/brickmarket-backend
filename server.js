@@ -40,8 +40,20 @@ server.on('upgrade', (request, socket, head) => {
 
 app.use(helmet({ contentSecurityPolicy: false }));
 
+// Verified via Content-Security-Policy-Report-Only against the production build
+// (home, login/Turnstile, cart) with zero violations: neither our own code (no
+// eval/Function/inline <script>, JSON-LD blocks aren't script-src-governed) nor
+// Cloudflare Turnstile need 'unsafe-eval'/'unsafe-inline', and Stripe.js's own
+// documented CSP requirements don't list them either. Kept permissive outside
+// production as a safety margin, since this header is only relevant when Express
+// serves the built client directly — the Vite dev server on :5173 doesn't go
+// through this middleware at all.
+const scriptSrc = process.env.NODE_ENV === 'production'
+  ? "script-src 'self' https://challenges.cloudflare.com https://js.stripe.com;"
+  : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://js.stripe.com;";
+
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://js.stripe.com; frame-src https://challenges.cloudflare.com https://js.stripe.com;");
+  res.setHeader("Content-Security-Policy", `${scriptSrc} frame-src https://challenges.cloudflare.com https://js.stripe.com;`);
   next();
 });
 
@@ -373,7 +385,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Backend live on port ${PORT}`);
-  console.log("SECURE MODE: CSP Disabled for development flow.");
+  console.log(`CSP: ${process.env.NODE_ENV === 'production' ? 'strict (no unsafe-inline/unsafe-eval)' : 'permissive (dev)'}`);
 });
 
 // --- Analytics daily snapshots: archive from July 2026 onward ---
