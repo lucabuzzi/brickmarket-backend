@@ -826,25 +826,4 @@ router.post('/:id/bid', auth, async (req, res) => {
   }
 });
 
-
-/**
- * POST /api/listings/:id/bid-debug
- * Versione semplificata senza alcuna validazione per test forense
- */
-router.post('/:id/bid-debug', async (req, res) => {
-
-  const { id } = req.params;
-  const { amount } = req.body;
-  
-  try {
-    const result = await query(
-      `UPDATE listings SET current_bid = $1, bids_count = bids_count + 1 WHERE id = $2 RETURNING *`,
-      [amount, id]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 module.exports = router;
