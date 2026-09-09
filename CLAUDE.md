@@ -43,9 +43,9 @@ Database migrations are ad-hoc, not framework-managed: `src/db/*.sql` and `src/d
 
 ## ClutchVault
 
-ClutchVault (credit wallet + prize contests/jigsaw puzzles) exists in **two places** — know which one you're editing:
-1. A fully standalone app under `clutchvault/` (own `backend/` Express server, own `frontend/` Vite+React app, own `package.json`/`node_modules`, own `schema.sql`). Not started by any root/client script.
-2. A parallel integration merged directly into the main backend: `src/routes/contest.js`, `src/routes/wallet.js`, `src/routes/stripe.js`, mounted in `server.js` alongside a few inline routes (`/api/products`, `/api/auctions`, `/api/auctions/bid`) that also live in `server.js` itself rather than a route file.
+ClutchVault (credit wallet + prize contests/jigsaw puzzles) exists in **two places**:
+1. **DEPRECATED** — a fully standalone app under `clutchvault/` (own `backend/` Express server, own `frontend/` Vite+React app, own `package.json`/`node_modules`, own `schema.sql`). Not started by any root/client script, not referenced by any deploy config, and not actively developed (see `clutchvault/README.md`). Left in place for reference only — don't build new features on it.
+2. **Active** — a parallel integration merged directly into the main backend: `src/routes/contest.js`, `src/routes/wallet.js`, `src/routes/stripe.js`, mounted in `server.js` alongside a few inline routes (`/api/products`, `/api/auctions`, `/api/auctions/bid`) that also live in `server.js` itself rather than a route file. This is the one that's live — make ClutchVault changes here.
 
 The merged integration talks to `src/db/clutchvault-db.js`, which auto-falls-back to an **in-memory mock** (`isMock` flag, `getMockDbState()`) whenever it can't reach Postgres — contest/wallet endpoints keep responding without a real DB in that mode. If wallet/contest behavior looks wrong, check `isMock` first before assuming a DB bug.
 
