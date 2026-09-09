@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "start:prod": "node server.js",
-    "build": "npm install --prefix client && npm run build --prefix client",
+    "build": "npm install --prefix client --include=dev && npm run build --prefix client",
     "seed": "node scripts/seed-dummy-data.js",
     "client": "npm run dev --prefix client",
     "test": "echo \"Error: no test specified\" && exit 1"
