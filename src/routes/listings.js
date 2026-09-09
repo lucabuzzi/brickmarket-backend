@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const { upload, hasCloudinaryConfig } = require('../services/cloudinary');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { calculateShippingRates } = require('../services/shipping');
+const { recomputeUserRole, expireEndedAuctionsAndPromoteWinners } = require('../services/userRoleAuto');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 
@@ -276,6 +277,8 @@ router.post('/', auth, async (req, res) => {
       ]
     );
 
+    await recomputeUserRole(req.user.userId);
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('\n=== FULL DB ERROR ===');
@@ -304,7 +307,7 @@ router.get('/', async (req, res) => {
   const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category, product_type, game } = req.query;
   try {
     // Auto-Expire Logic: Check for expired auctions and mark them as expired
-    await query(`UPDATE listings SET status = 'expired' WHERE status = 'active' AND type = 'auction' AND auction_end < NOW()`);
+    await expireEndedAuctionsAndPromoteWinners();
 
     const params = [];
     const parts = [];
@@ -423,7 +426,7 @@ router.get('/', async (req, res) => {
 router.get('/archive', async (req, res) => {
   try {
     // Ensure auto-expire is run here too, just in case
-    await query(`UPDATE listings SET status = 'expired' WHERE status = 'active' AND type = 'auction' AND auction_end < NOW()`);
+    await expireEndedAuctionsAndPromoteWinners();
 
     const result = await query(
       `SELECT l.*,

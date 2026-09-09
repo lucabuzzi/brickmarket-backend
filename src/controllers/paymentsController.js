@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const paymentsRepository = require('../repositories/paymentsRepository');
 const userRepository = require('../repositories/userRepository');
+const { recomputeUserRole } = require('../services/userRoleAuto');
 
 const PLATFORM_FEE_RATE = 0.05;
 
@@ -224,6 +225,7 @@ async function webhookHandler(req, res) {
       // /admin/payouts (CardBrix paga fuori Stripe, non un transfer automatico).
       for (const order of orders) {
         await paymentsRepository.markListingSold(order.listing_id);
+        await recomputeUserRole(order.buyer_id);
       }
       break;
     }

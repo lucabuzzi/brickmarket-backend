@@ -128,8 +128,8 @@ export default function AdminUsersList() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-stone-800 text-stone-300">
-                      {u.role}
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${u.role === 'both' ? 'bg-gold-500/15 text-gold-400' : 'bg-stone-800 text-stone-300'}`}>
+                      {u.role === 'both' ? 'Trader' : u.role}
                     </span>
                   </td>
                   <td className="px-4 py-3">
