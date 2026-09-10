@@ -36,6 +36,7 @@ const AdminArchive = lazy(() => import('./pages/AdminArchive'));
 const AdminWalletTransactions = lazy(() => import('./pages/AdminWalletTransactions'));
 const AdminPayouts = lazy(() => import('./pages/AdminPayouts'));
 const AdminUsersList = lazy(() => import('./pages/AdminUsersList'));
+const AdminListings = lazy(() => import('./pages/AdminListings'));
 const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'));
 const AdminInteractions = lazy(() => import('./pages/AdminInteractions'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
@@ -166,6 +167,7 @@ export default function App() {
           <Route path="admin/wallet-transactions" element={<ProtectedRoute adminOnly={true}><AdminWalletTransactions /></ProtectedRoute>} />
           <Route path="admin/payouts" element={<ProtectedRoute adminOnly={true}><AdminPayouts /></ProtectedRoute>} />
           <Route path="admin/users" element={<ProtectedRoute adminOnly={true}><AdminUsersList /></ProtectedRoute>} />
+          <Route path="admin/listings" element={<ProtectedRoute adminOnly={true}><AdminListings /></ProtectedRoute>} />
           <Route path="admin/users/:id" element={<ProtectedRoute adminOnly={true}><AdminUserDetail /></ProtectedRoute>} />
           <Route path="admin/interactions" element={<ProtectedRoute adminOnly={true}><AdminInteractions /></ProtectedRoute>} />
           <Route path="admin/analytics" element={<ProtectedRoute adminOnly={true}><AdminAnalytics /></ProtectedRoute>} />

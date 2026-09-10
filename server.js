@@ -405,3 +405,11 @@ cron.schedule('10 0 * * *', () => {
     .then((results) => console.log(`[Analytics] Daily snapshot job: ${results.length} day(s) computed.`))
     .catch((err) => console.error('[Analytics] Daily snapshot job failed:', err.message));
 });
+
+// Backstop for lapsed "in evidenza" windows. The public feed already lazy-expires
+// them on every GET /api/listings; this just catches listings that stop being
+// viewed while still flagged is_featured.
+const { expireFeaturedListings } = require('./src/services/featured');
+cron.schedule('5 * * * *', () => {
+  expireFeaturedListings().catch((err) => console.error('[Featured] Hourly expiry job failed:', err.message));
+});

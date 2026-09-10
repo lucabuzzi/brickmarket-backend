@@ -635,7 +635,29 @@
     "action_pause": "Suspendre",
     "action_publish": "Publier",
     "action_edit": "Modifier",
-    "action_delete": "Supprimer"
+    "action_delete": "Supprimer",
+    "featured_badge": "En vedette",
+    "featured_until": "En vedette jusqu'au {{date}}",
+    "featured_no_expiry": "En vedette (sans expiration)",
+    "action_feature": "Mettre en vedette",
+    "action_extend_featured": "Prolonger la mise en vedette"
+  },
+  "feature": {
+    "title": "Mettre en vedette",
+    "intro": "Votre annonce apparaîtra dans les sections « en vedette » de la page d'accueil pendant la durée choisie.",
+    "days": "jours",
+    "method_wallet": "Portefeuille",
+    "method_card": "Carte",
+    "wallet_balance": "Solde : {{balance}} CR",
+    "wallet_insufficient": "crédit insuffisant",
+    "confirm": "Confirmer · {{price}} CR",
+    "processing": "Traitement…",
+    "success_title": "Annonce mise en vedette !",
+    "success_desc": "Elle apparaîtra bientôt dans les sections en vedette.",
+    "close": "Fermer",
+    "payment_failed": "Échec du paiement",
+    "stripe_unavailable": "Paiement par carte indisponible",
+    "generic_error": "Une erreur est survenue"
   },
   "user_search": {
     "load_error": "Erreur de chargement de l'annuaire",

@@ -635,7 +635,29 @@
     "action_pause": "Suspend",
     "action_publish": "Publish",
     "action_edit": "Edit",
-    "action_delete": "Delete"
+    "action_delete": "Delete",
+    "featured_badge": "Featured",
+    "featured_until": "Featured until {{date}}",
+    "featured_no_expiry": "Featured (no expiry)",
+    "action_feature": "Feature this listing",
+    "action_extend_featured": "Extend featured"
+  },
+  "feature": {
+    "title": "Feature this listing",
+    "intro": "It will appear in the \"featured\" sections of the homepage for the period you choose.",
+    "days": "days",
+    "method_wallet": "Wallet",
+    "method_card": "Card",
+    "wallet_balance": "Balance: {{balance}} CR",
+    "wallet_insufficient": "not enough credits",
+    "confirm": "Confirm · {{price}} CR",
+    "processing": "Processing…",
+    "success_title": "Listing featured!",
+    "success_desc": "It will show up in the featured sections shortly.",
+    "close": "Close",
+    "payment_failed": "Payment failed",
+    "stripe_unavailable": "Card payment unavailable",
+    "generic_error": "Something went wrong"
   },
   "user_search": {
     "load_error": "Error loading directory",

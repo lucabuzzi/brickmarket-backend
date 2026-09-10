@@ -635,7 +635,29 @@
     "action_pause": "Suspender",
     "action_publish": "Publicar",
     "action_edit": "Editar",
-    "action_delete": "Eliminar"
+    "action_delete": "Eliminar",
+    "featured_badge": "Destacado",
+    "featured_until": "Destacado hasta el {{date}}",
+    "featured_no_expiry": "Destacado (sin caducidad)",
+    "action_feature": "Destacar anuncio",
+    "action_extend_featured": "Ampliar destacado"
+  },
+  "feature": {
+    "title": "Destacar anuncio",
+    "intro": "Aparecerá en las secciones «destacados» de la página principal durante el periodo que elijas.",
+    "days": "días",
+    "method_wallet": "Monedero",
+    "method_card": "Tarjeta",
+    "wallet_balance": "Saldo: {{balance}} CR",
+    "wallet_insufficient": "crédito insuficiente",
+    "confirm": "Confirmar · {{price}} CR",
+    "processing": "Procesando…",
+    "success_title": "¡Anuncio destacado!",
+    "success_desc": "Aparecerá en las secciones destacadas en breve.",
+    "close": "Cerrar",
+    "payment_failed": "Pago fallido",
+    "stripe_unavailable": "Pago con tarjeta no disponible",
+    "generic_error": "Se ha producido un error"
   },
   "user_search": {
     "load_error": "Error al cargar el directorio",

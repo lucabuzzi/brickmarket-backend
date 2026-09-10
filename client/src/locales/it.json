@@ -635,7 +635,29 @@
     "action_pause": "Sospendi",
     "action_publish": "Pubblica",
     "action_edit": "Modifica",
-    "action_delete": "Elimina"
+    "action_delete": "Elimina",
+    "featured_badge": "In evidenza",
+    "featured_until": "In evidenza fino al {{date}}",
+    "featured_no_expiry": "In evidenza (senza scadenza)",
+    "action_feature": "Metti in evidenza",
+    "action_extend_featured": "Estendi l'evidenza"
+  },
+  "feature": {
+    "title": "Metti in evidenza",
+    "intro": "Comparirà nelle sezioni «in evidenza» della home per la durata che scegli.",
+    "days": "giorni",
+    "method_wallet": "Wallet",
+    "method_card": "Carta",
+    "wallet_balance": "Saldo: {{balance}} CR",
+    "wallet_insufficient": "credito insufficiente",
+    "confirm": "Conferma · {{price}} CR",
+    "processing": "Elaborazione…",
+    "success_title": "Annuncio in evidenza!",
+    "success_desc": "Comparirà a breve nelle sezioni in evidenza.",
+    "close": "Chiudi",
+    "payment_failed": "Pagamento non riuscito",
+    "stripe_unavailable": "Pagamento con carta non disponibile",
+    "generic_error": "Si è verificato un errore"
   },
   "user_search": {
     "load_error": "Errore caricamento directory",

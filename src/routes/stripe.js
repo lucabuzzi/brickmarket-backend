@@ -34,7 +34,29 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
     const paymentIntent = event.data.object;
     const amountInCents = paymentIntent.amount;
     const paymentIntentId = paymentIntent.id;
-    const userId = paymentIntent.metadata?.userId || paymentIntent.metadata?.user_id;
+    const meta = paymentIntent.metadata || {};
+    const userId = meta.userId || meta.user_id;
+
+    // Featured-listing promotion paid by card: apply the feature window, never
+    // touch the wallet. Idempotent via featured_purchases.payment_ref, so it's
+    // safe whether this or POST /:id/confirm-feature runs first.
+    if (meta.type === 'featured_listing') {
+      try {
+        const featured = require('../services/featured');
+        const tariff = featured.getTariff(meta.tariff);
+        if (tariff && meta.listingId && !(await featured.purchaseExists(paymentIntentId))) {
+          await featured.applyFeature(meta.listingId, { days: tariff.days, source: 'paid' });
+          await featured.recordPurchase({
+            listingId: meta.listingId, userId, tariff: String(meta.tariff), days: tariff.days,
+            method: 'card', amountCredits: tariff.credits, paymentRef: paymentIntentId,
+          });
+        }
+        return res.status(200).json({ received: true, featured: true });
+      } catch (err) {
+        console.error('❌ Featured-listing webhook failed:', err.message);
+        return res.status(500).json({ error: 'Featured update failed' });
+      }
+    }
 
     if (!userId) {
       console.error('❌ PaymentIntent missing userId in metadata.');

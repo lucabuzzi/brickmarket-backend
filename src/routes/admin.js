@@ -4,6 +4,7 @@ const { query } = require('../db');
 const { adminAuth } = require('../middleware/auth');
 const { computeDaySnapshot, backfillSnapshots } = require('../services/analyticsSnapshot');
 const { updateUserSchema, validate } = require('../validators/adminUserValidators');
+const featured = require('../services/featured');
 
 /**
  * GET /api/admin/stats
@@ -841,6 +842,93 @@ router.get('/analytics/behavior', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('ADMIN ANALYTICS BEHAVIOR ERROR:', err.message);
     res.status(500).json({ error: 'Errore nel recupero del comportamento utenti.' });
+  }
+});
+
+/**
+ * GET /api/admin/listings?search=&featured=&limit=&offset=
+ * Listing management table for the admin "Annunci" page: id, title, seller,
+ * status, price, and the featured window.
+ */
+router.get('/listings', adminAuth, async (req, res) => {
+  const { search, featured: featuredQ } = req.query;
+  const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+  const offset = parseInt(req.query.offset, 10) || 0;
+
+  const parts = [];
+  const params = [];
+  if (search) {
+    params.push(`%${search}%`);
+    parts.push(`(l.title ILIKE $${params.length} OR u.username ILIKE $${params.length})`);
+  }
+  if (featuredQ === 'true') {
+    parts.push(`l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())`);
+  } else if (featuredQ === 'false') {
+    parts.push(`(l.is_featured = false OR l.is_featured IS NULL)`);
+  }
+  const where = parts.length ? `WHERE ${parts.join(' AND ')}` : '';
+
+  try {
+    params.push(limit, offset);
+    const result = await query(
+      `SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction,
+              l.is_featured, l.featured_until, l.featured_source, l.created_at,
+              u.username AS seller_username, u.id AS seller_id
+       FROM listings l
+       JOIN users u ON u.id = l.seller_id
+       ${where}
+       ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC,
+                l.created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('ADMIN LISTINGS ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero degli annunci.' });
+  }
+});
+
+/**
+ * POST /api/admin/listings/:id/feature
+ * Manually set or clear a listing's "in evidenza" state — free, admin-sourced.
+ *   body { days: <positive int> }  -> feature for N days (stacks on any existing window)
+ *   body { pin: true }             -> feature with no expiry
+ *   body { unfeature: true }       -> clear it
+ */
+router.post('/listings/:id/feature', adminAuth, async (req, res) => {
+  const listingId = req.params.id;
+  const { days, pin, unfeature } = req.body || {};
+
+  try {
+    const exists = await query('SELECT id FROM listings WHERE id = $1', [listingId]);
+    if (exists.rows.length === 0) return res.status(404).json({ error: 'Annuncio non trovato.' });
+
+    let listing;
+    if (unfeature) {
+      listing = await featured.unfeature(listingId);
+    } else if (pin) {
+      listing = await featured.applyFeature(listingId, { days: null, source: 'admin' });
+      await featured.recordPurchase({
+        listingId, userId: req.user.userId, tariff: 'admin', days: 0, method: 'admin',
+      }).catch(() => {});
+    } else {
+      const n = parseInt(days, 10);
+      if (!Number.isInteger(n) || n <= 0 || n > 365) {
+        return res.status(400).json({ error: 'days deve essere un intero fra 1 e 365' });
+      }
+      listing = await featured.applyFeature(listingId, { days: n, source: 'admin' });
+      await featured.recordPurchase({
+        listingId, userId: req.user.userId, tariff: 'admin', days: n, method: 'admin',
+      }).catch(() => {});
+    }
+
+    const broadcast = req.app.get('broadcast');
+    if (broadcast) broadcast({ type: 'LISTING_FEATURED', listingId });
+    res.json({ success: true, listing });
+  } catch (err) {
+    console.error('ADMIN FEATURE ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nella gestione evidenza.' });
   }
 });
 

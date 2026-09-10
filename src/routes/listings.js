@@ -6,8 +6,13 @@ const { upload, hasCloudinaryConfig } = require('../services/cloudinary');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { calculateShippingRates } = require('../services/shipping');
 const { recomputeUserRole, expireEndedAuctionsAndPromoteWinners } = require('../services/userRoleAuto');
+const featured = require('../services/featured');
+const walletRepository = require('../repositories/walletRepository');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+const Stripe = require('stripe');
+
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 /** Wraps multer middleware in a promise so we can catch upload errors explicitly */
 function runUpload(req, res) {
@@ -313,6 +318,8 @@ router.get('/', async (req, res) => {
   try {
     // Auto-Expire Logic: Check for expired auctions and mark them as expired
     await expireEndedAuctionsAndPromoteWinners();
+    // Same lazy-expiry pass for paid/admin "in evidenza" windows that have lapsed
+    await featured.expireFeaturedListings();
 
     const params = [];
     const parts = [];
@@ -518,6 +525,149 @@ router.get('/search', async (req, res) => {
   } catch (err) {
     console.error('SEARCH ERROR:', err.message);
     res.status(500).json({ error: 'Errore durante la ricerca' });
+  }
+});
+
+// ── "In evidenza" (featured listings) ──────────────────────────────────────
+
+/** Public: the paid-promotion tariff table, for the seller-facing modal */
+router.get('/featured/tariffs', (req, res) => {
+  res.json(featured.FEATURED_TARIFFS);
+});
+
+/**
+ * POST /api/listings/:id/feature
+ * Seller promotes their own active listing for one tariff (7/14/30 days).
+ *   body { tariff: '7'|'14'|'30', method: 'wallet'|'card' }
+ *   - wallet: debits credits and applies the feature synchronously
+ *   - card:   returns { clientSecret }; the feature is applied by
+ *             POST /:id/confirm-feature (or the Stripe webhook)
+ */
+router.post('/:id/feature', auth, async (req, res) => {
+  const userId = req.user.userId;
+  const listingId = req.params.id;
+  const { tariff: tariffId, method } = req.body || {};
+
+  const tariff = featured.getTariff(tariffId);
+  if (!tariff) return res.status(400).json({ error: 'Tariffa non valida' });
+  if (method !== 'wallet' && method !== 'card') {
+    return res.status(400).json({ error: 'Metodo di pagamento non valido' });
+  }
+
+  try {
+    const lr = await query(
+      'SELECT id, seller_id, status FROM listings WHERE id = $1',
+      [listingId]
+    );
+    const listing = lr.rows[0];
+    if (!listing) return res.status(404).json({ error: 'Annuncio non trovato' });
+    if (listing.seller_id !== userId) {
+      return res.status(403).json({ error: 'Non sei il proprietario di questo annuncio' });
+    }
+    if (listing.status !== 'active') {
+      return res.status(400).json({ error: 'Solo gli annunci attivi possono essere messi in evidenza' });
+    }
+
+    if (method === 'card') {
+      if (!stripe) return res.status(503).json({ error: 'Pagamenti con carta non configurati' });
+      const intent = await stripe.paymentIntents.create({
+        amount: Math.round(tariff.credits * 100),
+        currency: 'eur',
+        payment_method_types: ['card'],
+        metadata: { type: 'featured_listing', listingId, userId, tariff: String(tariffId) },
+      });
+      return res.json({ clientSecret: intent.client_secret, amountCredits: tariff.credits });
+    }
+
+    // wallet: atomic conditional debit, then apply. Refund only if the feature
+    // itself can't be written (mirrors walletController.convert's debit→act→refund).
+    const debited = await walletRepository.debitWalletIfSufficient(userId, tariff.credits);
+    if (!debited) {
+      return res.status(400).json({ error: 'Credito insufficiente', requiredCredits: tariff.credits });
+    }
+
+    let updated;
+    try {
+      updated = await featured.applyFeature(listingId, { days: tariff.days, source: 'paid' });
+    } catch (applyErr) {
+      await walletRepository.creditWallet(userId, tariff.credits);
+      console.error('Feature apply failed, credits refunded:', applyErr.message);
+      return res.status(500).json({ error: 'Errore nella messa in evidenza, credito ripristinato' });
+    }
+
+    // Ledger + audit: best-effort, the promotion already succeeded and the
+    // credits already moved — a hiccup here must not 500 the request.
+    // 'shop_purchase' is the existing credit_transactions type for "spent
+    // credits on a service"; featured_purchases carries the real detail.
+    try {
+      await walletRepository.recordTransaction(userId, -tariff.credits, 'shop_purchase', listingId);
+      await featured.recordPurchase({
+        listingId, userId, tariff: String(tariffId), days: tariff.days,
+        method: 'wallet', amountCredits: tariff.credits, paymentRef: `wallet:${listingId}:${Date.now()}`,
+      });
+    } catch (ledgerErr) {
+      console.error('Feature ledger/audit write failed (non-fatal):', ledgerErr.message);
+    }
+
+    const broadcast = req.app.get('broadcast');
+    if (broadcast) broadcast({ type: 'LISTING_FEATURED', listingId });
+
+    return res.json({
+      success: true,
+      listing: updated,
+      newBalanceCredits: parseFloat(debited.balance_credits),
+    });
+  } catch (err) {
+    console.error('FEATURE ERROR:', err.message);
+    return res.status(500).json({ error: 'Errore nella messa in evidenza' });
+  }
+});
+
+/**
+ * POST /api/listings/:id/confirm-feature
+ * Called by the client right after stripe.confirmCardPayment() resolves.
+ * Verifies the PaymentIntent against Stripe and applies the feature once
+ * (idempotent via featured_purchases.payment_ref — safe if the webhook beat us).
+ *   body { paymentIntentId }
+ */
+router.post('/:id/confirm-feature', auth, async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Pagamenti con carta non configurati' });
+  const userId = req.user.userId;
+  const listingId = req.params.id;
+  const { paymentIntentId } = req.body || {};
+  if (!paymentIntentId) return res.status(400).json({ error: 'paymentIntentId mancante' });
+
+  try {
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (intent.status !== 'succeeded') {
+      return res.status(400).json({ error: 'Pagamento non completato' });
+    }
+    if (intent.metadata?.type !== 'featured_listing'
+        || intent.metadata?.userId !== userId
+        || intent.metadata?.listingId !== listingId) {
+      return res.status(403).json({ error: 'Pagamento non associato a questo annuncio' });
+    }
+
+    const tariffId = intent.metadata.tariff;
+    const tariff = featured.getTariff(tariffId);
+    if (!tariff) return res.status(400).json({ error: 'Tariffa non valida' });
+
+    if (!(await featured.purchaseExists(paymentIntentId))) {
+      const updated = await featured.applyFeature(listingId, { days: tariff.days, source: 'paid' });
+      await featured.recordPurchase({
+        listingId, userId, tariff: String(tariffId), days: tariff.days,
+        method: 'card', amountCredits: tariff.credits, paymentRef: paymentIntentId,
+      });
+      const broadcast = req.app.get('broadcast');
+      if (broadcast) broadcast({ type: 'LISTING_FEATURED', listingId });
+      return res.json({ success: true, listing: updated });
+    }
+
+    const lr = await query('SELECT * FROM listings WHERE id = $1', [listingId]);
+    return res.json({ success: true, listing: lr.rows[0] });
+  } catch (err) {
+    console.error('CONFIRM FEATURE ERROR:', err.message);
+    return res.status(500).json({ error: 'Errore nella conferma della messa in evidenza' });
   }
 });
 

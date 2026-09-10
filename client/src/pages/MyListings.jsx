@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { apiFetch } from '../api';
 import {
   Pencil,
@@ -10,10 +10,18 @@ import {
   Package,
   AlertCircle,
   Star,
+  Sparkles,
   ChevronRight,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReviewModal from '../components/ReviewModal';
+import FeatureListingModal from '../components/FeatureListingModal';
+
+function featuredActive(item) {
+  if (!item?.is_featured) return false;
+  if (!item.featured_until) return true;
+  return new Date(item.featured_until) > new Date();
+}
 
 function formatPrice(v) {
   if (v == null || v === '') return '—';
@@ -30,7 +38,7 @@ export default function MyListings() {
   const [actionLoading, setActionLoading] = useState(null);
   const [pendingReviews, setPendingReviews] = useState([]);
   const [activeReviewOrder, setActiveReviewOrder] = useState(null);
-  const navigate = useNavigate();
+  const [featureListing, setFeatureListing] = useState(null);
 
   const fetchMyListings = async () => {
     try {
@@ -196,11 +204,19 @@ export default function MyListings() {
                     </div>
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem' }}>
-                    {item.status === 'active' ? (
-                      <span className="badge badge--active">{t('my_listings.status_active')}</span>
-                    ) : (
-                      <span className="badge badge--inactive">{t('my_listings.status_inactive')}</span>
-                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                      {item.status === 'active' ? (
+                        <span className="badge badge--active">{t('my_listings.status_active')}</span>
+                      ) : (
+                        <span className="badge badge--inactive">{t('my_listings.status_inactive')}</span>
+                      )}
+                      {featuredActive(item) && (
+                        <span className="badge badge--featured" title={item.featured_until ? t('my_listings.featured_until', { date: new Date(item.featured_until).toLocaleDateString('it-IT') }) : t('my_listings.featured_no_expiry')}>
+                          <Sparkles size={11} style={{ verticalAlign: '-1px', marginRight: '3px' }} />
+                          {t('my_listings.featured_badge')}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', color: '#d4af37' }}>
                     {formatPrice(item.price)}
@@ -225,6 +241,17 @@ export default function MyListings() {
                       >
                         {item.status === 'active' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
                       </button>
+
+                      {item.status === 'active' && (
+                        <button
+                          onClick={() => setFeatureListing(item)}
+                          className="btn-icon"
+                          title={featuredActive(item) ? t('my_listings.action_extend_featured') : t('my_listings.action_feature')}
+                          style={{ color: featuredActive(item) ? '#eed690' : '#d4af37' }}
+                        >
+                          <Sparkles size={18} />
+                        </button>
+                      )}
 
                       <Link
                         to={`/sell?edit=${item.id}`}
@@ -298,6 +325,11 @@ export default function MyListings() {
           color: #e4c159;
           border: 1px solid #9a3412;
         }
+        .badge--featured {
+          background-color: rgba(212,175,55,0.12);
+          color: #eed690;
+          border: 1px solid rgba(212,175,55,0.4);
+        }
       `}</style>
 
       {/* Review Modal */}
@@ -309,6 +341,17 @@ export default function MyListings() {
             // Remove the reviewed order from the pending list
             setPendingReviews(prev => prev.filter(o => o.order_id !== activeReviewOrder.order_id));
             setActiveReviewOrder(null);
+          }}
+        />
+      )}
+
+      {/* Feature ("in evidenza") Modal */}
+      {featureListing && (
+        <FeatureListingModal
+          listing={featureListing}
+          onClose={() => setFeatureListing(null)}
+          onFeatured={(updated) => {
+            if (updated) setRows(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
           }}
         />
       )}

@@ -635,7 +635,29 @@
     "action_pause": "Pausieren",
     "action_publish": "Veröffentlichen",
     "action_edit": "Bearbeiten",
-    "action_delete": "Löschen"
+    "action_delete": "Löschen",
+    "featured_badge": "Hervorgehoben",
+    "featured_until": "Hervorgehoben bis {{date}}",
+    "featured_no_expiry": "Hervorgehoben (ohne Ablauf)",
+    "action_feature": "Anzeige hervorheben",
+    "action_extend_featured": "Hervorhebung verlängern"
+  },
+  "feature": {
+    "title": "Anzeige hervorheben",
+    "intro": "Sie erscheint für den gewählten Zeitraum in den „Hervorgehoben“-Bereichen der Startseite.",
+    "days": "Tage",
+    "method_wallet": "Wallet",
+    "method_card": "Karte",
+    "wallet_balance": "Guthaben: {{balance}} CR",
+    "wallet_insufficient": "nicht genügend Guthaben",
+    "confirm": "Bestätigen · {{price}} CR",
+    "processing": "Wird verarbeitet…",
+    "success_title": "Anzeige hervorgehoben!",
+    "success_desc": "Sie erscheint in Kürze in den hervorgehobenen Bereichen.",
+    "close": "Schließen",
+    "payment_failed": "Zahlung fehlgeschlagen",
+    "stripe_unavailable": "Kartenzahlung nicht verfügbar",
+    "generic_error": "Ein Fehler ist aufgetreten"
   },
   "user_search": {
     "load_error": "Fehler beim Laden des Verzeichnisses",
