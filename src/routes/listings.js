@@ -26,6 +26,10 @@ const LISTING_TYPE_LEGACY_ALIASES = ['fixed'];
 /** Valori ammessi per la categoria di prodotto e, se product_type='tcg', per il gioco specifico */
 const PRODUCT_TYPES = ['lego', 'funko', 'tcg'];
 const TCG_GAMES = ['pokemon', 'magic', 'lorcana', 'yugioh', 'onepiece', 'dragonball'];
+/** Card-grade condition codes used only when product_type='tcg' */
+const TCG_CONDITION_GRADES = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
+/** Every condition value accepted from the client — must stay a subset of the listings.condition CHECK constraint */
+const CONDITION_VALUES = ['complete', 'good', 'fair', 'parts', 'new', 'used', ...TCG_CONDITION_GRADES];
 
 /** Normalizza campi numerici inviati come stringhe vuote da multipart/form-data */
 function normalizeListingBody(body) {
@@ -59,6 +63,7 @@ function coerceConditionForDb(condition) {
   if (c === 'parts')     return 'used';   // spare parts listing
   if (c === 'like new')  return 'Like New';
   if (c === 'damaged')   return 'damaged';
+  if (TCG_CONDITION_GRADES.includes(c)) return c; // card grades stored verbatim
   return 'used'; // safe fallback
 }
 
@@ -73,7 +78,7 @@ function validateDraftListing(body) {
     type: Joi.string()
       .valid(...LISTING_TYPES_DB.filter((x) => x !== 'auction'), ...LISTING_TYPE_LEGACY_ALIASES)
       .default('used'),
-    condition: Joi.string().valid('complete', 'good', 'fair', 'parts', 'new', 'used').allow(null),
+    condition: Joi.string().valid(...CONDITION_VALUES).allow(null),
     boxCondition: Joi.string().max(100).allow('', null),
     instructions: Joi.string().max(100).allow('', null),
     proNotes: Joi.string().max(2000).allow('', null),
@@ -105,7 +110,7 @@ function validatePublishListing(body) {
     year: Joi.number().integer().min(1900).max(2100).allow(null),
     pieces: Joi.number().integer().min(1).allow(null),
     type: Joi.string().valid(...LISTING_TYPES_DB, ...LISTING_TYPE_LEGACY_ALIASES).required(),
-    condition: Joi.string().valid('complete', 'good', 'fair', 'parts', 'new', 'used').required(),
+    condition: Joi.string().valid(...CONDITION_VALUES).required(),
     boxCondition: Joi.string().max(100).allow('', null),
     instructions: Joi.string().max(100).allow('', null),
     proNotes: Joi.string().max(2000).allow('', null),
@@ -161,7 +166,7 @@ const patchSchema = Joi.object({
   theme: Joi.string().max(100).allow('', null),
   year: Joi.number().integer().min(1900).max(2100).allow(null),
   pieces: Joi.number().integer().min(1).allow(null),
-  condition: Joi.string().valid('complete', 'good', 'fair', 'parts', 'new', 'used').allow(null),
+  condition: Joi.string().valid(...CONDITION_VALUES).allow(null),
   boxCondition: Joi.string().max(100).allow('', null),
   instructions: Joi.string().max(100).allow('', null),
   proNotes: Joi.string().max(2000).allow('', null),

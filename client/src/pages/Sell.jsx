@@ -27,6 +27,9 @@ const PRODUCT_TYPE_OPTIONS = [
   { id: 'funko', icon: '🧸' },
 ];
 
+// Condition codes for trading cards (product_type === 'tcg'); LEGO/Funko keep new/used/complete/parts
+const TCG_CONDITIONS = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
+
 const MAIN_CATEGORY_OPTIONS = [
   { id: 'sets', icon: '🧱' },
   { id: 'mocs', icon: '🏗️' },
@@ -143,7 +146,8 @@ export default function Sell() {
         setYear(data.year || '');
         
         const c = (data.condition || '').toLowerCase();
-        if (c === 'new' || c === 'sealed') setCondition('new');
+        if (TCG_CONDITIONS.includes(c)) setCondition(c);
+        else if (c === 'new' || c === 'sealed') setCondition('new');
         else if (c === 'complete') setCondition('complete');
         else if (c === 'parts') setCondition('parts');
         else setCondition('used');
@@ -241,7 +245,7 @@ export default function Sell() {
     const conditionMap = { 'new': 'new', 'used': 'used', 'complete': 'complete', 'parts': 'parts' };
     const mappedType = condition === 'new' ? 'sealed' : 'used';
     fd.append('type', mappedType);
-    fd.append('condition', conditionMap[condition] || 'used');
+    fd.append('condition', productType === 'tcg' ? condition : (conditionMap[condition] || 'used'));
     if (isLego && boxCondition) fd.append('boxCondition', boxCondition);
     if (isLego && instructions) fd.append('instructions', instructions);
     if (isLego) fd.append('isComplete', String(isComplete));
@@ -432,7 +436,7 @@ export default function Sell() {
                   <button
                     key={pt.id}
                     type="button"
-                    onClick={() => { setProductType(pt.id); if (pt.id !== 'tcg') setGame(''); if (pt.id !== 'lego') { setMainCategory(''); setSetNumber(''); setYear(''); } if (pt.id !== 'tcg') setCategory(''); }}
+                    onClick={() => { setProductType(pt.id); setCondition(''); if (pt.id !== 'tcg') setGame(''); if (pt.id !== 'lego') { setMainCategory(''); setSetNumber(''); setYear(''); } if (pt.id !== 'tcg') setCategory(''); }}
                     style={{
                       padding: '1rem 0.5rem',
                       borderRadius: '12px',
@@ -592,10 +596,16 @@ export default function Sell() {
               <select value={condition} onChange={(e) => setCondition(e.target.value)}
                 style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
                 <option value="">{t('sell.select_placeholder')}</option>
-                <option value="new">{t('sell.condition_option_new')}</option>
-                <option value="used">{t('sell.condition_option_used')}</option>
-                <option value="complete">{t('sell.condition_option_complete')}</option>
-                <option value="parts">{t('sell.condition_option_parts')}</option>
+                {productType === 'tcg' ? (
+                  TCG_CONDITIONS.map((c) => <option key={c} value={c}>{t(`sell.condition_grade_${c}`)}</option>)
+                ) : (
+                  <>
+                    <option value="new">{t('sell.condition_option_new')}</option>
+                    <option value="used">{t('sell.condition_option_used')}</option>
+                    <option value="complete">{t('sell.condition_option_complete')}</option>
+                    <option value="parts">{t('sell.condition_option_parts')}</option>
+                  </>
+                )}
               </select>
             </div>
 

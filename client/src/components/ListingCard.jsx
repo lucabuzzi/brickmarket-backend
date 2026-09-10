@@ -23,8 +23,8 @@ function formatPrice(v, locale) {
 
 function conditionClasses(c = '') {
   const lc = c.toLowerCase();
-  if (lc === 'new' || lc === 'complete') return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white';
-  if (lc === 'good') return 'bg-gradient-to-r from-gold-500 to-gold-600 text-white';
+  if (lc === 'new' || lc === 'complete' || lc === 'near_mint') return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white';
+  if (lc === 'good' || lc === 'slightly_played') return 'bg-gradient-to-r from-gold-500 to-gold-600 text-white';
   return 'bg-gradient-to-r from-stone-500 to-stone-600 text-stone-200';
 }
 

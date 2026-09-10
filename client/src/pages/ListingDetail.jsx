@@ -220,6 +220,8 @@ export default function ListingDetail() {
   const setNumber = listing.set_number || 'N/A';
   
   const condition = listing.condition || 'Nuovo';
+  const conditionLabel = t(`details.condition_${String(condition).toLowerCase()}`, { defaultValue: condition });
+  const conditionIsFresh = /nuovo|^new$|near_mint/i.test(condition);
   const boxCond = listing.box_condition || (condition.includes('Nuovo') ? 'Originale' : 'Non specificata');
   const instructions = listing.instructions || (condition.includes('Nuovo') ? 'Presenti' : 'Non specificato');
 
@@ -452,7 +454,7 @@ export default function ListingDetail() {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>{t('details.condition')}</span>
-                <span style={{ backgroundColor: condition.includes('Nuovo') ? '#064e3b' : '#713f12', color: condition.includes('Nuovo') ? '#34d399' : '#fef08a', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{condition}</span>
+                <span style={{ backgroundColor: conditionIsFresh ? '#064e3b' : '#713f12', color: conditionIsFresh ? '#34d399' : '#fef08a', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{conditionLabel}</span>
               </div>
               
               {isLegoListing && (
