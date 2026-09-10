@@ -6,8 +6,13 @@ function findActiveListingById(id) {
 }
 
 function findActiveListingsByIds(ids) {
-  return query(`SELECT l.* FROM listings l WHERE l.id = ANY($1) AND l.status = 'active'`, [ids])
-    .then((r) => r.rows);
+  return query(
+    `SELECT l.*, u.username AS seller_username
+       FROM listings l
+       JOIN users u ON u.id = l.seller_id
+      WHERE l.id = ANY($1) AND l.status = 'active'`,
+    [ids]
+  ).then((r) => r.rows);
 }
 
 async function insertOrder({

@@ -2,6 +2,16 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const paymentsRepository = require('../repositories/paymentsRepository');
 const userRepository = require('../repositories/userRepository');
 const { recomputeUserRole } = require('../services/userRoleAuto');
+const { resolveTcgShipping, resolvePhysicalShipping } = require('../services/shipping');
+
+/** Cart shipping groups: one shipment per (seller × macro-category). Trading
+ *  cards ship apart from LEGO/Funko even for the same seller. */
+function macroCategory(listing) {
+  return listing.product_type === 'tcg' ? 'tcg' : 'physical';
+}
+function shippingGroupKey(listing) {
+  return `${listing.seller_id}::${macroCategory(listing)}`;
+}
 
 const PLATFORM_FEE_RATE = 0.05;
 
@@ -111,6 +121,8 @@ async function createPaymentIntentHandler(req, res) {
 // sul saldo della piattaforma — CardBrix paga poi ciascun venditore
 // separatamente, fuori da Stripe; vedi payout tracking in admin.js).
 async function createCartPaymentIntentHandler(req, res) {
+  // shippingSelections is keyed by shipping-group key ("<sellerId>::<macro>"),
+  // each { method }: a carrier code for physical groups, a tier id for TCG.
   const { itemIds, shippingSelections = {} } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0) {
     return res.status(400).json({ error: 'Nessun articolo selezionato' });
@@ -122,29 +134,68 @@ async function createCartPaymentIntentHandler(req, res) {
       return res.status(400).json({ error: 'Uno o più articoli non sono più disponibili' });
     }
 
-    const orderRows = [];
-    let totalCents = 0;
-
     for (const listing of listings) {
       if (listing.type === 'auction') {
         return res.status(400).json({ error: `"${listing.title}" è un'asta: non è disponibile l'acquisto diretto` });
       }
-      const itemPrice = parseFloat(listing.price);
-      if (!Number.isFinite(itemPrice) || itemPrice <= 0) {
+      const p = parseFloat(listing.price);
+      if (!Number.isFinite(p) || p <= 0) {
         return res.status(400).json({ error: `Prezzo non valido per "${listing.title}"` });
       }
+    }
 
-      const shipping = shippingSelections[listing.id] || {};
-      const shippingCost = Number(shipping.cost) || 0;
-      const { platformFee, sellerFee, sellerPayout } = computeFees(itemPrice);
-      const totalBuyer = itemPrice + shippingCost + platformFee;
+    const buyer = await userRepository.findById(req.user.userId);
+    const buyerCountry = buyer?.address_country || 'it';
+    const sellerCountry = 'it';
 
-      orderRows.push({
-        listing, shippingCost,
-        selectedCarrier: shipping.carrier || null,
-        itemPrice, platformFee, sellerFee, sellerPayout, totalBuyer,
-      });
-      totalCents += Math.round(totalBuyer * 100);
+    // Group items into one shipment per (seller × macro-category), then compute
+    // that group's shipping ONCE — server-side, ignoring any client cost.
+    const groups = new Map();
+    for (const listing of listings) {
+      const key = shippingGroupKey(listing);
+      if (!groups.has(key)) groups.set(key, { key, macro: macroCategory(listing), items: [] });
+      groups.get(key).items.push(listing);
+    }
+
+    const groupShipping = new Map(); // key -> { cost, method }
+    for (const g of groups.values()) {
+      const sel = shippingSelections[g.key] || {};
+      if (g.macro === 'tcg') {
+        const cardCount = g.items.length;
+        const value = g.items.reduce((s, it) => s + parseFloat(it.price), 0);
+        const { tierId, cost } = resolveTcgShipping(sel.method, cardCount, value);
+        groupShipping.set(g.key, { cost, method: tierId });
+      } else {
+        const { carrier, cost } = resolvePhysicalShipping(sel.method, g.items, sellerCountry, buyerCountry);
+        groupShipping.set(g.key, { cost, method: carrier });
+      }
+    }
+
+    // One order row per listing. The whole group's shipping goes on the first
+    // row of that group (0 on the rest); every row of the group carries the
+    // same selected method.
+    const chargedGroups = new Set();
+    const orderRows = [];
+    let totalCents = 0;
+
+    for (const g of groups.values()) {
+      const sorted = [...g.items].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      const { cost: groupCost, method } = groupShipping.get(g.key);
+
+      for (const listing of sorted) {
+        const itemPrice = parseFloat(listing.price);
+        const shippingCost = chargedGroups.has(g.key) ? 0 : groupCost;
+        chargedGroups.add(g.key);
+
+        const { platformFee, sellerFee, sellerPayout } = computeFees(itemPrice);
+        const totalBuyer = itemPrice + shippingCost + platformFee;
+
+        orderRows.push({
+          listing, shippingCost, selectedCarrier: method || null,
+          itemPrice, platformFee, sellerFee, sellerPayout, totalBuyer,
+        });
+        totalCents += Math.round(totalBuyer * 100);
+      }
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
