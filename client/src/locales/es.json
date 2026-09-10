@@ -315,7 +315,9 @@
     "condition_poor_damaged": "Poor / Damaged",
     "view_all_seller": "Ver todos los anuncios del vendedor",
     "listing_not_found": "Anuncio no encontrado",
-    "no_description": "El vendedor no ha proporcionado una descripción detallada."
+    "no_description": "El vendedor no ha proporcionado una descripción detallada.",
+    "free_shipping": "Envío gratuito",
+    "not_specified": "No especificado"
   },
   "help": {
     "title": "Centro de ayuda",

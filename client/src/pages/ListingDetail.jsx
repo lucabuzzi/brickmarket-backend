@@ -45,8 +45,7 @@ export default function ListingDetail() {
   // Auction state
   const [bidAmount, setBidAmount] = useState('');
   const [bidLoading, setBidLoading] = useState(false);
-  const [bidError, setBidError] = useState('');
-  
+
   const toast = useToast();
   
   const [timeLeft, setTimeLeft] = useState(null);
@@ -212,28 +211,57 @@ export default function ListingDetail() {
     return { text, color, pulse, bold };
   };
 
-  if (loading) return <p className="muted" style={{ padding: '2rem' }}>{t('errors.loading_error')}…</p>;
+  if (loading) {
+    return (
+      <div className="page listing-detail" style={{ maxWidth: '1120px', margin: '0 auto', padding: '2rem 1rem' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_400px] gap-6 lg:gap-8 items-start" style={{ animation: 'pulse 1.5s infinite' }}>
+          <div style={{ width: '100%', aspectRatio: '4/3', borderRadius: '14px', backgroundColor: '#1c1917', border: '1px solid #292524' }} />
+          <div style={{ height: '420px', borderRadius: '16px', backgroundColor: '#1c1917', border: '1px solid #292524' }} />
+        </div>
+      </div>
+    );
+  }
   if (error || !listing) return <p className="error-banner" style={{ margin: '2rem' }}>{error || t('details.listing_not_found')}</p>;
 
   const imgs = listingImage(listing);
   const theme = listing.theme || listing.category || 'Generico';
   const setNumber = listing.set_number || 'N/A';
-  
+
   const condition = listing.condition || 'Nuovo';
   const conditionLabel = t(`details.condition_${String(condition).toLowerCase()}`, { defaultValue: condition });
   const conditionIsFresh = /nuovo|^new$|near_mint/i.test(condition);
-  const boxCond = listing.box_condition || (condition.includes('Nuovo') ? 'Originale' : 'Non specificata');
-  const instructions = listing.instructions || (condition.includes('Nuovo') ? 'Presenti' : 'Non specificato');
+  const boxCond = listing.box_condition || null;
+  const instructions = listing.instructions || null;
+
+  const shippingCostNum = parseFloat(listing.shipping_cost);
+  const hasShippingFee = Number.isFinite(shippingCostNum) && shippingCostNum > 0;
 
   const seller = listing.seller || { username: t('details.unknown_seller'), is_pro: false, country: 'it', rating: '0 Feedback', stars: 0 };
   const isAuction = listing.is_auction || listing.type === 'auction';
   const isLegoListing = !listing.product_type || listing.product_type === 'lego';
 
+  const sectionStyle = { padding: '1.25rem 1.5rem', borderTop: '1px solid #3a3531' };
+  const specRow = (label, node) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+      <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>{label}</span>
+      {node}
+    </div>
+  );
+  const pill = (text, tone) => {
+    const tones = {
+      good: { bg: '#3d2f0d', fg: '#e4c159' },
+      fresh: { bg: '#064e3b', fg: '#34d399' },
+      muted: { bg: '#292524', fg: '#a8a29e' },
+    };
+    const c = tones[tone] || tones.muted;
+    return <span style={{ backgroundColor: c.bg, color: c.fg, padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold' }}>{text}</span>;
+  };
+
   return (
-    <div className="page listing-detail">
-      
+    <div className="page listing-detail" style={{ maxWidth: '1120px', margin: '0 auto', padding: '2rem 1rem' }}>
+
       {/* Breadcrumbs */}
-      <nav className="breadcrumb" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', fontSize: '0.9rem', color: '#a8a29e' }}>
+      <nav className="breadcrumb" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', fontSize: '0.85rem', color: '#a8a29e' }}>
         <Link to="/" style={{ color: '#d4af37' }}>{t('nav.home')}</Link>
         <span aria-hidden>&rsaquo;</span>
         <Link to={`/theme/${theme.toLowerCase().replace(' ', '-')}`} style={{ color: '#d4af37' }}>{theme}</Link>
@@ -241,272 +269,195 @@ export default function ListingDetail() {
         <span style={{ color: '#e7e5e4', fontWeight: '500', overflowWrap: 'anywhere', minWidth: 0 }}>{listing.title}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] gap-6 lg:gap-10 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_400px] gap-6 lg:gap-8 items-start">
 
-        {/* Left Column: Gallery */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-          <div style={{ width: '100%', aspectRatio: '4/3', borderRadius: '12px', overflow: 'hidden', border: '1px solid #44403c', backgroundColor: '#120f0a' }}>
+        {/* Left: Gallery */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
+          <div style={{ width: '100%', aspectRatio: '4/3', borderRadius: '14px', overflow: 'hidden', border: '1px solid #44403c', backgroundColor: '#0c0a08', padding: '0.75rem' }}>
             <img src={mainImage} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          
+
           {imgs.length > 1 && (
-            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
               {imgs.map((src, i) => (
-                <div 
-                   key={i} 
-                   onClick={() => setMainImage(src)}
-                   style={{ width: '80px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: mainImage === src ? '2px solid #d4af37' : '2px solid #44403c', cursor: 'pointer', flexShrink: 0, opacity: mainImage === src ? 1 : 0.6, transition: 'all 0.2s' }}
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setMainImage(src)}
+                  style={{ width: '72px', height: '56px', borderRadius: '8px', overflow: 'hidden', border: mainImage === src ? '2px solid #d4af37' : '2px solid #44403c', cursor: 'pointer', flexShrink: 0, opacity: mainImage === src ? 1 : 0.55, transition: 'all 0.2s', padding: 0, background: 'none' }}
                 >
                   <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
+                </button>
               ))}
             </div>
           )}
-
-          {/* Description Section */}
-          <div style={{ marginTop: '2rem', backgroundColor: '#292524', padding: '2rem', borderRadius: '12px', border: '1px solid #44403c' }}>
-            <h2 style={{ fontSize: '1.4rem', marginTop: 0, marginBottom: '1rem', color: '#fff', borderBottom: '1px solid #44403c', paddingBottom: '0.5rem' }}>{t('details.description')}</h2>
-            <p style={{ color: '#d6d3d1', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{listing.description || t('details.no_description')}</p>
-          </div>
         </div>
 
-        {/* Right Column: Interaction Card */}
-        <div className="lg:sticky lg:top-[100px]" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
-          
-          {/* Main Purchase/Bid Card */}
-          <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #44403c', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
-            
-            {/* Header: Title & Auction Badge */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-              <h1 style={{ fontSize: '1.6rem', margin: 0, lineHeight: '1.2', color: '#fff', flex: 1 }}>{listing.title}</h1>
+        {/* Right: one cohesive buy panel */}
+        <div className="lg:sticky lg:top-[100px]" style={{ minWidth: 0, backgroundColor: '#292524', border: '1px solid #44403c', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 12px 30px rgba(0,0,0,0.35)' }}>
+
+          {/* Header */}
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <h1 style={{ fontSize: '1.5rem', margin: 0, lineHeight: '1.25', color: '#fff' }}>{listing.title}</h1>
               {isAuction && (
-                <span style={{ 
-                  backgroundColor: '#bf9a2e', 
-                  color: '#000', 
-                  padding: '0.2rem 0.6rem', 
-                  borderRadius: '6px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '900',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  marginLeft: '0.5rem'
-                }}>
+                <span style={{ flexShrink: 0, backgroundColor: '#bf9a2e', color: '#000', padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Hammer size={12} />
                   {t('nav.auction')}
                   {!isEnded && listing.status === 'active' && (
-                     <div style={{
-                       width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%',
-                       boxShadow: '0 0 4px #ef4444', animation: 'pulse 1.5s infinite'
-                     }} />
+                    <span style={{ width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', boxShadow: '0 0 4px #ef4444', animation: 'pulse 1.5s infinite' }} />
                   )}
                 </span>
               )}
             </div>
-            {isLegoListing && (
-              <p style={{ fontFamily: 'monospace', color: '#a8a29e', margin: '0 0 1.5rem 0', fontSize: '0.9rem' }}>{t('details.set_number_prefix')} {setNumber}</p>
+            {isLegoListing ? (
+              <p style={{ fontFamily: 'monospace', color: '#a8a29e', margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>{t('details.set_number_prefix')} {setNumber}</p>
+            ) : (
+              <p style={{ color: '#a8a29e', margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>{theme}</p>
             )}
-            
-            {isAuction ? (
-              /* Auction View */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                
-                <div style={{ backgroundColor: '#120f0a', padding: '1rem', borderRadius: '8px', border: '1px solid #292524' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#a8a29e', fontSize: '0.85rem' }}>{t('auction.current_bid')}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#d4af37' }}>
-                      <TrendingUp size={16} />
-                      <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{t('auction.bids_count', { count: listing.bids_count || 0 })}</span>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#fff' }}>
-                    {formatPrice(listing.current_bid || listing.starting_price || listing.auction_start)}
-                  </div>
-                </div>
+          </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: (isEnded ? '#ef4444' : '#d4af37'), fontSize: '0.95rem', fontWeight: '600' }}>
-                  <Timer size={18} />
-                  {listing.auction_end && (
-                    <span style={{
-                      color: formatTimeInfo().color,
-                      fontWeight: formatTimeInfo().bold ? 'bold' : 'normal',
-                      animation: formatTimeInfo().pulse ? 'pulse 1.5s infinite' : 'none'
-                    }}>
-                      {isEnded ? t('auction.ended') : `${t('auction.ends_in')}: ${formatTimeInfo().text}`}
-                    </span>
+          {/* Price / auction status */}
+          {isAuction ? (
+            <div style={{ ...sectionStyle, display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+              <div style={{ backgroundColor: '#120f0a', padding: '1rem', borderRadius: '10px', border: '1px solid #3a3531' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <span style={{ color: '#a8a29e', fontSize: '0.85rem' }}>{t('auction.current_bid')}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#d4af37', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                    <TrendingUp size={15} />
+                    {t('auction.bids_count', { count: listing.bids_count || 0 })}
+                  </span>
+                </div>
+                <div style={{ fontSize: '2rem', fontWeight: '800', color: '#fff' }}>
+                  {formatPrice(listing.current_bid || listing.starting_price || listing.auction_start)}
+                </div>
+              </div>
+              {listing.auction_end && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: '600' }}>
+                  <Timer size={17} color={isEnded ? '#ef4444' : '#d4af37'} />
+                  <span style={{ color: formatTimeInfo().color, fontWeight: formatTimeInfo().bold ? 'bold' : 'normal', animation: formatTimeInfo().pulse ? 'pulse 1.5s infinite' : 'none' }}>
+                    {isEnded ? t('auction.ended') : `${t('auction.ends_in')}: ${formatTimeInfo().text}`}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ ...sectionStyle, display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '2.25rem', fontWeight: '800', color: '#d4af37', lineHeight: 1 }}>{formatPrice(listing.price)}</span>
+              {hasShippingFee ? (
+                <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>+ {formatPrice(shippingCostNum)} {t('shipping.cost')}</span>
+              ) : (
+                <span style={{ color: '#34d399', fontSize: '0.9rem', fontWeight: '600' }}>{t('details.free_shipping')}</span>
+              )}
+            </div>
+          )}
+
+          {/* CTA */}
+          <div style={sectionStyle}>
+            {isAuction ? (
+              isEnded ? (
+                <div style={{ padding: '1.25rem', backgroundColor: '#052e16', border: '1px solid #10b981', borderRadius: '10px', textAlign: 'center' }}>
+                  <h3 style={{ color: '#34d399', margin: '0 0 0.35rem 0', fontSize: '1.15rem' }}>{t('auction.ended')}</h3>
+                  {listing.bids_count > 0 && listing.highest_bidder_username ? (
+                    <p style={{ color: '#a7f3d0', margin: 0, fontWeight: 'bold' }}>
+                      {t('auction.winning_bid', { username: listing.highest_bidder_username, amount: formatPrice(listing.current_bid) })}
+                    </p>
+                  ) : (
+                    <p style={{ color: '#a7f3d0', margin: 0 }}>{t('auction.no_winner')}</p>
                   )}
                 </div>
-
-                {isEnded ? (
-                   <div style={{ marginTop: '1rem', padding: '1.5rem', backgroundColor: '#052e16', border: '1px solid #10b981', borderRadius: '8px', textAlign: 'center' }}>
-                     <h3 style={{ color: '#34d399', margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{t('auction.ended')}</h3>
-                     {listing.bids_count > 0 && listing.highest_bidder_username ? (
-                       <p style={{ color: '#a7f3d0', margin: 0, fontWeight: 'bold', fontSize: '1.1rem' }}>
-                         {t('auction.winning_bid', { username: listing.highest_bidder_username, amount: formatPrice(listing.current_bid) })}
-                       </p>
-                     ) : (
-                       <p style={{ color: '#a7f3d0', margin: 0 }}>{t('auction.no_winner')}</p>
-                     )}
-                   </div>
-                ) : user && user.id === listing.seller_id ? (
-                  <p style={{ margin: '1rem 0', textAlign: 'center', fontSize: '0.9rem', color: '#ef4444', fontWeight: 'bold' }}>
-                    {t('auction.own_listing_no_bid')}
-                  </p>
-                ) : user ? (
-                <form onSubmit={handlePlaceBid} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      placeholder={t('auction.bid_placeholder')}
-                      value={bidAmount}
-                      onChange={e => setBidAmount(e.target.value)}
-                      required
-                      style={{ 
-                        width: '100%', 
-                        padding: '0.85rem 1rem', 
-                        backgroundColor: '#120f0a', 
-                        border: '2px solid #44403c', 
-                        borderRadius: '8px', 
-                        color: '#fff',
-                        fontSize: '1.1rem',
-                        outline: 'none',
-                        transition: 'border-color 0.2s'
-                      }}
-                    />
-                  </div>
-
-                  <button 
+              ) : user && user.id === listing.seller_id ? (
+                <p style={{ margin: 0, textAlign: 'center', fontSize: '0.9rem', color: '#ef4444', fontWeight: 'bold' }}>
+                  {t('auction.own_listing_no_bid')}
+                </p>
+              ) : user ? (
+                <form onSubmit={handlePlaceBid} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <input
+                    type="text"
+                    placeholder={t('auction.bid_placeholder')}
+                    value={bidAmount}
+                    onChange={e => setBidAmount(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '0.85rem 1rem', backgroundColor: '#120f0a', border: '2px solid #44403c', borderRadius: '8px', color: '#fff', fontSize: '1.05rem', outline: 'none' }}
+                  />
+                  <button
                     type="submit"
                     disabled={bidLoading || listing.status !== 'active'}
-                    style={{ 
-                      width: '100%', 
-                      backgroundColor: '#d4af37',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '1rem', 
-                      borderRadius: '8px', 
-                      fontSize: '1.1rem', 
-                      fontWeight: 'bold', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center', 
-                      gap: '0.5rem', 
-                      cursor: 'pointer', 
-                      transition: 'all 0.2s',
-                      boxShadow: '0 4px 14px rgba(212,175,55, 0.3)'
-                    }}
-                    onMouseOver={e => !bidLoading && (e.currentTarget.style.backgroundColor = '#e4c159')}
-                    onMouseOut={e => !bidLoading && (e.currentTarget.style.backgroundColor = '#d4af37')}
+                    style={{ width: '100%', backgroundColor: '#d4af37', color: '#fff', border: 'none', padding: '0.95rem', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(212,175,55,0.3)' }}
                   >
                     {bidLoading ? t('review.submitting') : t('auction.place_bid')}
                   </button>
                 </form>
-                ) : null}
-
-                 {!user && !isEnded && (
-                  <p style={{ margin: '0', textAlign: 'center', fontSize: '0.8rem', color: '#a8a29e' }}>
+              ) : (
+                <p style={{ margin: 0, textAlign: 'center', fontSize: '0.85rem', color: '#a8a29e' }}>
+                  {t('auth.no_account')} <Link to="/login" style={{ color: '#d4af37' }}>{t('nav.login')}</Link>
+                </p>
+              )
+            ) : listing.status === 'sold' ? (
+              <button disabled style={{ width: '100%', backgroundColor: '#57534e', color: '#a8a29e', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'not-allowed' }}>
+                {t('status.sold').toUpperCase()}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleAddToCart}
+                  style={{ width: '100%', backgroundColor: '#a17e22', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.05rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', transition: 'background-color 0.2s', boxShadow: '0 4px 14px rgba(161,126,34,0.4)' }}
+                  onMouseOver={e => (e.currentTarget.style.backgroundColor = '#7d611b')}
+                  onMouseOut={e => (e.currentTarget.style.backgroundColor = '#a17e22')}
+                >
+                  <ShoppingCart size={20} />
+                  {t('cart.add')}
+                </button>
+                {!user && (
+                  <p style={{ margin: '0.75rem 0 0 0', textAlign: 'center', fontSize: '0.85rem', color: '#a8a29e' }}>
                     {t('auth.no_account')} <Link to="/login" style={{ color: '#d4af37' }}>{t('nav.login')}</Link>
                   </p>
-                )}
-
-              </div>
-            ) : (
-              /* Fixed Price View */
-              <>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #44403c', paddingBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '2.5rem', fontWeight: '800', color: '#d4af37' }}>{formatPrice(listing.price)}</span>
-                  {listing.shipping_cost && <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>+ {formatPrice(listing.shipping_cost)} {t('shipping.cost')}</span>}
-                </div>
-
-                {listing.status === 'sold' ? (
-                  <button 
-                    disabled
-                    style={{ width: '100%', backgroundColor: '#57534e', color: '#a8a29e', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'not-allowed' }}
-                  >
-                    {t('status.sold').toUpperCase()}
-                  </button>
-                ) : (
-                  <>
-                    <button 
-                      onClick={handleAddToCart}
-                      style={{ width: '100%', backgroundColor: '#a17e22', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', transition: 'background-color 0.2s', boxShadow: '0 4px 14px rgba(161,126,34, 0.4)' }}
-                      onMouseOver={e => e.currentTarget.style.backgroundColor = '#7d611b'}
-                      onMouseOut={e => e.currentTarget.style.backgroundColor = '#a17e22'}
-                    >
-                      <ShoppingCart size={22} />
-                      {t('cart.add')}
-                    </button>
-                    {!user && (
-                      <p style={{ margin: '0.75rem 0 0 0', textAlign: 'center', fontSize: '0.85rem', color: '#a8a29e', fontWeight: '500' }}>
-                        {t('auth.no_account')} <Link to="/login" style={{ color: '#d4af37' }}>{t('nav.login')}</Link>
-                      </p>
-                    )}
-                  </>
                 )}
               </>
             )}
           </div>
 
-          {/* Condition Info Box */}
-          <div style={{ backgroundColor: '#292524', padding: '1.5rem', borderRadius: '12px', border: '1px solid #44403c' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#e7e5e4', fontSize: '1.1rem' }}>{t('details.info')}</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>{t('details.condition')}</span>
-                <span style={{ backgroundColor: conditionIsFresh ? '#064e3b' : '#713f12', color: conditionIsFresh ? '#34d399' : '#fef08a', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{conditionLabel}</span>
-              </div>
-              
-              {isLegoListing && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>{t('details.box')}</span>
-                    <span style={{ backgroundColor: boxCond.includes('Originale') ? '#3d2f0d' : '#450a0a', color: boxCond.includes('Originale') ? '#e4c159' : '#fca5a5', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{boxCond}</span>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#a8a29e', fontSize: '0.9rem' }}>{t('details.instructions')}</span>
-                    <span style={{ backgroundColor: instructions.includes('Presenti') ? '#3d2f0d' : '#450a0a', color: instructions.includes('Presenti') ? '#e4c159' : '#fca5a5', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold' }}>{instructions}</span>
-                  </div>
-                </>
-              )}
-
+          {/* Specs */}
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {specRow(t('details.condition'), pill(conditionLabel, conditionIsFresh ? 'fresh' : 'good'))}
+              {isLegoListing && specRow(t('details.box'), boxCond ? pill(boxCond, 'good') : pill(t('details.not_specified'), 'muted'))}
+              {isLegoListing && specRow(t('details.instructions'), instructions ? pill(instructions, 'good') : pill(t('details.not_specified'), 'muted'))}
             </div>
           </div>
 
-          {/* Seller Trust Box */}
-          <div style={{ backgroundColor: '#120f0a', padding: '1.5rem', borderRadius: '12px', border: '1px solid #d4af37' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#e7e5e4', fontSize: '1.1rem' }}>{t('details.seller_info')}</h3>
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className={`fi fi-${seller.country}`} style={{ fontSize: '1.5rem', borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)' }}></span>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.1rem' }}>{seller.username}</span>
-                    {seller.is_pro && (
-                      <span style={{ backgroundColor: '#eab308', color: '#000', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>PRO</span>
-                    )}
-                    <SellerTypeBadge sellerType={seller.seller_type} />
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
-                    <BrickRating value={parseFloat(seller.rating_average) || parseFloat(seller.rating_avg) || parseFloat(seller.stars) || 0} interactive={false} />
-                    <span style={{ color: '#a8a29e', fontSize: '0.8rem', marginLeft: '0.2rem' }}>({seller.rating_count || 0})</span>
-                  </div>
+          {/* Seller */}
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span className={`fi fi-${seller.country}`} style={{ fontSize: '1.5rem', borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)', flexShrink: 0 }}></span>
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.05rem' }}>{seller.username}</span>
+                  {seller.is_pro && (
+                    <span style={{ backgroundColor: '#eab308', color: '#000', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.62rem', fontWeight: 'bold' }}>PRO</span>
+                  )}
+                  <SellerTypeBadge sellerType={seller.seller_type} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.3rem' }}>
+                  <BrickRating value={parseFloat(seller.rating_average) || parseFloat(seller.rating_avg) || parseFloat(seller.stars) || 0} interactive={false} />
+                  <span style={{ color: '#a8a29e', fontSize: '0.8rem' }}>({seller.rating_count || 0})</span>
                 </div>
               </div>
             </div>
-            
-            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #292524', display: 'flex', justifyContent: 'center' }}>
-               <Link to={`/user/${seller.username}`} style={{ color: '#d4af37', fontSize: '0.9rem', fontWeight: '500', textDecoration: 'none' }}>
-                 {t('details.view_all_seller')} &rsaquo;
-               </Link>
-            </div>
-
+            <Link
+              to={`/user/${seller.username}`}
+              style={{ display: 'block', marginTop: '1rem', padding: '0.6rem', textAlign: 'center', borderRadius: '8px', border: '1px solid #44403c', color: '#d4af37', fontSize: '0.85rem', fontWeight: '600', textDecoration: 'none' }}
+            >
+              {t('details.view_all_seller')} &rsaquo;
+            </Link>
           </div>
-
         </div>
+      </div>
+
+      {/* Description — full width, below the grid */}
+      <div style={{ marginTop: '2rem', backgroundColor: '#292524', padding: '1.75rem', borderRadius: '16px', border: '1px solid #44403c' }}>
+        <h2 style={{ fontSize: '1.25rem', marginTop: 0, marginBottom: '1rem', color: '#fff' }}>{t('details.description')}</h2>
+        <p style={{ color: '#d6d3d1', lineHeight: '1.65', whiteSpace: 'pre-line', margin: 0 }}>{listing.description || t('details.no_description')}</p>
       </div>
     </div>
   );
