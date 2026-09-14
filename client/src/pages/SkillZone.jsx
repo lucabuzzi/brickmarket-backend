@@ -5,7 +5,8 @@ import JigsawPuzzle from '../components/JigsawPuzzle';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
-  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play
+  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play,
+  Move, RotateCw, Puzzle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
@@ -622,8 +623,11 @@ export default function SkillZone() {
               <h2 className="text-lg font-extrabold tracking-wide uppercase text-white font-mono mb-2">
                 {t('skill_zone.confirm.ready_heading')}
               </h2>
-              <p className="text-xs text-stone-400 mb-5 leading-relaxed">
+              <p className="text-xs text-stone-400 mb-1 leading-relaxed">
                 {t('skill_zone.confirm.ready_text')}
+              </p>
+              <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wider mb-5">
+                {t('skill_zone.confirm.ready_piece_count')}
               </p>
 
               <img
@@ -631,6 +635,34 @@ export default function SkillZone() {
                 alt={reservedContest.title}
                 className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
               />
+
+              {/* How-to-play — shown here specifically because the clock
+                  hasn't started yet (see the comment above this block): the
+                  player reads this BEFORE any time or blur-focus check
+                  begins counting against them, not during. */}
+              <div className="mb-5 text-left">
+                <p className="text-[10px] text-stone-500 uppercase tracking-wider font-bold mb-2 text-center">
+                  {t('skill_zone.confirm.howto_title')}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
+                    <Move className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_drag')}</p>
+                  </div>
+                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
+                    <RotateCw className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_rotate')}</p>
+                  </div>
+                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
+                    <Puzzle className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_shape')}</p>
+                  </div>
+                  <div className="flex items-start gap-2 bg-black/30 border border-red-500/20 rounded-lg p-2.5">
+                    <ShieldAlert className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_tabswitch')}</p>
+                  </div>
+                </div>
+              </div>
 
               {uploadProgress && (
                 <div className="p-3 mb-4 bg-pink-950/20 border border-pink-500/20 text-pink-400 text-center font-bold font-mono text-[10px] rounded animate-pulse">
