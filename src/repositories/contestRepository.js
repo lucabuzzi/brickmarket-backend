@@ -47,14 +47,16 @@ function findUnstartedParticipant(contestId, userId) {
   ).then((r) => r.rows[0] || null);
 }
 
-// gridRows/gridCols are decided once here, server-side, and stay fixed for
-// the rest of this attempt — src/services/puzzleGeometry.js recomputes every
-// piece's correct target position from them, so they're what "solved" means
-// for this specific attempt.
-function markParticipantStarted(participantId, startedAt, gridRows, gridCols) {
+// gridRows/gridCols/isPortrait are decided once here, server-side, and stay
+// fixed for the rest of this attempt — src/services/puzzleGeometry.js
+// recomputes every piece's correct target position from them, so they're
+// what "solved" means for this specific attempt. Grid dims are always 4x4
+// now (see puzzleGeometry.js) but kept as columns for auditability;
+// isPortrait still varies and drives the board/canvas pixel layout.
+function markParticipantStarted(participantId, startedAt, gridRows, gridCols, isPortrait) {
   return db.query(
-    'UPDATE public.contest_participants SET started_at = $1, grid_rows = $2, grid_cols = $3 WHERE id = $4',
-    [startedAt, gridRows, gridCols, participantId]
+    'UPDATE public.contest_participants SET started_at = $1, grid_rows = $2, grid_cols = $3, is_portrait = $4 WHERE id = $5',
+    [startedAt, gridRows, gridCols, !!isPortrait, participantId]
   );
 }
 

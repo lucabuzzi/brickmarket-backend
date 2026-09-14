@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const contestRepository = require('../repositories/contestRepository');
 const { uploadOrSaveProcessedImage } = require('../services/image');
-const { computeGridDimensions, layoutFromStoredGrid, isPieceInPlace } = require('../services/puzzleGeometry');
+const { computeGridDimensions, computeLayout, isPieceInPlace } = require('../services/puzzleGeometry');
 
 // Naive-automation deterrent, not a cryptographic guarantee: a script could
 // still pace itself above this floor. Set low enough (50ms) that no genuine
@@ -124,15 +124,16 @@ async function startAttemptHandler(req, res) {
     }
 
     // The client tells us the board's orientation (it already knows the
-    // puzzle image's aspect ratio) — this only picks WHICH of the two fixed
-    // grid shapes (5x6 or 6x5, always 30 pieces) applies, both equally
-    // "hard" to satisfy, so trusting it here doesn't open a shortcut. Once
-    // stored, it's what every subsequent lock-piece/complete call for this
-    // attempt is checked against — the client can't change its mind later.
-    const { gridRows, gridCols } = computeGridDimensions(!!isPortrait);
+    // puzzle image's aspect ratio) — the grid is always 4x4 regardless
+    // (see puzzleGeometry.js), so this only picks which of the two
+    // equally-"hard" board/canvas pixel layouts applies, not the piece
+    // count. Once stored, it's what every subsequent lock-piece/complete
+    // call for this attempt is checked against — the client can't change
+    // its mind later.
+    const { gridRows, gridCols } = computeGridDimensions();
 
     const startedAt = new Date().toISOString();
-    await contestRepository.markParticipantStarted(participantId, startedAt, gridRows, gridCols);
+    await contestRepository.markParticipantStarted(participantId, startedAt, gridRows, gridCols, !!isPortrait);
 
     const attemptToken = jwt.sign(
       { userId: req.user.id, contestId, participantId, startedAt },
@@ -189,7 +190,7 @@ async function lockPieceHandler(req, res) {
       return res.status(400).json({ error: 'This attempt is not in progress.' });
     }
 
-    const layout = layoutFromStoredGrid(participant.grid_rows, participant.grid_cols);
+    const layout = computeLayout(participant.is_portrait);
     const totalPieces = layout.gridRows * layout.gridCols;
     const numericPieceId = Number(pieceId);
 

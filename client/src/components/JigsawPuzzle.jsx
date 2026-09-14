@@ -31,19 +31,29 @@ export default function JigsawPuzzle({
   const gameStartedAtRef = useRef(0);
   const timerIntervalRef = useRef(null);
 
-  // Puzzle configuration — swaps to a tall layout when the source image is portrait,
-  // so the assembled puzzle keeps the image's original orientation instead of always landscape.
-  const gridRows = isPortrait ? 6 : 5;
-  const gridCols = isPortrait ? 5 : 6;
+  // Puzzle configuration — fixed 4x4 (16 pieces): the old 5x6/6x5 split (30
+  // pieces) made individual pieces too small to drag comfortably on a
+  // phone-sized touch target, and a square grid means orientation no
+  // longer needs to change piece count at all. isPortrait still swaps the
+  // board/canvas pixel dimensions, so the assembled puzzle keeps the source
+  // image's own aspect ratio on screen. Kept numerically identical to
+  // src/services/puzzleGeometry.js#computeLayout on the server — see that
+  // file's comment for why.
+  const gridRows = 4;
+  const gridCols = 4;
   const totalPieces = gridRows * gridCols;
-  const boardWidth = isPortrait ? 300 : 600; // Size of the solved puzzle area
-  const boardHeight = isPortrait ? 600 : 300;
-  const pieceWidth = boardWidth / gridCols; // 60px
-  const pieceHeight = boardHeight / gridRows; // 60px
+  const boardWidth = isPortrait ? 320 : 560; // Size of the solved puzzle area
+  const boardHeight = isPortrait ? 560 : 320;
+  const pieceWidth = boardWidth / gridCols;
+  const pieceHeight = boardHeight / gridRows;
 
-  // Canvas bounds (Includes board + surrounding scatter zones)
-  const canvasWidth = isPortrait ? 450 : 800;
-  const canvasHeight = isPortrait ? 800 : 450;
+  // Canvas bounds (Includes board + surrounding scatter zones). Sized to
+  // comfortably fit within a viewport's height at typical zoom without the
+  // page needing to scroll during play — see the maxHeight cap on the
+  // <canvas> element's style below, which is what actually enforces this
+  // (these are just the backing pixel-grid resolution, not the display size).
+  const canvasWidth = isPortrait ? 420 : 700;
+  const canvasHeight = isPortrait ? 700 : 420;
 
   // Board offset (Centered on canvas)
   const boardX = (canvasWidth - boardWidth) / 2;
@@ -349,21 +359,18 @@ export default function JigsawPuzzle({
       ctx.lineWidth = 2;
       ctx.strokeRect(boardX - 2, boardY - 2, boardWidth + 4, boardHeight + 4);
 
-      // Draw faint guidelines inside the dropzone
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      // Ghost outline of each cell's REAL interlocking shape (tabs and all),
+      // not just a straight row/column grid — shows the player what shape
+      // to look for at each spot, not only where. Drawn at each piece's
+      // target (not current) position, before the pieces themselves, so a
+      // locked piece's real artwork naturally covers its own outline once
+      // filled — nothing extra to clear.
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.14)';
       ctx.lineWidth = 1;
-      for (let c = 1; c < gridCols; c++) {
-        ctx.beginPath();
-        ctx.moveTo(boardX + c * pieceWidth, boardY);
-        ctx.lineTo(boardX + c * pieceWidth, boardY + boardHeight);
+      piecesRef.current.forEach((p) => {
+        drawPiecePath(ctx, p.targetX, p.targetY, pieceWidth, pieceHeight, p.topTab, p.rightTab, p.bottomTab, p.leftTab);
         ctx.stroke();
-      }
-      for (let r = 1; r < gridRows; r++) {
-        ctx.beginPath();
-        ctx.moveTo(boardX, boardY + r * pieceHeight);
-        ctx.lineTo(boardX + boardWidth, boardY + r * pieceHeight);
-        ctx.stroke();
-      }
+      });
 
       // 4. Render unlocked pieces first (so locked ones sink, or vice versa. Usually, locked pieces should be drawn underneath)
       const lockedPieces = piecesRef.current.filter(p => p.isLocked);
@@ -632,11 +639,11 @@ export default function JigsawPuzzle({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col lg:flex-row items-start justify-center gap-6 p-4 w-full">
+    <div ref={containerRef} className="flex flex-col lg:flex-row items-start justify-center gap-3 sm:gap-4 lg:gap-6 p-2 sm:p-4 w-full">
       <div className="flex flex-col items-center w-full lg:w-auto">
       {/* HUD Bar — stacks vertically in portrait mode, where the narrower board leaves no
           room for both groups side by side */}
-      <div style={{ maxWidth: canvasWidth }} className={`flex w-full bg-black/50 border border-cyber-border rounded-t-lg px-6 py-3 font-mono text-sm ${isPortrait ? 'flex-col gap-2 items-start' : 'items-center justify-between'}`}>
+      <div style={{ maxWidth: canvasWidth }} className={`flex w-full bg-black/50 border border-cyber-border rounded-t-lg px-3 py-2 sm:px-6 sm:py-3 font-mono text-sm ${isPortrait ? 'flex-col gap-2 items-start' : 'items-center justify-between'}`}>
         <div className="flex items-center space-x-2">
           <span className="text-cyber-muted text-xs uppercase font-semibold">TICKER:</span>
           <span className="text-cyber-neonYellow text-glow-yellow font-bold text-base tracking-widest">{formatRaceTime(elapsedTime)}</span>
@@ -684,8 +691,19 @@ export default function JigsawPuzzle({
           onTouchStart={handleMouseDown}
           onTouchMove={handleMouseMove}
           onTouchEnd={handleMouseUp}
-          style={{ maxWidth: canvasWidth, aspectRatio: `${canvasWidth} / ${canvasHeight}` }}
-          className="block touch-none cursor-grab active:cursor-grabbing w-full bg-cyber-bg rounded"
+          // width/height left auto (not forced to 100%) so the browser can
+          // shrink either dimension to respect BOTH maxWidth and maxHeight
+          // while keeping the aspect ratio — the actual mechanism that keeps
+          // the whole board on screen without the page needing to scroll,
+          // regardless of how tall or short the viewport is.
+          style={{
+            maxWidth: canvasWidth,
+            maxHeight: 'min(56vh, 560px)',
+            aspectRatio: `${canvasWidth} / ${canvasHeight}`,
+            width: 'auto',
+            height: 'auto',
+          }}
+          className="block touch-none cursor-grab active:cursor-grabbing max-w-full bg-cyber-bg rounded"
         />
 
         {/* Small tips overlay */}
@@ -695,7 +713,7 @@ export default function JigsawPuzzle({
       </div>
 
       {/* Control panel buttons */}
-      <div className="flex space-x-4 mt-6">
+      <div className="flex space-x-4 mt-2 sm:mt-3">
         <button
           onClick={onCancel}
           className="px-6 py-2 bg-cyber-border hover:bg-red-950/20 hover:border-red-500 border border-transparent rounded text-xs font-bold uppercase transition-all duration-300 text-cyber-muted hover:text-red-400 font-mono"
@@ -705,10 +723,15 @@ export default function JigsawPuzzle({
       </div>
       </div>
 
-      {/* Reference Image Panel */}
-      <div className="w-full max-w-[800px] lg:max-w-[220px] lg:sticky lg:top-4 shrink-0">
-        <div className="border border-cyber-border bg-black/50 rounded-lg p-3">
-          <div className="flex items-center gap-1.5 text-cyber-muted text-xs uppercase font-semibold mb-2">
+      {/* Reference Image Panel — a small thumbnail on narrow/short screens
+          (the in-canvas ghost outlines now carry most of the "where does
+          this shape go" job) rather than a full stacked block, which used
+          to be the single biggest contributor to needing to scroll the
+          page to see the whole game on mobile. Grows into the full sidebar
+          only once there's a dedicated side column to put it in (lg:). */}
+      <div className="w-28 sm:w-36 lg:w-full lg:max-w-[220px] lg:sticky lg:top-4 shrink-0 mx-auto lg:mx-0">
+        <div className="border border-cyber-border bg-black/50 rounded-lg p-1.5 lg:p-3">
+          <div className="hidden lg:flex items-center gap-1.5 text-cyber-muted text-xs uppercase font-semibold mb-2">
             <ImageIcon className="h-3.5 w-3.5" />
             <span>Reference Image</span>
           </div>
@@ -720,7 +743,7 @@ export default function JigsawPuzzle({
               onError={() => setImageError(true)}
             />
           </div>
-          <p className="text-[10px] text-cyber-muted mt-2 leading-snug">
+          <p className="hidden lg:block text-[10px] text-cyber-muted mt-2 leading-snug">
             Use this as a guide to reassemble the jigsaw pieces.
           </p>
         </div>

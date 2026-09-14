@@ -16,31 +16,27 @@
 //     whether a submitted piece is in its correct final spot, so none of
 //     that needs a server-side equivalent.
 
-function computeGridDimensions(isPortrait) {
-  return isPortrait ? { gridRows: 6, gridCols: 5 } : { gridRows: 5, gridCols: 6 };
-}
-
-/** True for the (gridRows, gridCols) pair the server stored at /start —
- *  the two valid shapes are distinguishable by which dimension is larger. */
-function isPortraitFromGrid(gridRows, gridCols) {
-  return gridRows > gridCols;
+// Fixed at 4x4 (16 pieces) regardless of orientation — see the "how many
+// pieces" discussion: 30 (5x6) made individual pieces too small to drag
+// comfortably on a phone-sized touch target. A 4x4 grid is square, so
+// unlike the old 5x6/6x5 split, orientation no longer changes piece COUNT
+// at all — only the board/canvas pixel dimensions below still depend on it,
+// purely so the assembled image keeps its own aspect ratio on screen.
+function computeGridDimensions() {
+  return { gridRows: 4, gridCols: 4 };
 }
 
 function computeLayout(isPortrait) {
-  const { gridRows, gridCols } = computeGridDimensions(isPortrait);
-  const boardWidth = isPortrait ? 300 : 600;
-  const boardHeight = isPortrait ? 600 : 300;
+  const { gridRows, gridCols } = computeGridDimensions();
+  const boardWidth = isPortrait ? 320 : 560;
+  const boardHeight = isPortrait ? 560 : 320;
   const pieceWidth = boardWidth / gridCols;
   const pieceHeight = boardHeight / gridRows;
-  const canvasWidth = isPortrait ? 450 : 800;
-  const canvasHeight = isPortrait ? 800 : 450;
+  const canvasWidth = isPortrait ? 420 : 700;
+  const canvasHeight = isPortrait ? 700 : 420;
   const boardX = (canvasWidth - boardWidth) / 2;
   const boardY = (canvasHeight - boardHeight) / 2;
   return { gridRows, gridCols, boardWidth, boardHeight, pieceWidth, pieceHeight, canvasWidth, canvasHeight, boardX, boardY };
-}
-
-function layoutFromStoredGrid(gridRows, gridCols) {
-  return computeLayout(isPortraitFromGrid(gridRows, gridCols));
 }
 
 /** Piece ids are assigned client-side as `row * gridCols + col` (see
@@ -73,9 +69,7 @@ function isPieceInPlace(pieceId, x, y, rotation, layout) {
 
 module.exports = {
   computeGridDimensions,
-  isPortraitFromGrid,
   computeLayout,
-  layoutFromStoredGrid,
   targetForPiece,
   isPieceInPlace,
   POSITION_TOLERANCE_PX,

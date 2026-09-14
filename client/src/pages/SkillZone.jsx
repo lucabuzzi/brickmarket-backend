@@ -657,20 +657,24 @@ export default function SkillZone() {
             </div>
           )}
 
-          {/* Play Area Overlay Panel */}
+          {/* Play Area Overlay Panel — padding/margins scale down on small
+              screens (same p-6 md:p-8 / text-3xl md:text-4xl style pattern
+              used elsewhere) so the whole game fits without the page
+              needing to scroll during play, alongside the canvas's own
+              maxHeight cap in JigsawPuzzle.jsx. */}
           {playingContest ? (
-            <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl">
-              <div className="absolute top-4 right-4 z-20">
-                <span className="inline-flex items-center text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2.5 py-1 rounded">
+            <div className="bento-card p-2 sm:p-6 mb-3 sm:mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl">
+              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
+                <span className="inline-flex items-center text-[9px] sm:text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
                   ⚡ {t('skill_zone.play.secure_room')}
                 </span>
               </div>
 
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-extrabold tracking-wide uppercase text-white font-mono">
+              <div className="text-center mb-2 sm:mb-6">
+                <h2 className="text-base sm:text-xl font-extrabold tracking-wide uppercase text-white font-mono">
                   {t('skill_zone.play.heading', { title: playingContest.title })}
                 </h2>
-                <p className="text-xs text-stone-400 mt-1">
+                <p className="text-[11px] sm:text-xs text-stone-400 mt-1">
                   {t('skill_zone.play.instructions')}
                 </p>
               </div>
