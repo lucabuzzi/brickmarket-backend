@@ -84,6 +84,14 @@ app.use('/api/webhooks/stripe',
   require('./src/routes/stripe')
 );
 
+// Webhook Sendcloud (aggiornamenti stato spedizione) — stesso motivo degli
+// altri: la firma HMAC va verificata sui byte grezzi, prima che express.json
+// li consumi e li riserializzi.
+app.use('/api/webhooks/sendcloud',
+  express.raw({ type: 'application/json' }),
+  require('./src/routes/webhooksSendcloud')
+);
+
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting globale (escluso webhook Stripe)
@@ -102,6 +110,8 @@ app.use('/api/listings', require('./src/routes/listings'));
 app.use('/api/users', require('./src/routes/users'));
 app.use('/api/payments', payments.router);
 app.use('/api/shipping', require('./src/routes/shipping'));
+app.use('/api/shipments', require('./src/routes/shipments'));
+app.use('/api/addresses', require('./src/routes/addresses'));
 app.use('/api/orders', require('./src/routes/orders'));
 app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/sets', require('./src/routes/sets'));

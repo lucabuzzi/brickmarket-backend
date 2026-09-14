@@ -351,6 +351,9 @@ export default function Layout() {
                     </div>
                     <Link to="/profile" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
                     <Link to="/my-listings" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
+                    {(user.role === 'seller' || user.role === 'both') && (
+                      <Link to="/my-shipments" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_shipments')}</Link>
+                    )}
                     <Link to="/account" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
                     {user.role === 'admin' && (
                       <Link to="/admin" className="block px-4 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 font-bold" onClick={() => setDropdownOpen(false)}>{t('nav.admin_panel')}</Link>

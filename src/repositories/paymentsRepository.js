@@ -18,6 +18,7 @@ function findActiveListingsByIds(ids) {
 async function insertOrder({
   buyerId, sellerId, listingId, itemPrice, shippingCost, platformFee, sellerFee,
   totalBuyer, sellerPayout, stripePaymentIntentId, selectedCarrier = null,
+  shippingAddress = null, shipmentId = null,
 }) {
   const result = await query(`
     INSERT INTO orders
@@ -25,16 +26,18 @@ async function insertOrder({
        item_price, shipping_cost, platform_fee, seller_fee,
        total_buyer, seller_payout,
        status, stripe_payment_intent_id, payment_gateway,
-       selected_carrier, confirm_deadline)
+       selected_carrier, shipping_address, shipment_id, confirm_deadline)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,
             'pending_payment',$10,'stripe',
-            $11, NOW() + INTERVAL '5 days')
+            $11, $12, $13, NOW() + INTERVAL '5 days')
     RETURNING id
   `, [
     buyerId, sellerId, listingId,
     itemPrice, shippingCost, platformFee, sellerFee,
     totalBuyer, sellerPayout,
     stripePaymentIntentId, selectedCarrier,
+    shippingAddress ? JSON.stringify(shippingAddress) : null,
+    shipmentId,
   ]);
   return result.rows[0].id;
 }
@@ -106,6 +109,28 @@ function updateOrderPaypalCapture({ paypalOrderId, captureId, listingId, buyerId
   );
 }
 
+// Seller marks a shipment "ready" — every order row in that shipment moves
+// together. Reuses the 'preparing' value already in orders_status_check
+// (previously unused) rather than introducing a new one.
+function markOrdersPreparingByShipment(shipmentId, sellerId) {
+  return query(
+    "UPDATE orders SET status='preparing', updated_at=NOW() WHERE shipment_id=$1 AND seller_id=$2 AND status='payment_received' RETURNING id",
+    [shipmentId, sellerId]
+  );
+}
+
+// A label was booked (or, for shipments that don't get an automatic label —
+// TCG / static-fallback — the seller used the existing manual /ship-style
+// flow) — mirrors what the legacy PATCH /api/orders/:id/ship endpoint does,
+// applied to every row of the shipment at once.
+function markOrdersShippedByShipment(shipmentId, { trackingNumber, carrier }) {
+  return query(
+    `UPDATE orders SET status='shipped', tracking_number=$2, carrier=$3, shipped_at=NOW(), updated_at=NOW()
+     WHERE shipment_id=$1`,
+    [shipmentId, trackingNumber || null, carrier || null]
+  );
+}
+
 module.exports = {
   findActiveListingById,
   findActiveListingsByIds,
@@ -114,5 +139,7 @@ module.exports = {
   markOrdersPaymentReceivedByIntent,
   markListingSold,
   markOrdersCancelledByIntent,
+  markOrdersPreparingByShipment,
+  markOrdersShippedByShipment,
   updateOrderPaypalCapture,
 };

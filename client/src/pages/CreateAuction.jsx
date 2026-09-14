@@ -193,8 +193,9 @@ export default function CreateAuction() {
     if (!Number.isNaN(p) && p > 0) fd.append('auctionStart', String(p)); // starting bid
     fd.append('status', mode === 'draft' ? 'draft' : 'active');
 
-    // Required fields for backend validation
-    fd.append('packageSize', 'medium');       // default package size for auctions
+    // No weight/dimensions UI here yet — the backend falls back to a
+    // per-category default (see src/services/productDimensions.js) when
+    // they're omitted, same as it used to hardcode packageSize='medium'.
 
     // Handle end date — key must be 'auctionEnd' to match Joi schema
     let auctionEndDate;

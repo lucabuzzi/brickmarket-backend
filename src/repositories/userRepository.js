@@ -1,7 +1,13 @@
 const { query } = require('../db');
 
+// address_* were missing here even though they're collected at registration
+// (migrate_professional_users.js) — every caller of findById got `undefined`
+// for the buyer/seller's country, street, etc. with no error, which is what
+// made src/controllers/paymentsController.js's `buyer?.address_country || 'it'`
+// silently always fall back to 'it'. Included now.
 const PUBLIC_FIELDS = `id, email, username, full_name, role, city, avatar_url, seller_type, company_name,
        stripe_account_id, stripe_account_status,
+       address_street, address_house_number, address_zip_code, address_country, phone,
        rating_avg, rating_count, sales_count, is_verified, is_active, email_verified,
        created_at, updated_at`;
 
@@ -66,7 +72,8 @@ async function updateProfile(userId, fields) {
   values.push(userId);
   const result = await query(
     `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${count}
-     RETURNING id, email, username, full_name, role, city, avatar_url`,
+     RETURNING id, email, username, full_name, role, city, avatar_url,
+       address_street, address_house_number, address_zip_code, address_country, phone`,
     values
   );
   return result.rows[0] || null;

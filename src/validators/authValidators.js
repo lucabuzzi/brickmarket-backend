@@ -38,6 +38,15 @@ const updateProfileSchema = Joi.object({
   role: Joi.string().valid('buyer', 'seller', 'both', 'admin'),
   city: Joi.string().trim().max(100).allow('', null),
   full_name: Joi.string().trim().max(200).allow('', null),
+  // Was signup-only (authController.registerHandler is the only writer of
+  // these before this change) — sellers had no way to fix or complete this
+  // after registering, which also silently blocked real shipping-rate quotes
+  // for anyone who skipped it at signup (it was never required).
+  street: Joi.string().trim().max(200).allow('', null),
+  houseNumber: Joi.string().trim().max(20).allow('', null),
+  zipCode: Joi.string().trim().max(20).allow('', null),
+  country: Joi.string().trim().max(100).allow('', null),
+  phone: Joi.string().trim().max(30).allow('', null),
 }).unknown(false);
 
 // Google Identity Services restituisce un unico JWT firmato ("credential").

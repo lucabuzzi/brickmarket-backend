@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const { upload, hasCloudinaryConfig } = require('../services/cloudinary');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { calculateShippingRates } = require('../services/shipping');
+const { applyDimensionDefaults, packageSizeFromWeight } = require('../services/productDimensions');
 const { recomputeUserRole, expireEndedAuctionsAndPromoteWinners } = require('../services/userRoleAuto');
 const featured = require('../services/featured');
 const walletRepository = require('../repositories/walletRepository');
@@ -92,7 +93,13 @@ function validateDraftListing(body) {
     shippingCost: Joi.number().min(0).default(0),
     shippingMethod: Joi.string().max(50).allow('', null),
     shippingOptions: Joi.string().allow('', null),
-    packageSize: Joi.string().valid('small', 'medium', 'large').default('medium'),
+    // Real weight/dimensions, physical items only (see productDimensions.js).
+    // Optional even for lego/funko — omitted values get a per-category
+    // default applied server-side rather than being required here.
+    weightKg: Joi.number().positive().allow(null),
+    lengthCm: Joi.number().positive().allow(null),
+    widthCm: Joi.number().positive().allow(null),
+    heightCm: Joi.number().positive().allow(null),
     category: Joi.string().valid('sets', 'mocs', 'minifigures').default('sets'),
     productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
     game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
@@ -128,7 +135,10 @@ function validatePublishListing(body) {
     shippingCost: Joi.number().min(0).default(0),
     shippingMethod: Joi.string().max(50).allow('', null),
     shippingOptions: Joi.string().allow('', null),
-    packageSize: Joi.string().valid('small', 'medium', 'large').required(),
+    weightKg: Joi.number().positive().allow(null),
+    lengthCm: Joi.number().positive().allow(null),
+    widthCm: Joi.number().positive().allow(null),
+    heightCm: Joi.number().positive().allow(null),
     category: Joi.string().valid('sets', 'mocs', 'minifigures').required(),
     productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
     game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
@@ -180,7 +190,10 @@ const patchSchema = Joi.object({
   shippingCost: Joi.number().min(0),
   shippingMethod: Joi.string().max(50).allow('', null),
   shippingOptions: Joi.string().allow('', null),
-  packageSize: Joi.string().valid('small', 'medium', 'large'),
+  weightKg: Joi.number().positive().allow(null),
+  lengthCm: Joi.number().positive().allow(null),
+  widthCm: Joi.number().positive().allow(null),
+  heightCm: Joi.number().positive().allow(null),
   category: Joi.string().valid('sets', 'mocs', 'minifigures'),
   productType: Joi.string().valid(...PRODUCT_TYPES),
   game: Joi.string().valid(...TCG_GAMES).allow('', null),
@@ -245,6 +258,21 @@ router.post('/', auth, async (req, res) => {
       try { parsedShippingOptions = JSON.parse(v.shippingOptions); } catch(e) {}
     }
 
+    // weightKg/lengthCm/widthCm/heightCm are optional even for physical
+    // listings — whatever's missing gets a per-category default here, so the
+    // row never ends up with a physical item and no shipping dimensions.
+    // package_size is now derived from weight, not seller-picked (see
+    // productDimensions.js) — kept in sync for the code that still reads it.
+    const dims = applyDimensionDefaults({
+      productType: v.productType || 'lego',
+      category: v.category,
+      weightKg: v.weightKg ?? null,
+      lengthCm: v.lengthCm ?? null,
+      widthCm: v.widthCm ?? null,
+      heightCm: v.heightCm ?? null,
+    });
+    const packageSize = packageSizeFromWeight(dims.weightKg);
+
     const result = await query(
       `INSERT INTO listings (
         seller_id, title, description, set_number, theme, year, pieces,
@@ -252,9 +280,10 @@ router.post('/', auth, async (req, res) => {
         price, auction_start, auction_end, auction_reserve, current_bid,
         status, images, shipping_cost, shipping_method, shipping_options,
         box_condition, instructions, pro_notes, is_complete,
-        category, package_size, product_type, game
+        category, package_size, product_type, game,
+        weight_kg, length_cm, width_cm, height_cm
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31
       ) RETURNING *`,
       [
         req.user.userId,
@@ -281,9 +310,10 @@ router.post('/', auth, async (req, res) => {
         v.proNotes || null,
         v.isComplete ?? false,
         v.category,
-        v.packageSize || 'medium',
+        packageSize,
         v.productType || 'lego',
-        v.productType === 'tcg' ? (v.game || null) : null
+        v.productType === 'tcg' ? (v.game || null) : null,
+        dims.weightKg, dims.lengthCm, dims.widthCm, dims.heightCm,
       ]
     );
 
@@ -787,7 +817,10 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
     shippingMethod: 'shipping_method',
     status: 'status',
     category: 'category',
-    packageSize: 'package_size',
+    weightKg: 'weight_kg',
+    lengthCm: 'length_cm',
+    widthCm: 'width_cm',
+    heightCm: 'height_cm',
     productType: 'product_type',
     game: 'game',
   };
@@ -801,6 +834,13 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
     params.push(v);
     sets.push(`${col} = $${params.length}`);
   });
+
+  // package_size is derived from weight (see productDimensions.js), not
+  // patched directly — keep it in sync whenever weight changes.
+  if (value.weightKg !== undefined) {
+    params.push(packageSizeFromWeight(value.weightKg));
+    sets.push(`package_size = $${params.length}`);
+  }
 
   if (value.shippingOptions !== undefined) {
     let parsedShippingOptions = [];

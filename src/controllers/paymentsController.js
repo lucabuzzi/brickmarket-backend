@@ -1,8 +1,13 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const paymentsRepository = require('../repositories/paymentsRepository');
 const userRepository = require('../repositories/userRepository');
+const addressRepository = require('../repositories/addressRepository');
+const shipmentRepository = require('../repositories/shipmentRepository');
 const { recomputeUserRole } = require('../services/userRoleAuto');
-const { resolveTcgShipping, resolvePhysicalShipping } = require('../services/shipping');
+const { resolveTcgShipping } = require('../services/shipping');
+const { checkoutAddressSchema, validate: validateAddress } = require('../validators/addressValidators');
+const shippingQuote = require('../services/shippingQuote');
+const { sellerAddressSnapshot } = shippingQuote;
 
 /** Cart shipping groups: one shipment per (seller × macro-category). Trading
  *  cards ship apart from LEGO/Funko even for the same seller. */
@@ -20,6 +25,37 @@ function computeFees(itemPrice) {
   const sellerFee = platformFee;
   const sellerPayout = itemPrice - sellerFee;
   return { platformFee, sellerFee, sellerPayout };
+}
+
+// Resolves the checkout-time shipping address into a plain snapshot object,
+// whichever way the buyer supplied it (a saved address, or typed ad hoc).
+// Never trusts a bare country string from the client without going through
+// this — it's what src/db/schema.sql's orders.shipping_address comment
+// ("snapshot indirizzo al momento ordine") already called for, just never
+// implemented. Returns { error } or { snapshot }.
+async function resolveCheckoutAddress(userId, input) {
+  const { error, value } = validateAddress(checkoutAddressSchema, input || {});
+  if (error) return { error: `Indirizzo di spedizione non valido: ${error}` };
+
+  if (value.addressId) {
+    const saved = await addressRepository.findById(userId, value.addressId);
+    if (!saved) return { error: 'Indirizzo di spedizione non trovato' };
+    return {
+      snapshot: {
+        fullName: saved.full_name,
+        addressStreet: saved.address_street || saved.address,
+        addressHouseNumber: saved.address_house_number || null,
+        city: saved.city,
+        zip: saved.zip,
+        province: saved.province || null,
+        country: saved.country,
+        phone: saved.phone,
+      },
+    };
+  }
+
+  const { addressId, ...fields } = value;
+  return { snapshot: fields };
 }
 
 // 1. Onboarding venditore: crea un account Stripe Connect
@@ -50,8 +86,17 @@ async function onboardSellerHandler(req, res) {
 }
 
 // 2. Crea un PaymentIntent (acquirente avvia il pagamento)
+// NB: non risulta chiamato da alcuna pagina del client oggi (il frontend
+// passa sempre dal carrello, anche per un solo articolo — vedi
+// createCartPaymentIntentHandler). Aggiornato per coerenza e per non
+// lasciarlo con un flusso indirizzo divergente, ma senza UI dedicata.
 async function createPaymentIntentHandler(req, res) {
-  const { listingId, shippingMethod } = req.body;
+  const { listingId, shippingMethod, shippingAddress } = req.body;
+
+  const { error: addressError, snapshot: buyerAddress } = await resolveCheckoutAddress(req.user.userId, shippingAddress);
+  if (addressError) {
+    return res.status(400).json({ error: addressError });
+  }
 
   try {
     const listing = await paymentsRepository.findActiveListingById(listingId);
@@ -99,6 +144,7 @@ async function createPaymentIntentHandler(req, res) {
       totalBuyer: itemPrice + shippingCost + platformFee,
       sellerPayout,
       stripePaymentIntentId: paymentIntent.id,
+      shippingAddress: buyerAddress,
     });
 
     res.json({
@@ -123,9 +169,16 @@ async function createPaymentIntentHandler(req, res) {
 async function createCartPaymentIntentHandler(req, res) {
   // shippingSelections is keyed by shipping-group key ("<sellerId>::<macro>"),
   // each { method }: a carrier code for physical groups, a tier id for TCG.
-  const { itemIds, shippingSelections = {} } = req.body;
+  // shippingAddress is mandatory: either { addressId } (a saved address) or
+  // the address fields typed ad hoc — see resolveCheckoutAddress.
+  const { itemIds, shippingSelections = {}, shippingAddress } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0) {
     return res.status(400).json({ error: 'Nessun articolo selezionato' });
+  }
+
+  const { error: addressError, snapshot: buyerAddress } = await resolveCheckoutAddress(req.user.userId, shippingAddress);
+  if (addressError) {
+    return res.status(400).json({ error: addressError });
   }
 
   try {
@@ -144,9 +197,21 @@ async function createCartPaymentIntentHandler(req, res) {
       }
     }
 
-    const buyer = await userRepository.findById(req.user.userId);
-    const buyerCountry = buyer?.address_country || 'it';
-    const sellerCountry = 'it';
+    // The buyer's destination for THIS checkout — the address they just
+    // chose/typed, never their generic profile country (which is only a
+    // locale hint and may not even match where they're having this shipped).
+    const buyerCountry = buyerAddress.country;
+
+    // Each seller's ship-FROM address used to be hardcoded to 'it' (country
+    // only) here, silently wrong for any non-Italian seller. Fetched in full
+    // per seller now (small carts, one lookup per distinct seller — no batch
+    // query needed) — the full profile also becomes the shipment's
+    // ship_from_address snapshot below, not just a country code.
+    const sellerIds = [...new Set(listings.map((l) => l.seller_id))];
+    const sellerById = new Map();
+    await Promise.all(sellerIds.map(async (id) => {
+      sellerById.set(id, await userRepository.findById(id));
+    }));
 
     // Group items into one shipment per (seller × macro-category), then compute
     // that group's shipping ONCE — server-side, ignoring any client cost.
@@ -157,23 +222,50 @@ async function createCartPaymentIntentHandler(req, res) {
       groups.get(key).items.push(listing);
     }
 
-    const groupShipping = new Map(); // key -> { cost, method }
+    // key -> { cost, method, shippingOptionCode, rateSource }. TCG keeps the
+    // static card-count/value tier system entirely — no aggregator call.
+    // Physical groups now resolve a quote token the buyer was already shown
+    // (see POST /api/shipping/quote) instead of picking a static carrier
+    // here: the price actually charged is whatever that quote locked in,
+    // never recalculated from scratch at this point (a fresh recalculation
+    // could legitimately differ from what the buyer saw and agreed to pay).
+    const groupShipping = new Map();
     for (const g of groups.values()) {
       const sel = shippingSelections[g.key] || {};
       if (g.macro === 'tcg') {
         const cardCount = g.items.length;
         const value = g.items.reduce((s, it) => s + parseFloat(it.price), 0);
         const { tierId, cost } = resolveTcgShipping(sel.method, cardCount, value);
-        groupShipping.set(g.key, { cost, method: tierId });
+        groupShipping.set(g.key, { cost, method: tierId, shippingOptionCode: null, rateSource: 'tcg_tier' });
       } else {
-        const { carrier, cost } = resolvePhysicalShipping(sel.method, g.items, sellerCountry, buyerCountry);
-        groupShipping.set(g.key, { cost, method: carrier });
+        const sellerCountry = sellerById.get(g.items[0].seller_id)?.address_country || 'IT';
+        const weightKg = g.items.reduce((s, it) => s + (parseFloat(it.weight_kg) || 0), 0);
+        const fp = shippingQuote.fingerprint({
+          listingIds: g.items.map((it) => it.id), weightKg, sellerCountry, buyerCountry,
+        });
+        const { error: quoteError, quote } = await shippingQuote.resolveQuote({
+          token: sel.quoteToken, buyerId: req.user.userId, currentFingerprint: fp,
+        });
+        if (quoteError) {
+          return res.status(409).json({
+            error: 'La quotazione di spedizione è scaduta o non corrisponde più al carrello. Richiedine una nuova.',
+            code: quoteError,
+          });
+        }
+        groupShipping.set(g.key, {
+          cost: quote.price, method: quote.carrierCode,
+          shippingOptionCode: quote.shippingOptionCode, rateSource: quote.rateSource,
+        });
       }
     }
 
-    // One order row per listing. The whole group's shipping goes on the first
-    // row of that group (0 on the rest); every row of the group carries the
-    // same selected method.
+    // One order row per listing, tagged with which group it belongs to so it
+    // can be linked to that group's shipment once one exists (below). The
+    // whole group's shipping still goes on the first row of that group (0 on
+    // the rest) — that's how the Stripe charge amount is built and stays
+    // unchanged — but it's no longer the only record of the group's true
+    // cost: every row now also points at a shipments row (shipment_id) whose
+    // shipping_cost is the correct group total regardless of row order.
     const chargedGroups = new Set();
     const orderRows = [];
     let totalCents = 0;
@@ -191,7 +283,7 @@ async function createCartPaymentIntentHandler(req, res) {
         const totalBuyer = itemPrice + shippingCost + platformFee;
 
         orderRows.push({
-          listing, shippingCost, selectedCarrier: method || null,
+          listing, shippingCost, selectedCarrier: method || null, groupKey: g.key,
           itemPrice, platformFee, sellerFee, sellerPayout, totalBuyer,
         });
         totalCents += Math.round(totalBuyer * 100);
@@ -208,6 +300,33 @@ async function createCartPaymentIntentHandler(req, res) {
       automatic_payment_methods: { enabled: true },
     });
 
+    // One shipment per group, created now that the PaymentIntent id exists
+    // (shipments key off it the same way orders do, so the webhook below can
+    // move every shipment of a checkout in one UPDATE).
+    const shipmentIdByGroupKey = new Map();
+    for (const g of groups.values()) {
+      const { cost: groupCost, method, shippingOptionCode, rateSource } = groupShipping.get(g.key);
+      const seller = sellerById.get(g.items[0].seller_id);
+      const totalWeightKg = g.macro === 'tcg'
+        ? null
+        : g.items.reduce((s, it) => s + (parseFloat(it.weight_kg) || 0), 0);
+
+      const shipmentId = await shipmentRepository.create({
+        sellerId: g.items[0].seller_id,
+        buyerId: req.user.userId,
+        macroCategory: g.macro,
+        stripePaymentIntentId: paymentIntent.id,
+        shippingMethod: method || null,
+        shippingCost: groupCost,
+        rateSource,
+        sendcloudShippingOptionCode: shippingOptionCode || null,
+        totalWeightKg,
+        shipFromAddress: sellerAddressSnapshot(seller),
+        shipToAddress: buyerAddress,
+      });
+      shipmentIdByGroupKey.set(g.key, shipmentId);
+    }
+
     const orderIds = [];
     for (const o of orderRows) {
       const orderId = await paymentsRepository.insertOrder({
@@ -222,6 +341,8 @@ async function createCartPaymentIntentHandler(req, res) {
         sellerPayout: o.sellerPayout,
         stripePaymentIntentId: paymentIntent.id,
         selectedCarrier: o.selectedCarrier,
+        shippingAddress: buyerAddress,
+        shipmentId: shipmentIdByGroupKey.get(o.groupKey),
       });
       orderIds.push(orderId);
     }
@@ -270,6 +391,10 @@ async function webhookHandler(req, res) {
       // Aggiorna tutti gli ordini legati a questo PaymentIntent (uno per articolo:
       // un acquisto singolo ne crea uno solo, un checkout da carrello più d'uno)
       const orders = await paymentsRepository.markOrdersPaymentReceivedByIntent(pi.id);
+      // Ogni shipment della stessa checkout passa da "in attesa di pagamento"
+      // a "in attesa che il venditore lo prepari" — stesso evento, nessuna
+      // modifica alla logica ordine/escrow esistente sopra.
+      await shipmentRepository.markAwaitingPreparationByIntent(pi.id);
 
       // Il pagamento è confermato: gli annunci non sono più acquistabili da altri.
       // Il payout al venditore resta 'pending' finché non lo si registra da
@@ -283,6 +408,10 @@ async function webhookHandler(req, res) {
     case 'payment_intent.payment_failed': {
       const pi = event.data.object;
       await paymentsRepository.markOrdersCancelledByIntent(pi.id);
+      // No label was ever possible for a failed payment — mark the linked
+      // shipments dead too, so nothing shows up as "awaiting preparation"
+      // for an order that never got paid.
+      await shipmentRepository.markCancelledByIntent(pi.id);
       break;
     }
   }

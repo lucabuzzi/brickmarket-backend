@@ -122,6 +122,11 @@ async function updateMeHandler(req, res) {
     }
     if (value.full_name !== undefined) fields.full_name = value.full_name || null;
     if (newAvatarUrl !== undefined) fields.avatar_url = newAvatarUrl;
+    if (value.street !== undefined) fields.address_street = value.street || null;
+    if (value.houseNumber !== undefined) fields.address_house_number = value.houseNumber || null;
+    if (value.zipCode !== undefined) fields.address_zip_code = value.zipCode || null;
+    if (value.country !== undefined) fields.address_country = value.country || null;
+    if (value.phone !== undefined) fields.phone = value.phone || null;
 
     if (Object.keys(fields).length === 0) {
       return res.status(400).json({ error: 'Nessun dato da aggiornare' });

@@ -83,7 +83,14 @@ export default function Sell() {
 
   const [price, setPrice] = useState('');
   const [shippingOptions, setShippingOptions] = useState({});
-  const [packageSize, setPackageSize] = useState('medium');
+  // Replaces the old small/medium/large packageSize enum — real weight/dims,
+  // only meaningful for physical items (LEGO/Funko). Left blank for TCG and
+  // for physical listings where the seller skips them: the backend applies a
+  // per-category default rather than requiring them here.
+  const [weightKg, setWeightKg] = useState('');
+  const [lengthCm, setLengthCm] = useState('');
+  const [widthCm, setWidthCm] = useState('');
+  const [heightCm, setHeightCm] = useState('');
   const [description, setDescription] = useState('');
   const [proNotes, setProNotes] = useState('');
   
@@ -164,7 +171,10 @@ export default function Sell() {
           });
         }
         setShippingOptions(existingShipping);
-        setPackageSize(data.package_size || 'medium');
+        setWeightKg(data.weight_kg != null ? String(data.weight_kg) : '');
+        setLengthCm(data.length_cm != null ? String(data.length_cm) : '');
+        setWidthCm(data.width_cm != null ? String(data.width_cm) : '');
+        setHeightCm(data.height_cm != null ? String(data.height_cm) : '');
 
         setDescription(data.description || '');
         setProNotes(data.pro_notes || '');
@@ -258,7 +268,12 @@ export default function Sell() {
       .map(([id, o]) => ({ carrier: id }));
     fd.append('shippingOptions', JSON.stringify(activeShipping));
     
-    fd.append('packageSize', packageSize);
+    if (productType !== 'tcg') {
+      if (weightKg) fd.append('weightKg', weightKg);
+      if (lengthCm) fd.append('lengthCm', lengthCm);
+      if (widthCm) fd.append('widthCm', widthCm);
+      if (heightCm) fd.append('heightCm', heightCm);
+    }
     fd.append('shippingCost', '0');
     
     if (!Number.isNaN(p) && p > 0) fd.append('price', String(p));
@@ -702,20 +717,40 @@ export default function Sell() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.package_size_label')}</label>
-                <select value={packageSize} onChange={(e) => setPackageSize(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                  <option value="small">{t('sell.package_size_small')}</option>
-                  <option value="medium">{t('sell.package_size_medium')}</option>
-                  <option value="large">{t('sell.package_size_large')}</option>
-                </select>
-                <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78716c' }}>
-                  {t('sell.package_size_note')}
-                </p>
+            {productType !== 'tcg' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.weight_kg_label')}</label>
+                  <input
+                    type="number" step="0.01" min="0" value={weightKg} onChange={(e) => setWeightKg(e.target.value)}
+                    placeholder={t('sell.weight_kg_placeholder')}
+                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
+                  />
+
+                  <label style={{ display: 'block', margin: '1rem 0 0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.dimensions_cm_label')}</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                    <input
+                      type="number" step="1" min="0" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)}
+                      placeholder={t('sell.length_placeholder')}
+                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
+                    />
+                    <input
+                      type="number" step="1" min="0" value={widthCm} onChange={(e) => setWidthCm(e.target.value)}
+                      placeholder={t('sell.width_placeholder')}
+                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
+                    />
+                    <input
+                      type="number" step="1" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
+                      placeholder={t('sell.height_placeholder')}
+                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
+                    />
+                  </div>
+                  <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78716c' }}>
+                    {t('sell.dimensions_note')}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.description_label')}</label>

@@ -16,6 +16,7 @@ const Account = lazy(() => import('./pages/Account'));
 const Sell = lazy(() => import('./pages/Sell'));
 const CreateAuction = lazy(() => import('./pages/CreateAuction'));
 const MyListings = lazy(() => import('./pages/MyListings'));
+const SellerShipments = lazy(() => import('./pages/SellerShipments'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -195,6 +196,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MyListings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-shipments"
+            element={
+              <ProtectedRoute>
+                <SellerShipments />
               </ProtectedRoute>
             }
           />
