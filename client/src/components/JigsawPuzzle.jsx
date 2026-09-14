@@ -262,7 +262,24 @@ export default function JigsawPuzzle({
     piecesRef.current = tempPieces;
   };
 
-  // Anti-cheat tab visibility change listeners
+  // Anti-cheat tab visibility change listeners.
+  //
+  // On mobile, document.hidden can flip briefly for reasons that have
+  // nothing to do with actually switching apps: a drag gesture that starts
+  // or ends near a reserved OS-gesture edge (iOS Control Center / App
+  // Switcher swipe zones, in particular) can brush the browser into the
+  // background for a fraction of a second even though the page itself set
+  // touch-action: none — that's an OS-level reservation no web page can
+  // override. A player fumbling with small pieces near the screen edges is
+  // exactly the scenario most likely to trigger this, so a flat "any hidden
+  // time counts" rule produced false positives on real devices. Very short
+  // episodes are now ignored entirely rather than accumulated; only what's
+  // left is checked against the (also raised) total. Must match
+  // MAX_TOTAL_BLUR_MS in src/controllers/contestController.js, which
+  // independently re-checks whatever total this reports.
+  const MIN_BLUR_EPISODE_MS = 1200;
+  const MAX_TOTAL_BLUR_MS = 20000;
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (gameState !== 'playing') return;
@@ -273,13 +290,18 @@ export default function JigsawPuzzle({
       } else {
         if (blurStartedAtRef.current > 0) {
           const blurredDuration = Date.now() - blurStartedAtRef.current;
-          totalBlurTimeRef.current += blurredDuration;
           blurStartedAtRef.current = 0;
-          
+
+          if (blurredDuration < MIN_BLUR_EPISODE_MS) {
+            console.log(`Tab resumed. Blurred duration: ${blurredDuration}ms — below the noise floor, not counted.`);
+            return;
+          }
+
+          totalBlurTimeRef.current += blurredDuration;
           console.warn(`Tab resumed. Blurred duration: ${blurredDuration}ms. Acc: ${totalBlurTimeRef.current}ms.`);
-          
+
           // Alert user of focus compliance rules
-          if (totalBlurTimeRef.current > 15000) {
+          if (totalBlurTimeRef.current > MAX_TOTAL_BLUR_MS) {
             setGameState('cheated');
             clearInterval(timerIntervalRef.current);
           }
@@ -552,14 +574,27 @@ export default function JigsawPuzzle({
       Math.pow(x - clickStartRef.current.x, 2) + Math.pow(y - clickStartRef.current.y, 2)
     );
 
+    // touchend has no e.touches (already lifted) but does have
+    // changedTouches — same fallback getMousePos already relies on.
+    const isTouch = !!(e.touches?.length || e.changedTouches?.length);
+    // A finger is never as still or as fast-releasing as a mouse click: the
+    // 6px/250ms thresholds tuned for mouse made most taps on a phone fall
+    // through to "drag" instead of "rotate" (a real tap easily moves more
+    // than 6px in the canvas's internal coordinate space once it's scaled
+    // down to fit a phone screen), which is what made rotating feel broken.
+    const tapDistThreshold = isTouch ? 18 : 6;
+    const tapDurationThreshold = isTouch ? 400 : 250;
+
     if (activePieceRef.current) {
       const piece = activePieceRef.current;
 
-      // A: CLICK EVENT (Short tap with minimal movement => rotate)
-      if (clickDuration < 250 && distMoved < 6) {
+      // A: CLICK/TAP EVENT (short, minimal movement => rotate 90° clockwise
+      // — ctx.rotate() with a positive angle already renders clockwise, see
+      // drawPiece below, so +90 here is correct as-is)
+      if (clickDuration < tapDurationThreshold && distMoved < tapDistThreshold) {
         piece.rotation = (piece.rotation + 90) % 360;
         console.log(`Rotated piece ${piece.id} to ${piece.rotation}°`);
-      } 
+      }
       // B: DRAG END EVENT (Snap matching check)
       else {
         const dx = Math.abs(piece.x - piece.targetX);

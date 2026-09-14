@@ -279,26 +279,46 @@ export default function SkillZone() {
 
   // Fired by JigsawPuzzle every time the player snaps a piece into place —
   // the server independently re-verifies the position (see
-  // contestController.js#lockPieceHandler) before counting it. A couple of
-  // quiet retries absorb a dropped request without bothering the player;
-  // if it never lands, /complete's own final tally is what surfaces the
-  // problem rather than a false "solved" state.
+  // contestController.js#lockPieceHandler) before counting it. Tracked in
+  // pendingLockPiecesRef while in flight so handleCompleteAttempt can wait
+  // for stragglers instead of racing ahead of a slow mobile connection —
+  // completing the instant the LAST piece snaps client-side used to call
+  // /complete before an earlier piece's confirmation had necessarily
+  // landed yet, which the server then correctly (but confusingly, from the
+  // player's side) reported as an incomplete/void attempt despite the
+  // puzzle visibly being finished.
+  const pendingLockPiecesRef = useRef(new Set());
+
   const handlePieceLocked = async ({ pieceId, x, y, rotation }) => {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    pendingLockPiecesRef.current.add(pieceId);
+    const maxAttempts = 5;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         await apiFetch('/api/contest/lock-piece', {
           method: 'POST',
           body: { contestId: playingContest?.id, attemptToken, pieceId, x, y, rotation }
         });
+        pendingLockPiecesRef.current.delete(pieceId);
         return;
       } catch (err) {
-        if (attempt === 2) console.warn('Piece lock did not reach the server:', pieceId, err.message);
+        if (attempt === maxAttempts - 1) {
+          console.warn('Piece lock did not reach the server after retries:', pieceId, err.message);
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1))); // 300/600/900/1200ms backoff
+        }
       }
     }
   };
 
   // Complete attempt handler
   const handleCompleteAttempt = async ({ contestId, attemptToken, blurCount, totalBlurTimeMs }) => {
+    // Give any still-in-flight piece confirmations a last chance to land —
+    // see pendingLockPiecesRef comment above.
+    const waitDeadline = Date.now() + 4000;
+    while (pendingLockPiecesRef.current.size > 0 && Date.now() < waitDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
     try {
       const data = await apiFetch('/api/contest/complete', {
         method: 'POST',

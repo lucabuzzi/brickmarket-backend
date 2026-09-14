@@ -14,6 +14,16 @@ const { computeGridDimensions, computeLayout, isPieceInPlace } = require('../ser
 // them from reaching the 30/30 completeAttemptHandler requires.
 const MIN_MS_BETWEEN_PIECE_LOCKS = 50;
 
+// Must match MIN_BLUR_EPISODE_MS/MAX_TOTAL_BLUR_MS in JigsawPuzzle.jsx,
+// which is what actually accumulates this value client-side (only counting
+// episodes past its own noise floor) before reporting it here — raised
+// from 15s after a real-device report of a false-positive void: a drag
+// gesture ending near a phone's reserved OS-gesture edge (e.g. iOS Control
+// Center/App Switcher swipe zones) can brush the page into the background
+// for a moment with no actual app-switching involved, something
+// touch-action: none can't prevent since it's an OS-level reservation.
+const MAX_TOTAL_BLUR_MS = 20000;
+
 const JWT_SECRET = process.env.JWT_SECRET || 'clutchvault_secret_key_1337';
 
 async function listContestsHandler(req, res) {
@@ -256,9 +266,9 @@ async function completeAttemptHandler(req, res) {
       cheatReason = 'Impossible puzzle completion speed (under 5 seconds).';
     }
 
-    if (totalBlurTimeMs > 15000) {
+    if (totalBlurTimeMs > MAX_TOTAL_BLUR_MS) {
       status = 'cheated';
-      cheatReason = 'Browser tab lost focus for an excessive duration (>15 seconds).';
+      cheatReason = `Browser tab lost focus for an excessive duration (>${MAX_TOTAL_BLUR_MS / 1000} seconds).`;
     }
 
     // The real proof of play: every one of the board's pieces must have
