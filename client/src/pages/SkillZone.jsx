@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
   Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play,
-  Move, RotateCw, Puzzle
+  Move, RotateCw, Puzzle, Smartphone
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
@@ -68,6 +68,54 @@ export default function SkillZone() {
   const [attemptToken, setAttemptToken] = useState(null); // anti-cheat start token
   const [boardIsPortrait, setBoardIsPortrait] = useState(false); // decided pre-/start, passed to JigsawPuzzle as a prop
   const [gameResult, setGameResult] = useState(null); // leaderboard status after submission
+
+  // Detected as soon as a slot is reserved (not only at Start, as before) so
+  // the "ready to start" screen can tell the player to rotate their phone
+  // BEFORE they commit to starting — a landscape puzzle image squeezed into
+  // a portrait phone screen was the real cause of pieces being too small to
+  // tap/drag accurately, not the tap-vs-drag logic itself.
+  const [pendingImageIsPortrait, setPendingImageIsPortrait] = useState(null);
+  // The PHONE's current orientation (not the image's) — reactive, so the
+  // rotate-prompt banner disappears the moment the player actually rotates.
+  const [deviceIsPortrait, setDeviceIsPortrait] = useState(
+    typeof window !== 'undefined' ? window.innerHeight >= window.innerWidth : true
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(orientation: portrait)');
+    const update = () => setDeviceIsPortrait(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (!reservedContest) {
+      setPendingImageIsPortrait(null);
+      return;
+    }
+    let cancelled = false;
+    detectImageOrientation(normalizeImageUrl(reservedContest.imageUrl))
+      .then((isPortrait) => { if (!cancelled) setPendingImageIsPortrait(isPortrait); })
+      .catch(() => { if (!cancelled) setPendingImageIsPortrait(null); });
+    return () => { cancelled = true; };
+  }, [reservedContest]);
+
+  // The play screen takes over the whole viewport (see the fixed inset-0
+  // wrapper below) — lock background scroll while it's up, and drop out of
+  // native fullscreen (if requestFullscreen above actually took) once play
+  // ends, however it ends (finished, abandoned, or the tab is left).
+  useEffect(() => {
+    if (!playingContest) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    };
+  }, [playingContest]);
 
   // Alerts & Messages
   const [sysAlert, setSysAlert] = useState(null);
@@ -248,13 +296,17 @@ export default function SkillZone() {
     try {
       setUploadProgress(t('skill_zone.alerts.preparing_engine'));
 
-      let isPortrait = false;
-      try {
-        isPortrait = await detectImageOrientation(normalizeImageUrl(con.imageUrl));
-      } catch {
-        setUploadProgress('');
-        triggerSystemAlert(t('skill_zone.alerts.image_load_error'));
-        return; // don't spend the attempt on a puzzle that can't even load
+      // Already resolved by the effect above in the common case — only
+      // re-detect here if the player clicked Start before it finished.
+      let isPortrait = pendingImageIsPortrait;
+      if (isPortrait === null) {
+        try {
+          isPortrait = await detectImageOrientation(normalizeImageUrl(con.imageUrl));
+        } catch {
+          setUploadProgress('');
+          triggerSystemAlert(t('skill_zone.alerts.image_load_error'));
+          return; // don't spend the attempt on a puzzle that can't even load
+        }
       }
 
       const startData = await apiFetch('/api/contest/start', {
@@ -271,6 +323,17 @@ export default function SkillZone() {
       setBoardIsPortrait(isPortrait);
       setGameResult(null);
       setUploadProgress('');
+
+      // Best-effort true fullscreen (hides the browser's own address bar on
+      // browsers that support it) — never blocks starting if it fails or
+      // isn't available; the fixed-position takeover below is what actually
+      // guarantees the app-like full-screen layout either way.
+      try {
+        await document.documentElement.requestFullscreen?.();
+      } catch {
+        // Ignored — plenty of legitimate reasons this can fail (iOS Safari,
+        // no user-activation in this exact call stack, already fullscreen…).
+      }
     } catch (err) {
       setUploadProgress('');
       triggerSystemAlert(err.message || t('skill_zone.alerts.start_error'));
@@ -656,6 +719,21 @@ export default function SkillZone() {
                 className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
               />
 
+              {/* Rotate-device prompt — a landscape puzzle image squeezed
+                  into a portrait phone screen was the real reason pieces
+                  ended up too small to tap/drag accurately. Reactive: goes
+                  away the moment the player actually rotates (deviceIsPortrait
+                  tracks the phone itself via matchMedia, separately from
+                  pendingImageIsPortrait which is about the puzzle image). */}
+              {pendingImageIsPortrait === false && deviceIsPortrait && (
+                <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-5 text-left animate-pulse">
+                  <Smartphone className="h-8 w-8 text-amber-400 flex-shrink-0 rotate-90" />
+                  <p className="text-xs text-amber-300 leading-snug font-bold">
+                    {t('skill_zone.confirm.rotate_device')}
+                  </p>
+                </div>
+              )}
+
               {/* How-to-play — shown here specifically because the clock
                   hasn't started yet (see the comment above this block): the
                   player reads this BEFORE any time or blur-focus check
@@ -709,84 +787,88 @@ export default function SkillZone() {
             </div>
           )}
 
-          {/* Play Area Overlay Panel — padding/margins scale down on small
-              screens (same p-6 md:p-8 / text-3xl md:text-4xl style pattern
-              used elsewhere) so the whole game fits without the page
-              needing to scroll during play, alongside the canvas's own
-              maxHeight cap in JigsawPuzzle.jsx. */}
+          {/* Play Area — a true full-viewport takeover (fixed inset-0, above
+              everything including the site header/nav) rather than a card
+              embedded in the normal page, so the game gets the entire
+              screen like a native app instead of competing for space with
+              site chrome. Body scroll is locked and native fullscreen is
+              best-effort requested while this is up — see the effect and
+              handleStartAttempt above. JigsawPuzzle's own canvas sizing
+              (maxHeight etc.) is what actually fills this space. */}
           {playingContest ? (
-            <div className="bento-card p-2 sm:p-6 mb-3 sm:mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl">
-              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20">
-                <span className="inline-flex items-center text-[9px] sm:text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
-                  ⚡ {t('skill_zone.play.secure_room')}
-                </span>
-              </div>
-
-              <div className="text-center mb-2 sm:mb-6">
-                <h2 className="text-base sm:text-xl font-extrabold tracking-wide uppercase text-white font-mono">
-                  {t('skill_zone.play.heading', { title: playingContest.title })}
-                </h2>
-                <p className="text-[11px] sm:text-xs text-stone-400 mt-1">
+            <div className="fixed inset-0 z-[100] bg-[#05050a] overflow-y-auto">
+              <div className="min-h-full flex flex-col p-2 sm:p-4">
+                <div className="flex items-center justify-between mb-1 sm:mb-3">
+                  <h2 className="text-sm sm:text-lg font-extrabold tracking-wide uppercase text-white font-mono truncate pr-2">
+                    {t('skill_zone.play.heading', { title: playingContest.title })}
+                  </h2>
+                  <span className="inline-flex items-center flex-shrink-0 text-[9px] sm:text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
+                    ⚡ {t('skill_zone.play.secure_room')}
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-xs text-stone-400 mb-2 sm:mb-4 text-center">
                   {t('skill_zone.play.instructions')}
                 </p>
-              </div>
 
-              {gameResult ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
-                  {gameResult.status === 'cheated' ? (
-                    <>
-                      <ShieldAlert className="h-16 w-16 text-pink-500 mb-4 animate-pulse" />
-                      <h3 className="text-xl font-bold text-pink-500 uppercase tracking-wider">{t('skill_zone.play.voided_title')}</h3>
-                      <p className="text-xs text-stone-400 mt-2 mb-6">
-                        {t('skill_zone.play.voided_text')}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-16 w-16 text-emerald-400 mb-4" />
-                      <h3 className="text-xl font-bold text-emerald-400 uppercase tracking-wider">{t('skill_zone.play.success_title')}</h3>
-                      <p className="text-sm font-mono text-white font-bold mt-2">
-                        {t('skill_zone.play.speed_score', { time: formatRaceTime(gameResult.timeMs) })}
-                      </p>
-                      {gameResult.contestFinalized ? (
-                        <div className="mt-4 p-3 bg-pink-950/30 border border-pink-500/30 rounded text-xs text-stone-300">
-                          🎉 {t('skill_zone.play.contest_finalized')} <span className="font-extrabold text-pink-400">{gameResult.winnerName}</span>.
-                        </div>
+                <div className="flex-1 flex items-center justify-center min-h-0">
+                  {gameResult ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
+                      {gameResult.status === 'cheated' ? (
+                        <>
+                          <ShieldAlert className="h-16 w-16 text-pink-500 mb-4 animate-pulse" />
+                          <h3 className="text-xl font-bold text-pink-500 uppercase tracking-wider">{t('skill_zone.play.voided_title')}</h3>
+                          <p className="text-xs text-stone-400 mt-2 mb-6">
+                            {t('skill_zone.play.voided_text')}
+                          </p>
+                        </>
                       ) : (
-                        <p className="text-xs text-stone-400 mt-2 mb-6">
-                          {t('skill_zone.play.waiting_others')}
-                        </p>
+                        <>
+                          <CheckCircle className="h-16 w-16 text-emerald-400 mb-4" />
+                          <h3 className="text-xl font-bold text-emerald-400 uppercase tracking-wider">{t('skill_zone.play.success_title')}</h3>
+                          <p className="text-sm font-mono text-white font-bold mt-2">
+                            {t('skill_zone.play.speed_score', { time: formatRaceTime(gameResult.timeMs) })}
+                          </p>
+                          {gameResult.contestFinalized ? (
+                            <div className="mt-4 p-3 bg-pink-950/30 border border-pink-500/30 rounded text-xs text-stone-300">
+                              🎉 {t('skill_zone.play.contest_finalized')} <span className="font-extrabold text-pink-400">{gameResult.winnerName}</span>.
+                            </div>
+                          ) : (
+                            <p className="text-xs text-stone-400 mt-2 mb-6">
+                              {t('skill_zone.play.waiting_others')}
+                            </p>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
 
-                  <button
-                    onClick={() => {
-                      setPlayingContest(null);
-                      setAttemptToken(null);
-                      setGameResult(null);
-                      fetchCatalogData();
-                    }}
-                    className="px-6 py-2 bg-gold-500 text-white hover:bg-gold-400 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 active-shrink shadow-lg shadow-gold-500/15"
-                  >
-                    {t('skill_zone.play.return_lobby')}
-                  </button>
+                      <button
+                        onClick={() => {
+                          setPlayingContest(null);
+                          setAttemptToken(null);
+                          setGameResult(null);
+                          fetchCatalogData();
+                        }}
+                        className="px-6 py-2 bg-gold-500 text-white hover:bg-gold-400 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 active-shrink shadow-lg shadow-gold-500/15"
+                      >
+                        {t('skill_zone.play.return_lobby')}
+                      </button>
+                    </div>
+                  ) : (
+                    <JigsawPuzzle
+                      imageUrl={normalizeImageUrl(playingContest.imageUrl)}
+                      contestId={playingContest.id}
+                      attemptToken={attemptToken}
+                      isPortrait={boardIsPortrait}
+                      onPieceLocked={handlePieceLocked}
+                      onComplete={handleCompleteAttempt}
+                      onCancel={() => {
+                        setPlayingContest(null);
+                        setAttemptToken(null);
+                        fetchCatalogData();
+                      }}
+                    />
+                  )}
                 </div>
-              ) : (
-                <JigsawPuzzle
-                  imageUrl={normalizeImageUrl(playingContest.imageUrl)}
-                  contestId={playingContest.id}
-                  attemptToken={attemptToken}
-                  isPortrait={boardIsPortrait}
-                  onPieceLocked={handlePieceLocked}
-                  onComplete={handleCompleteAttempt}
-                  onCancel={() => {
-                    setPlayingContest(null);
-                    setAttemptToken(null);
-                    fetchCatalogData();
-                  }}
-                />
-              )}
+              </div>
             </div>
           ) : null}
 
