@@ -474,7 +474,7 @@
     "play": {
       "secure_room": "GESICHERTER ARCADE-RAUM",
       "heading": "Skill Zone: {{title}}",
-      "instructions": "Löse dieses klassische 50-teilige Puzzle. Mit der Maus ziehen und klicken, um Teile zu drehen. Ein Tabwechsel macht den Versuch ungültig.",
+      "instructions": "Löse dieses klassische 30-teilige Puzzle. Mit der Maus oder dem Finger ziehen; klicken/tippen, um Teile zu drehen. Ein Tabwechsel macht den Versuch ungültig.",
       "voided_title": "Versuch ungültig",
       "voided_text": "Telemetrie ungültig wegen Tabwechseln oder unmöglicher Zeitmessung. Kein Ergebnis in der Rangliste gespeichert.",
       "success_title": "Viel Glück - Danke fürs Mitspielen",
@@ -582,6 +582,7 @@
       "new_contest": "Neuer Puzzle-Contest „{{title}}\" veröffentlicht!",
       "buy_slot_failed": "Kauf des Platzes fehlgeschlagen",
       "start_error": "Serverfehler beim Starten des Puzzles.",
+      "image_load_error": "Puzzlebild konnte nicht geladen werden. Versuche es gleich noch einmal.",
       "contest_closed": "Dieser Contest nimmt keine neuen Teilnahmen mehr an.",
       "acquiring_ticket": "Spiel-Ticket wird erworben...",
       "preparing_engine": "Puzzle-Zerlegungs-Engine wird vorbereitet...",

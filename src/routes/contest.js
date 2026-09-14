@@ -44,6 +44,7 @@ router.get('/list', contestController.listContestsHandler);
 router.post('/buy-slot', authenticateToken, contestController.buySlotHandler);
 router.get('/leaderboard/:contestId', contestController.leaderboardHandler);
 router.post('/start', authenticateToken, contestController.startAttemptHandler);
+router.post('/lock-piece', authenticateToken, contestController.lockPieceHandler);
 router.post('/complete', authenticateToken, contestController.completeAttemptHandler);
 router.post('/refund/:contestId', authenticateToken, contestController.refundContestHandler);
 router.post('/create', authenticateToken, upload.single('image'), contestController.createContestHandler);

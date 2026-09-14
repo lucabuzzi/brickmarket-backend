@@ -47,11 +47,57 @@ function findUnstartedParticipant(contestId, userId) {
   ).then((r) => r.rows[0] || null);
 }
 
-function markParticipantStarted(participantId, startedAt) {
+// gridRows/gridCols are decided once here, server-side, and stay fixed for
+// the rest of this attempt — src/services/puzzleGeometry.js recomputes every
+// piece's correct target position from them, so they're what "solved" means
+// for this specific attempt.
+function markParticipantStarted(participantId, startedAt, gridRows, gridCols) {
   return db.query(
-    'UPDATE public.contest_participants SET started_at = $1 WHERE id = $2',
-    [startedAt, participantId]
+    'UPDATE public.contest_participants SET started_at = $1, grid_rows = $2, grid_cols = $3 WHERE id = $4',
+    [startedAt, gridRows, gridCols, participantId]
   );
+}
+
+// Full row for an in-progress attempt — used by both lock-piece (to recheck
+// status/grid on every call) and complete (final tally).
+function getParticipantById(participantId) {
+  return db.query(
+    'SELECT * FROM public.contest_participants WHERE id = $1',
+    [participantId]
+  ).then((r) => r.rows[0] || null);
+}
+
+function markParticipantCheated(participantId) {
+  return db.query(
+    "UPDATE public.contest_participants SET status = 'cheated' WHERE id = $1 AND status = 'pending'",
+    [participantId]
+  );
+}
+
+// Idempotent: re-submitting an already-locked piece (e.g. a client retry
+// after a dropped response) is a harmless no-op, not double-counted.
+function insertPieceLock(participantId, pieceId, lockedAtIso) {
+  return db.query(
+    `INSERT INTO public.contest_piece_locks (participant_id, piece_id, locked_at)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (participant_id, piece_id) DO NOTHING
+     RETURNING id`,
+    [participantId, pieceId, lockedAtIso]
+  ).then((r) => r.rows.length > 0); // true only if this call actually inserted a new row
+}
+
+function getMostRecentPieceLockTime(participantId) {
+  return db.query(
+    'SELECT locked_at FROM public.contest_piece_locks WHERE participant_id = $1 ORDER BY locked_at DESC LIMIT 1',
+    [participantId]
+  ).then((r) => r.rows[0]?.locked_at || null);
+}
+
+function countDistinctPieceLocks(participantId) {
+  return db.query(
+    'SELECT COUNT(*)::int AS n FROM public.contest_piece_locks WHERE participant_id = $1',
+    [participantId]
+  ).then((r) => r.rows[0].n);
 }
 
 // Only voids the currently in-flight attempt (started but not yet completed) —
@@ -184,6 +230,11 @@ module.exports = {
   getLeaderboard,
   findUnstartedParticipant,
   markParticipantStarted,
+  getParticipantById,
+  markParticipantCheated,
+  insertPieceLock,
+  getMostRecentPieceLockTime,
+  countDistinctPieceLocks,
   voidInFlightAttempt,
   completeParticipant,
   getContestSlots,

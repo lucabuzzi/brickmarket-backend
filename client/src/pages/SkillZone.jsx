@@ -10,6 +10,22 @@ import {
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
 
+// Resolves once the puzzle image has loaded, with its portrait/landscape
+// orientation — needed BEFORE /api/contest/start now, since the server
+// decides and stores the board's grid dimensions from it (see
+// contestController.js#startAttemptHandler). Browser image cache makes this
+// effectively instant in practice: the same URL is already rendered on the
+// "ready to start" screen the player is looking at when they press Start.
+function detectImageOrientation(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img.naturalHeight > img.naturalWidth);
+    img.onerror = () => reject(new Error('image-load-failed'));
+    img.src = url;
+  });
+}
+
 export default function SkillZone() {
   const { user, wallet, refreshWallet } = useAuth();
   const { t } = useTranslation();
@@ -49,6 +65,7 @@ export default function SkillZone() {
   const [reservedContest, setReservedContest] = useState(null); // slot bought, waiting for the player to press Start
   const [playingContest, setPlayingContest] = useState(null); // contest details
   const [attemptToken, setAttemptToken] = useState(null); // anti-cheat start token
+  const [boardIsPortrait, setBoardIsPortrait] = useState(false); // decided pre-/start, passed to JigsawPuzzle as a prop
   const [gameResult, setGameResult] = useState(null); // leaderboard status after submission
 
   // Alerts & Messages
@@ -219,15 +236,29 @@ export default function SkillZone() {
   // Step 3: explicit Start press — this is the moment the server records started_at and
   // mints the anti-cheat attempt token, so the race clock and the official server time
   // begin together instead of during the purchase/confirmation screens.
+  //
+  // The image's orientation is now resolved BEFORE calling /start (not inside
+  // JigsawPuzzle after mounting, as before) because the server needs it to
+  // decide the board's grid dimensions — see detectImageOrientation above.
   const handleStartAttempt = async () => {
     const con = reservedContest;
     if (!con) return;
 
     try {
       setUploadProgress(t('skill_zone.alerts.preparing_engine'));
+
+      let isPortrait = false;
+      try {
+        isPortrait = await detectImageOrientation(normalizeImageUrl(con.imageUrl));
+      } catch {
+        setUploadProgress('');
+        triggerSystemAlert(t('skill_zone.alerts.image_load_error'));
+        return; // don't spend the attempt on a puzzle that can't even load
+      }
+
       const startData = await apiFetch('/api/contest/start', {
         method: 'POST',
-        body: { contestId: con.id }
+        body: { contestId: con.id, isPortrait }
       });
 
       fetchCatalogData();
@@ -236,11 +267,32 @@ export default function SkillZone() {
       setReservedContest(null);
       setPlayingContest(con);
       setAttemptToken(startData.attemptToken);
+      setBoardIsPortrait(isPortrait);
       setGameResult(null);
       setUploadProgress('');
     } catch (err) {
       setUploadProgress('');
       triggerSystemAlert(err.message || t('skill_zone.alerts.start_error'));
+    }
+  };
+
+  // Fired by JigsawPuzzle every time the player snaps a piece into place —
+  // the server independently re-verifies the position (see
+  // contestController.js#lockPieceHandler) before counting it. A couple of
+  // quiet retries absorb a dropped request without bothering the player;
+  // if it never lands, /complete's own final tally is what surfaces the
+  // problem rather than a false "solved" state.
+  const handlePieceLocked = async ({ pieceId, x, y, rotation }) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await apiFetch('/api/contest/lock-piece', {
+          method: 'POST',
+          body: { contestId: playingContest?.id, attemptToken, pieceId, x, y, rotation }
+        });
+        return;
+      } catch (err) {
+        if (attempt === 2) console.warn('Piece lock did not reach the server:', pieceId, err.message);
+      }
     }
   };
 
@@ -665,10 +717,12 @@ export default function SkillZone() {
                   </button>
                 </div>
               ) : (
-                <JigsawPuzzle 
+                <JigsawPuzzle
                   imageUrl={normalizeImageUrl(playingContest.imageUrl)}
                   contestId={playingContest.id}
                   attemptToken={attemptToken}
+                  isPortrait={boardIsPortrait}
+                  onPieceLocked={handlePieceLocked}
                   onComplete={handleCompleteAttempt}
                   onCancel={() => {
                     setPlayingContest(null);

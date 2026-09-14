@@ -474,7 +474,7 @@
     "play": {
       "secure_room": "SALLE ARCADE SÉCURISÉE",
       "heading": "Skill Zone : {{title}}",
-      "instructions": "Résolvez ce puzzle classique de 50 pièces. Faites glisser avec la souris et cliquez pour faire pivoter les pièces. Changer d'onglet annulera la tentative.",
+      "instructions": "Résolvez ce puzzle classique de 30 pièces. Faites glisser avec la souris ou le doigt ; cliquez/appuyez pour faire pivoter les pièces. Changer d'onglet annulera la tentative.",
       "voided_title": "Tentative Annulée",
       "voided_text": "Télémétrie invalidée en raison de changements d'onglet ou de temps impossibles. Aucun score enregistré au classement.",
       "success_title": "Bonne chance - Merci d'avoir joué",
@@ -582,6 +582,7 @@
       "new_contest": "Nouveau concours de puzzle « {{title}} » publié !",
       "buy_slot_failed": "Échec de l'achat de la place",
       "start_error": "Erreur serveur au démarrage du puzzle.",
+      "image_load_error": "Impossible de charger l'image du puzzle. Réessayez bientôt.",
       "contest_closed": "Ce concours n'accepte plus de nouvelles inscriptions.",
       "acquiring_ticket": "Acquisition du ticket de participation...",
       "preparing_engine": "Préparation du moteur de découpe du puzzle...",

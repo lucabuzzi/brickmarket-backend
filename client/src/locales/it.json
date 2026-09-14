@@ -474,7 +474,7 @@
     "play": {
       "secure_room": "SALA ARCADE SICURA",
       "heading": "Skill Zone: {{title}}",
-      "instructions": "Risolvi questo puzzle classico da 50 pezzi. Trascina con il mouse e clicca per ruotare i pezzi. Cambiare scheda annullerà il tentativo.",
+      "instructions": "Risolvi questo puzzle classico da 30 pezzi. Trascina con il mouse (o il dito su schermo touch) e clicca/tocca per ruotare i pezzi. Cambiare scheda annullerà il tentativo.",
       "voided_title": "Tentativo Annullato",
       "voided_text": "Telemetria annullata per cambi di scheda o tempistiche impossibili. Nessun punteggio registrato in classifica.",
       "success_title": "In bocca al lupo - Grazie per aver giocato",
@@ -582,6 +582,7 @@
       "new_contest": "Nuovo contest puzzle \"{{title}}\" pubblicato!",
       "buy_slot_failed": "Acquisto del posto non riuscito",
       "start_error": "Errore del server nell'avvio del puzzle.",
+      "image_load_error": "Impossibile caricare l'immagine del puzzle. Riprova tra poco.",
       "contest_closed": "Questo contest non è più aperto a nuove iscrizioni.",
       "acquiring_ticket": "Acquisizione del biglietto d'ingresso...",
       "preparing_engine": "Preparazione del motore di suddivisione del puzzle...",

@@ -474,7 +474,7 @@
     "play": {
       "secure_room": "SALA ARCADE SEGURA",
       "heading": "Skill Zone: {{title}}",
-      "instructions": "Resuelve este puzle clásico de 50 piezas. Arrastra con el ratón y haz clic para girar las piezas. Cambiar de pestaña anulará el intento.",
+      "instructions": "Resuelve este puzle clásico de 30 piezas. Arrastra con el ratón o el dedo; haz clic/toca para girar las piezas. Cambiar de pestaña anulará el intento.",
       "voided_title": "Intento Anulado",
       "voided_text": "Telemetría anulada por cambios de pestaña o tiempos imposibles. No se ha registrado ninguna puntuación en la clasificación.",
       "success_title": "Buena suerte - Gracias por jugar",
@@ -582,6 +582,7 @@
       "new_contest": "¡Nuevo concurso de puzle \"{{title}}\" publicado!",
       "buy_slot_failed": "No se pudo comprar la plaza",
       "start_error": "Error del servidor al iniciar el puzle.",
+      "image_load_error": "No se pudo cargar la imagen del rompecabezas. Inténtalo de nuevo en breve.",
       "contest_closed": "Este concurso ya no admite nuevas inscripciones.",
       "acquiring_ticket": "Adquiriendo entrada de la partida...",
       "preparing_engine": "Preparando el motor de troceado del puzle...",

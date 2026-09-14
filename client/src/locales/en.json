@@ -474,7 +474,7 @@
     "play": {
       "secure_room": "SECURE ARCADE ROOM",
       "heading": "Skill Zone: {{title}}",
-      "instructions": "Solve this 50-piece classic Jigsaw Puzzle. Mouse drag & click to rotate pieces. Tab-blur will void the attempt.",
+      "instructions": "Solve this 30-piece classic Jigsaw Puzzle. Drag with mouse or finger; click/tap to rotate pieces. Switching tabs will void the attempt.",
       "voided_title": "Attempt Voided",
       "voided_text": "Telemetry voided due to tab blurs or impossible clock timings. No score recorded on leaderboard.",
       "success_title": "Good luck - Thanks for playing",
@@ -582,6 +582,7 @@
       "new_contest": "New Jigsaw contest \"{{title}}\" published!",
       "buy_slot_failed": "Failed to buy slot",
       "start_error": "Server error starting puzzle.",
+      "image_load_error": "Couldn't load the puzzle image. Try again shortly.",
       "contest_closed": "This contest is no longer open for new entries.",
       "acquiring_ticket": "Acquiring game entry ticket...",
       "preparing_engine": "Preparing jigsaw slicing engine...",

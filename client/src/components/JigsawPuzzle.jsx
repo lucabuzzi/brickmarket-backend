@@ -2,19 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import { EyeOff, AlertTriangle, Play, CheckCircle2, ShieldAlert, Image as ImageIcon } from 'lucide-react';
 import { formatRaceTime } from '../api';
 
-export default function JigsawPuzzle({ 
-  imageUrl, 
-  onComplete, 
+export default function JigsawPuzzle({
+  imageUrl,
+  onComplete,
   onCancel,
+  onPieceLocked,
   contestId,
-  attemptToken
+  attemptToken,
+  // Decided by the parent BEFORE this component mounts (SkillZone.jsx
+  // detects it and sends it to POST /api/contest/start, which is what the
+  // server actually checks every locked piece against) — no longer
+  // self-detected here, so client and server can never disagree about which
+  // of the two grid shapes (5x6 / 6x5, always 30 pieces) is in play.
+  isPortrait = false,
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [gameState, setGameState] = useState('idle'); // idle, playing, completed, cheated
   const [lockedCount, setLockedCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [isPortrait, setIsPortrait] = useState(false);
   const [imageReady, setImageReady] = useState(false);
   const [imageError, setImageError] = useState(false);
   
@@ -287,14 +293,15 @@ export default function JigsawPuzzle({
     };
   }, []);
 
-  // Load and cache product image, detecting its orientation before the board is built
+  // Load and cache the product image for canvas drawing. Orientation is no
+  // longer detected here — it arrives as the isPortrait prop, already
+  // agreed with the server at /start.
   useEffect(() => {
     setImageError(false);
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       imageRef.current = img;
-      setIsPortrait(img.naturalHeight > img.naturalWidth);
       setImageReady(true);
     };
     img.onerror = () => {
@@ -556,15 +563,23 @@ export default function JigsawPuzzle({
           piece.x = piece.targetX;
           piece.y = piece.targetY;
           piece.isLocked = true;
-          
+
           playSnapSound();
           emitSparkles(piece.x + pieceWidth/2, piece.y + pieceHeight/2);
-          
+
           // Re-evaluate complete locked count
           const newLockedCount = piecesRef.current.filter(p => p.isLocked).length;
           setLockedCount(newLockedCount);
 
           console.log(`Piece locked! Progress: ${newLockedCount}/${totalPieces}`);
+
+          // Tell the server — it independently re-verifies this exact piece
+          // against its own stored grid before counting it. This is the
+          // proof of play /api/contest/complete now requires; the local
+          // count above is only ever used for this session's own UI.
+          if (onPieceLocked) {
+            onPieceLocked({ pieceId: piece.id, x: piece.x, y: piece.y, rotation: piece.rotation });
+          }
 
           // Trigger completion if all pieces are locked!
           if (newLockedCount === totalPieces) {
