@@ -23,6 +23,10 @@ export default function JigsawPuzzle({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [imageError, setImageError] = useState(false);
+  // TEMPORARY diagnostic readout — visible on-screen so it can be read
+  // directly off a phone without devtools. Remove once the real cause of
+  // the rotation bug is confirmed from real data instead of guessed at.
+  const [debugInfo, setDebugInfo] = useState('tap a piece to see debug info');
   
   // Anti-cheat stats
   const blurCountRef = useRef(0);
@@ -557,6 +561,12 @@ export default function JigsawPuzzle({
         selected
       ];
     }
+
+    setDebugInfo(
+      `DOWN ${e.touches ? 'touch' : 'mouse'} @ (${x.toFixed(0)},${y.toFixed(0)}) `
+      + `hit=${selected ? `#${selected.id} rot${selected.rotation}` : 'NONE'} `
+      + `rect=${canvasRef.current.getBoundingClientRect().width.toFixed(0)}x${canvasRef.current.getBoundingClientRect().height.toFixed(0)}`
+    );
   };
 
   const handleMouseMove = (e) => {
@@ -589,11 +599,12 @@ export default function JigsawPuzzle({
     piece.y = Math.max(0, Math.min(canvasHeight - pieceHeight, y - dragOffsetRef.current.y));
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
     if (gameState !== 'playing') return;
 
     if (activePieceRef.current) {
       const piece = activePieceRef.current;
+      const beforeRotation = piece.rotation;
 
       if (!hasDraggedRef.current) {
         // A: TAP/CLICK — the drag threshold was never crossed during this
@@ -602,6 +613,7 @@ export default function JigsawPuzzle({
         // angle does, see drawPiece below).
         piece.rotation = (piece.rotation + 90) % 360;
         console.log(`Rotated piece ${piece.id} to ${piece.rotation}°`);
+        setDebugInfo(`UP: piece #${piece.id} ROTATED ${beforeRotation}°→${piece.rotation}° (hasDragged=false)`);
       } else {
         // B: DRAG END — snap-matching check
         const dx = Math.abs(piece.x - piece.targetX);
@@ -630,12 +642,18 @@ export default function JigsawPuzzle({
             onPieceLocked({ pieceId: piece.id, x: piece.x, y: piece.y, rotation: piece.rotation });
           }
 
+          setDebugInfo(`UP: piece #${piece.id} LOCKED (hasDragged=true, dx=${dx.toFixed(0)} dy=${dy.toFixed(0)} rot=${piece.rotation}°)`);
+
           // Trigger completion if all pieces are locked!
           if (newLockedCount === totalPieces) {
             handlePuzzleCompletion();
           }
+        } else {
+          setDebugInfo(`UP: piece #${piece.id} DID NOT LOCK (hasDragged=true, dx=${dx.toFixed(0)} dy=${dy.toFixed(0)} rot=${piece.rotation}° — needed dx<15,dy<15,rot=0)`);
         }
       }
+    } else {
+      setDebugInfo(`UP ${e?.touches ? 'touch' : 'mouse'}: NO ACTIVE PIECE (nothing was selected on the way down)`);
     }
 
     activePieceRef.current = null;
@@ -701,6 +719,11 @@ export default function JigsawPuzzle({
           </div>
           <span className="text-cyber-neonCyan text-glow-cyan font-bold">{lockedCount}/{totalPieces} PIECES</span>
         </div>
+      </div>
+
+      {/* TEMPORARY diagnostic readout — see debugInfo declaration above */}
+      <div style={{ maxWidth: canvasWidth }} className="w-full bg-yellow-400 text-black text-[10px] font-mono font-bold px-2 py-1.5 break-words">
+        🔧 DEBUG: {debugInfo}
       </div>
 
       {/* Game Canvas Container */}
