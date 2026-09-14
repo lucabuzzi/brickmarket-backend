@@ -65,7 +65,12 @@ export default function JigsawPuzzle({
   const activePieceRef = useRef(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
-  const clickStartRef = useRef({ x: 0, y: 0, time: 0 });
+  const clickStartRef = useRef({ x: 0, y: 0 });
+  // True only once the pointer has actually moved past the drag-start
+  // threshold during THIS press — see handleMouseMove/handleMouseUp. Until
+  // then the piece doesn't move at all, so a held-but-still tap never
+  // drifts, and release always means "rotate" with no time limit.
+  const hasDraggedRef = useRef(false);
   const particlesRef = useRef([]); // Locked piece sparkles
 
   // Synthesize puzzle snap sound dynamically (Web Audio API)
@@ -523,7 +528,8 @@ export default function JigsawPuzzle({
     e.preventDefault();
 
     const { x, y } = getMousePos(e);
-    clickStartRef.current = { x, y, time: Date.now() };
+    clickStartRef.current = { x, y };
+    hasDraggedRef.current = false;
 
     // Find clicked piece (Check from top of stack first, unlocked pieces only)
     const candidates = piecesRef.current.filter(p => !p.isLocked);
@@ -542,7 +548,7 @@ export default function JigsawPuzzle({
 
     if (selected) {
       activePieceRef.current = selected;
-      isDraggingRef.current = true;
+      isDraggingRef.current = true; // gesture in progress — not yet "actively moving the piece", see handleMouseMove
       dragOffsetRef.current = { x: x - selected.x, y: y - selected.y };
 
       // Put selected piece at the end of the array to draw on top of other free pieces
@@ -560,48 +566,44 @@ export default function JigsawPuzzle({
     const { x, y } = getMousePos(e);
     const piece = activePieceRef.current;
 
+    if (!hasDraggedRef.current) {
+      // Piece stays put until the pointer has genuinely moved away from
+      // where it was picked up — a held-but-still finger (natural tremor,
+      // hesitation while deciding to rotate) never makes it drift, and the
+      // eventual release still counts as an unambiguous tap. Scaled to the
+      // piece's own size for touch, since a real repositioning drag moves a
+      // piece tens to hundreds of px (pieces start scattered well outside
+      // the board) — nowhere near this threshold — while mouse keeps the
+      // original tight 6px (a real click never wants this generosity).
+      const isTouch = !!(e.touches?.length);
+      const dragStartThreshold = isTouch ? Math.min(pieceWidth, pieceHeight) * 0.45 : 6;
+      const movedSoFar = Math.sqrt(
+        Math.pow(x - clickStartRef.current.x, 2) + Math.pow(y - clickStartRef.current.y, 2)
+      );
+      if (movedSoFar < dragStartThreshold) return; // still within tap tolerance — ignore, piece doesn't move
+      hasDraggedRef.current = true; // threshold crossed — this gesture is now a real drag, permanently, for the rest of this press
+    }
+
     // Boundary constraints (Stay on screen)
     piece.x = Math.max(0, Math.min(canvasWidth - pieceWidth, x - dragOffsetRef.current.x));
     piece.y = Math.max(0, Math.min(canvasHeight - pieceHeight, y - dragOffsetRef.current.y));
   };
 
-  const handleMouseUp = (e) => {
+  const handleMouseUp = () => {
     if (gameState !== 'playing') return;
-    const clickDuration = Date.now() - clickStartRef.current.time;
-    const { x, y } = getMousePos(e);
-
-    const distMoved = Math.sqrt(
-      Math.pow(x - clickStartRef.current.x, 2) + Math.pow(y - clickStartRef.current.y, 2)
-    );
-
-    // touchend has no e.touches (already lifted) but does have
-    // changedTouches — same fallback getMousePos already relies on.
-    const isTouch = !!(e.touches?.length || e.changedTouches?.length);
-    // Distance-based rather than a small fixed pixel value for touch, and
-    // scaled to the piece's own size rather than a flat number: a real
-    // repositioning drag moves a piece tens to hundreds of px (pieces start
-    // scattered well outside the board), while even a hesitant, jittery
-    // attempt to just rotate one leaves it essentially where it was picked
-    // up — so a generous fraction of the piece's own footprint safely tells
-    // the two apart regardless of how imprecise the touch was. Duration is
-    // a secondary, generous cap (touch event timing itself is noisy — the
-    // OS adds gesture-recognition latency before touchstart/touchend even
-    // fire — so it shouldn't be the primary signal on touch).
-    const tapDistThreshold = isTouch ? Math.min(pieceWidth, pieceHeight) * 0.45 : 6;
-    const tapDurationThreshold = isTouch ? 800 : 250;
 
     if (activePieceRef.current) {
       const piece = activePieceRef.current;
 
-      // A: CLICK/TAP EVENT (short, minimal movement => rotate 90° clockwise
-      // — ctx.rotate() with a positive angle already renders clockwise, see
-      // drawPiece below, so +90 here is correct as-is)
-      if (clickDuration < tapDurationThreshold && distMoved < tapDistThreshold) {
+      if (!hasDraggedRef.current) {
+        // A: TAP/CLICK — the drag threshold was never crossed during this
+        // whole press, no matter how long it was held, so this is always a
+        // rotate. +90° renders clockwise (ctx.rotate() with a positive
+        // angle does, see drawPiece below).
         piece.rotation = (piece.rotation + 90) % 360;
         console.log(`Rotated piece ${piece.id} to ${piece.rotation}°`);
-      }
-      // B: DRAG END EVENT (Snap matching check)
-      else {
+      } else {
+        // B: DRAG END — snap-matching check
         const dx = Math.abs(piece.x - piece.targetX);
         const dy = Math.abs(piece.y - piece.targetY);
 
@@ -638,6 +640,7 @@ export default function JigsawPuzzle({
 
     activePieceRef.current = null;
     isDraggingRef.current = false;
+    hasDraggedRef.current = false;
   };
 
   // Submit complete details to backend API
