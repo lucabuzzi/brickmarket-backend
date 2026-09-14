@@ -577,13 +577,18 @@ export default function JigsawPuzzle({
     // touchend has no e.touches (already lifted) but does have
     // changedTouches — same fallback getMousePos already relies on.
     const isTouch = !!(e.touches?.length || e.changedTouches?.length);
-    // A finger is never as still or as fast-releasing as a mouse click: the
-    // 6px/250ms thresholds tuned for mouse made most taps on a phone fall
-    // through to "drag" instead of "rotate" (a real tap easily moves more
-    // than 6px in the canvas's internal coordinate space once it's scaled
-    // down to fit a phone screen), which is what made rotating feel broken.
-    const tapDistThreshold = isTouch ? 18 : 6;
-    const tapDurationThreshold = isTouch ? 400 : 250;
+    // Distance-based rather than a small fixed pixel value for touch, and
+    // scaled to the piece's own size rather than a flat number: a real
+    // repositioning drag moves a piece tens to hundreds of px (pieces start
+    // scattered well outside the board), while even a hesitant, jittery
+    // attempt to just rotate one leaves it essentially where it was picked
+    // up — so a generous fraction of the piece's own footprint safely tells
+    // the two apart regardless of how imprecise the touch was. Duration is
+    // a secondary, generous cap (touch event timing itself is noisy — the
+    // OS adds gesture-recognition latency before touchstart/touchend even
+    // fire — so it shouldn't be the primary signal on touch).
+    const tapDistThreshold = isTouch ? Math.min(pieceWidth, pieceHeight) * 0.45 : 6;
+    const tapDurationThreshold = isTouch ? 800 : 250;
 
     if (activePieceRef.current) {
       const piece = activePieceRef.current;
