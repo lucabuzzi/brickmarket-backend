@@ -807,18 +807,11 @@ export default function SkillZone() {
           {playingContest ? (
             <div className="fixed inset-0 z-[100] bg-[#05050a] overflow-y-auto">
               <div className="min-h-full flex flex-col p-2 sm:p-4">
-                {/* Small persistent badge only — the title/instructions used
-                    to always render here as a fixed row, which is exactly
-                    what was pushing the board below the fold and forcing a
-                    scroll to see the whole puzzle. They now only appear in
-                    the dismissible banner on the ready panel below, before
-                    the timer starts — nothing fixed eats space once playing. */}
-                <div className="flex justify-end mb-1">
-                  <span className="inline-flex items-center flex-shrink-0 text-[9px] sm:text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
-                    ⚡ {t('skill_zone.play.secure_room')}
-                  </span>
-                </div>
-
+                {/* No fixed header row at all now — the title/instructions
+                    only appear in the dismissible banner on the ready panel
+                    below (before the timer starts), and the "secure room"
+                    badge that used to sit here was removed outright: it
+                    cost vertical space for no real purpose. */}
                 <div className="flex-1 flex items-center justify-center min-h-0">
                   {gameResult ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { EyeOff, AlertTriangle, Play, CheckCircle2, ShieldAlert, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { formatRaceTime } from '../api';
 
 export default function JigsawPuzzle({
@@ -704,126 +704,100 @@ export default function JigsawPuzzle({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col lg:flex-row items-start justify-center gap-3 sm:gap-4 lg:gap-6 p-2 sm:p-4 w-full">
-      <div className="flex flex-col items-center w-full lg:w-auto">
-      {/* HUD Bar — stacks vertically in portrait mode, where the narrower board leaves no
-          room for both groups side by side */}
-      <div style={{ maxWidth: canvasWidth }} className={`flex w-full bg-black/50 border border-cyber-border rounded-t-lg px-3 py-2 sm:px-6 sm:py-3 font-mono text-sm ${isPortrait ? 'flex-col gap-2 items-start' : 'items-center justify-between'}`}>
-        <div className="flex items-center space-x-2">
-          <span className="text-cyber-muted text-xs uppercase font-semibold">TICKER:</span>
-          <span className="text-cyber-neonYellow text-glow-yellow font-bold text-base tracking-widest">{formatRaceTime(elapsedTime)}</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <span className="text-cyber-muted text-xs uppercase font-semibold">PROGRESS:</span>
-          <div className="w-32 bg-cyber-border h-2 rounded-full overflow-hidden">
-            <div 
-              className="bg-cyber-neonCyan h-full shadow-neon-cyan transition-all duration-300"
-              style={{ width: `${(lockedCount / totalPieces) * 100}%` }}
-            ></div>
+    <div ref={containerRef} className="w-full">
+      {/* Board (left) + reference image (right), nothing else — side by side
+          as soon as there's a bit of width (sm:, not the old lg:, so an
+          actual landscape phone triggers it too, not just a desktop
+          window), stacked only on a narrow portrait screen. */}
+      <div className="flex flex-col sm:flex-row items-center sm:items-start justify-center gap-3 sm:gap-6 p-2 sm:p-4 w-full">
+        <div className="flex flex-col items-center w-full sm:w-auto sm:flex-1 sm:max-w-[60%]">
+          {/* TEMPORARY diagnostic readout — see debugInfo declaration above.
+              Do not remove until the user has reported what this shows. */}
+          <div style={{ maxWidth: canvasWidth }} className="w-full bg-yellow-400 text-black text-[10px] font-mono font-bold px-2 py-1.5 break-words mb-1">
+            🔧 DEBUG: {debugInfo}
           </div>
-          <span className="text-cyber-neonCyan text-glow-cyan font-bold">{lockedCount}/{totalPieces} PIECES</span>
-        </div>
-      </div>
 
-      {/* TEMPORARY diagnostic readout — see debugInfo declaration above.
-          Do not remove until the user has reported what this shows. */}
-      <div style={{ maxWidth: canvasWidth }} className="w-full bg-yellow-400 text-black text-[10px] font-mono font-bold px-2 py-1.5 break-words">
-        🔧 DEBUG: {debugInfo}
-      </div>
+          {/* Game Canvas Container — TICKER and PROGRESS are now small
+              badges overlaid directly on the board itself (top corners)
+              instead of a separate bar above it, so nothing fixed eats
+              vertical space before the board even starts. */}
+          <div className="relative border border-cyber-border bg-[#050508] p-1 shadow-2xl rounded-lg">
+            <div className="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-sm rounded px-2 py-1 font-mono pointer-events-none">
+              <span className="text-cyber-neonYellow text-glow-yellow font-bold text-xs tracking-widest">{formatRaceTime(elapsedTime)}</span>
+            </div>
+            <div className="absolute top-2 right-2 z-10 bg-black/70 backdrop-blur-sm rounded px-2 py-1 font-mono pointer-events-none">
+              <span className="text-cyber-neonCyan text-glow-cyan font-bold text-xs">{lockedCount}/{totalPieces}</span>
+            </div>
 
-      {/* Game Canvas Container */}
-      <div className="relative border-x border-b border-cyber-border bg-[#050508] p-1 shadow-2xl rounded-b-lg">
-        {/* Anti-cheat compliance alarm */}
-        {gameState === 'cheated' && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 text-center">
-            <ShieldAlert className="h-16 w-16 text-cyber-neonMagenta animate-bounce mb-4" />
-            <h3 className="text-xl font-extrabold text-cyber-neonMagenta uppercase tracking-wider text-glow-magenta mb-2">
-              SECURITY PROTOCOL TRIGGERED
-            </h3>
-            <p className="max-w-md text-sm text-cyber-muted mb-6">
-              Browser focus compliance breach. The system detected that the page lost focus for too long or a cheat trigger occurred. Your entry fees have been logged and voided.
-            </p>
-            <button 
-              onClick={onCancel}
-              className="px-6 py-2 border border-cyber-neonMagenta text-cyber-neonMagenta hover:bg-cyber-neonMagenta hover:text-white rounded uppercase text-xs font-bold font-mono transition-all duration-300"
-            >
-              Back to Lobby
-            </button>
+            {/* Anti-cheat compliance alarm */}
+            {gameState === 'cheated' && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 text-center">
+                <ShieldAlert className="h-16 w-16 text-cyber-neonMagenta animate-bounce mb-4" />
+                <h3 className="text-xl font-extrabold text-cyber-neonMagenta uppercase tracking-wider text-glow-magenta mb-2">
+                  SECURITY PROTOCOL TRIGGERED
+                </h3>
+                <p className="max-w-md text-sm text-cyber-muted mb-6">
+                  Browser focus compliance breach. The system detected that the page lost focus for too long or a cheat trigger occurred. Your entry fees have been logged and voided.
+                </p>
+                <button
+                  onClick={onCancel}
+                  className="px-6 py-2 border border-cyber-neonMagenta text-cyber-neonMagenta hover:bg-cyber-neonMagenta hover:text-white rounded uppercase text-xs font-bold font-mono transition-all duration-300"
+                >
+                  Back to Lobby
+                </button>
+              </div>
+            )}
+
+            <canvas
+              ref={canvasRef}
+              width={canvasWidth}
+              height={canvasHeight}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onTouchStart={handleMouseDown}
+              onTouchMove={handleMouseMove}
+              onTouchEnd={handleMouseUp}
+              // width/height left auto (not forced to 100%) so the browser can
+              // shrink either dimension to respect BOTH maxWidth and maxHeight
+              // while keeping the aspect ratio — the mechanism that fits the
+              // whole board on screen without scrolling.
+              style={{
+                maxWidth: canvasWidth,
+                maxHeight: '82vh',
+                aspectRatio: `${canvasWidth} / ${canvasHeight}`,
+                width: 'auto',
+                height: 'auto',
+              }}
+              className="block touch-none cursor-grab active:cursor-grabbing max-w-full bg-cyber-bg rounded"
+            />
           </div>
-        )}
+        </div>
 
-        <canvas
-          ref={canvasRef}
-          width={canvasWidth}
-          height={canvasHeight}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onTouchStart={handleMouseDown}
-          onTouchMove={handleMouseMove}
-          onTouchEnd={handleMouseUp}
-          // width/height left auto (not forced to 100%) so the browser can
-          // shrink either dimension to respect BOTH maxWidth and maxHeight
-          // while keeping the aspect ratio — the mechanism that fits the
-          // whole board on screen without scrolling. Now that this renders
-          // inside SkillZone's full-viewport play takeover (not embedded in
-          // the normal page), it can use nearly the whole available height
-          // instead of the older, more conservative cap that was tuned for
-          // sharing space with site header/nav/footer — on an actual
-          // landscape phone screen this is what makes a landscape puzzle's
-          // pieces render at a genuinely comfortable size instead of
-          // shrunk into a portrait-width column.
-          style={{
-            maxWidth: canvasWidth,
-            maxHeight: '82vh',
-            aspectRatio: `${canvasWidth} / ${canvasHeight}`,
-            width: 'auto',
-            height: 'auto',
-          }}
-          className="block touch-none cursor-grab active:cursor-grabbing max-w-full bg-cyber-bg rounded"
-        />
-
-        {/* Small tips overlay */}
-        <div className="absolute bottom-2 right-4 text-[10px] text-cyber-muted pointer-events-none font-mono">
-          🖱️ Click/Tap piece to rotate 90° | Drag to match & snap
+        {/* Reference image — plain, no card chrome/label, sized to roughly
+            pair with the board rather than the small corner thumbnail this
+            used to be. */}
+        <div className="w-full sm:flex-1 sm:max-w-[60%] flex justify-center">
+          <img
+            src={imageUrl}
+            alt="Original puzzle reference"
+            style={{ maxHeight: '82vh' }}
+            className="max-w-full object-contain rounded border border-cyber-border/60 bg-black"
+            onError={() => setImageError(true)}
+          />
         </div>
       </div>
 
-      {/* Control panel buttons */}
-      <div className="flex space-x-4 mt-2 sm:mt-3">
+      {/* Abandon — deliberately below the fold (reachable by scrolling
+          down), not competing for attention with the board/reference pair
+          above. */}
+      <div className="flex justify-center pb-6 pt-2">
         <button
           onClick={onCancel}
           className="px-6 py-2 bg-cyber-border hover:bg-red-950/20 hover:border-red-500 border border-transparent rounded text-xs font-bold uppercase transition-all duration-300 text-cyber-muted hover:text-red-400 font-mono"
         >
           Abandon Contest
         </button>
-      </div>
-      </div>
-
-      {/* Reference Image Panel — a small thumbnail on narrow/short screens
-          (the in-canvas ghost outlines now carry most of the "where does
-          this shape go" job) rather than a full stacked block, which used
-          to be the single biggest contributor to needing to scroll the
-          page to see the whole game on mobile. Grows into the full sidebar
-          only once there's a dedicated side column to put it in (lg:). */}
-      <div className="w-28 sm:w-36 lg:w-full lg:max-w-[220px] lg:sticky lg:top-4 shrink-0 mx-auto lg:mx-0">
-        <div className="border border-cyber-border bg-black/50 rounded-lg p-1.5 lg:p-3">
-          <div className="hidden lg:flex items-center gap-1.5 text-cyber-muted text-xs uppercase font-semibold mb-2">
-            <ImageIcon className="h-3.5 w-3.5" />
-            <span>Reference Image</span>
-          </div>
-          <div className="rounded overflow-hidden border border-cyber-border/60 bg-black">
-            <img
-              src={imageUrl}
-              alt="Original puzzle reference"
-              className="w-full h-auto object-cover"
-              onError={() => setImageError(true)}
-            />
-          </div>
-          <p className="hidden lg:block text-[10px] text-cyber-muted mt-2 leading-snug">
-            Use this as a guide to reassemble the jigsaw pieces.
-          </p>
-        </div>
       </div>
     </div>
   );
