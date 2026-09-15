@@ -51,6 +51,18 @@ export default function JigsawPuzzle({
   const pieceWidth = boardWidth / gridCols;
   const pieceHeight = boardHeight / gridRows;
 
+  // Tab bulge depth, as a fraction of the EDGE's own length (see drawEdge
+  // inside drawPiecePath below, which is what this must stay in sync with).
+  // Since this grid is never square (boardWidth/boardHeight is 560x320 or
+  // 320x560 over a fixed 4x4 grid), a TOP/BOTTOM tab's bulge scales with
+  // pieceWidth while a LEFT/RIGHT tab's bulge scales with pieceHeight — the
+  // opposite of each edge's own piece dimension. CROP_PAD_RATIO (used in
+  // drawPiece's image-crop padding) adds a 20% safety margin on top of this
+  // true max bulge so the crop still fully covers the tab tip even if this
+  // ratio is tweaked later.
+  const TAB_DEPTH_RATIO = 0.22;
+  const CROP_PAD_RATIO = TAB_DEPTH_RATIO * 1.2;
+
   // Canvas bounds (Includes board + surrounding scatter zones). Sized to
   // comfortably fit within a viewport's height at typical zoom without the
   // page needing to scroll during play — see the maxHeight cap on the
@@ -158,7 +170,7 @@ export default function JigsawPuzzle({
       const n2y = y1 + dy * 0.62;
 
       // Tab bulb height
-      const tabH = len * 0.22 * tabDir;
+      const tabH = len * TAB_DEPTH_RATIO * tabDir;
       const tcx = cx + nx * tabH;
       const tcy = cy + ny * tabH;
 
@@ -471,15 +483,25 @@ export default function JigsawPuzzle({
       const sw = imageRef.current.width / gridCols;
       const sh = imageRef.current.height / gridRows;
 
-      // Tabs bulge up to ~22% of the edge length outside the piece's own square —
-      // draw the image oversized (padding > that bulge) so the tab/socket areas are
-      // filled with the neighboring piece's artwork instead of empty canvas (black).
-      // The clip mask above still confines the paint to this piece's silhouette, and
-      // flat (non-tab) borders stay exactly at the square edge since their mask has no bulge.
-      const padX = pieceWidth * 0.3;
-      const padY = pieceHeight * 0.3;
-      const srcPadX = sw * 0.3;
-      const srcPadY = sh * 0.3;
+      // Tabs bulge outside the piece's own rectangle — draw the image
+      // oversized (padding > that bulge) so the tab/socket areas are filled
+      // with the neighboring piece's artwork instead of empty canvas
+      // (black). The clip mask above still confines the paint to this
+      // piece's silhouette, and flat (non-tab) borders stay exactly at the
+      // rectangle edge since their mask has no bulge.
+      //
+      // The axes are swapped on purpose: a TOP/BOTTOM tab's vertical bulge
+      // is TAB_DEPTH_RATIO * pieceWidth (that edge's own length — see
+      // drawEdge), not pieceHeight, and a LEFT/RIGHT tab's horizontal bulge
+      // is TAB_DEPTH_RATIO * pieceHeight, not pieceWidth. Padding each axis
+      // by its own dimension (the bug this replaces) under-covers whichever
+      // axis is the piece's shorter one on a non-square grid — this game's
+      // 4x4 grid over a 560x320 / 320x560 board is never square, so that
+      // gap was always visible, on every piece, locked or not.
+      const padX = pieceHeight * CROP_PAD_RATIO;
+      const padY = pieceWidth * CROP_PAD_RATIO;
+      const srcPadX = sh * CROP_PAD_RATIO;
+      const srcPadY = sw * CROP_PAD_RATIO;
 
       ctx.drawImage(
         imageRef.current,
