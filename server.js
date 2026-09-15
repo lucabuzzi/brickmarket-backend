@@ -112,6 +112,7 @@ app.use('/api/payments', payments.router);
 app.use('/api/shipping', require('./src/routes/shipping'));
 app.use('/api/shipments', require('./src/routes/shipments'));
 app.use('/api/addresses', require('./src/routes/addresses'));
+app.use('/api/cart', require('./src/routes/cart'));
 app.use('/api/orders', require('./src/routes/orders'));
 app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/sets', require('./src/routes/sets'));
