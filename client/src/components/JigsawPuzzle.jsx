@@ -23,7 +23,11 @@ export default function JigsawPuzzle({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [imageError, setImageError] = useState(false);
-  
+  // TEMPORARY diagnostic readout, brought back after being removed before
+  // getting real data from it last time — do not remove again until the
+  // user has reported what it actually shows on their device.
+  const [debugInfo, setDebugInfo] = useState('tap a piece to see debug info');
+
   // Anti-cheat stats
   const blurCountRef = useRef(0);
   const totalBlurTimeRef = useRef(0);
@@ -524,7 +528,10 @@ export default function JigsawPuzzle({
   };
 
   const handleMouseDown = (e) => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing') {
+      setDebugInfo(`DOWN ignored — gameState="${gameState}" (not "playing")`);
+      return;
+    }
     e.preventDefault();
 
     const { x, y } = getMousePos(e);
@@ -557,6 +564,13 @@ export default function JigsawPuzzle({
         selected
       ];
     }
+
+    const r = canvasRef.current.getBoundingClientRect();
+    setDebugInfo(
+      `DOWN ${e.touches ? 'touch' : 'mouse'} canvasPos=(${x.toFixed(0)},${y.toFixed(0)}) `
+      + `hit=${selected ? `#${selected.id}@rot${selected.rotation}` : 'NONE'} `
+      + `rectPx=${r.width.toFixed(0)}x${r.height.toFixed(0)} pieceUnits=${pieceWidth.toFixed(0)}x${pieceHeight.toFixed(0)}`
+    );
   };
 
   const handleMouseMove = (e) => {
@@ -600,8 +614,10 @@ export default function JigsawPuzzle({
         // whole press, no matter how long it was held, so this is always a
         // rotate. +90° renders clockwise (ctx.rotate() with a positive
         // angle does, see drawPiece below).
+        const before = piece.rotation;
         piece.rotation = (piece.rotation + 90) % 360;
         console.log(`Rotated piece ${piece.id} to ${piece.rotation}°`);
+        setDebugInfo(`UP: piece #${piece.id} ROTATED ${before}°→${piece.rotation}°`);
       } else {
         // B: DRAG END — snap-matching check
         const dx = Math.abs(piece.x - piece.targetX);
@@ -630,12 +646,18 @@ export default function JigsawPuzzle({
             onPieceLocked({ pieceId: piece.id, x: piece.x, y: piece.y, rotation: piece.rotation });
           }
 
+          setDebugInfo(`UP: piece #${piece.id} LOCKED (dx=${dx.toFixed(0)} dy=${dy.toFixed(0)})`);
+
           // Trigger completion if all pieces are locked!
           if (newLockedCount === totalPieces) {
             handlePuzzleCompletion();
           }
+        } else {
+          setDebugInfo(`UP: piece #${piece.id} moved but DID NOT LOCK (hasDragged=true, dx=${dx.toFixed(0)} dy=${dy.toFixed(0)} rot=${piece.rotation}°)`);
         }
       }
+    } else {
+      setDebugInfo('UP: no piece was selected on the way down (tap missed every piece)');
     }
 
     activePieceRef.current = null;
@@ -701,6 +723,12 @@ export default function JigsawPuzzle({
           </div>
           <span className="text-cyber-neonCyan text-glow-cyan font-bold">{lockedCount}/{totalPieces} PIECES</span>
         </div>
+      </div>
+
+      {/* TEMPORARY diagnostic readout — see debugInfo declaration above.
+          Do not remove until the user has reported what this shows. */}
+      <div style={{ maxWidth: canvasWidth }} className="w-full bg-yellow-400 text-black text-[10px] font-mono font-bold px-2 py-1.5 break-words">
+        🔧 DEBUG: {debugInfo}
       </div>
 
       {/* Game Canvas Container */}

@@ -476,6 +476,7 @@
       "howto_shape": "Chaque case affiche en transparence la forme exacte de l'emboîtement : cherchez-la parmi les pièces éparpillées.",
       "howto_tabswitch": "Changer d'onglet ou d'appli pendant la partie annule la tentative : restez sur cette page.",
       "start_button": "Démarrer le Puzzle",
+      "continue_button": "Continuer",
       "cancel_reserved_button": "Retour à la Lobby"
     },
     "play": {

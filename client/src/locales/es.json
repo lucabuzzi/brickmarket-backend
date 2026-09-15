@@ -476,6 +476,7 @@
       "howto_shape": "Cada casilla muestra en transparencia la forma correcta del encaje: búscala entre las piezas dispersas.",
       "howto_tabswitch": "Cambiar de pestaña o de app durante la partida anula el intento: permanece en esta página.",
       "start_button": "Iniciar Puzzle",
+      "continue_button": "Continuar",
       "cancel_reserved_button": "Volver a la Lobby"
     },
     "play": {

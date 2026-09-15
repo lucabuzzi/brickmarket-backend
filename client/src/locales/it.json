@@ -476,6 +476,7 @@
       "howto_shape": "Ogni casella mostra in trasparenza la forma dell'incastro giusto: cercala tra i pezzi sparsi.",
       "howto_tabswitch": "Cambiare scheda o app durante la partita annulla il tentativo: resta su questa pagina.",
       "start_button": "Avvia Puzzle",
+      "continue_button": "Continua",
       "cancel_reserved_button": "Torna alla Lobby"
     },
     "play": {

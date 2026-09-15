@@ -476,6 +476,7 @@
       "howto_shape": "Each cell shows a faint outline of the correct interlocking shape — match it against the scattered pieces.",
       "howto_tabswitch": "Switching tabs or apps during the match voids the attempt — stay on this page.",
       "start_button": "Start Puzzle",
+      "continue_button": "Continue",
       "cancel_reserved_button": "Back to Lobby"
     },
     "play": {

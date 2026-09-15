@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Trophy, Coins, ShieldAlert, Sparkles,
   Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play,
-  Move, RotateCw, Puzzle, Smartphone
+  Move, RotateCw, Puzzle, Smartphone, X
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
@@ -68,6 +68,7 @@ export default function SkillZone() {
   const [attemptToken, setAttemptToken] = useState(null); // anti-cheat start token
   const [boardIsPortrait, setBoardIsPortrait] = useState(false); // decided pre-/start, passed to JigsawPuzzle as a prop
   const [gameResult, setGameResult] = useState(null); // leaderboard status after submission
+  const [readyBannerDismissed, setReadyBannerDismissed] = useState(false); // title/instructions banner on the in-fullscreen ready panel
 
   // Detected as soon as a slot is reserved (not only at Start, as before) so
   // the "ready to start" screen can tell the player to rotate their phone
@@ -282,60 +283,66 @@ export default function SkillZone() {
     fetchCatalogData();
   };
 
-  // Step 3: explicit Start press — this is the moment the server records started_at and
-  // mints the anti-cheat attempt token, so the race clock and the official server time
-  // begin together instead of during the purchase/confirmation screens.
-  //
-  // The image's orientation is now resolved BEFORE calling /start (not inside
-  // JigsawPuzzle after mounting, as before) because the server needs it to
-  // decide the board's grid dimensions — see detectImageOrientation above.
+  // Step 3a: "Continue" press from the reserved screen — just enters the
+  // full-screen game view (and best-effort requests native fullscreen,
+  // which needs to happen inside a real click handler like this one to be
+  // allowed at all). Does NOT call /api/contest/start yet: the player still
+  // needs room to rotate their phone and read the how-to-play banner
+  // without any clock running, so that now happens on the ready panel
+  // INSIDE the full-screen view (attemptToken stays null until its own
+  // green Start button — see handleBeginSolving below).
   const handleStartAttempt = async () => {
     const con = reservedContest;
     if (!con) return;
 
-    try {
-      setUploadProgress(t('skill_zone.alerts.preparing_engine'));
-
-      // Already resolved by the effect above in the common case — only
-      // re-detect here if the player clicked Start before it finished.
-      let isPortrait = pendingImageIsPortrait;
-      if (isPortrait === null) {
-        try {
-          isPortrait = await detectImageOrientation(normalizeImageUrl(con.imageUrl));
-        } catch {
-          setUploadProgress('');
-          triggerSystemAlert(t('skill_zone.alerts.image_load_error'));
-          return; // don't spend the attempt on a puzzle that can't even load
-        }
+    // Already resolved by the effect above in the common case — only
+    // re-detect here if the player clicked before it finished.
+    let isPortrait = pendingImageIsPortrait;
+    if (isPortrait === null) {
+      try {
+        isPortrait = await detectImageOrientation(normalizeImageUrl(con.imageUrl));
+      } catch {
+        triggerSystemAlert(t('skill_zone.alerts.image_load_error'));
+        return; // don't spend the attempt on a puzzle that can't even load
       }
+    }
 
+    setReservedContest(null);
+    setPlayingContest(con);
+    setBoardIsPortrait(isPortrait);
+    setAttemptToken(null);
+    setGameResult(null);
+    setReadyBannerDismissed(false);
+
+    // Best-effort true fullscreen (hides the browser's own address bar on
+    // browsers that support it) — never blocks entering the game view if
+    // it fails or isn't available; the fixed-position takeover is what
+    // actually guarantees the app-like full-screen layout either way.
+    try {
+      await document.documentElement.requestFullscreen?.();
+    } catch {
+      // Ignored — plenty of legitimate reasons this can fail (iOS Safari,
+      // no user-activation in this exact call stack, already fullscreen…).
+    }
+  };
+
+  // Step 3b: the actual "Start" press, from the ready panel INSIDE the
+  // full-screen view (after any rotating/reading is done) — this is now
+  // the moment the server records started_at and mints the anti-cheat
+  // attempt token, so the race clock and the official server time begin
+  // together, excluding not just the purchase/confirmation screens but
+  // also the fullscreen-transition/rotate-your-phone moment.
+  const handleBeginSolving = async () => {
+    if (!playingContest) return;
+    try {
       const startData = await apiFetch('/api/contest/start', {
         method: 'POST',
-        body: { contestId: con.id, isPortrait }
+        body: { contestId: playingContest.id, isPortrait: boardIsPortrait }
       });
-
       fetchCatalogData();
-      fetchLeaderboard(con.id);
-
-      setReservedContest(null);
-      setPlayingContest(con);
+      fetchLeaderboard(playingContest.id);
       setAttemptToken(startData.attemptToken);
-      setBoardIsPortrait(isPortrait);
-      setGameResult(null);
-      setUploadProgress('');
-
-      // Best-effort true fullscreen (hides the browser's own address bar on
-      // browsers that support it) — never blocks starting if it fails or
-      // isn't available; the fixed-position takeover below is what actually
-      // guarantees the app-like full-screen layout either way.
-      try {
-        await document.documentElement.requestFullscreen?.();
-      } catch {
-        // Ignored — plenty of legitimate reasons this can fail (iOS Safari,
-        // no user-activation in this exact call stack, already fullscreen…).
-      }
     } catch (err) {
-      setUploadProgress('');
       triggerSystemAlert(err.message || t('skill_zone.alerts.start_error'));
     }
   };
@@ -713,26 +720,29 @@ export default function SkillZone() {
                 {t('skill_zone.confirm.ready_piece_count')}
               </p>
 
-              <img
-                src={normalizeImageUrl(reservedContest.imageUrl)}
-                alt={reservedContest.title}
-                className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
-              />
-
               {/* Rotate-device prompt — a landscape puzzle image squeezed
                   into a portrait phone screen was the real reason pieces
                   ended up too small to tap/drag accurately. Reactive: goes
                   away the moment the player actually rotates (deviceIsPortrait
                   tracks the phone itself via matchMedia, separately from
-                  pendingImageIsPortrait which is about the puzzle image). */}
+                  pendingImageIsPortrait which is about the puzzle image).
+                  Solid, high-contrast treatment and placed before the image
+                  — deliberately hard to miss, per feedback that the earlier
+                  subtle version wasn't attention-grabbing enough. */}
               {pendingImageIsPortrait === false && deviceIsPortrait && (
-                <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-5 text-left animate-pulse">
-                  <Smartphone className="h-8 w-8 text-amber-400 flex-shrink-0 rotate-90" />
-                  <p className="text-xs text-amber-300 leading-snug font-bold">
+                <div className="flex items-center gap-3 bg-amber-500 border-2 border-amber-300 rounded-xl p-4 mb-5 text-left shadow-lg shadow-amber-500/50 animate-pulse">
+                  <Smartphone className="h-10 w-10 text-black flex-shrink-0 rotate-90" strokeWidth={2.5} />
+                  <p className="text-sm text-black leading-snug font-black uppercase tracking-tight">
                     {t('skill_zone.confirm.rotate_device')}
                   </p>
                 </div>
               )}
+
+              <img
+                src={normalizeImageUrl(reservedContest.imageUrl)}
+                alt={reservedContest.title}
+                className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
+              />
 
               {/* How-to-play — shown here specifically because the clock
                   hasn't started yet (see the comment above this block): the
@@ -777,11 +787,10 @@ export default function SkillZone() {
                 </button>
                 <button
                   onClick={handleStartAttempt}
-                  disabled={!!uploadProgress}
-                  className="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-white rounded-lg font-black font-mono text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shadow-emerald-500/25 active-shrink flex items-center gap-2"
+                  className="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-black font-mono text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shadow-emerald-500/25 active-shrink flex items-center gap-2"
                 >
-                  <Play className="h-4 w-4" />
-                  {t('skill_zone.confirm.start_button')}
+                  <ChevronRight className="h-4 w-4" />
+                  {t('skill_zone.confirm.continue_button')}
                 </button>
               </div>
             </div>
@@ -798,17 +807,17 @@ export default function SkillZone() {
           {playingContest ? (
             <div className="fixed inset-0 z-[100] bg-[#05050a] overflow-y-auto">
               <div className="min-h-full flex flex-col p-2 sm:p-4">
-                <div className="flex items-center justify-between mb-1 sm:mb-3">
-                  <h2 className="text-sm sm:text-lg font-extrabold tracking-wide uppercase text-white font-mono truncate pr-2">
-                    {t('skill_zone.play.heading', { title: playingContest.title })}
-                  </h2>
+                {/* Small persistent badge only — the title/instructions used
+                    to always render here as a fixed row, which is exactly
+                    what was pushing the board below the fold and forcing a
+                    scroll to see the whole puzzle. They now only appear in
+                    the dismissible banner on the ready panel below, before
+                    the timer starts — nothing fixed eats space once playing. */}
+                <div className="flex justify-end mb-1">
                   <span className="inline-flex items-center flex-shrink-0 text-[9px] sm:text-[10px] uppercase font-mono font-bold bg-gold-950/80 border border-gold-400 text-gold-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
                     ⚡ {t('skill_zone.play.secure_room')}
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-xs text-stone-400 mb-2 sm:mb-4 text-center">
-                  {t('skill_zone.play.instructions')}
-                </p>
 
                 <div className="flex-1 flex items-center justify-center min-h-0">
                   {gameResult ? (
@@ -852,7 +861,7 @@ export default function SkillZone() {
                         {t('skill_zone.play.return_lobby')}
                       </button>
                     </div>
-                  ) : (
+                  ) : attemptToken ? (
                     <JigsawPuzzle
                       imageUrl={normalizeImageUrl(playingContest.imageUrl)}
                       contestId={playingContest.id}
@@ -866,6 +875,50 @@ export default function SkillZone() {
                         fetchCatalogData();
                       }}
                     />
+                  ) : (
+                    // Ready panel: title/instructions as a dismissible banner
+                    // (closed with the X, doesn't come back), plus the real
+                    // "Start" — pressing THIS is what calls
+                    // /api/contest/start (handleBeginSolving above), not the
+                    // earlier "Continue" press that got here. No clock is
+                    // running yet at any point on this panel.
+                    <div className="flex flex-col items-center justify-center gap-6 px-4 text-center max-w-md mx-auto">
+                      {!readyBannerDismissed && (
+                        <div className="relative bg-black/60 border border-gold-500/30 rounded-xl p-4 pr-9 w-full">
+                          <button
+                            onClick={() => setReadyBannerDismissed(true)}
+                            className="absolute top-2 right-2 text-stone-500 hover:text-white p-1"
+                            aria-label="dismiss"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                          <h2 className="text-sm sm:text-base font-extrabold tracking-wide uppercase text-white font-mono mb-1">
+                            {t('skill_zone.play.heading', { title: playingContest.title })}
+                          </h2>
+                          <p className="text-[11px] sm:text-xs text-stone-400 leading-relaxed">
+                            {t('skill_zone.play.instructions')}
+                          </p>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleBeginSolving}
+                        className="px-10 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-black font-mono text-base sm:text-lg uppercase tracking-wider shadow-lg shadow-emerald-500/30 active-shrink flex items-center gap-3"
+                      >
+                        <Play className="h-6 w-6" />
+                        {t('skill_zone.confirm.start_button')}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setPlayingContest(null);
+                          fetchCatalogData();
+                        }}
+                        className="text-[11px] text-stone-500 hover:text-stone-300 uppercase font-mono tracking-wider"
+                      >
+                        {t('skill_zone.confirm.cancel_reserved_button')}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

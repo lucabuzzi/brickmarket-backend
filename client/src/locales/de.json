@@ -476,6 +476,7 @@
       "howto_shape": "Jedes Feld zeigt schwach die richtige Passform: Suche sie unter den verstreuten Teilen.",
       "howto_tabswitch": "Ein Tab- oder App-Wechsel während der Partie macht den Versuch ungültig — bleib auf dieser Seite.",
       "start_button": "Puzzle Starten",
+      "continue_button": "Weiter",
       "cancel_reserved_button": "Zurück zur Lobby"
     },
     "play": {
