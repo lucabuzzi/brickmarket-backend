@@ -75,6 +75,15 @@ export default function JigsawPuzzle({
   // then the piece doesn't move at all, so a held-but-still tap never
   // drifts, and release always means "rotate" with no time limit.
   const hasDraggedRef = useRef(false);
+  // Epoch ms until which synthetic "ghost" mouse events must be ignored.
+  // Real touch input refreshes this to now+800ms on every touchstart/move/end;
+  // browsers fire a full compatibility mousedown/mouseup pair shortly after
+  // touchend regardless of preventDefault() (React's touch listeners are
+  // passive by default, so our preventDefault() calls on touch don't
+  // actually suppress this). Without this guard every physical tap silently
+  // triggers a SECOND rotate cycle (+180° total instead of +90°), which is
+  // what the "270°→0°" jump with no matching prior debug line turned out to be.
+  const ignoreMouseUntilRef = useRef(0);
   const particlesRef = useRef([]); // Locked piece sparkles
 
   // Synthesize puzzle snap sound dynamically (Web Audio API)
@@ -528,6 +537,11 @@ export default function JigsawPuzzle({
   };
 
   const handleMouseDown = (e) => {
+    if (e.type.startsWith('touch')) {
+      ignoreMouseUntilRef.current = Date.now() + 800;
+    } else if (Date.now() < ignoreMouseUntilRef.current) {
+      return; // ghost mousedown synthesized by the browser after a real touch
+    }
     if (gameState !== 'playing') {
       setDebugInfo(`DOWN ignored — gameState="${gameState}" (not "playing")`);
       return;
@@ -574,6 +588,11 @@ export default function JigsawPuzzle({
   };
 
   const handleMouseMove = (e) => {
+    if (e.type.startsWith('touch')) {
+      ignoreMouseUntilRef.current = Date.now() + 800;
+    } else if (Date.now() < ignoreMouseUntilRef.current) {
+      return; // ghost mousemove synthesized by the browser after a real touch
+    }
     if (!isDraggingRef.current || !activePieceRef.current || gameState !== 'playing') return;
     if (e.touches && e.cancelable) e.preventDefault();
 
@@ -603,7 +622,12 @@ export default function JigsawPuzzle({
     piece.y = Math.max(0, Math.min(canvasHeight - pieceHeight, y - dragOffsetRef.current.y));
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
+    if (e?.type?.startsWith('touch')) {
+      ignoreMouseUntilRef.current = Date.now() + 800;
+    } else if (e?.type?.startsWith('mouse') && Date.now() < ignoreMouseUntilRef.current) {
+      return; // ghost mouseup synthesized by the browser after a real touch — this is the one that was double-rotating pieces
+    }
     if (gameState !== 'playing') return;
 
     if (activePieceRef.current) {
@@ -617,7 +641,7 @@ export default function JigsawPuzzle({
         const before = piece.rotation;
         piece.rotation = (piece.rotation + 90) % 360;
         console.log(`Rotated piece ${piece.id} to ${piece.rotation}°`);
-        setDebugInfo(`UP: piece #${piece.id} ROTATED ${before}°→${piece.rotation}°`);
+        setDebugInfo(`UP[${e?.type || '?'}]: piece #${piece.id} ROTATED ${before}°→${piece.rotation}°`);
       } else {
         // B: DRAG END — snap-matching check
         const dx = Math.abs(piece.x - piece.targetX);
