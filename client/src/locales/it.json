@@ -1417,5 +1417,132 @@
       "cta_sell": "Vendi un oggetto",
       "cta_auction": "Lancia un'asta"
     }
+  },
+  "market": {
+    "count_listings_one": "{{count}} annuncio",
+    "count_listings_other": "{{count}} annunci",
+    "count_auctions_one": "{{count}} asta live",
+    "count_auctions_other": "{{count}} aste live",
+    "back_hub_listings": "Tutti gli annunci",
+    "back_hub_auctions": "Tutte le aste",
+    "card": {
+      "ended": "Terminata"
+    },
+    "hub": {
+      "listings": {
+        "kicker": "Annunci",
+        "title_1": "Trova il pezzo.",
+        "title_2": "Portalo a casa.",
+        "subtitle": "LEGO, carte collezionabili e Funko Pop! a prezzo fisso, venduti direttamente dai collezionisti.",
+        "grid_kicker": "Appena arrivati",
+        "grid_title": "Le novità in vetrina",
+        "band_title": "Hai un pezzo che prende polvere?",
+        "band_desc": "Pubblica un annuncio gratis in pochi minuti e mettilo davanti a chi lo sta cercando.",
+        "band_cta": "Vendi ora"
+      },
+      "auctions": {
+        "kicker": "Aste live",
+        "title_1": "Offri, rilancia,",
+        "title_2": "aggiudicati.",
+        "subtitle": "Aste a tempo su pezzi da collezione con anti-sniping: se qualcuno rilancia negli ultimi 2 minuti, il timer torna a 2:00.",
+        "grid_kicker": "In chiusura",
+        "grid_title": "Il tempo stringe",
+        "band_title": "Metti il tuo pezzo all'asta.",
+        "band_desc": "Scegli la base d'asta e la durata: al resto pensano i rilanci.",
+        "band_cta": "Crea un'asta"
+      },
+      "stat_listings": "annunci attivi",
+      "stat_sellers": "venditori",
+      "stat_from": "a partire da",
+      "stat_auctions": "aste live",
+      "stat_bids": "offerte totali",
+      "stat_closing": "chiudono entro 24 ore",
+      "stage_card": "Il tuo lotto qui",
+      "portals_kicker": "Categorie",
+      "portals_title": "Scegli il tuo mondo."
+    },
+    "cards": {
+      "title_1": "Carte",
+      "title_2": "collezionabili.",
+      "all_listings": "Tutte le carte in vendita",
+      "all_auctions": "Tutte le carte all'asta"
+    },
+    "category": {
+      "search_placeholder": "Cerca titolo, tema, numero…",
+      "clear_search": "Cancella ricerca",
+      "sub_all": "Tutto",
+      "sub_sets": "Set",
+      "sub_mocs": "MOC",
+      "sub_minifigures": "Minifigure",
+      "sort_recent": "Più recenti",
+      "sort_price_asc": "Prezzo più basso",
+      "sort_price_desc": "Prezzo più alto",
+      "sort_closing_soon": "In chiusura",
+      "results_one": "{{count}} risultato",
+      "results_other": "{{count}} risultati",
+      "reset": "Azzera filtri",
+      "cta_listings": "Vendi qui",
+      "cta_auctions": "Crea un'asta",
+      "empty_title_listings": "Ancora nessun annuncio {{title}}.",
+      "empty_desc_listings": "Sii il primo a pubblicare in questa categoria: il tuo annuncio sarà in prima fila.",
+      "empty_title_auctions": "Nessuna asta {{title}} in corso.",
+      "empty_desc_auctions": "Lancia la prima: in una sala vuota, tutti gli occhi sono sul tuo lotto.",
+      "no_match_title": "Nessun risultato con questi filtri.",
+      "no_match_desc": "Prova a cambiare ricerca o azzera i filtri per vedere tutto."
+    }
+  },
+  "arena_page": {
+    "hero": {
+      "kicker": "Puzzle Arena",
+      "title_1": "Ricomponi.",
+      "title_2": "Batti il tempo.",
+      "title_3": "Vinci il pezzo.",
+      "subtitle": "Prendi un posto in un contest, completa il puzzle più veloce di tutti e porta a casa carte e set da collezione veri.",
+      "stat_open": "contest aperti",
+      "stat_prizes": "in premi",
+      "stat_players": "posti occupati",
+      "wallet_title": "Il tuo saldo",
+      "wallet_topup": "Ricarica crediti",
+      "wallet_how": "Come funzionano i crediti",
+      "guest_title": "Entra in gioco",
+      "guest_text": "La lobby è aperta a tutti: per prendere un posto e giocare serve un account.",
+      "guest_login": "Accedi",
+      "guest_register": "Registrati"
+    },
+    "spotlight": {
+      "kicker": "In evidenza",
+      "almost_full": "Quasi pieno",
+      "empty_title": "Nuovi contest in arrivo",
+      "empty_text": "Al momento non ci sono contest aperti. Torna a trovarci presto."
+    },
+    "steps": {
+      "kicker": "Come funziona",
+      "title": "Tre mosse, un premio.",
+      "step1_title": "Ricarica i crediti",
+      "step1_text": "1 € = 1 credito: li acquisti in pochi secondi e il saldo si aggiorna subito.",
+      "step2_title": "Prendi un posto e gioca",
+      "step2_text": "Ogni posto vale un tentativo. Trascini e ruoti i pezzi, e il cronometro parte solo quando premi Avvia.",
+      "step3_title": "Il più veloce vince",
+      "step3_text": "Quando i posti finiscono, il primo in classifica si porta a casa il premio."
+    },
+    "lobby": {
+      "kicker": "Contest",
+      "title": "Scegli la tua sfida.",
+      "live": "Posti e classifiche in tempo reale"
+    },
+    "card": {
+      "value": "Valore {{value}}",
+      "open": "Aperto",
+      "full": "Al completo",
+      "cost_one": "{{count}} CR a posto",
+      "cost_other": "{{count}} CR a posto",
+      "cta_login": "Accedi per giocare",
+      "cta_buy": "Prendi un posto · {{cost}} CR",
+      "cta_again": "Gioca ancora · {{cost}} CR",
+      "cta_full": "Al completo"
+    },
+    "result": {
+      "time_label": "Il tuo tempo"
+    }
   }
 }

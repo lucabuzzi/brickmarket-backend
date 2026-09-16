@@ -1417,5 +1417,132 @@
       "cta_sell": "Vender un artículo",
       "cta_auction": "Lanzar una subasta"
     }
+  },
+  "market": {
+    "count_listings_one": "{{count}} anuncio",
+    "count_listings_other": "{{count}} anuncios",
+    "count_auctions_one": "{{count}} subasta en vivo",
+    "count_auctions_other": "{{count}} subastas en vivo",
+    "back_hub_listings": "Todos los anuncios",
+    "back_hub_auctions": "Todas las subastas",
+    "card": {
+      "ended": "Finalizada"
+    },
+    "hub": {
+      "listings": {
+        "kicker": "Anuncios",
+        "title_1": "Encuentra la pieza.",
+        "title_2": "Llévatela a casa.",
+        "subtitle": "LEGO, cartas coleccionables y Funko Pop! a precio fijo, vendidos directamente por coleccionistas.",
+        "grid_kicker": "Recién llegados",
+        "grid_title": "Novedades en el escaparate",
+        "band_title": "¿Tienes una pieza acumulando polvo?",
+        "band_desc": "Publica un anuncio gratis en minutos y ponlo delante de quien lo está buscando.",
+        "band_cta": "Vender ahora"
+      },
+      "auctions": {
+        "kicker": "Subastas en vivo",
+        "title_1": "Puja, sube,",
+        "title_2": "llévatelo.",
+        "subtitle": "Subastas con cuenta atrás de piezas de colección con antisniping: si alguien puja en los 2 minutos finales, el reloj vuelve a 2:00.",
+        "grid_kicker": "A punto de cerrar",
+        "grid_title": "Se acaba el tiempo",
+        "band_title": "Pon tu pieza en subasta.",
+        "band_desc": "Elige el precio de salida y la duración: las pujas hacen el resto.",
+        "band_cta": "Crear una subasta"
+      },
+      "stat_listings": "anuncios activos",
+      "stat_sellers": "vendedores",
+      "stat_from": "desde",
+      "stat_auctions": "subastas en vivo",
+      "stat_bids": "pujas totales",
+      "stat_closing": "cierran en 24 h",
+      "stage_card": "Tu lote aquí",
+      "portals_kicker": "Categorías",
+      "portals_title": "Elige tu mundo."
+    },
+    "cards": {
+      "title_1": "Cartas",
+      "title_2": "coleccionables.",
+      "all_listings": "Todas las cartas en venta",
+      "all_auctions": "Todas las cartas en subasta"
+    },
+    "category": {
+      "search_placeholder": "Busca título, tema, número…",
+      "clear_search": "Borrar búsqueda",
+      "sub_all": "Todo",
+      "sub_sets": "Sets",
+      "sub_mocs": "MOC",
+      "sub_minifigures": "Minifiguras",
+      "sort_recent": "Más recientes",
+      "sort_price_asc": "Precio más bajo",
+      "sort_price_desc": "Precio más alto",
+      "sort_closing_soon": "A punto de cerrar",
+      "results_one": "{{count}} resultado",
+      "results_other": "{{count}} resultados",
+      "reset": "Quitar filtros",
+      "cta_listings": "Vender aquí",
+      "cta_auctions": "Crear una subasta",
+      "empty_title_listings": "Aún no hay anuncios de {{title}}.",
+      "empty_desc_listings": "Sé el primero en publicar en esta categoría: tu anuncio estará en primera fila.",
+      "empty_title_auctions": "No hay subastas de {{title}} en curso.",
+      "empty_desc_auctions": "Lanza la primera: en una sala vacía, todas las miradas son para tu lote.",
+      "no_match_title": "Nada coincide con estos filtros.",
+      "no_match_desc": "Prueba otra búsqueda o quita los filtros para verlo todo."
+    }
+  },
+  "arena_page": {
+    "hero": {
+      "kicker": "Puzzle Arena",
+      "title_1": "Complétalo.",
+      "title_2": "Bate el reloj.",
+      "title_3": "Gana la pieza.",
+      "subtitle": "Consigue una plaza en un concurso, completa el puzle más rápido que nadie y llévate cartas y sets de colección de verdad.",
+      "stat_open": "concursos abiertos",
+      "stat_prizes": "en premios",
+      "stat_players": "plazas ocupadas",
+      "wallet_title": "Tu saldo",
+      "wallet_topup": "Recargar créditos",
+      "wallet_how": "Cómo funcionan los créditos",
+      "guest_title": "Entra en juego",
+      "guest_text": "La sala está abierta a todos: para reservar una plaza y jugar necesitas una cuenta.",
+      "guest_login": "Iniciar sesión",
+      "guest_register": "Registrarse"
+    },
+    "spotlight": {
+      "kicker": "Destacado",
+      "almost_full": "Casi lleno",
+      "empty_title": "Nuevos concursos en camino",
+      "empty_text": "Ahora mismo no hay concursos abiertos. Vuelve pronto."
+    },
+    "steps": {
+      "kicker": "Cómo funciona",
+      "title": "Tres pasos, un premio.",
+      "step1_title": "Recarga créditos",
+      "step1_text": "1 € = 1 crédito: los compras en segundos y el saldo se actualiza al instante.",
+      "step2_title": "Reserva una plaza y juega",
+      "step2_text": "Cada plaza es un intento. Arrastras y giras las piezas, y el reloj solo empieza cuando pulsas Iniciar.",
+      "step3_title": "Gana el más rápido",
+      "step3_text": "Cuando se agotan las plazas, el primero de la clasificación se lleva el premio."
+    },
+    "lobby": {
+      "kicker": "Concursos",
+      "title": "Elige tu desafío.",
+      "live": "Plazas y clasificaciones en tiempo real"
+    },
+    "card": {
+      "value": "Valor {{value}}",
+      "open": "Abierto",
+      "full": "Completo",
+      "cost_one": "{{count}} CR por plaza",
+      "cost_other": "{{count}} CR por plaza",
+      "cta_login": "Inicia sesión para jugar",
+      "cta_buy": "Reserva plaza · {{cost}} CR",
+      "cta_again": "Jugar otra vez · {{cost}} CR",
+      "cta_full": "Completo"
+    },
+    "result": {
+      "time_label": "Tu tiempo"
+    }
   }
 }

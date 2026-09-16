@@ -146,7 +146,7 @@ export default function Layout() {
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
   return (
-    <div className="app-shell" style={{ overflowX: 'hidden', position: 'relative' }}>
+    <div className="app-shell" style={{ overflowX: 'clip', position: 'relative' }}>
       <SiteAurora />
       {isMenuOpen && (
         <div 

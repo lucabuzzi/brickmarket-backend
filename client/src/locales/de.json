@@ -1417,5 +1417,132 @@
       "cta_sell": "Etwas verkaufen",
       "cta_auction": "Auktion starten"
     }
+  },
+  "market": {
+    "count_listings_one": "{{count}} Anzeige",
+    "count_listings_other": "{{count}} Anzeigen",
+    "count_auctions_one": "{{count}} Live-Auktion",
+    "count_auctions_other": "{{count}} Live-Auktionen",
+    "back_hub_listings": "Alle Anzeigen",
+    "back_hub_auctions": "Alle Auktionen",
+    "card": {
+      "ended": "Beendet"
+    },
+    "hub": {
+      "listings": {
+        "kicker": "Anzeigen",
+        "title_1": "Finde dein Stück.",
+        "title_2": "Hol es dir.",
+        "subtitle": "LEGO, Sammelkarten und Funko Pop! zum Festpreis, direkt von Sammlern verkauft.",
+        "grid_kicker": "Frisch eingetroffen",
+        "grid_title": "Neu im Schaufenster",
+        "band_title": "Verstaubt bei dir ein Stück?",
+        "band_desc": "Erstell in wenigen Minuten eine kostenlose Anzeige und zeig sie denen, die danach suchen.",
+        "band_cta": "Jetzt verkaufen"
+      },
+      "auctions": {
+        "kicker": "Live-Auktionen",
+        "title_1": "Bieten, erhöhen,",
+        "title_2": "gewinnen.",
+        "subtitle": "Zeitauktionen für Sammlerstücke mit Anti-Sniping: Bietet jemand in den letzten 2 Minuten, springt die Uhr zurück auf 2:00.",
+        "grid_kicker": "Endet bald",
+        "grid_title": "Die Zeit läuft",
+        "band_title": "Versteigere dein Stück.",
+        "band_desc": "Wähle Startpreis und Laufzeit, den Rest erledigen die Gebote.",
+        "band_cta": "Auktion erstellen"
+      },
+      "stat_listings": "aktive Anzeigen",
+      "stat_sellers": "Verkäufer",
+      "stat_from": "ab",
+      "stat_auctions": "Live-Auktionen",
+      "stat_bids": "Gebote insgesamt",
+      "stat_closing": "enden in 24 Std.",
+      "stage_card": "Dein Los hier",
+      "portals_kicker": "Kategorien",
+      "portals_title": "Wähle deine Welt."
+    },
+    "cards": {
+      "title_1": "Sammel-",
+      "title_2": "karten.",
+      "all_listings": "Alle Karten im Verkauf",
+      "all_auctions": "Alle Karten in Auktionen"
+    },
+    "category": {
+      "search_placeholder": "Titel, Thema, Nummer…",
+      "clear_search": "Suche löschen",
+      "sub_all": "Alle",
+      "sub_sets": "Sets",
+      "sub_mocs": "MOCs",
+      "sub_minifigures": "Minifiguren",
+      "sort_recent": "Neueste",
+      "sort_price_asc": "Niedrigster Preis",
+      "sort_price_desc": "Höchster Preis",
+      "sort_closing_soon": "Endet bald",
+      "results_one": "{{count}} Ergebnis",
+      "results_other": "{{count}} Ergebnisse",
+      "reset": "Filter zurücksetzen",
+      "cta_listings": "Hier verkaufen",
+      "cta_auctions": "Auktion erstellen",
+      "empty_title_listings": "Noch keine {{title}}-Anzeigen.",
+      "empty_desc_listings": "Sei der Erste in dieser Kategorie: Deine Anzeige steht ganz vorne.",
+      "empty_title_auctions": "Keine laufenden {{title}}-Auktionen.",
+      "empty_desc_auctions": "Starte die erste: In einem leeren Saal schauen alle auf dein Los.",
+      "no_match_title": "Keine Treffer mit diesen Filtern.",
+      "no_match_desc": "Versuch eine andere Suche oder setz die Filter zurück, um alles zu sehen."
+    }
+  },
+  "arena_page": {
+    "hero": {
+      "kicker": "Puzzle Arena",
+      "title_1": "Zusammensetzen.",
+      "title_2": "Uhr schlagen.",
+      "title_3": "Stück gewinnen.",
+      "subtitle": "Sichere dir einen Platz in einem Contest, lös das Puzzle schneller als alle anderen und nimm echte Sammelkarten und Sets mit nach Hause.",
+      "stat_open": "offene Contests",
+      "stat_prizes": "an Preisen",
+      "stat_players": "belegte Plätze",
+      "wallet_title": "Dein Guthaben",
+      "wallet_topup": "Credits aufladen",
+      "wallet_how": "So funktionieren Credits",
+      "guest_title": "Mach mit",
+      "guest_text": "Die Lobby ist für alle offen. Um einen Platz zu sichern und zu spielen, brauchst du ein Konto.",
+      "guest_login": "Anmelden",
+      "guest_register": "Registrieren"
+    },
+    "spotlight": {
+      "kicker": "Im Fokus",
+      "almost_full": "Fast voll",
+      "empty_title": "Neue Contests kommen bald",
+      "empty_text": "Gerade gibt es keine offenen Contests. Schau bald wieder vorbei."
+    },
+    "steps": {
+      "kicker": "So funktioniert's",
+      "title": "Drei Schritte, ein Preis.",
+      "step1_title": "Credits aufladen",
+      "step1_text": "1 € = 1 Credit: in Sekunden gekauft, dein Guthaben ist sofort aktualisiert.",
+      "step2_title": "Platz sichern und spielen",
+      "step2_text": "Jeder Platz ist ein Versuch. Du ziehst und drehst die Teile, die Uhr startet erst, wenn du auf Start drückst.",
+      "step3_title": "Der Schnellste gewinnt",
+      "step3_text": "Sind alle Plätze vergeben, nimmt Platz 1 der Rangliste den Preis mit nach Hause."
+    },
+    "lobby": {
+      "kicker": "Contests",
+      "title": "Wähle deine Herausforderung.",
+      "live": "Plätze und Ranglisten live"
+    },
+    "card": {
+      "value": "Wert {{value}}",
+      "open": "Offen",
+      "full": "Ausgebucht",
+      "cost_one": "{{count}} CR pro Platz",
+      "cost_other": "{{count}} CR pro Platz",
+      "cta_login": "Zum Spielen anmelden",
+      "cta_buy": "Platz sichern · {{cost}} CR",
+      "cta_again": "Nochmal spielen · {{cost}} CR",
+      "cta_full": "Ausgebucht"
+    },
+    "result": {
+      "time_label": "Deine Zeit"
+    }
   }
 }

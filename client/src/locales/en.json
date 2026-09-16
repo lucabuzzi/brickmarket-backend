@@ -1417,5 +1417,132 @@
       "cta_sell": "Sell an item",
       "cta_auction": "Launch an auction"
     }
+  },
+  "market": {
+    "count_listings_one": "{{count}} listing",
+    "count_listings_other": "{{count}} listings",
+    "count_auctions_one": "{{count}} live auction",
+    "count_auctions_other": "{{count}} live auctions",
+    "back_hub_listings": "All listings",
+    "back_hub_auctions": "All auctions",
+    "card": {
+      "ended": "Ended"
+    },
+    "hub": {
+      "listings": {
+        "kicker": "Listings",
+        "title_1": "Find the piece.",
+        "title_2": "Take it home.",
+        "subtitle": "LEGO, trading cards and Funko Pop! at fixed prices, sold directly by collectors.",
+        "grid_kicker": "Just in",
+        "grid_title": "Fresh in the showcase",
+        "band_title": "Got a piece gathering dust?",
+        "band_desc": "Post a free listing in minutes and put it in front of the people looking for it.",
+        "band_cta": "Sell now"
+      },
+      "auctions": {
+        "kicker": "Live auctions",
+        "title_1": "Bid, raise,",
+        "title_2": "win it.",
+        "subtitle": "Timed auctions on collectibles with anti-sniping: if someone bids in the final 2 minutes, the clock resets to 2:00.",
+        "grid_kicker": "Closing soon",
+        "grid_title": "Time is running out",
+        "band_title": "Put your piece up for auction.",
+        "band_desc": "Choose the starting price and the duration. The bids take care of the rest.",
+        "band_cta": "Create an auction"
+      },
+      "stat_listings": "active listings",
+      "stat_sellers": "sellers",
+      "stat_from": "starting from",
+      "stat_auctions": "live auctions",
+      "stat_bids": "total bids",
+      "stat_closing": "closing within 24h",
+      "stage_card": "Your lot here",
+      "portals_kicker": "Categories",
+      "portals_title": "Pick your world."
+    },
+    "cards": {
+      "title_1": "Trading",
+      "title_2": "cards.",
+      "all_listings": "All cards for sale",
+      "all_auctions": "All cards at auction"
+    },
+    "category": {
+      "search_placeholder": "Search title, theme, number…",
+      "clear_search": "Clear search",
+      "sub_all": "All",
+      "sub_sets": "Sets",
+      "sub_mocs": "MOCs",
+      "sub_minifigures": "Minifigures",
+      "sort_recent": "Newest",
+      "sort_price_asc": "Lowest price",
+      "sort_price_desc": "Highest price",
+      "sort_closing_soon": "Closing soon",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "reset": "Clear filters",
+      "cta_listings": "Sell here",
+      "cta_auctions": "Create an auction",
+      "empty_title_listings": "No {{title}} listings yet.",
+      "empty_desc_listings": "Be the first to post in this category: your listing will be front and centre.",
+      "empty_title_auctions": "No {{title}} auctions running.",
+      "empty_desc_auctions": "Launch the first one: in an empty room, every eye is on your lot.",
+      "no_match_title": "Nothing matches these filters.",
+      "no_match_desc": "Try a different search or clear the filters to see everything."
+    }
+  },
+  "arena_page": {
+    "hero": {
+      "kicker": "Puzzle Arena",
+      "title_1": "Solve it.",
+      "title_2": "Beat the clock.",
+      "title_3": "Win the piece.",
+      "subtitle": "Grab a spot in a contest, finish the puzzle faster than everyone else and take home real collectible cards and sets.",
+      "stat_open": "open contests",
+      "stat_prizes": "in prizes",
+      "stat_players": "spots taken",
+      "wallet_title": "Your balance",
+      "wallet_topup": "Top up credits",
+      "wallet_how": "How credits work",
+      "guest_title": "Get in the game",
+      "guest_text": "The lobby is open to everyone. To grab a spot and play you need an account.",
+      "guest_login": "Log in",
+      "guest_register": "Sign up"
+    },
+    "spotlight": {
+      "kicker": "Featured",
+      "almost_full": "Almost full",
+      "empty_title": "New contests coming soon",
+      "empty_text": "There are no open contests right now. Check back soon."
+    },
+    "steps": {
+      "kicker": "How it works",
+      "title": "Three moves, one prize.",
+      "step1_title": "Top up credits",
+      "step1_text": "€1 = 1 credit: buy them in seconds and your balance updates instantly.",
+      "step2_title": "Grab a spot and play",
+      "step2_text": "Each spot is one attempt. Drag and rotate the pieces; the clock only starts when you press Start.",
+      "step3_title": "Fastest wins",
+      "step3_text": "Once the spots run out, whoever tops the leaderboard takes the prize home."
+    },
+    "lobby": {
+      "kicker": "Contests",
+      "title": "Pick your challenge.",
+      "live": "Live spots and leaderboards"
+    },
+    "card": {
+      "value": "Worth {{value}}",
+      "open": "Open",
+      "full": "Full",
+      "cost_one": "{{count}} CR per spot",
+      "cost_other": "{{count}} CR per spot",
+      "cta_login": "Log in to play",
+      "cta_buy": "Grab a spot · {{cost}} CR",
+      "cta_again": "Play again · {{cost}} CR",
+      "cta_full": "Full"
+    },
+    "result": {
+      "time_label": "Your time"
+    }
   }
 }

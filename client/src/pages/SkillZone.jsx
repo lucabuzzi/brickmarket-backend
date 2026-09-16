@@ -4,12 +4,13 @@ import { apiFetch, normalizeImageUrl, formatRaceTime, TOKEN_STORAGE_KEY } from '
 import JigsawPuzzle from '../components/JigsawPuzzle';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Trophy, Coins, ShieldAlert, Sparkles,
-  Layers, ChevronRight, Zap, RefreshCw, PlusCircle, CheckCircle, ImageOff, Play,
-  Move, RotateCw, Puzzle, Smartphone, X
+  Trophy, ShieldAlert, Layers, ChevronRight, RefreshCw, PlusCircle, CheckCircle, Play,
+  Move, RotateCw, Puzzle, Smartphone, X, ArrowLeft
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG_GAMES } from '../config/catalogGames';
+import { ArenaHero, ArenaSteps, ContestCard } from '../components/arena/ArenaParts';
+import { contestImage, gameName } from '../components/arena/arenaUtils';
 
 // Resolves once the puzzle image has loaded, with its portrait/landscape
 // orientation — needed BEFORE /api/contest/start now, since the server
@@ -572,387 +573,309 @@ export default function SkillZone() {
     }
   };
 
+  // Lobby presentation: open contests first, fullest first, so the most urgent tables lead.
+  const fillRatio = (c) => (c.totalSlots ? c.filledSlots / c.totalSlots : 0);
+  const lobbyContests = contests
+    .filter((con) => categoryFilter === 'all' || con.category === categoryFilter)
+    .sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || fillRatio(b) - fillRatio(a));
+  const spotlight = [...contests].filter((c) => c.status === 'open').sort((a, b) => fillRatio(b) - fillRatio(a))[0] || null;
+
+  const stageButton = 'inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-black transition-transform';
+
   return (
-    <div className="min-h-screen pb-16 bg-[#05050a] text-stone-100 px-4 md:px-6 max-w-[1400px] mx-auto pt-6">
+    <div className="lx-page">
       {/* Global Alerts */}
       {sysAlert && (
-        <div className="fixed right-6 top-20 z-50 flex items-center space-x-3 rounded-lg border border-red-500 bg-red-950/90 p-4 text-red-300 shadow-lg backdrop-blur-md animate-slide-in">
-          <ShieldAlert className="h-5 w-5 text-red-400" />
-          <span className="font-mono text-xs font-bold uppercase">{sysAlert}</span>
+        <div role="alert" className="fixed right-4 top-20 z-[120] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border border-[#ff5a36]/50 bg-[#1a0c0a]/95 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
+          <ShieldAlert className="h-5 w-5 shrink-0 text-[#ff5a36]" />
+          <span>{sysAlert}</span>
         </div>
       )}
       {sysSuccess && (
-        <div className="fixed right-6 top-20 z-50 flex items-center space-x-3 rounded-lg border border-emerald-500 bg-emerald-950/90 p-4 text-emerald-300 shadow-lg backdrop-blur-md animate-slide-in">
-          <CheckCircle className="h-5 w-5 text-emerald-400" />
-          <span className="font-mono text-xs font-bold uppercase">{sysSuccess}</span>
+        <div role="status" className="fixed right-4 top-20 z-[120] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border border-[#22d3ee]/50 bg-[#071a1f]/95 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
+          <CheckCircle className="h-5 w-5 shrink-0 text-[#22d3ee]" />
+          <span>{sysSuccess}</span>
         </div>
       )}
 
-      {/* Main Header / Banner */}
-      <div className="bento-card p-6 md:p-8 relative overflow-hidden mb-8 border border-white/5 bg-[#14120b]/30 rounded-3xl">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black uppercase font-mono tracking-wider text-white">
-              {t('skill_zone.banner.title')}
+      {/* Slot Purchase Confirmation — no credits move until this is confirmed */}
+      {confirmingContest && (
+        <section className="lx-bleed relative overflow-hidden">
+          <div className="pointer-events-none absolute left-1/2 top-24 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#8b5cf6]/20 blur-[130px]" aria-hidden="true" />
+          <div className="relative mx-auto max-w-[1000px] px-5 pb-20 pt-28 md:px-10 md:pt-36">
+            <button type="button" onClick={cancelConfirm} className="-my-2 inline-flex items-center gap-2 py-2 text-sm font-bold text-white/60 hover:text-white">
+              <ArrowLeft size={16} /> {t('skill_zone.confirm.cancel_reserved_button')}
+            </button>
+            <h1 className="mt-5 text-[clamp(2.2rem,6vw,4rem)] font-black leading-[0.92] tracking-[-0.045em] text-white">
+              {t('skill_zone.confirm.heading')}
             </h1>
-            <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-xl leading-relaxed">
-              {t('skill_zone.banner.subtitle')}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Guest banner — lobby stays browsable without an account; only playing requires login */}
-      {!user && (
-        <div className="bento-card p-5 mb-8 rounded-2xl border border-white/5 bg-[#14120b]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <ShieldAlert className="h-8 w-8 text-pink-400 shrink-0" />
-            <div>
-              <h2 className="text-sm font-bold uppercase font-mono text-white">{t('skill_zone.access.title')}</h2>
-              <p className="text-xs text-stone-400 mt-0.5">{t('skill_zone.access.text')}</p>
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-[0.9fr_1.1fr]">
+              <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-black">
+                <img src={contestImage(confirmingContest, 800)} alt={confirmingContest.title} className="aspect-square h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-x-5 bottom-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-white/60">{gameName(confirmingContest.category)}</p>
+                  <p className="mt-1 text-2xl font-black leading-tight text-white">{confirmingContest.title}</p>
+                  <p className="mt-1 text-xs text-white/60">{confirmingContest.gradingInfo || t('skill_zone.lobby.condition_fallback')}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[32px] border border-white/10 bg-[#100d18] p-5 md:p-7">
+                <dl className="divide-y divide-white/10 text-sm">
+                  {[
+                    [t('skill_zone.confirm.table_category'), gameName(confirmingContest.category), 'text-white'],
+                    [t('skill_zone.confirm.table_market_value'), `${confirmingContest.marketValue} CR`, 'text-white'],
+                    [t('skill_zone.confirm.table_slots_left'), `${confirmingContest.totalSlots - confirmingContest.filledSlots} / ${confirmingContest.totalSlots}`, 'text-white'],
+                    [t('skill_zone.confirm.table_slot_cost'), `${confirmingContest.slotCostCredits} CR`, 'text-[#22d3ee]'],
+                    [t('skill_zone.confirm.table_balance_current'), `${wallet.balanceCredits} CR`, 'text-white'],
+                  ].map(([label, value, color]) => (
+                    <div key={label} className="flex items-center justify-between gap-4 py-3">
+                      <dt className="text-white/55">{label}</dt>
+                      <dd className={`font-mono font-black ${color}`}>{value}</dd>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between gap-4 py-3">
+                    <dt className="font-bold text-white">{t('skill_zone.confirm.table_balance_after')}</dt>
+                    <dd className={`font-mono text-lg font-black ${wallet.balanceCredits - confirmingContest.slotCostCredits < 0 ? 'text-[#ff5a36]' : 'text-[#c6ff3d]'}`}>
+                      {(wallet.balanceCredits - confirmingContest.slotCostCredits).toFixed(2)} CR
+                    </dd>
+                  </div>
+                </dl>
+
+                {wallet.balanceCredits < confirmingContest.slotCostCredits ? (
+                  <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[#ff5a36]/40 bg-[#ff5a36]/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-white/80">{t('skill_zone.confirm.insufficient_balance')}</p>
+                    <Link to="/crediti/acquista" className="shrink-0 rounded-xl bg-white px-4 py-3 text-center text-sm font-black text-[#07060b]">
+                      {t('arena_page.hero.wallet_topup')}
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="mt-5 text-sm leading-relaxed text-white/55">{t('skill_zone.confirm.warning')}</p>
+                )}
+
+                {uploadProgress && (
+                  <p className="lx-ping-soft mt-4 rounded-xl bg-[#8b5cf6]/15 px-4 py-3 text-center text-sm font-bold text-white">{uploadProgress}</p>
+                )}
+
+                <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+                  <button type="button" onClick={cancelConfirm} className={`${stageButton} flex-1 border border-white/15 text-white hover:border-white/40`}>
+                    {t('skill_zone.confirm.cancel_button')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmPurchase}
+                    disabled={wallet.balanceCredits < confirmingContest.slotCostCredits || !!uploadProgress}
+                    className={`${stageButton} flex-[1.4] bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee] text-white enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40`}
+                  >
+                    {t('skill_zone.confirm.confirm_button', { cost: confirmingContest.slotCostCredits })}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <Link
-            to="/login"
-            className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all shadow-lg shadow-gold-500/25 active-shrink text-center shrink-0"
-          >
-            {t('skill_zone.access.cta')}
-          </Link>
-        </div>
+        </section>
       )}
 
-      <>
-          {/* Slot Purchase Confirmation Table — no credits move until this is confirmed */}
-          {confirmingContest && (
-            <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl max-w-xl mx-auto">
-              <h2 className="text-lg font-extrabold tracking-wide uppercase text-white font-mono text-center mb-5">
-                {t('skill_zone.confirm.heading')}
-              </h2>
+      {/* Ready-To-Start Screen — slot already bought; the timer/attempt only begins
+          once the player presses Start, so purchase confirmation delay never counts
+          against their race time. */}
+      {reservedContest && (
+        <section className="lx-bleed relative overflow-hidden">
+          <div className="pointer-events-none absolute left-1/2 top-24 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#22d3ee]/15 blur-[130px]" aria-hidden="true" />
+          <div className="relative mx-auto max-w-[760px] px-5 pb-20 pt-28 text-center md:px-10 md:pt-36">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#22d3ee]">{reservedContest.title}</p>
+            <h1 className="mt-3 text-[clamp(2.2rem,6vw,4rem)] font-black leading-[0.92] tracking-[-0.045em] text-white">
+              {t('skill_zone.confirm.ready_heading')}
+            </h1>
+            <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-white/60">{t('skill_zone.confirm.ready_text')}</p>
 
-              <div className="flex items-center gap-4 mb-5">
-                <img
-                  src={normalizeImageUrl(confirmingContest.imageUrl)}
-                  alt={confirmingContest.title}
-                  className="w-20 h-20 object-cover rounded-lg border border-white/10 bg-black shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="text-white font-extrabold uppercase font-mono text-sm truncate">{confirmingContest.title}</div>
-                  <div className="text-[10px] text-stone-400 mt-1">{confirmingContest.gradingInfo || t('skill_zone.lobby.condition_fallback')}</div>
-                </div>
+            {/* Rotate-device prompt — a landscape puzzle image squeezed into a portrait
+                phone screen was the real reason pieces ended up too small to tap/drag
+                accurately. Reactive: goes away the moment the player actually rotates. */}
+            {pendingImageIsPortrait === false && deviceIsPortrait && (
+              <div className="mt-6 flex items-center gap-3 rounded-2xl border-2 border-amber-300 bg-amber-500 p-4 text-left shadow-lg shadow-amber-500/40 animate-pulse">
+                <Smartphone className="h-10 w-10 shrink-0 rotate-90 text-black" strokeWidth={2.5} />
+                <p className="text-sm font-black uppercase leading-snug tracking-tight text-black">{t('skill_zone.confirm.rotate_device')}</p>
               </div>
+            )}
 
-              <table className="w-full text-xs font-mono border-collapse mb-5">
-                <tbody>
-                  <tr className="border-b border-white/5">
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_category')}</td>
-                    <td className="py-2 text-right text-white font-bold">{confirmingContest.category}</td>
-                  </tr>
-                  <tr className="border-b border-white/5">
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_market_value')}</td>
-                    <td className="py-2 text-right text-gold-400 font-bold">{confirmingContest.marketValue} CR</td>
-                  </tr>
-                  <tr className="border-b border-white/5">
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_slots_left')}</td>
-                    <td className="py-2 text-right text-white font-bold">{confirmingContest.totalSlots - confirmingContest.filledSlots} / {confirmingContest.totalSlots}</td>
-                  </tr>
-                  <tr className="border-b border-white/5">
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_slot_cost')}</td>
-                    <td className="py-2 text-right text-pink-400 font-bold">{confirmingContest.slotCostCredits} CR</td>
-                  </tr>
-                  <tr className="border-b border-white/5">
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_balance_current')}</td>
-                    <td className="py-2 text-right text-white font-bold">{wallet.balanceCredits} CR</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-stone-400 uppercase">{t('skill_zone.confirm.table_balance_after')}</td>
-                    <td className={`py-2 text-right font-bold ${wallet.balanceCredits - confirmingContest.slotCostCredits < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                      {(wallet.balanceCredits - confirmingContest.slotCostCredits).toFixed(2)} CR
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="relative mx-auto mt-8 w-full max-w-xs">
+              <div className="lx-arena-ring pointer-events-none absolute -inset-2 rounded-[36px]" aria-hidden="true" />
+              <img src={contestImage(reservedContest, 700)} alt={reservedContest.title} className="relative aspect-square w-full rounded-[28px] border border-white/10 bg-black object-cover" />
+            </div>
 
-              {wallet.balanceCredits < confirmingContest.slotCostCredits ? (
-                <p className="text-[11px] text-red-400 mb-4 text-center">{t('skill_zone.confirm.insufficient_balance')}</p>
-              ) : (
-                <p className="text-[11px] text-stone-400 mb-4 text-center leading-relaxed">{t('skill_zone.confirm.warning')}</p>
-              )}
-
-              {uploadProgress && (
-                <div className="p-3 mb-4 bg-pink-950/20 border border-pink-500/20 text-pink-400 text-center font-bold font-mono text-[10px] rounded animate-pulse">
-                  ⏳ {uploadProgress}
-                </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={cancelConfirm}
-                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300"
-                >
-                  {t('skill_zone.confirm.cancel_button')}
-                </button>
-                <button
-                  onClick={handleConfirmPurchase}
-                  disabled={wallet.balanceCredits < confirmingContest.slotCostCredits || !!uploadProgress}
-                  className="flex-1 py-2.5 bg-gold-500 hover:bg-gold-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15"
-                >
-                  {t('skill_zone.confirm.confirm_button', { cost: confirmingContest.slotCostCredits })}
-                </button>
+            {/* How-to-play — shown before the clock starts, so reading it never costs time. */}
+            <div className="mt-8 text-left">
+              <p className="mb-3 text-center text-xs font-black uppercase tracking-[0.2em] text-white/45">{t('skill_zone.confirm.howto_title')}</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {[
+                  [Move, 'howto_drag', 'text-[#22d3ee]'],
+                  [RotateCw, 'howto_rotate', 'text-[#22d3ee]'],
+                  [Puzzle, 'howto_shape', 'text-[#22d3ee]'],
+                  [ShieldAlert, 'howto_tabswitch', 'text-[#ff5a36]'],
+                ].map(([Icon, key, color]) => (
+                  <div key={key} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
+                    <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${color}`} />
+                    <p className="text-sm leading-snug text-white/75">{t(`skill_zone.confirm.${key}`)}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
 
-          {/* Ready-To-Start Screen — slot already bought; the timer/attempt only begins
-              once the player presses Start, so purchase confirmation delay never counts
-              against their race time. */}
-          {reservedContest && (
-            <div className="bento-card p-6 mb-8 border border-gold-500/30 bg-[#0a0806]/90 rounded-2xl relative shadow-2xl max-w-xl mx-auto text-center">
-              <h2 className="text-lg font-extrabold tracking-wide uppercase text-white font-mono mb-2">
-                {t('skill_zone.confirm.ready_heading')}
-              </h2>
-              <p className="text-xs text-stone-400 mb-1 leading-relaxed">
-                {t('skill_zone.confirm.ready_text')}
-              </p>
-              <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wider mb-5">
-                {t('skill_zone.confirm.ready_piece_count')}
-              </p>
+            {uploadProgress && (
+              <p className="lx-ping-soft mt-5 rounded-xl bg-[#8b5cf6]/15 px-4 py-3 text-sm font-bold text-white">{uploadProgress}</p>
+            )}
 
-              {/* Rotate-device prompt — a landscape puzzle image squeezed
-                  into a portrait phone screen was the real reason pieces
-                  ended up too small to tap/drag accurately. Reactive: goes
-                  away the moment the player actually rotates (deviceIsPortrait
-                  tracks the phone itself via matchMedia, separately from
-                  pendingImageIsPortrait which is about the puzzle image).
-                  Solid, high-contrast treatment and placed before the image
-                  — deliberately hard to miss, per feedback that the earlier
-                  subtle version wasn't attention-grabbing enough. */}
-              {pendingImageIsPortrait === false && deviceIsPortrait && (
-                <div className="flex items-center gap-3 bg-amber-500 border-2 border-amber-300 rounded-xl p-4 mb-5 text-left shadow-lg shadow-amber-500/50 animate-pulse">
-                  <Smartphone className="h-10 w-10 text-black flex-shrink-0 rotate-90" strokeWidth={2.5} />
-                  <p className="text-sm text-black leading-snug font-black uppercase tracking-tight">
-                    {t('skill_zone.confirm.rotate_device')}
-                  </p>
-                </div>
-              )}
-
-              <img
-                src={normalizeImageUrl(reservedContest.imageUrl)}
-                alt={reservedContest.title}
-                className="w-full max-w-xs mx-auto rounded-lg border border-white/10 bg-black mb-5 object-cover aspect-square"
-              />
-
-              {/* How-to-play — shown here specifically because the clock
-                  hasn't started yet (see the comment above this block): the
-                  player reads this BEFORE any time or blur-focus check
-                  begins counting against them, not during. */}
-              <div className="mb-5 text-left">
-                <p className="text-[10px] text-stone-500 uppercase tracking-wider font-bold mb-2 text-center">
-                  {t('skill_zone.confirm.howto_title')}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
-                    <Move className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_drag')}</p>
-                  </div>
-                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
-                    <RotateCw className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_rotate')}</p>
-                  </div>
-                  <div className="flex items-start gap-2 bg-black/30 border border-white/5 rounded-lg p-2.5">
-                    <Puzzle className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_shape')}</p>
-                  </div>
-                  <div className="flex items-start gap-2 bg-black/30 border border-red-500/20 rounded-lg p-2.5">
-                    <ShieldAlert className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-stone-300 leading-snug">{t('skill_zone.confirm.howto_tabswitch')}</p>
-                  </div>
-                </div>
-              </div>
-
-              {uploadProgress && (
-                <div className="p-3 mb-4 bg-pink-950/20 border border-pink-500/20 text-pink-400 text-center font-bold font-mono text-[10px] rounded animate-pulse">
-                  ⏳ {uploadProgress}
-                </div>
-              )}
-
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={cancelReserved}
-                  className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300"
-                >
-                  {t('skill_zone.confirm.cancel_reserved_button')}
-                </button>
-                <button
-                  onClick={handleStartAttempt}
-                  className="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-black font-mono text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shadow-emerald-500/25 active-shrink flex items-center gap-2"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                  {t('skill_zone.confirm.continue_button')}
-                </button>
-              </div>
+            <div className="mt-8 flex flex-col-reverse items-stretch justify-center gap-3 sm:flex-row">
+              <button type="button" onClick={cancelReserved} className={`${stageButton} border border-white/15 text-white hover:border-white/40`}>
+                {t('skill_zone.confirm.cancel_reserved_button')}
+              </button>
+              <button type="button" onClick={handleStartAttempt} className={`${stageButton} bg-[#c6ff3d] px-10 text-base text-[#10140a] hover:-translate-y-0.5`}>
+                {t('skill_zone.confirm.continue_button')} <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
-          )}
+          </div>
+        </section>
+      )}
 
-          {/* Play Area — a true full-viewport takeover (fixed inset-0, above
-              everything including the site header/nav) rather than a card
-              embedded in the normal page, so the game gets the entire
-              screen like a native app instead of competing for space with
-              site chrome. Body scroll is locked and native fullscreen is
-              best-effort requested while this is up — see the effect and
-              handleStartAttempt above. JigsawPuzzle's own canvas sizing
-              (maxHeight etc.) is what actually fills this space. */}
-          {playingContest ? (
-            <div className="fixed inset-0 z-[100] bg-[#05050a] overflow-y-auto">
-              <div className="min-h-full flex flex-col p-2 sm:p-4">
-                {/* No fixed header row at all now — the title/instructions
-                    only appear in the dismissible banner on the ready panel
-                    below (before the timer starts), and the "secure room"
-                    badge that used to sit here was removed outright: it
-                    cost vertical space for no real purpose. */}
-                <div className="flex-1 flex items-center justify-center min-h-0">
-                  {gameResult ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
-                      {gameResult.status === 'cheated' ? (
-                        <>
-                          <ShieldAlert className="h-16 w-16 text-pink-500 mb-4 animate-pulse" />
-                          <h3 className="text-xl font-bold text-pink-500 uppercase tracking-wider">{t('skill_zone.play.voided_title')}</h3>
-                          <p className="text-xs text-stone-400 mt-2 mb-6">
-                            {t('skill_zone.play.voided_text')}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="h-16 w-16 text-emerald-400 mb-4" />
-                          <h3 className="text-xl font-bold text-emerald-400 uppercase tracking-wider">{t('skill_zone.play.success_title')}</h3>
-                          <p className="text-sm font-mono text-white font-bold mt-2">
-                            {t('skill_zone.play.speed_score', { time: formatRaceTime(gameResult.timeMs) })}
-                          </p>
-                          {gameResult.contestFinalized ? (
-                            <div className="mt-4 p-3 bg-pink-950/30 border border-pink-500/30 rounded text-xs text-stone-300">
-                              🎉 {t('skill_zone.play.contest_finalized')} <span className="font-extrabold text-pink-400">{gameResult.winnerName}</span>.
-                            </div>
-                          ) : (
-                            <p className="text-xs text-stone-400 mt-2 mb-6">
-                              {t('skill_zone.play.waiting_others')}
-                            </p>
-                          )}
-                        </>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          setPlayingContest(null);
-                          setAttemptToken(null);
-                          setGameResult(null);
-                          fetchCatalogData();
-                        }}
-                        className="px-6 py-2 bg-gold-500 text-white hover:bg-gold-400 rounded-lg font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 active-shrink shadow-lg shadow-gold-500/15"
-                      >
-                        {t('skill_zone.play.return_lobby')}
-                      </button>
-                    </div>
-                  ) : attemptToken ? (
-                    <JigsawPuzzle
-                      imageUrl={normalizeImageUrl(playingContest.imageUrl)}
-                      contestId={playingContest.id}
-                      attemptToken={attemptToken}
-                      isPortrait={boardIsPortrait}
-                      onPieceLocked={handlePieceLocked}
-                      onComplete={handleCompleteAttempt}
-                      onCancel={() => {
-                        setPlayingContest(null);
-                        setAttemptToken(null);
-                        fetchCatalogData();
-                      }}
-                    />
+      {/* Play Area — a true full-viewport takeover (fixed inset-0, above everything
+          including the site header/nav) so the game gets the whole screen like a
+          native app. Body scroll is locked and native fullscreen is best-effort
+          requested while this is up — see the effect and handleStartAttempt above. */}
+      {playingContest ? (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#07060b]">
+          <div className="flex min-h-full flex-col p-2 sm:p-4">
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              {gameResult ? (
+                <div className="relative mx-auto flex max-w-md flex-col items-center justify-center px-4 py-12 text-center">
+                  <div className={`pointer-events-none absolute top-0 h-72 w-72 rounded-full blur-[110px] ${gameResult.status === 'cheated' ? 'bg-[#ff5a36]/25' : 'bg-[#22d3ee]/25'}`} aria-hidden="true" />
+                  {gameResult.status === 'cheated' ? (
+                    <>
+                      <ShieldAlert className="relative h-16 w-16 animate-pulse text-[#ff5a36]" />
+                      <h3 className="relative mt-5 text-3xl font-black tracking-[-0.02em] text-white">{t('skill_zone.play.voided_title')}</h3>
+                      <p className="relative mb-8 mt-3 text-sm leading-relaxed text-white/60">{t('skill_zone.play.voided_text')}</p>
+                    </>
                   ) : (
-                    // Ready panel: title/instructions as a dismissible banner
-                    // (closed with the X, doesn't come back), plus the real
-                    // "Start" — pressing THIS is what calls
-                    // /api/contest/start (handleBeginSolving above), not the
-                    // earlier "Continue" press that got here. No clock is
-                    // running yet at any point on this panel.
-                    <div className="flex flex-col items-center justify-center gap-6 px-4 text-center max-w-md mx-auto">
-                      {!readyBannerDismissed && (
-                        <div className="relative bg-black/60 border border-gold-500/30 rounded-xl p-4 pr-9 w-full">
-                          <button
-                            onClick={() => setReadyBannerDismissed(true)}
-                            className="absolute top-2 right-2 text-stone-500 hover:text-white p-1"
-                            aria-label="dismiss"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          <h2 className="text-sm sm:text-base font-extrabold tracking-wide uppercase text-white font-mono mb-1">
-                            {t('skill_zone.play.heading', { title: playingContest.title })}
-                          </h2>
-                          <p className="text-[11px] sm:text-xs text-stone-400 leading-relaxed">
-                            {t('skill_zone.play.instructions')}
-                          </p>
+                    <>
+                      <Trophy className="relative h-16 w-16 text-[#facc15]" />
+                      <h3 className="relative mt-5 text-3xl font-black tracking-[-0.02em] text-white">{t('skill_zone.play.success_title')}</h3>
+                      <p className="relative mt-4 font-mono text-4xl font-black tabular-nums text-[#22d3ee]">
+                        {formatRaceTime(gameResult.timeMs)}
+                      </p>
+                      <p className="relative mt-1 text-xs font-bold uppercase tracking-wider text-white/45">
+                        {t('arena_page.result.time_label')}
+                      </p>
+                      {gameResult.contestFinalized ? (
+                        <div className="relative mb-8 mt-6 rounded-2xl border border-[#facc15]/40 bg-[#facc15]/10 px-4 py-3 text-sm text-white">
+                          {t('skill_zone.play.contest_finalized')} <span className="font-black text-[#facc15]">{gameResult.winnerName}</span>
                         </div>
+                      ) : (
+                        <p className="relative mb-8 mt-6 text-sm text-white/60">{t('skill_zone.play.waiting_others')}</p>
                       )}
+                    </>
+                  )}
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPlayingContest(null);
+                      setAttemptToken(null);
+                      setGameResult(null);
+                      fetchCatalogData();
+                    }}
+                    className={`${stageButton} relative bg-white text-[#07060b] hover:-translate-y-0.5`}
+                  >
+                    {t('skill_zone.play.return_lobby')}
+                  </button>
+                </div>
+              ) : attemptToken ? (
+                <JigsawPuzzle
+                  imageUrl={normalizeImageUrl(playingContest.imageUrl)}
+                  contestId={playingContest.id}
+                  attemptToken={attemptToken}
+                  isPortrait={boardIsPortrait}
+                  onPieceLocked={handlePieceLocked}
+                  onComplete={handleCompleteAttempt}
+                  onCancel={() => {
+                    setPlayingContest(null);
+                    setAttemptToken(null);
+                    fetchCatalogData();
+                  }}
+                />
+              ) : (
+                // Ready panel: the real "Start" — pressing THIS is what calls
+                // /api/contest/start (handleBeginSolving above). No clock is
+                // running yet at any point on this panel.
+                <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-6 px-4 text-center">
+                  {!readyBannerDismissed && (
+                    <div className="relative w-full rounded-2xl border border-[#8b5cf6]/40 bg-[#8b5cf6]/10 p-4 pr-11 text-left">
                       <button
-                        onClick={handleBeginSolving}
-                        className="px-10 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-black font-mono text-base sm:text-lg uppercase tracking-wider shadow-lg shadow-emerald-500/30 active-shrink flex items-center gap-3"
+                        type="button"
+                        onClick={() => setReadyBannerDismissed(true)}
+                        className="absolute right-1.5 top-1.5 flex h-10 w-10 items-center justify-center text-white/50 hover:text-white"
+                        aria-label="dismiss"
                       >
-                        <Play className="h-6 w-6" />
-                        {t('skill_zone.confirm.start_button')}
+                        <X className="h-4 w-4" />
                       </button>
-
-                      <button
-                        onClick={() => {
-                          setPlayingContest(null);
-                          fetchCatalogData();
-                        }}
-                        className="text-[11px] text-stone-500 hover:text-stone-300 uppercase font-mono tracking-wider"
-                      >
-                        {t('skill_zone.confirm.cancel_reserved_button')}
-                      </button>
+                      <h2 className="text-base font-black text-white">{playingContest.title}</h2>
+                      <p className="mt-1 text-sm leading-relaxed text-white/60">{t('skill_zone.play.instructions')}</p>
                     </div>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={handleBeginSolving}
+                    className="lx-shine relative flex items-center gap-3 overflow-hidden rounded-3xl bg-[#c6ff3d] px-12 py-6 text-xl font-black text-[#10140a] shadow-[0_20px_60px_-15px_rgba(198,255,61,0.6)] transition-transform hover:-translate-y-0.5 active:scale-95"
+                  >
+                    <Play className="h-7 w-7" />
+                    {t('skill_zone.confirm.start_button')}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPlayingContest(null);
+                      fetchCatalogData();
+                    }}
+                    className="px-4 py-3 text-sm font-bold text-white/50 hover:text-white"
+                  >
+                    {t('skill_zone.confirm.cancel_reserved_button')}
+                  </button>
                 </div>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Dashboard Tabs & Toggles */}
-          {!confirmingContest && !reservedContest && !playingContest && (
-            <>
-              <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 mb-8 gap-4">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-              {user?.role === 'admin' && (
-                <button
-                  onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
-                  className="flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/40 text-pink-400 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300"
-                >
-                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span className="hidden sm:inline">{t('skill_zone.actions.upload_full')}</span>
-                  <span className="sm:hidden">{t('skill_zone.actions.upload_short')}</span>
-                </button>
               )}
-
-              <button
-                onClick={() => navigate('/crediti/acquista')}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/40 text-gold-400 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300"
-              >
-                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">{t('skill_zone.actions.add_credits_full')}</span>
-                <span className="sm:hidden">{t('skill_zone.actions.add_credits_short')}</span>
-              </button>
-
-              <div className="hidden sm:flex items-center space-x-3 text-xs text-stone-400 font-mono bg-black/20 px-3 py-1.5 rounded-lg border border-white/5">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span>{t('skill_zone.actions.portal_sync')} <span className="text-white font-bold">{t('skill_zone.actions.online')}</span></span>
-              </div>
             </div>
           </div>
+        </div>
+      ) : null}
 
+      {!confirmingContest && !reservedContest && !playingContest && (
+        <>
+          <ArenaHero
+            contests={contests}
+            user={user}
+            wallet={wallet}
+            spotlight={spotlight}
+            spotlightLeaderboard={spotlight ? leaderboards[spotlight.id] || [] : []}
+            onPlay={openConfirm}
+          />
+
+          {user?.role === 'admin' && (
+            <section className="lx-bleed relative">
+              <div className="mx-auto max-w-[1320px] px-5 md:px-10">
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-dashed border-[#ff5a36]/40 bg-[#ff5a36]/5 p-3">
+                  <span className="px-2 text-xs font-black uppercase tracking-wider text-[#ff5a36]">Admin</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
+                    className="flex items-center gap-1.5 rounded-xl border border-white/15 px-3 py-2.5 text-sm font-bold text-white hover:border-white/40"
+                  >
+                    <PlusCircle className="h-4 w-4 shrink-0" /> {t('skill_zone.actions.upload_full')}
+                  </button>
+                </div>
           {/* Admin Create/Upload Contest Form */}
           {user?.role === 'admin' && isAdminFormOpen && (
-            <div className="bento-card p-6 mb-8 border border-pink-500/30 bg-[#14120b]/50 rounded-2xl relative shadow-xl">
+            <div className="bento-card mt-4 p-6 mb-8 border border-pink-500/30 bg-[#14120b]/50 rounded-2xl relative shadow-xl">
               <div className="absolute top-4 right-4 z-20">
                 <button 
                   onClick={() => setIsAdminFormOpen(false)}
@@ -1167,213 +1090,89 @@ export default function SkillZone() {
               </form>
             </div>
           )}
-
-          {user?.role !== 'admin' && (
-            /* ================= HOW IT WORKS (public / non-admin) ================= */
-            <div className="mb-8 bento-card border border-white/5 rounded-2xl p-6 md:p-8 bg-[#14120b]/30">
-              <h3 className="font-extrabold text-white uppercase font-mono text-base flex items-center gap-2 mb-6">
-                <Trophy className="h-5 w-5 text-gold-400" />
-                <span>{t('skill_zone.how_it_works.title')}</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Coins className="h-6 w-6 text-gold-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step1_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step1_text')}</p>
-                </div>
-
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Zap className="h-6 w-6 text-pink-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step2_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step2_text')}</p>
-                </div>
-
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5">
-                  <Trophy className="h-6 w-6 text-gold-400 mb-2" />
-                  <div className="font-bold text-white uppercase text-xs mb-1">{t('skill_zone.how_it_works.step3_title')}</div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">{t('skill_zone.how_it_works.step3_text')}</p>
-                </div>
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Category Filter */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-5 -mx-1 px-1 scrollbar-thin">
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider border transition-all duration-300 ${
-                categoryFilter === 'all'
-                  ? 'bg-gold-500 border-gold-500 text-white'
-                  : 'bg-black/20 border-white/10 text-stone-400 hover:border-gold-500/40'
-              }`}
-            >
-              {t('skill_zone.lobby.filter_all')}
-            </button>
-            {CATALOG_GAMES.map(game => (
-              <button
-                key={game.slug}
-                onClick={() => setCategoryFilter(game.slug)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider border transition-all duration-300 flex items-center gap-1.5 ${
-                  categoryFilter === game.slug
-                    ? 'bg-gold-500 border-gold-500 text-white'
-                    : 'bg-black/20 border-white/10 text-stone-400 hover:border-gold-500/40'
-                }`}
-              >
-                <span>{game.emoji}</span>
-                <span>{game.name}</span>
-              </button>
-            ))}
-          </div>
+          {user?.role !== 'admin' && <ArenaSteps />}
 
-          {/* ================= SKILL ZONE LOBBY ================= */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {contests.filter(con => categoryFilter === 'all' || con.category === categoryFilter).length === 0 ? (
-                <div className="col-span-2 text-center py-20 border border-dashed border-white/5 rounded-xl bg-[#14120b]/10">
-                  <Trophy className="h-12 w-12 text-stone-500 mx-auto mb-3" />
-                  <h3 className="font-bold text-white uppercase font-mono">
-                    {contests.length === 0 ? t('skill_zone.lobby.empty_title') : t('skill_zone.lobby.empty_filtered_title')}
-                  </h3>
-                  <p className="text-xs text-stone-400 mt-1">
-                    {contests.length === 0 ? t('skill_zone.lobby.empty_text') : t('skill_zone.lobby.empty_filtered_text')}
-                  </p>
+          {/* ================= LOBBY ================= */}
+          <section className="lx-bleed relative pb-24 pt-10 md:pb-32 md:pt-14" id="arena-lobby">
+            <div className="mx-auto max-w-[1320px] px-5 md:px-10">
+              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#22d3ee]">{t('arena_page.lobby.kicker')}</p>
+                  <h2 className="mt-3 text-[clamp(2rem,5vw,3.6rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">{t('arena_page.lobby.title')}</h2>
                 </div>
-              ) : (
-                contests.filter(con => categoryFilter === 'all' || con.category === categoryFilter).map(con => {
-                  const leaderboard = leaderboards[con.id] || [];
-                  const isParticipating = !!user && leaderboard.some(p => p.userId === user.id);
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/55">
+                  <span className="relative flex h-2 w-2">
+                    <span className="lx-ping absolute inline-flex h-full w-full rounded-full bg-[#c6ff3d]" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#c6ff3d]" />
+                  </span>
+                  {t('arena_page.lobby.live')}
+                </p>
+              </div>
 
+              {/* Category Filter */}
+              <div className="lx-rail -mx-5 mt-8 flex items-center gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:px-0">
+                {[{ slug: 'all', name: t('skill_zone.lobby.filter_all') }, ...CATALOG_GAMES].map((game) => {
+                  const active = categoryFilter === game.slug;
                   return (
-                    <div 
-                      key={con.id} 
-                      onClick={() => openConfirm(con)}
-                      className="bento-card border border-white/5 bg-[#14120b]/20 rounded-2xl overflow-hidden hover:border-gold-500/30 transition-all duration-300 flex flex-col md:flex-row shadow-lg cursor-pointer group"
+                    <button
+                      key={game.slug}
+                      type="button"
+                      onClick={() => setCategoryFilter(game.slug)}
+                      aria-pressed={active}
+                      className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2.5 text-sm font-bold transition-all ${
+                        active
+                          ? 'border-transparent bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee] text-white'
+                          : 'border-white/12 text-white/70 hover:border-white/40 hover:text-white'
+                      }`}
                     >
-                      
-                      {/* Image Block */}
-                      <div className="w-full md:w-48 h-48 md:h-auto relative flex-shrink-0 bg-black">
-                        <img
-                          src={normalizeImageUrl(con.imageUrl)}
-                          alt={con.title}
-                          className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-all duration-500"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling.style.display = 'flex';
-                          }}
-                        />
-                        <div className="hidden w-full h-full items-center justify-center text-white/30 absolute inset-0">
-                          <ImageOff className="h-8 w-8" />
-                        </div>
-                        <div className="absolute top-2 left-2 flex flex-col space-y-1">
-                          <span className="text-[9px] bg-black/80 text-gold-400 border border-gold-500/30 px-2 py-0.5 rounded font-bold font-mono">
-                            {t('skill_zone.lobby.value', { value: con.marketValue })}
-                          </span>
-                          <span className="text-[9px] bg-black/80 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded font-bold font-mono">
-                            {con.condition}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content Block */}
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-base font-extrabold text-white leading-tight uppercase font-mono truncate max-w-[280px] group-hover:text-gold-400 transition-colors">
-                            {con.title}
-                          </h3>
-                          <p className="text-[10px] text-stone-400 mt-1 leading-snug">
-                            {con.gradingInfo || t('skill_zone.lobby.condition_fallback')}
-                          </p>
-
-                          {/* Slots Progress Bar */}
-                          <div className="mt-4">
-                            <div className="flex justify-between items-center text-[10px] font-mono text-stone-400 mb-1">
-                              <span>{t('skill_zone.lobby.slots_filled')}</span>
-                              <span className="text-white font-bold">{con.filledSlots} / {con.totalSlots}</span>
-                            </div>
-                            <div className="w-full h-2 bg-black/50 rounded overflow-hidden">
-                              <div 
-                                className="h-full bg-gold-500 shadow-md shadow-gold-500/40 transition-all duration-300"
-                                style={{ width: `${(con.filledSlots / con.totalSlots) * 100}%` }}
-                              ></div>
-                            </div>
-                            <div className="flex justify-between items-center mt-1 text-[8px] font-mono">
-                              <span className="text-stone-400 uppercase">{t('skill_zone.lobby.cost_to_enter')}</span>
-                              <span className="text-gold-400 font-bold text-[10px]">{con.slotCostCredits} CR</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Entry and gameplay controls — every click is a new paid entry,
-                            repeatable by the same user until the contest's slots fill up. */}
-                        <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                          {con.status === 'open' ? (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openConfirm(con); }}
-                              className="w-full py-2 bg-gold-500 hover:bg-gold-400 text-white font-extrabold rounded font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-gold-500/15 active-shrink"
-                            >
-                              {!user
-                                ? t('skill_zone.access.cta')
-                                : `${isParticipating ? `🕹️ ${t('skill_zone.lobby.play_again')}` : t('skill_zone.lobby.buy_slot_play')} (${con.slotCostCredits} CR)`}
-                            </button>
-                          ) : (
-                            <span className="inline-flex items-center text-[10px] text-stone-400 font-mono uppercase bg-black/40 px-3 py-1.5 rounded">
-                              {t('skill_zone.lobby.status_full')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Leaderboard panel inside card */}
-                      <div 
-                        onClick={(e) => e.stopPropagation()} 
-                        className="w-full md:w-56 bg-black/40 p-4 border-t md:border-t-0 md:border-l border-white/5 font-mono"
-                      >
-                        <div className="flex items-center justify-between text-[10px] uppercase font-bold text-stone-400 pb-2 border-b border-white/5 mb-2">
-                          <span>{t('skill_zone.lobby.leaderboard')}</span>
-                          <Trophy className="h-3 w-3 text-gold-400" />
-                        </div>
-                        <div className="pr-1">
-                          {leaderboard.length === 0 ? (
-                            <div className="text-[9px] text-stone-500 text-center py-4">{t('skill_zone.lobby.no_attempts')}</div>
-                          ) : (
-                            <table className="w-full text-[10px] border-collapse">
-                              <tbody>
-                                {leaderboard.slice(0, 5).map((ld, i) => {
-                                  const podiumColor =
-                                    i === 0 ? 'text-gold-400'   // gold
-                                    : i === 1 ? 'text-stone-300'  // silver
-                                    : i === 2 ? 'text-[#CD7F32]'  // bronze
-                                    : 'text-white';                // 4th & 5th
-                                  return (
-                                    <tr key={ld.id} className="border-b border-white/5">
-                                      <td className="py-1 pr-1 font-bold text-stone-500 w-4">{i + 1}</td>
-                                      <td className={`py-1 pr-1 font-semibold truncate max-w-[90px] ${podiumColor}`}>{ld.username}</td>
-                                      <td className="py-1 text-right font-semibold text-gold-400">
-                                        {ld.status === 'completed'
-                                          ? formatRaceTime(ld.totalTimeMs)
-                                          : ld.status === 'cheated'
-                                            ? `🚫 ${t('skill_zone.lobby.void')}`
-                                            : `⏳ ${t('skill_zone.lobby.pending')}`}
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          )}
-                        </div>
-                      </div>
-
-                    </div>
+                      {game.name}
+                    </button>
                   );
-                })
-              )}
+                })}
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {lobbyContests.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center rounded-[32px] border border-dashed border-white/15 px-6 py-16 text-center">
+                    <Trophy className="h-12 w-12 text-[#22d3ee]" />
+                    <h3 className="mt-5 text-2xl font-black text-white">
+                      {contests.length === 0 ? t('skill_zone.lobby.empty_title') : t('skill_zone.lobby.empty_filtered_title')}
+                    </h3>
+                    <p className="mt-2 text-sm text-white/55">
+                      {contests.length === 0 ? t('skill_zone.lobby.empty_text') : t('skill_zone.lobby.empty_filtered_text')}
+                    </p>
+                    {contests.length > 0 ? (
+                      <button type="button" onClick={() => setCategoryFilter('all')} className="mt-6 rounded-xl bg-white px-5 py-3 text-sm font-black text-[#07060b]">
+                        {t('skill_zone.lobby.filter_all')}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : (
+                  lobbyContests.map((con, i) => (
+                    <ContestCard
+                      key={con.id}
+                      contest={con}
+                      leaderboard={leaderboards[con.id] || []}
+                      user={user}
+                      onPlay={openConfirm}
+                      index={i}
+                    />
+                  ))
+                )}
+              </div>
             </div>
+          </section>
         </>
       )}
 
-          {user?.role === 'admin' && (
-            /* ================= ADMIN DIAGNOSTICS & SANDBOX CONTROLS ================= */
+      {!playingContest && user?.role === 'admin' && (
+        <section className="lx-bleed relative pb-16">
+          <div className="mx-auto max-w-[1320px] px-5 md:px-10">
+                      /* ================= ADMIN DIAGNOSTICS & SANDBOX CONTROLS ================= */
             <div className="mt-16 bento-card border border-white/5 border-dashed rounded-xl p-5 font-mono text-xs bg-[#14120b]/10">
               <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
                 <h3 className="font-extrabold text-white uppercase flex items-center space-x-2">
@@ -1431,8 +1230,9 @@ export default function SkillZone() {
                 </div>
               </div>
             </div>
-          )}
-      </>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -28,10 +28,9 @@ const UserSearch = lazy(() => import('./pages/UserSearch'));
 const LegalRules = lazy(() => import('./pages/LegalRules'));
 const PublicProfile = lazy(() => import('./pages/PublicProfile'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
-const AnnunciHub = lazy(() => import('./pages/AnnunciHub'));
-const AnnunciCardsHub = lazy(() => import('./pages/AnnunciCardsHub'));
-const AsteHub = lazy(() => import('./pages/AsteHub'));
-const AsteCardsHub = lazy(() => import('./pages/AsteCardsHub'));
+const MarketHub = lazy(() => import('./pages/MarketHub'));
+const MarketCardsHub = lazy(() => import('./pages/MarketCardsHub'));
+const MarketCategory = lazy(() => import('./pages/MarketCategory'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminArchive = lazy(() => import('./pages/AdminArchive'));
 const AdminWalletTransactions = lazy(() => import('./pages/AdminWalletTransactions'));
@@ -51,8 +50,6 @@ const TcgCatalogIndex = lazy(() => import('./pages/TcgCatalogIndex'));
 const TcgSearchResults = lazy(() => import('./pages/TcgSearchResults'));
 const TcgCardPage = lazy(() => import('./pages/TcgCardPage'));
 const Archive = lazy(() => import('./pages/Archive'));
-const Annunci = lazy(() => import('./pages/Annunci'));
-const Aste = lazy(() => import('./pages/Aste'));
 const SkillZone = lazy(() => import('./pages/SkillZone'));
 const WalletInfo = lazy(() => import('./pages/WalletInfo'));
 const WalletPurchase = lazy(() => import('./pages/WalletPurchase'));
@@ -80,27 +77,27 @@ export default function App() {
         <Routes location={location} key={location.pathname}>
           <Route element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="annunci" element={<AnnunciHub />} />
-          <Route path="annunci/lego" element={<Annunci productType="lego" />} />
-          <Route path="annunci/funko" element={<Annunci productType="funko" />} />
-          <Route path="annunci/carte-collezionabili" element={<AnnunciCardsHub />} />
-          <Route path="annunci/carte-collezionabili/pokemon" element={<Annunci productType="tcg" game="pokemon" />} />
-          <Route path="annunci/carte-collezionabili/magic" element={<Annunci productType="tcg" game="magic" />} />
-          <Route path="annunci/carte-collezionabili/lorcana" element={<Annunci productType="tcg" game="lorcana" />} />
-          <Route path="annunci/carte-collezionabili/yugioh" element={<Annunci productType="tcg" game="yugioh" />} />
-          <Route path="annunci/carte-collezionabili/onepiece" element={<Annunci productType="tcg" game="onepiece" />} />
-          <Route path="annunci/carte-collezionabili/dragonball" element={<Annunci productType="tcg" game="dragonball" />} />
+          <Route path="annunci" element={<MarketHub modeKey="listings" />} />
+          <Route path="annunci/lego" element={<MarketCategory modeKey="listings" productType="lego" />} />
+          <Route path="annunci/funko" element={<MarketCategory modeKey="listings" productType="funko" />} />
+          <Route path="annunci/carte-collezionabili" element={<MarketCardsHub modeKey="listings" />} />
+          <Route path="annunci/carte-collezionabili/pokemon" element={<MarketCategory modeKey="listings" productType="tcg" game="pokemon" />} />
+          <Route path="annunci/carte-collezionabili/magic" element={<MarketCategory modeKey="listings" productType="tcg" game="magic" />} />
+          <Route path="annunci/carte-collezionabili/lorcana" element={<MarketCategory modeKey="listings" productType="tcg" game="lorcana" />} />
+          <Route path="annunci/carte-collezionabili/yugioh" element={<MarketCategory modeKey="listings" productType="tcg" game="yugioh" />} />
+          <Route path="annunci/carte-collezionabili/onepiece" element={<MarketCategory modeKey="listings" productType="tcg" game="onepiece" />} />
+          <Route path="annunci/carte-collezionabili/dragonball" element={<MarketCategory modeKey="listings" productType="tcg" game="dragonball" />} />
           <Route path="annunci/carte-collezionabili/:slug" element={<Navigate to="/annunci/carte-collezionabili" replace />} />
-          <Route path="aste" element={<AsteHub />} />
-          <Route path="aste/lego" element={<Aste productType="lego" />} />
-          <Route path="aste/funko" element={<Aste productType="funko" />} />
-          <Route path="aste/carte-collezionabili" element={<AsteCardsHub />} />
-          <Route path="aste/carte-collezionabili/pokemon" element={<Aste productType="tcg" game="pokemon" />} />
-          <Route path="aste/carte-collezionabili/magic" element={<Aste productType="tcg" game="magic" />} />
-          <Route path="aste/carte-collezionabili/lorcana" element={<Aste productType="tcg" game="lorcana" />} />
-          <Route path="aste/carte-collezionabili/yugioh" element={<Aste productType="tcg" game="yugioh" />} />
-          <Route path="aste/carte-collezionabili/onepiece" element={<Aste productType="tcg" game="onepiece" />} />
-          <Route path="aste/carte-collezionabili/dragonball" element={<Aste productType="tcg" game="dragonball" />} />
+          <Route path="aste" element={<MarketHub modeKey="auctions" />} />
+          <Route path="aste/lego" element={<MarketCategory modeKey="auctions" productType="lego" />} />
+          <Route path="aste/funko" element={<MarketCategory modeKey="auctions" productType="funko" />} />
+          <Route path="aste/carte-collezionabili" element={<MarketCardsHub modeKey="auctions" />} />
+          <Route path="aste/carte-collezionabili/pokemon" element={<MarketCategory modeKey="auctions" productType="tcg" game="pokemon" />} />
+          <Route path="aste/carte-collezionabili/magic" element={<MarketCategory modeKey="auctions" productType="tcg" game="magic" />} />
+          <Route path="aste/carte-collezionabili/lorcana" element={<MarketCategory modeKey="auctions" productType="tcg" game="lorcana" />} />
+          <Route path="aste/carte-collezionabili/yugioh" element={<MarketCategory modeKey="auctions" productType="tcg" game="yugioh" />} />
+          <Route path="aste/carte-collezionabili/onepiece" element={<MarketCategory modeKey="auctions" productType="tcg" game="onepiece" />} />
+          <Route path="aste/carte-collezionabili/dragonball" element={<MarketCategory modeKey="auctions" productType="tcg" game="dragonball" />} />
           <Route path="aste/carte-collezionabili/:slug" element={<Navigate to="/aste/carte-collezionabili" replace />} />
           <Route path="come-funziona" element={<HowItWorks />} />
           <Route path="skill-zone" element={<SkillZone />} />

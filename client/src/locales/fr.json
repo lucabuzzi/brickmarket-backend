@@ -1418,5 +1418,136 @@
       "cta_sell": "Vendre un objet",
       "cta_auction": "Lancer une enchère"
     }
+  },
+  "market": {
+    "count_listings_one": "{{count}} annonce",
+    "count_listings_many": "{{count}} annonces",
+    "count_listings_other": "{{count}} annonces",
+    "count_auctions_one": "{{count}} enchère en direct",
+    "count_auctions_many": "{{count}} enchères en direct",
+    "count_auctions_other": "{{count}} enchères en direct",
+    "back_hub_listings": "Toutes les annonces",
+    "back_hub_auctions": "Toutes les enchères",
+    "card": {
+      "ended": "Terminée"
+    },
+    "hub": {
+      "listings": {
+        "kicker": "Annonces",
+        "title_1": "Trouvez la pièce.",
+        "title_2": "Repartez avec.",
+        "subtitle": "LEGO, cartes à collectionner et Funko Pop! à prix fixe, vendus directement par des collectionneurs.",
+        "grid_kicker": "Tout juste arrivés",
+        "grid_title": "Les nouveautés en vitrine",
+        "band_title": "Une pièce prend la poussière ?",
+        "band_desc": "Publiez une annonce gratuite en quelques minutes et montrez-la à ceux qui la cherchent.",
+        "band_cta": "Vendre maintenant"
+      },
+      "auctions": {
+        "kicker": "Enchères en direct",
+        "title_1": "Misez, relancez,",
+        "title_2": "remportez.",
+        "subtitle": "Des enchères chronométrées sur des pièces de collection avec anti-sniping : si quelqu'un mise dans les 2 dernières minutes, le chrono repart à 2:00.",
+        "grid_kicker": "Bientôt terminées",
+        "grid_title": "Le temps presse",
+        "band_title": "Mettez votre pièce aux enchères.",
+        "band_desc": "Choisissez la mise de départ et la durée : les enchères font le reste.",
+        "band_cta": "Créer une enchère"
+      },
+      "stat_listings": "annonces actives",
+      "stat_sellers": "vendeurs",
+      "stat_from": "à partir de",
+      "stat_auctions": "enchères en direct",
+      "stat_bids": "mises au total",
+      "stat_closing": "se terminent sous 24 h",
+      "stage_card": "Votre lot ici",
+      "portals_kicker": "Catégories",
+      "portals_title": "Choisissez votre univers."
+    },
+    "cards": {
+      "title_1": "Cartes à",
+      "title_2": "collectionner.",
+      "all_listings": "Toutes les cartes en vente",
+      "all_auctions": "Toutes les cartes aux enchères"
+    },
+    "category": {
+      "search_placeholder": "Titre, thème, numéro…",
+      "clear_search": "Effacer la recherche",
+      "sub_all": "Tout",
+      "sub_sets": "Sets",
+      "sub_mocs": "MOC",
+      "sub_minifigures": "Minifigurines",
+      "sort_recent": "Plus récentes",
+      "sort_price_asc": "Prix le plus bas",
+      "sort_price_desc": "Prix le plus élevé",
+      "sort_closing_soon": "Bientôt terminées",
+      "results_one": "{{count}} résultat",
+      "results_many": "{{count}} résultats",
+      "results_other": "{{count}} résultats",
+      "reset": "Effacer les filtres",
+      "cta_listings": "Vendre ici",
+      "cta_auctions": "Créer une enchère",
+      "empty_title_listings": "Aucune annonce {{title}} pour le moment.",
+      "empty_desc_listings": "Soyez le premier à publier dans cette catégorie : votre annonce sera au premier rang.",
+      "empty_title_auctions": "Aucune enchère {{title}} en cours.",
+      "empty_desc_auctions": "Lancez la première : dans une salle vide, tous les regards sont sur votre lot.",
+      "no_match_title": "Aucun résultat avec ces filtres.",
+      "no_match_desc": "Essayez une autre recherche ou effacez les filtres pour tout voir."
+    }
+  },
+  "arena_page": {
+    "hero": {
+      "kicker": "Puzzle Arena",
+      "title_1": "Assemblez.",
+      "title_2": "Battez le chrono.",
+      "title_3": "Gagnez la pièce.",
+      "subtitle": "Prenez une place dans un concours, terminez le puzzle plus vite que tout le monde et repartez avec de vraies cartes et de vrais sets de collection.",
+      "stat_open": "concours ouverts",
+      "stat_prizes": "de lots",
+      "stat_players": "places prises",
+      "wallet_title": "Votre solde",
+      "wallet_topup": "Recharger des crédits",
+      "wallet_how": "Comment fonctionnent les crédits",
+      "guest_title": "Entrez dans la partie",
+      "guest_text": "Le lobby est ouvert à tous : pour prendre une place et jouer, il faut un compte.",
+      "guest_login": "Se connecter",
+      "guest_register": "S'inscrire"
+    },
+    "spotlight": {
+      "kicker": "À la une",
+      "almost_full": "Presque complet",
+      "empty_title": "De nouveaux concours arrivent",
+      "empty_text": "Aucun concours ouvert pour le moment. Revenez bientôt."
+    },
+    "steps": {
+      "kicker": "Comment ça marche",
+      "title": "Trois étapes, un lot.",
+      "step1_title": "Rechargez des crédits",
+      "step1_text": "1 € = 1 crédit : achat en quelques secondes, solde mis à jour immédiatement.",
+      "step2_title": "Prenez une place et jouez",
+      "step2_text": "Chaque place donne droit à un essai. Faites glisser et pivoter les pièces : le chrono ne démarre que lorsque vous appuyez sur Démarrer.",
+      "step3_title": "Le plus rapide gagne",
+      "step3_text": "Une fois les places épuisées, le premier du classement remporte le lot."
+    },
+    "lobby": {
+      "kicker": "Concours",
+      "title": "Choisissez votre défi.",
+      "live": "Places et classements en direct"
+    },
+    "card": {
+      "value": "Valeur {{value}}",
+      "open": "Ouvert",
+      "full": "Complet",
+      "cost_one": "{{count}} CR la place",
+      "cost_many": "{{count}} CR la place",
+      "cost_other": "{{count}} CR la place",
+      "cta_login": "Connectez-vous pour jouer",
+      "cta_buy": "Prendre une place · {{cost}} CR",
+      "cta_again": "Rejouer · {{cost}} CR",
+      "cta_full": "Complet"
+    },
+    "result": {
+      "time_label": "Votre temps"
+    }
   }
 }

@@ -739,3 +739,99 @@ code {
     text-decoration: none;
   }
 }
+
+/* ── Market pages (pages/MarketHub, MarketCardsHub, MarketCategory) ─────────── */
+.lx-rise {
+  animation: lx-rise 50s linear infinite;
+}
+
+.lx-fall {
+  animation: lx-fall 60s linear infinite;
+}
+
+.lx-wall:hover .lx-rise,
+.lx-wall:hover .lx-fall {
+  animation-play-state: paused;
+}
+
+@keyframes lx-rise {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@keyframes lx-fall {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+
+/* Soft theatre spotlight cone for the empty auction stage. */
+.lx-spotlight {
+  background:
+    radial-gradient(ellipse 45% 30% at 50% 88%, rgba(255, 90, 54, 0.22), transparent 70%),
+    conic-gradient(from 180deg at 50% -8%, transparent 158deg, rgba(255, 236, 214, 0.14) 172deg, rgba(255, 236, 214, 0.2) 180deg, rgba(255, 236, 214, 0.14) 188deg, transparent 202deg);
+  animation: lx-flicker 6s ease-in-out infinite;
+}
+
+@keyframes lx-flicker {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.85; }
+  50% { opacity: 1; }
+  53% { opacity: 0.9; }
+}
+
+/* Giant outlined background word inside category portals. */
+.lx-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.07);
+  transition: -webkit-text-stroke-color 0.5s ease;
+}
+
+.group:hover .lx-outline {
+  -webkit-text-stroke-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Stacked thumbnails that fan out when the portal is hovered. */
+.lx-thumb {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lx-thumb-0 { z-index: 3; transform: rotate(4deg); }
+.lx-thumb-1 { z-index: 2; transform: rotate(-6deg) translateX(-14px); }
+.lx-thumb-2 { z-index: 1; transform: rotate(12deg) translateX(12px); }
+
+.group:hover .lx-thumb-0 { transform: rotate(0deg) translateY(-10px); }
+.group:hover .lx-thumb-1 { transform: rotate(-16deg) translate(-58px, 6px); }
+.group:hover .lx-thumb-2 { transform: rotate(16deg) translate(52px, 10px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-rise,
+  .lx-fall,
+  .lx-spotlight {
+    animation: none;
+  }
+}
+
+/* ── Puzzle Arena (pages/SkillZone + components/arena) ──────────────────────── */
+/* Soft rotating violet/cyan halo behind the spotlight contest and ready screen. */
+.lx-arena-ring {
+  background: conic-gradient(from var(--lx-ring-angle, 0deg), #8b5cf6, #22d3ee, #c6ff3d, #8b5cf6);
+  filter: blur(18px);
+  opacity: 0.55;
+  animation: lx-ring-spin 8s linear infinite;
+}
+
+@property --lx-ring-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes lx-ring-spin {
+  to { --lx-ring-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-arena-ring {
+    animation: none;
+  }
+}
