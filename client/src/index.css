@@ -603,3 +603,139 @@ code {
 }
 
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.2); } }
+
+/* ── Landing page (components/landing/*) ─────────────────────────────────────
+   Own opaque canvas + full-bleed sections, independent of the rest of the site's
+   gold/bento styling. */
+.lx-page {
+  position: relative;
+  isolation: isolate;
+  margin: -2rem 0; /* cancels .main padding so the hero runs under the fixed header */
+  color: #fff;
+}
+
+.lx-page::before,
+.lx-page::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.lx-page::before {
+  background: #07060b;
+}
+
+.lx-page::after {
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.lx-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.lx-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 75%);
+}
+
+.lx-text-arena {
+  background: linear-gradient(90deg, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lx-marquee {
+  animation: lx-marquee 70s linear infinite;
+}
+
+.lx-tape:hover .lx-marquee,
+.lx-tape:focus-within .lx-marquee {
+  animation-play-state: paused;
+}
+
+@keyframes lx-marquee {
+  to { transform: translateX(-50%); }
+}
+
+.lx-float {
+  animation: lx-float 8s ease-in-out infinite;
+}
+
+@keyframes lx-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+.lx-ping {
+  animation: lx-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes lx-ping {
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+.lx-ping-soft {
+  animation: lx-ping-soft 1.2s ease-in-out infinite;
+}
+
+@keyframes lx-ping-soft {
+  50% { opacity: 0.3; }
+}
+
+.lx-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(198, 255, 61, 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.lx-shine:hover::after {
+  transform: translateX(120%);
+}
+
+.lx-rail {
+  scrollbar-width: none;
+}
+
+.lx-rail::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-marquee,
+  .lx-float,
+  .lx-ping,
+  .lx-ping-soft {
+    animation: none;
+  }
+
+  .lx-tape {
+    overflow-x: auto;
+  }
+}
+
+/* Neutralize the global gold/underline link styles inside the landing (still in
+   the base layer, so Tailwind utilities like `underline` keep winning). */
+@layer base {
+  .lx-page a {
+    color: inherit;
+  }
+
+  .lx-page a:hover {
+    text-decoration: none;
+  }
+}
