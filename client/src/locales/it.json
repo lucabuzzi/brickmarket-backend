@@ -1646,5 +1646,20 @@
     "empty_cta_auctions": "Vai alle aste",
     "picks_kicker": "Da non perdere",
     "picks_title": "Appena arrivati."
+  },
+  "login_page": {
+    "kicker": "Bentornato su CardBrix",
+    "title_1": "Il tuo prossimo pezzo",
+    "title_2": "ti aspetta.",
+    "subtitle": "Accedi per comprare, rilanciare nelle aste live e sfidare gli altri collezionisti nella Puzzle Arena.",
+    "pill_listings": "Annunci",
+    "pill_auctions": "Aste live",
+    "pill_arena": "Puzzle Arena",
+    "form_subtitle": "Entra con il tuo account per continuare.",
+    "email_placeholder": "nome@email.it o username",
+    "show_password": "Mostra password",
+    "hide_password": "Nascondi password",
+    "create_account": "Crea un account gratis",
+    "secure_note": "Accesso protetto da Cloudflare Turnstile"
   }
 }

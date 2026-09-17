@@ -1646,5 +1646,20 @@
     "empty_cta_auctions": "Zu den Auktionen",
     "picks_kicker": "Nicht verpassen",
     "picks_title": "Gerade eingetroffen."
+  },
+  "login_page": {
+    "kicker": "Willkommen zurück bei CardBrix",
+    "title_1": "Dein nächstes Stück",
+    "title_2": "wartet auf dich.",
+    "subtitle": "Melde dich an, um zu kaufen, in Live-Auktionen zu bieten und andere Sammler in der Puzzle Arena herauszufordern.",
+    "pill_listings": "Angebote",
+    "pill_auctions": "Live-Auktionen",
+    "pill_arena": "Puzzle Arena",
+    "form_subtitle": "Melde dich mit deinem Konto an, um fortzufahren.",
+    "email_placeholder": "name@email.de oder Benutzername",
+    "show_password": "Passwort anzeigen",
+    "hide_password": "Passwort verbergen",
+    "create_account": "Kostenloses Konto erstellen",
+    "secure_note": "Anmeldung geschützt durch Cloudflare Turnstile"
   }
 }

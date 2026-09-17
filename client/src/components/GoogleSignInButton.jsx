@@ -20,7 +20,7 @@ function loadGoogleScript() {
 }
 
 /** Google Identity Services button. Calls onCredential(idTokenJwt) on success. */
-export default function GoogleSignInButton({ onCredential, onError }) {
+export default function GoogleSignInButton({ onCredential, onError, theme = 'outline' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -46,9 +46,10 @@ export default function GoogleSignInButton({ onCredential, onError }) {
 
         window.google.accounts.id.renderButton(containerRef.current, {
           type: 'standard',
-          theme: 'outline',
+          theme,
           size: 'large',
-          width: 320,
+          // Google renders a fixed-width iframe: never wider than the space available on narrow phones.
+          width: Math.max(200, Math.min(320, containerRef.current.offsetWidth || 320)),
         });
       })
       .catch(() => onError?.(new Error('Impossibile caricare Google Identity Services')));

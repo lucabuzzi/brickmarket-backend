@@ -1646,5 +1646,20 @@
     "empty_cta_auctions": "Go to auctions",
     "picks_kicker": "Don't miss",
     "picks_title": "Just arrived."
+  },
+  "login_page": {
+    "kicker": "Welcome back to CardBrix",
+    "title_1": "Your next piece",
+    "title_2": "is waiting.",
+    "subtitle": "Log in to buy, bid in live auctions and take on other collectors in the Puzzle Arena.",
+    "pill_listings": "Listings",
+    "pill_auctions": "Live auctions",
+    "pill_arena": "Puzzle Arena",
+    "form_subtitle": "Sign in to your account to continue.",
+    "email_placeholder": "name@email.com or username",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "create_account": "Create a free account",
+    "secure_note": "Login protected by Cloudflare Turnstile"
   }
 }

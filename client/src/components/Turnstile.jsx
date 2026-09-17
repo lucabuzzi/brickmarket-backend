@@ -25,7 +25,7 @@ function loadTurnstileScript() {
 }
 
 /** Cloudflare Turnstile anti-bot widget. Calls onVerify(token) / onExpire() as the challenge progresses. */
-export default function Turnstile({ onVerify, onExpire, size = 'normal' }) {
+export default function Turnstile({ onVerify, onExpire, size = 'normal', theme = 'auto' }) {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
 
@@ -37,6 +37,7 @@ export default function Turnstile({ onVerify, onExpire, size = 'normal' }) {
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY || DEV_FALLBACK_SITE_KEY,
         size,
+        theme,
         callback: (token) => onVerify?.(token),
         'expired-callback': () => onExpire?.(),
         'error-callback': () => onExpire?.(),
