@@ -29,17 +29,11 @@ const LANGUAGES = [
 ];
 
 export default function Layout() {
-  const { user, login, logout, wallet } = useAuth();
+  const { user, logout, wallet } = useAuth();
   const { cart, cartIsAnimating } = useCart();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [apiStatus, setApiStatus] = useState('checking');
-
-  // Quick Login State
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loggingIn, setLoggingIn] = useState(false);
 
   // User Menu State
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -126,24 +120,6 @@ export default function Layout() {
     const id = setInterval(checkApi, 15000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
-
-  const handleQuickLogin = async (e) => {
-    e.preventDefault();
-    setLoginError('');
-    setLoggingIn(true);
-    try {
-      await login(loginEmail, loginPassword);
-      setLoginEmail('');
-      setLoginPassword('');
-    } catch (err) {
-      setLoginError(t('errors.invalid_credentials'));
-    } finally {
-      setLoggingIn(false);
-    }
-  };
-
-
-  const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
   return (
     <div className="app-shell" style={{ overflowX: 'clip', position: 'relative' }}>

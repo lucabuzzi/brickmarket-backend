@@ -835,3 +835,14 @@ code {
     animation: none;
   }
 }
+
+/* Product page: mouse-driven 3D tilt of the photo stage (vars set in ListingDetail). */
+.pd-stage {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-stage { transform: none; }
+}
