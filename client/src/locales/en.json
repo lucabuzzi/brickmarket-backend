@@ -1621,5 +1621,30 @@
     "reviews_score": "Score",
     "not_found_title": "This seller doesn't exist.",
     "not_found_desc": "We can't find a profile called \"{{username}}\"."
+  },
+  "cart_page": {
+    "kicker": "Cart",
+    "title": "Almost yours.",
+    "subtitle_one": "{{count}} piece ready to ship",
+    "subtitle_other": "{{count}} pieces ready to ship",
+    "step_address": "Address",
+    "step_shipping": "Shipping",
+    "step_payment": "Payment",
+    "pay_cta": "Pay {{total}}",
+    "go_to_payment": "To payment",
+    "remove": "Remove {{title}} from cart",
+    "unavailable_title": "No longer available",
+    "pending_title": "Checking",
+    "seller_profile": "Profile",
+    "shipping_needs_address": "Add an address to calculate shipping.",
+    "retry": "Retry",
+    "login_title": "Log in to check out",
+    "login_desc": "Your cart is waiting: log in to choose an address and pay securely.",
+    "empty_title": "Your cart is empty.",
+    "empty_desc": "Find the piece your collection is missing in listings and auctions.",
+    "empty_cta_listings": "Browse listings",
+    "empty_cta_auctions": "Go to auctions",
+    "picks_kicker": "Don't miss",
+    "picks_title": "Just arrived."
   }
 }

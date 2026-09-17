@@ -1621,5 +1621,30 @@
     "reviews_score": "Punteggio",
     "not_found_title": "Questo venditore non esiste.",
     "not_found_desc": "Non troviamo nessun profilo chiamato \"{{username}}\"."
+  },
+  "cart_page": {
+    "kicker": "Carrello",
+    "title": "Quasi tuoi.",
+    "subtitle_one": "{{count}} pezzo pronto a partire",
+    "subtitle_other": "{{count}} pezzi pronti a partire",
+    "step_address": "Indirizzo",
+    "step_shipping": "Spedizione",
+    "step_payment": "Pagamento",
+    "pay_cta": "Paga {{total}}",
+    "go_to_payment": "Al pagamento",
+    "remove": "Rimuovi {{title}} dal carrello",
+    "unavailable_title": "Non più disponibili",
+    "pending_title": "In verifica",
+    "seller_profile": "Profilo",
+    "shipping_needs_address": "Aggiungi un indirizzo per calcolare la spedizione.",
+    "retry": "Riprova",
+    "login_title": "Accedi per completare",
+    "login_desc": "Il tuo carrello ti aspetta: accedi per scegliere l'indirizzo e pagare in sicurezza.",
+    "empty_title": "Il carrello è vuoto.",
+    "empty_desc": "Trova il pezzo che manca alla tua collezione tra annunci e aste.",
+    "empty_cta_listings": "Esplora gli annunci",
+    "empty_cta_auctions": "Vai alle aste",
+    "picks_kicker": "Da non perdere",
+    "picks_title": "Appena arrivati."
   }
 }

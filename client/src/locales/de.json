@@ -1621,5 +1621,30 @@
     "reviews_score": "Wertung",
     "not_found_title": "Diesen Verkäufer gibt es nicht.",
     "not_found_desc": "Wir finden kein Profil namens „{{username}}“."
+  },
+  "cart_page": {
+    "kicker": "Warenkorb",
+    "title": "Fast deins.",
+    "subtitle_one": "{{count}} Stück bereit zum Versand",
+    "subtitle_other": "{{count}} Stücke bereit zum Versand",
+    "step_address": "Adresse",
+    "step_shipping": "Versand",
+    "step_payment": "Zahlung",
+    "pay_cta": "{{total}} bezahlen",
+    "go_to_payment": "Zur Zahlung",
+    "remove": "{{title}} aus dem Warenkorb entfernen",
+    "unavailable_title": "Nicht mehr verfügbar",
+    "pending_title": "Wird geprüft",
+    "seller_profile": "Profil",
+    "shipping_needs_address": "Füge eine Adresse hinzu, um den Versand zu berechnen.",
+    "retry": "Erneut versuchen",
+    "login_title": "Zum Abschließen anmelden",
+    "login_desc": "Dein Warenkorb wartet: Melde dich an, um die Adresse zu wählen und sicher zu bezahlen.",
+    "empty_title": "Dein Warenkorb ist leer.",
+    "empty_desc": "Finde das Stück, das deiner Sammlung fehlt, in Angeboten und Auktionen.",
+    "empty_cta_listings": "Angebote entdecken",
+    "empty_cta_auctions": "Zu den Auktionen",
+    "picks_kicker": "Nicht verpassen",
+    "picks_title": "Gerade eingetroffen."
   }
 }

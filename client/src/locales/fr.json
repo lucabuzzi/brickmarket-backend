@@ -1628,5 +1628,31 @@
     "reviews_score": "Note",
     "not_found_title": "Ce vendeur n'existe pas.",
     "not_found_desc": "Nous ne trouvons aucun profil nommé « {{username}} »."
+  },
+  "cart_page": {
+    "kicker": "Panier",
+    "title": "Presque à vous.",
+    "subtitle_one": "{{count}} pièce prête à partir",
+    "subtitle_many": "{{count}} pièces prêtes à partir",
+    "subtitle_other": "{{count}} pièces prêtes à partir",
+    "step_address": "Adresse",
+    "step_shipping": "Livraison",
+    "step_payment": "Paiement",
+    "pay_cta": "Payer {{total}}",
+    "go_to_payment": "Au paiement",
+    "remove": "Retirer {{title}} du panier",
+    "unavailable_title": "Plus disponibles",
+    "pending_title": "Vérification",
+    "seller_profile": "Profil",
+    "shipping_needs_address": "Ajoutez une adresse pour calculer la livraison.",
+    "retry": "Réessayer",
+    "login_title": "Connectez-vous pour finaliser",
+    "login_desc": "Votre panier vous attend : connectez-vous pour choisir l'adresse et payer en toute sécurité.",
+    "empty_title": "Votre panier est vide.",
+    "empty_desc": "Trouvez la pièce qui manque à votre collection parmi les annonces et les enchères.",
+    "empty_cta_listings": "Voir les annonces",
+    "empty_cta_auctions": "Aller aux enchères",
+    "picks_kicker": "À ne pas manquer",
+    "picks_title": "Tout juste arrivés."
   }
 }
