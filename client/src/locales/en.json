@@ -1661,5 +1661,29 @@
     "hide_password": "Hide password",
     "create_account": "Create a free account",
     "secure_note": "Login protected by Cloudflare Turnstile"
+  },
+  "register_page": {
+    "kicker": "Join CardBrix",
+    "title_1": "Start your",
+    "title_2": "collection.",
+    "subtitle": "One account to buy, sell, bid and play: LEGO, collectible cards and Funko Pop! all in one place.",
+    "perk_listings": "Buy and sell LEGO, cards and Funko Pop!",
+    "perk_auctions": "Bid in live auctions",
+    "perk_arena": "Take on other collectors in the Puzzle Arena",
+    "form_subtitle": "Choose your account type and fill in your details.",
+    "type_label": "Account type",
+    "type_private_desc": "For collectors buying and selling as individuals.",
+    "type_pro_desc": "For shops and businesses: requires business documents.",
+    "username_hint": "At least 3 characters. This is the name other users will see.",
+    "strength_weak": "Weak password",
+    "strength_medium": "Fair password",
+    "strength_strong": "Strong password",
+    "passwords_match": "Passwords match",
+    "passwords_mismatch": "Passwords don't match",
+    "file_hint": "Image or PDF",
+    "file_choose": "Choose",
+    "file_change": "Change",
+    "consents_title": "Consents",
+    "legal_link": "Read the legal terms"
   }
 }
