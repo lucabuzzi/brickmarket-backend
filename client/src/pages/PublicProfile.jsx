@@ -1,35 +1,98 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { apiFetch, normalizeImageUrl } from '../api';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
-  Users,
-  MapPin,
-  ShieldCheck,
-  Calendar,
-  Crown,
-  ArrowLeft,
-  Package,
-  ShoppingBag,
-  Star,
-  MessageSquare,
-  ChevronDown,
+  ArrowLeft, ArrowRight, BadgeCheck, Calendar, ChevronDown, Crown, Gavel, MapPin,
+  MessageSquare, Package, Share2, ShoppingBag, Star, Users,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { apiFetch } from '../api';
 import BrickRating from '../components/BrickRating';
-import ListingCard from '../components/ListingCard';
-import SellerTypeBadge from '../components/SellerTypeBadge';
+import MarketCard from '../components/market/MarketCard';
+import { MARKET_MODES, isLiveAuction } from '../components/market/marketConfig';
+import { cldImage, formatEUR, listingImage } from '../components/landing/landingUtils';
+import { useToast } from '../context/ToastContext';
+
+const LIME = '#c6ff3d';
+const EMBER = '#ff5a36';
+const REVIEWS_PER_PAGE = 5;
+
+const isAuctionItem = (l) => Boolean(l.is_auction || l.type === 'auction');
+
+/** Two drifting rows of the seller's own photos behind the hero. */
+function ShowcaseTape({ images }) {
+  const reduceMotion = useReducedMotion();
+  if (images.length < 3) return null;
+  const row = (list) => [...list, ...list, ...list, ...list].slice(0, Math.max(16, list.length * 2));
+  const rows = [images, [...images].reverse()];
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{
+        maskImage: 'linear-gradient(to bottom, #000 20%, transparent 95%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, #000 20%, transparent 95%)',
+      }}
+      aria-hidden
+    >
+      <div className="absolute -left-[10%] -top-10 flex w-[120%] -rotate-[5deg] flex-col gap-4 opacity-45">
+        {rows.map((list, r) => {
+          const items = row(list);
+          return (
+            <div key={r} className="overflow-hidden">
+              <div
+                className={`flex w-max gap-4 ${reduceMotion ? '' : 'lx-marquee'}`}
+                style={r === 1 ? { animationDirection: 'reverse', animationDuration: '90s' } : undefined}
+              >
+                {[...items, ...items].map((src, i) => (
+                  <img key={i} src={src} alt="" loading="lazy" className="h-36 w-28 shrink-0 rounded-2xl object-cover md:h-48 md:w-36" />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#07060b]/40 via-[#07060b]/70 to-[#07060b]" />
+    </div>
+  );
+}
+
+function StatTile({ value, label, accent, children }) {
+  return (
+    <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-md">
+      <p className="truncate font-mono text-2xl font-black tabular-nums text-white md:text-3xl" style={accent ? { color: accent } : undefined}>
+        {value}
+      </p>
+      {children}
+      <p className="mt-1 truncate text-[11px] font-bold uppercase tracking-wider text-white/45">{label}</p>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, desc }) {
+  return (
+    <div className="flex flex-col items-center rounded-[1.75rem] border border-dashed border-white/15 bg-white/[0.02] px-6 py-16 text-center">
+      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06]">
+        <Icon className="h-6 w-6 text-white/50" />
+      </span>
+      <p className="mt-5 text-xl font-black text-white">{title}</p>
+      <p className="mt-2 max-w-sm text-sm text-white/55">{desc}</p>
+    </div>
+  );
+}
 
 export default function PublicProfile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { username } = useParams();
+  const toast = useToast();
   const [data, setData] = useState(null);
+  const [loadedAt, setLoadedAt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsPage, setReviewsPage] = useState(1);
-  const REVIEWS_PER_PAGE = 5;
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +102,7 @@ export default function PublicProfile() {
         const res = await apiFetch(`/api/users/profile/${username}`);
         if (!cancelled) {
           setData(res);
+          setLoadedAt(Date.now());
           // Pre-populate the 5 recent reviews from the profile response
           setReviews(res.reviews || []);
         }
@@ -49,7 +113,7 @@ export default function PublicProfile() {
       }
     })();
     return () => { cancelled = true; };
-  }, [username]);
+  }, [username, t]);
 
   const loadMoreReviews = async () => {
     if (!data?.user?.id) return;
@@ -65,387 +129,385 @@ export default function PublicProfile() {
     }
   };
 
-  if (loading) return (
-    <div className="page" style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-      <p className="muted animate-pulse">{t('public_profile.loading_profile', { username })}</p>
-    </div>
-  );
+  const shareProfile = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${username} | CardBrix`, url });
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        // Clipboard API can be denied (embedded webviews, older browsers): legacy copy fallback.
+        const area = document.createElement('textarea');
+        area.value = url;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+        document.body.appendChild(area);
+        area.select();
+        const copied = document.execCommand('copy');
+        area.remove();
+        if (!copied) throw new Error('copy failed');
+      }
+      toast.success(t('seller_page.link_copied'));
+    } catch (e) {
+      if (e?.name !== 'AbortError') toast.error(t('seller_page.share_error'));
+    }
+  };
 
-  if (error || !data) return (
-    <div className="page" style={{ padding: '2rem', textAlign: 'center' }}>
-      <div className="error-banner" style={{ display: 'inline-block', marginBottom: '2rem' }}>{error || t('public_profile.user_not_found')}</div>
-      <br />
-      <Link to="/ricerca-utente" className="btn btn--secondary">
-        <ArrowLeft size={18} /> {t('public_profile.back_to_search')}
-      </Link>
-    </div>
-  );
-
-  const { user, listings } = data;
-  const joinDate = new Date(user.created_at).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-
-  // ── Dynamic badge logic (same inclusive thresholds as ListingCard) ─────────
-  const ratingAvg   = parseFloat(user.rating_avg || 0);
-  const salesCount  = parseInt(user.sales_count || 0, 10);
-  const ratingCount = parseInt(user.rating_count || 0, 10);
-  const isLegendary = ratingAvg >= 4.8 && salesCount >= 10;
-  const isNewUser   = ratingCount === 0;
-
-
-  return (
-    <div className="page profile-page" style={{ paddingTop: '1rem' }}>
-      
-      {/* ── Header / Hero ───────────────────────────────────── */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '2rem',
-        marginBottom: '3rem',
-        backgroundColor: '#120f0a',
-        padding: '2.5rem',
-        borderRadius: '24px',
-        border: '1px solid #292524',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-          {/* Avatar */}
-          <div style={{ position: 'relative' }}>
-            <div style={{ 
-              width: '140px', 
-              height: '140px', 
-              borderRadius: '50%', 
-              overflow: 'hidden', 
-              border: '4px solid #44403c',
-              backgroundColor: '#292524'
-            }}>
-              {user.avatar_url ? (
-                <img src={normalizeImageUrl(user.avatar_url)} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#44403c' }}>
-                  <Users size={64} />
-                </div>
-              )}
+  if (loading) {
+    return (
+      <div className="lx-page min-h-[80vh]">
+        <div className="mx-auto max-w-[1320px] px-4 pb-16 pt-28 md:px-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end">
+            <div className="h-32 w-32 animate-pulse rounded-full bg-white/[0.07] md:h-40 md:w-40" />
+            <div className="flex-1 space-y-4">
+              <div className="h-4 w-40 animate-pulse rounded-full bg-white/[0.07]" />
+              <div className="h-16 w-2/3 animate-pulse rounded-2xl bg-white/[0.07]" />
             </div>
-            {user.is_verified && (
-              <div style={{ 
-                position: 'absolute', 
-                bottom: '5px', 
-                right: '5px', 
-                backgroundColor: '#d4af37', 
-                borderRadius: '50%', 
-                width: '36px', 
-                height: '36px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                color: '#120f0a',
-                border: '4px solid #120f0a'
-              }} title="Identità Verificata">
-                <ShieldCheck size={20} strokeWidth={2.5} />
-              </div>
-            )}
           </div>
-
-          {/* Info */}
-          <div style={{ flex: 1, minWidth: '300px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-              <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: '900', color: '#fff' }}>{user.username}</h1>
-
-              {/* LEGENDARY badge — emerald glow, top priority */}
-              {isLegendary && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  background: 'linear-gradient(90deg, #059669, #10b981)',
-                  color: '#fff',
-                  padding: '0.25rem 0.7rem', borderRadius: '8px',
-                  fontSize: '0.8rem', fontWeight: '900', letterSpacing: '0.5px',
-                  boxShadow: '0 0 14px 3px rgba(16, 185, 129, 0.45)',
-                }} title="Legendary Seller: rating ≥ 4.8 e 10+ vendite">
-                  <Crown size={14} strokeWidth={3} /> ★ LEGENDARY
-                </div>
-              )}
-
-              {/* PRO badge — gold */}
-              {user.is_pro && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  backgroundColor: '#eab308', color: '#000',
-                  padding: '0.2rem 0.6rem', borderRadius: '6px',
-                  fontSize: '0.8rem', fontWeight: '900', letterSpacing: '0.5px'
-                }}>
-                  <Crown size={14} strokeWidth={3} /> PRO
-                </div>
-              )}
-
-              {/* VERIFIED badge — blue (distinct from PRO) */}
-              {user.is_verified && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  backgroundColor: '#bf9a2e', color: '#fff',
-                  padding: '0.2rem 0.6rem', borderRadius: '6px',
-                  fontSize: '0.8rem', fontWeight: '900', letterSpacing: '0.5px'
-                }} title="Identità Verificata">
-                  <ShieldCheck size={14} strokeWidth={3} /> VERIFIED
-                </div>
-              )}
-
-              {/* NEW USER badge — grey, only when no positive badge applies */}
-              {isNewUser && !user.is_pro && !user.is_verified && !isLegendary && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  backgroundColor: '#44403c', color: '#a8a29e',
-                  padding: '0.2rem 0.6rem', borderRadius: '6px',
-                  fontSize: '0.75rem', fontWeight: '700', letterSpacing: '0.5px'
-                }} title="Nuovo membro: nessuna transazione ancora">
-                  NUOVO UTENTE
-                </div>
-              )}
-
-              <SellerTypeBadge sellerType={user.seller_type} className="!text-[0.75rem] !py-1" />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', color: '#a8a29e', fontSize: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <MapPin size={18} />
-                {user.city}, {user.address_country?.toUpperCase()}
-                <span className={`fi fi-${user.address_country?.toLowerCase()}`} style={{ borderRadius: '2px', marginLeft: '0.2rem' }}></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Calendar size={18} />
-                {t('public_profile.member_since', { date: joinDate })}
-              </div>
-            </div>
-
-            {user.bio && (
-              <p style={{ marginTop: '1.5rem', color: '#d6d3d1', lineHeight: '1.6', maxWidth: '600px' }}>
-                {user.bio}
-              </p>
-            )}
-          </div>
-
-          {/* Trust Box */}
-          <div style={{ 
-            backgroundColor: '#292524', 
-            padding: '1.5rem 2rem', 
-            borderRadius: '16px', 
-            textAlign: 'center',
-            border: '1px solid #44403c',
-            minWidth: '200px'
-          }}>
-            <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.75rem', color: '#78716c', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {t('public_profile.seller_trust_label')}
-            </h4>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
-              <BrickRating value={parseFloat(user.rating_avg) || 0} size={24} interactive={false} />
-            </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff' }}>
-              {user.rating_avg} <span style={{ fontSize: '0.9rem', color: '#a8a29e', fontWeight: '400' }}>/ 5</span>
-            </div>
-            <p style={{ margin: '0.25rem 0 0 0', color: '#d4af37', fontSize: '0.8rem', fontWeight: '700' }}>
-              {t('public_profile.feedback_received', { count: user.rating_count })}
-            </p>
+          <div className="mt-16 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/5] animate-pulse rounded-[22px] bg-white/[0.05]" />)}
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* ── Tabs ────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid #292524', marginBottom: '2.5rem' }}>
-        {[
-          { id: 'active', label: t('public_profile.tab_active'), icon: Package, count: listings.active.length },
-          { id: 'sold', label: t('public_profile.tab_sold'), icon: ShoppingBag, count: listings.sold.length },
-          { id: 'reviews', label: t('public_profile.tab_reviews'), icon: Star, count: user.rating_count }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '1rem 0.5rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid #d4af37' : '2px solid transparent',
-              color: activeTab === tab.id ? '#d4af37' : '#78716c',
-              fontWeight: '700',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.6rem',
-              transition: 'all 0.2s',
-              marginBottom: '-1px'
-            }}
-          >
-            <tab.icon size={20} />
-            {tab.label}
-            <span style={{ 
-              fontSize: '0.75rem', 
-              backgroundColor: activeTab === tab.id ? 'rgba(212,175,55,0.1)' : 'rgba(22, 19, 14, 0.5)',
-              padding: '0.1rem 0.5rem',
-              borderRadius: '10px'
-            }}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
+  if (error || !data) {
+    return (
+      <div className="lx-page flex min-h-[80vh] items-center justify-center px-4 py-24">
+        <div className="max-w-lg text-center">
+          <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
+            <Users className="h-9 w-9 text-white/40" />
+          </span>
+          <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] text-white md:text-4xl">{t('seller_page.not_found_title')}</h1>
+          <p className="mt-3 text-white/60">{t('seller_page.not_found_desc', { username })}</p>
+          <Link to="/ricerca-utente" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c6ff3d] px-6 font-black text-[#10140a] transition hover:brightness-110">
+            <ArrowLeft className="h-4 w-4" />
+            {t('public_profile.back_to_search')}
+          </Link>
+        </div>
       </div>
+    );
+  }
 
-      {/* ── Tab Content ─────────────────────────────────────── */}
-      <div style={{ minHeight: '300px' }}>
-        {activeTab === 'active' && (
-          <>
-            {listings.active.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '5rem 0', color: '#57534e' }}>
-                <Package size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                <p>{t('public_profile.no_active_listings')}</p>
-              </div>
-            ) : (
-              <ul className="cards-grid">
-                {listings.active.map(l => (
-                  <ListingCard key={l.id} l={{ ...l, seller_username: user.username, seller_is_pro: user.is_pro, seller_is_verified: user.is_verified, seller_rating_avg: user.rating_avg, seller_sales_count: user.sales_count, seller_rating_count: user.rating_count }} />
-                ))}
-              </ul>
-            )}
-          </>
-        )}
+  const { user, listings } = data;
+  const seller = { username: user.username, is_verified: user.is_verified, is_pro: user.is_pro };
+  const withSeller = (l) => ({ ...l, seller });
 
-        {activeTab === 'sold' && (
-          <>
-            {listings.sold.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '5rem 0', color: '#57534e' }}>
-                <ShoppingBag size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                <p>{t('public_profile.no_sold_items')}</p>
-              </div>
-            ) : (
-              <div style={{ filter: 'grayscale(0.8)', opacity: 0.7 }}>
-                <ul className="cards-grid">
-                  {listings.sold.map(l => (
-                    <ListingCard key={l.id} l={{ ...l, seller_username: user.username, seller_is_pro: user.is_pro, seller_is_verified: user.is_verified, seller_rating_avg: user.rating_avg, seller_sales_count: user.sales_count, seller_rating_count: user.rating_count }} />
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
-        )}
+  const shop = listings.active.filter((l) => !isAuctionItem(l)).map(withSeller);
+  const auctions = listings.active.filter((l) => isAuctionItem(l) && isLiveAuction(l, loadedAt)).map(withSeller);
+  const sold = listings.sold.map(withSeller);
 
-        {activeTab === 'reviews' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {reviews.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '5rem 0', color: '#57534e', backgroundColor: '#120f0a', borderRadius: '16px', border: '1px solid #292524' }}>
-                <Star size={48} style={{ marginBottom: '1rem', color: '#ca8a04', opacity: 0.4 }} />
-                <h3 style={{ color: '#e7e5e4', margin: '0 0 0.5rem 0' }}>{t('public_profile.no_reviews_title')}</h3>
-                <p style={{ maxWidth: '360px', margin: '0 auto', fontSize: '0.9rem' }}>
-                  {t('public_profile.no_reviews_subtitle')}
+  const ratingAvg = parseFloat(user.rating_avg || 0);
+  const ratingCount = parseInt(user.rating_count || 0, 10);
+  const hasRating = ratingCount > 0;
+  const isLegendary = ratingAvg >= 4.8 && sold.length >= 10;
+  const isNewUser = ratingCount === 0 && sold.length === 0;
+  const joinDate = new Date(user.created_at).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
+  const shopValue = shop.reduce((sum, l) => sum + (parseFloat(l.price) || 0), 0);
+
+  const tapeImages = [...listings.active, ...listings.sold]
+    .map((l) => listingImage(l, 300))
+    .filter(Boolean)
+    .slice(0, 12);
+
+  const tabs = [
+    { id: 'shop', label: t('seller_page.tab_shop'), icon: Package, count: shop.length, accent: LIME },
+    auctions.length > 0 && { id: 'auctions', label: t('seller_page.tab_auctions'), icon: Gavel, count: auctions.length, accent: EMBER },
+    { id: 'sold', label: t('seller_page.tab_sold'), icon: ShoppingBag, count: sold.length, accent: '#ffffff' },
+    { id: 'reviews', label: t('seller_page.tab_reviews'), icon: Star, count: ratingCount, accent: '#facc15' },
+  ].filter(Boolean);
+  const defaultTab = shop.length ? 'shop' : auctions.length ? 'auctions' : sold.length ? 'sold' : 'reviews';
+  const tab = tabs.some((x) => x.id === activeTab) ? activeTab : defaultTab;
+  const tabAccent = tabs.find((x) => x.id === tab)?.accent || LIME;
+
+  const location = [user.city, user.address_country?.toUpperCase()].filter(Boolean).join(', ');
+  const kicker = user.seller_type === 'professional'
+    ? t('seller_page.kicker_professional')
+    : user.seller_type === 'private' ? t('seller_page.kicker_private') : t('seller_page.kicker_member');
+
+  return (
+    <div className="lx-page pb-24">
+      {/* ── Hero ──────────────────────────────────────────── */}
+      <section className="lx-bleed relative overflow-hidden">
+        <ShowcaseTape images={tapeImages} />
+        <div className="lx-grid pointer-events-none absolute inset-0 opacity-30" />
+        <div className="pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full opacity-20 blur-[120px]" style={{ background: LIME }} />
+
+        <div className="relative mx-auto max-w-[1320px] px-4 pb-12 pt-24 md:px-10 md:pb-16 md:pt-32">
+          <Link to="/ricerca-utente" className="mb-8 inline-flex min-h-10 items-center gap-2 text-[13px] font-semibold text-white/55 transition hover:text-white">
+            <ArrowLeft className="h-4 w-4" />
+            {t('public_profile.back_to_directory')}
+          </Link>
+
+          <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <motion.div initial={{ y: 24 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="min-w-0">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+                {/* avatar with spinning ring */}
+                <div className="relative h-32 w-32 shrink-0 md:h-40 md:w-40">
+                  <div
+                    className="lx-arena-ring absolute -inset-2 rounded-full"
+                    style={{ background: `conic-gradient(from var(--lx-ring-angle, 0deg), ${LIME}, #22d3ee, ${EMBER}, ${LIME})`, opacity: 0.7 }}
+                  />
+                  <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-[#07060b] bg-[#15131c]">
+                    {user.avatar_url ? (
+                      <img src={cldImage(user.avatar_url, 320)} alt={user.username} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-6xl font-black uppercase md:text-7xl" style={{ color: LIME }}>
+                        {user.username.slice(0, 1)}
+                      </span>
+                    )}
+                  </div>
+                  {user.is_verified && (
+                    <span className="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border-4 border-[#07060b] bg-[#22d3ee] text-[#07060b]" title={t('seller_page.badge_verified')}>
+                      <BadgeCheck className="h-5 w-5" strokeWidth={2.5} />
+                    </span>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.24em]" style={{ color: LIME }}>{kicker}</p>
+                  <h1 className="mt-2 break-words text-[clamp(2.6rem,7vw,5.5rem)] font-black leading-[0.9] tracking-[-0.05em] text-white">
+                    {user.username}
+                  </h1>
+                  {user.company_name && <p className="mt-2 text-lg font-bold text-white/70">{user.company_name}</p>}
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                {isLegendary && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-[#c6ff3d] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-[#07060b] shadow-[0_0_24px_rgba(198,255,61,0.35)]" title={t('details.badge_legendary_tooltip')}>
+                    <Crown className="h-3.5 w-3.5" strokeWidth={3} /> {t('seller_page.badge_legendary')}
+                  </span>
+                )}
+                {user.is_pro && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-[#eab308] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-black">
+                    <Crown className="h-3.5 w-3.5" strokeWidth={3} /> PRO
+                  </span>
+                )}
+                {user.is_verified && (
+                  <span className="flex items-center gap-1.5 rounded-full border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-[#22d3ee]">
+                    <BadgeCheck className="h-3.5 w-3.5" /> {t('seller_page.badge_verified')}
+                  </span>
+                )}
+                {isNewUser && !user.is_pro && !user.is_verified && (
+                  <span className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white/70">
+                    {t('seller_page.badge_new')}
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-white/60">
+                {location && (
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {location}
+                    {user.address_country && <span className={`fi fi-${user.address_country.toLowerCase()} rounded-[2px]`} />}
+                  </span>
+                )}
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {t('public_profile.member_since', { date: joinDate })}
+                </span>
+              </div>
+
+              {user.bio && (
+                <p className="mt-6 max-w-2xl whitespace-pre-line break-words text-base leading-relaxed text-white/75 md:text-lg">
+                  {user.bio}
                 </p>
+              )}
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                {shop.length + auctions.length > 0 && (
+                  <a
+                    href="#vetrina"
+                    className="lx-shine relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full px-6 text-sm font-black text-[#10140a] transition hover:brightness-110"
+                    style={{ background: LIME }}
+                  >
+                    {t('seller_page.cta_showcase')}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={shareProfile}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-white/40"
+                >
+                  <Share2 className="h-4 w-4" />
+                  {t('seller_page.share')}
+                </button>
               </div>
-            ) : (
-              <>
-                {reviews.slice(0, reviewsPage * REVIEWS_PER_PAGE).map(review => {
-                  const date = new Date(review.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
-                  const avatarSrc = review.reviewer_avatar ? normalizeImageUrl(review.reviewer_avatar) : null;
+            </motion.div>
+
+            {/* stats */}
+            <motion.div
+              initial={{ y: 24 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="grid grid-cols-2 gap-3"
+            >
+              <StatTile value={shop.length + auctions.length} label={t('seller_page.stat_on_sale')} accent={LIME} />
+              <StatTile value={sold.length} label={t('seller_page.stat_sold')} />
+              <StatTile value={hasRating ? ratingAvg.toFixed(1) : '—'} label={hasRating ? t('seller_page.stat_rating', { count: ratingCount }) : t('seller_page.stat_rating_none')}>
+                <div className="mt-1.5"><BrickRating value={hasRating ? ratingAvg : 0} interactive={false} /></div>
+              </StatTile>
+              <StatTile value={shop.length ? formatEUR(shopValue, i18n.language) : '—'} label={t('seller_page.stat_value')} />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Showcase ──────────────────────────────────────── */}
+      <section id="vetrina" className="relative mx-auto max-w-[1320px] scroll-mt-24 px-4 pt-6 md:px-10">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em]" style={{ color: tabAccent }}>{t('seller_page.showcase_kicker')}</p>
+            <h2 className="mt-2 break-words text-[clamp(1.9rem,4.5vw,3.2rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">
+              {t('seller_page.showcase_title', { username: user.username })}
+            </h2>
+          </div>
+        </div>
+
+        <div className="lx-bleed sticky top-16 z-30 mb-8 border-y border-white/10 bg-[#07060b]/85 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-[1320px] gap-2 overflow-x-auto px-4 py-3 md:px-10" role="tablist">
+            {tabs.map((x) => {
+              const active = x.id === tab;
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(x.id)}
+                  className={`flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition ${
+                    active ? 'text-[#07060b]' : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/30 hover:text-white'
+                  }`}
+                  style={active ? { background: x.accent, borderColor: x.accent } : undefined}
+                >
+                  <x.icon className="h-4 w-4" />
+                  {x.label}
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${active ? 'bg-black/15' : 'bg-white/10'}`}>{x.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {tab === 'shop' && (
+          shop.length === 0 ? (
+            <EmptyState icon={Package} title={t('seller_page.empty_shop_title')} desc={t('public_profile.no_active_listings')} />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+              {shop.map((item, i) => <MarketCard key={item.id} item={item} mode={MARKET_MODES.listings} index={i} />)}
+            </div>
+          )
+        )}
+
+        {tab === 'auctions' && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+            {auctions.map((item, i) => <MarketCard key={item.id} item={item} mode={MARKET_MODES.auctions} index={i} />)}
+          </div>
+        )}
+
+        {tab === 'sold' && (
+          sold.length === 0 ? (
+            <EmptyState icon={ShoppingBag} title={t('seller_page.empty_sold_title')} desc={t('public_profile.no_sold_items')} />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+              {sold.map((item, i) => (
+                <div key={item.id} className="relative">
+                  <div className="grayscale-[0.85] opacity-70 transition hover:grayscale-0 hover:opacity-100">
+                    <MarketCard item={item} mode={isAuctionItem(item) ? MARKET_MODES.auctions : MARKET_MODES.listings} index={i} />
+                  </div>
+                  <span className="pointer-events-none absolute left-1/2 top-[38%] -translate-x-1/2 -rotate-12 rounded-lg border-2 border-white bg-[#07060b]/80 px-3 py-1 text-sm font-black uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+                    {t('status.sold')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'reviews' && (
+          reviews.length === 0 ? (
+            <EmptyState icon={Star} title={t('public_profile.no_reviews_title')} desc={t('public_profile.no_reviews_subtitle')} />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-10">
+              <div className="h-fit rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 lg:sticky lg:top-40">
+                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-white/45">{t('seller_page.reviews_score')}</p>
+                <p className="mt-2 text-7xl font-black leading-none tracking-[-0.05em] text-white">
+                  {ratingAvg.toFixed(1)}
+                  <span className="ml-1 text-2xl text-white/35">/5</span>
+                </p>
+                <div className="mt-3"><BrickRating value={ratingAvg} size={22} interactive={false} /></div>
+                <p className="mt-3 text-sm font-semibold text-white/55">{t('public_profile.feedback_received', { count: ratingCount })}</p>
+              </div>
+
+              <div className="space-y-3">
+                {reviews.slice(0, reviewsPage * REVIEWS_PER_PAGE).map((review) => {
+                  const date = new Date(review.created_at).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' });
                   return (
-                    <div key={review.id} style={{
-                      backgroundColor: '#120f0a', border: '1px solid #292524',
-                      borderRadius: '16px', padding: '1.25rem 1.5rem',
-                      display: 'flex', flexDirection: 'column', gap: '0.75rem',
-                      transition: 'border-color 0.2s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = '#44403c'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = '#292524'}
-                    >
-                      {/* Row 1: reviewer identity + date */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        {/* Avatar */}
-                        <div style={{
-                          width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
-                          backgroundColor: '#292524', border: '2px solid #44403c',
-                          overflow: 'hidden', display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', fontSize: '1rem', color: '#78716c',
-                        }}>
-                          {avatarSrc
-                            ? <img src={avatarSrc} alt={review.reviewer_username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : review.reviewer_username?.[0]?.toUpperCase()
-                          }
+                    <article key={review.id} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/25">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 font-black uppercase text-white/70">
+                          {review.reviewer_avatar
+                            ? <img src={cldImage(review.reviewer_avatar, 80)} alt="" className="h-full w-full object-cover" />
+                            : review.reviewer_username?.[0]}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-bold text-white">{review.reviewer_username}</p>
+                          <p className="text-xs text-white/40">{date}</p>
                         </div>
-                        {/* Name + date */}
-                        <div style={{ flex: 1 }}>
-                          <span style={{ fontWeight: '700', color: '#f5f5f4', fontSize: '0.95rem' }}>
-                            {review.reviewer_username}
-                          </span>
-                          <span style={{ color: '#57534e', fontSize: '0.75rem', marginLeft: '0.75rem' }}>{date}</span>
-                        </div>
-                        {/* Stars */}
                         <BrickRating value={review.rating} interactive={false} />
                       </div>
-
-                      {/* Row 2: listing context */}
                       {review.listing_title && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <Package size={12} color="#57534e" />
-                          <span style={{ fontSize: '0.75rem', color: '#57534e' }}>
-                            {review.listing_set_number && <span style={{ color: '#d4af37', marginRight: '0.3rem' }}>{review.listing_set_number}</span>}
+                        <p className="mt-3 flex items-center gap-2 text-xs font-semibold text-white/45">
+                          <Package className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">
+                            {review.listing_set_number && <span className="mr-1" style={{ color: LIME }}>{review.listing_set_number}</span>}
                             {review.listing_title}
                           </span>
-                        </div>
+                        </p>
                       )}
-
-                      {/* Row 3: comment */}
                       {review.comment && (
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <MessageSquare size={14} color="#44403c" style={{ flexShrink: 0, marginTop: '2px' }} />
-                          <p style={{ margin: 0, color: '#d6d3d1', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                            {review.comment}
-                          </p>
-                        </div>
+                        <p className="mt-3 flex gap-2 text-[15px] leading-relaxed text-white/80">
+                          <MessageSquare className="mt-1 h-4 w-4 shrink-0 text-white/25" />
+                          <span className="min-w-0 break-words">{review.comment}</span>
+                        </p>
                       )}
-                    </div>
+                    </article>
                   );
                 })}
 
-                {/* Load more button */}
                 {reviews.length > reviewsPage * REVIEWS_PER_PAGE && (
                   <button
-                    onClick={() => setReviewsPage(p => p + 1)}
-                    style={{
-                      width: '100%', padding: '0.75rem',
-                      backgroundColor: 'transparent', border: '1px solid #292524',
-                      borderRadius: '12px', color: '#78716c', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                      fontSize: '0.85rem', fontWeight: '600', transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#44403c'; e.currentTarget.style.color = '#a8a29e'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#292524'; e.currentTarget.style.color = '#78716c'; }}
+                    type="button"
+                    onClick={() => setReviewsPage((p) => p + 1)}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/10 text-sm font-bold text-white/70 transition hover:border-white/30 hover:text-white"
                   >
-                    <ChevronDown size={16} /> {t('public_profile.load_more_reviews')}
+                    <ChevronDown className="h-4 w-4" /> {t('public_profile.load_more_reviews')}
                   </button>
                 )}
 
-                {/* Load all from API if only preview was loaded */}
-                {reviews.length <= 5 && data?.user?.rating_count > 5 && (
+                {reviews.length <= REVIEWS_PER_PAGE && ratingCount > REVIEWS_PER_PAGE && (
                   <button
+                    type="button"
                     onClick={loadMoreReviews}
                     disabled={reviewsLoading}
-                    style={{
-                      width: '100%', padding: '0.75rem',
-                      backgroundColor: 'transparent', border: '1px dashed #292524',
-                      borderRadius: '12px', color: '#d4af37', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                      fontSize: '0.85rem', fontWeight: '600',
-                    }}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 text-sm font-bold transition hover:border-white/40 disabled:opacity-60"
+                    style={{ color: LIME }}
                   >
-                    {reviewsLoading ? t('ui.loading') : <><ChevronDown size={16} /> {t('public_profile.show_all_reviews', { count: data.user.rating_count })}</>}
+                    {reviewsLoading ? t('ui.loading') : <><ChevronDown className="h-4 w-4" /> {t('public_profile.show_all_reviews', { count: ratingCount })}</>}
                   </button>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )
         )}
-      </div>
-
-      <div style={{ marginTop: '4rem', textAlign: 'center' }}>
-        <Link to="/ricerca-utente" className="btn btn--secondary" style={{ borderRadius: '30px', padding: '0.8rem 2rem' }}>
-          <ArrowLeft size={18} /> {t('public_profile.back_to_directory')}
-        </Link>
-      </div>
-
+      </section>
     </div>
   );
 }

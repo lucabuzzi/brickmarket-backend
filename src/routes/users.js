@@ -48,7 +48,9 @@ router.get('/profile/:username', async (req, res) => {
 
     // 2. Fetch user listings (Active & Sold)
     const listingsRes = await query(
-      `SELECT id, title, price, status, images, condition, set_number
+      `SELECT id, title, price, status, images, condition, set_number, theme,
+              product_type, game, is_featured, is_auction, type, current_bid,
+              starting_price, bids_count, auction_end, created_at
        FROM listings
        WHERE seller_id = $1
        AND status IN ('active', 'sold')
