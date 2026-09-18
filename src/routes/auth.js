@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const authRateLimit = require('../middleware/authRateLimit');
+const forgotPasswordEmailRateLimit = require('../middleware/forgotPasswordEmailRateLimit');
 const { upload, secureUpload } = require('../services/cloudinary');
 const authController = require('../controllers/authController');
 const router = express.Router();
@@ -20,7 +21,7 @@ router.post('/apple', authRateLimit, authController.appleAuthHandler);
 router.get('/me', auth, authController.meHandler);
 router.patch('/me', auth, upload.single('avatar'), authController.updateMeHandler);
 
-router.post('/forgot-password', authRateLimit, authController.forgotPasswordHandler);
+router.post('/forgot-password', authRateLimit, forgotPasswordEmailRateLimit, authController.forgotPasswordHandler);
 router.post('/reset-password', authRateLimit, authController.resetPasswordHandler);
 
 module.exports = router;
