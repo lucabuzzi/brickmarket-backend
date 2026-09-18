@@ -35,12 +35,12 @@ const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
             from: fromEmail,
             to: toEmail,
             subject: "Recupero Password - Cardbrix",
-            text: `Hai richiesto il reset della password. Vai a questo link per resettarla: ${resetTokenLink}`,
+            text: `Hai richiesto il reset della password. Vai a questo link per resettarla (valido per 20 minuti): ${resetTokenLink}`,
             html: `
               <div style="font-family: sans-serif; padding: 20px;">
                 <h2>Supporto Cardbrix</h2>
                 <p>Hai richiesto il reset della tua password.</p>
-                <p>Clicca sul pulsante sottostante per crearne una nuova:</p>
+                <p>Clicca sul pulsante sottostante per crearne una nuova. Il link è valido per 20 minuti, poi scadrà per motivi di sicurezza:</p>
                 <a href="${resetTokenLink}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
                 <p style="margin-top: 20px; font-size: 12px; color: #888;">Se non sei stato tu a richiedere il reset, ignora questa email. La tua password è al sicuro.</p>
               </div>
