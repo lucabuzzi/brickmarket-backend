@@ -29,16 +29,16 @@ const initTransporter = async () => {
 const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
     try {
         const transporter = await initTransporter();
-        const fromEmail = process.env.FROM_EMAIL || '"Supporto BrickMarket" <noreply@brickmarket.com>';
-        
+        const fromEmail = process.env.FROM_EMAIL || '"Supporto Cardbrix" <noreply@cardbrix.com>';
+
         const info = await transporter.sendMail({
             from: fromEmail,
             to: toEmail,
-            subject: "Recupero Password - BrickMarket",
+            subject: "Recupero Password - Cardbrix",
             text: `Hai richiesto il reset della password. Vai a questo link per resettarla: ${resetTokenLink}`,
             html: `
               <div style="font-family: sans-serif; padding: 20px;">
-                <h2>Supporto BrickMarket</h2>
+                <h2>Supporto Cardbrix</h2>
                 <p>Hai richiesto il reset della tua password.</p>
                 <p>Clicca sul pulsante sottostante per crearne una nuova:</p>
                 <a href="${resetTokenLink}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
