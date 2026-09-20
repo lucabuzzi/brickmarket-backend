@@ -325,35 +325,40 @@ async function completeAttemptHandler(req, res) {
   }
 }
 
+// Ruolo admin verificato a monte dalla route (adminAuth, src/middleware/auth.js) —
+// ricontrolla role e is_active dal DB ad ogni richiesta, quindi non serve ripetere
+// qui il controllo su req.user.role.
 async function refundContestHandler(req, res) {
   const { contestId } = req.params;
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin permissions required to refund contests' });
-    }
-
     const contest = await contestRepository.getContestForRefund(contestId);
     if (!contest) {
       return res.status(404).json({ error: 'Contest not found' });
     }
 
-    const { status, slot_cost_credits } = contest;
-    if (status === 'completed' || status === 'cancelled') {
-      return res.status(400).json({ error: `Cannot refund contest which is already ${status}` });
+    if (contest.status === 'completed') {
+      return res.status(400).json({ error: `Cannot refund contest which is already ${contest.status}` });
     }
 
-    const refundAmount = parseFloat(slot_cost_credits);
+    // Idempotent from here on: re-running this whole handler (retry, double-click,
+    // two concurrent requests) is always safe. The status transition is a no-op if
+    // already 'cancelled', and refundParticipant only credits a participant who
+    // hasn't already been refunded for this contest (see contestRepository.js).
+    await contestRepository.markContestCancelledIfNotCompleted(contestId);
+
+    const refundAmount = parseFloat(contest.slot_cost_credits);
     const participants = await contestRepository.getContestParticipantUserIds(contestId);
 
+    let refundedCount = 0;
     for (const row of participants) {
-      await contestRepository.refundParticipant(row.user_id, refundAmount, contestId);
+      const didCredit = await contestRepository.refundParticipant(row.user_id, refundAmount, contestId);
+      if (didCredit) refundedCount += 1;
     }
-
-    await contestRepository.cancelContest(contestId);
 
     return res.json({
       success: true,
-      message: `Contest cancelled. Refunded ${participants.length} participants with ${refundAmount} credits each.`,
+      message: `Contest cancelled. Refunded ${refundedCount}/${participants.length} participant(s) with ${refundAmount} credits each` +
+        (refundedCount < participants.length ? ` (${participants.length - refundedCount} already refunded previously).` : '.'),
     });
   } catch (error) {
     console.error('Refund contest error:', error);
@@ -361,13 +366,10 @@ async function refundContestHandler(req, res) {
   }
 }
 
-// POST /api/contest/create - Create a new timed jigsaw contest (Admin only)
+// POST /api/contest/create - Create a new timed jigsaw contest (Admin only).
+// Ruolo admin verificato a monte dalla route (adminAuth, src/middleware/auth.js).
 async function createContestHandler(req, res) {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin permissions required to create contests.' });
-    }
-
     const {
       title, description, category, marketValue,
       slotCostCredits, condition, gradingInfo, totalSlots = 5,

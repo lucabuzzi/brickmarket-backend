@@ -9,7 +9,11 @@
     "build": "npm install --prefix client --include=dev && npm run build --prefix client",
     "seed": "node scripts/seed-dummy-data.js",
     "client": "npm run dev --prefix client",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --runInBand --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 30000
   },
   "keywords": [],
   "author": "",
@@ -40,6 +44,7 @@
     "ws": "^8.21.1"
   },
   "devDependencies": {
+    "jest": "^30.5.2",
     "nodemon": "^3.1.0"
   }
 }

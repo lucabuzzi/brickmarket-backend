@@ -172,15 +172,42 @@ function getContestParticipantUserIds(contestId) {
   ).then((r) => r.rows);
 }
 
+// Idempotent status transition: setting 'cancelled' on a contest that's already
+// 'cancelled' is a harmless no-op; the AND guard makes sure a concurrent/duplicate
+// refund call can never flip a contest that's already 'completed' (has a real
+// winner) back to 'cancelled'.
+function markContestCancelledIfNotCompleted(contestId) {
+  return db.query(
+    "UPDATE public.contests SET status = $1 WHERE id = $2 AND status != 'completed'",
+    ['cancelled', contestId]
+  );
+}
+
+// Idempotent per (user, contest) via a partial unique index on
+// credit_transactions(user_id, reference_id) WHERE type = 'contest_refund' —
+// see migrate_contest_refund_idempotency.js. The ledger insert is the atomic
+// dedup gate: only if it actually inserts a new row do we credit the wallet, so
+// a retry (or a concurrent duplicate request racing this one) can never credit
+// the same participant twice, even without wrapping the two statements in an
+// explicit transaction.
 async function refundParticipant(userId, amount, contestId) {
+  const inserted = await db.query(
+    `INSERT INTO public.credit_transactions (user_id, amount, type, reference_id)
+     VALUES ($1, $2, 'contest_refund', $3)
+     ON CONFLICT (user_id, reference_id) WHERE type = 'contest_refund' DO NOTHING
+     RETURNING id`,
+    [userId, amount, contestId]
+  );
+
+  if (inserted.rows.length === 0) {
+    return false; // already refunded for this contest — do not credit again
+  }
+
   await db.query(
     'UPDATE public.user_wallets SET balance_credits = balance_credits + $1 WHERE user_id = $2',
     [amount, userId]
   );
-  await db.query(
-    'INSERT INTO public.credit_transactions (user_id, amount, type, reference_id) VALUES ($1, $2, $3, $4)',
-    [userId, amount, 'contest_refund', contestId]
-  );
+  return true;
 }
 
 // Handles both the mock in-memory DB (used when Postgres is unreachable) and
@@ -246,6 +273,7 @@ module.exports = {
   cancelContest,
   getContestForRefund,
   getContestParticipantUserIds,
+  markContestCancelledIfNotCompleted,
   refundParticipant,
   createContestProduct,
 };

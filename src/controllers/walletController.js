@@ -6,6 +6,16 @@ const {
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
+// Euro<->crediti flow disattivato (non cancellato): i crediti CardBrix non devono avere
+// valore monetario (CLAUDE.md, "REGOLE DI PRODOTTO DEFINITIVE SUI CREDITI"), ma il codice
+// sotto implementava un cambio fisso 1 CR = 1 EUR con acquisto via carta e conversione a
+// bonifico reale. Gli endpoint restano nel codice per la fase di rework (nuovo modello
+// crediti conforme) ma rispondono 410 Gone finché quel rework non è pronto.
+const CREDIT_MONEY_FLOW_DISABLED = {
+  error: 'wallet_topup_and_conversion_disabled',
+  message: 'Ricarica e conversione crediti sono temporaneamente disattivate.',
+};
+
 async function getBalanceHandler(req, res) {
   try {
     const wallet = await walletRepository.getBalance(req.user.id);
@@ -47,6 +57,9 @@ async function getTransactionsHandler(req, res) {
 // Credits are granted by the /api/webhooks/stripe handler on payment_intent.succeeded,
 // not here — this only starts the payment.
 async function createTopupIntentHandler(req, res) {
+  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
+
+  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
   if (!stripe) {
     return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
   }
@@ -76,6 +89,9 @@ async function createTopupIntentHandler(req, res) {
 // localhost in dev). Verifies the PaymentIntent against Stripe directly rather than
 // trusting the client's word for it, and is a no-op if the webhook already credited it.
 async function confirmTopupHandler(req, res) {
+  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
+
+  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
   if (!stripe) {
     return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
   }
@@ -188,6 +204,9 @@ async function getPayoutStatusHandler(req, res) {
 // refund back to the wallet if the Stripe transfer itself fails, so credits are
 // never lost to a failed payout.
 async function convertHandler(req, res) {
+  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
+
+  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
   if (!stripe) {
     return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
   }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch, normalizeImageUrl, formatRaceTime, TOKEN_STORAGE_KEY } from '../api';
 import JigsawPuzzle from '../components/JigsawPuzzle';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Trophy, ShieldAlert, Layers, ChevronRight, RefreshCw, PlusCircle, CheckCircle, Play,
   Move, RotateCw, Puzzle, Smartphone, X, ArrowLeft
@@ -645,10 +645,8 @@ export default function SkillZone() {
 
                 {wallet.balanceCredits < confirmingContest.slotCostCredits ? (
                   <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[#ff5a36]/40 bg-[#ff5a36]/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Top-up crediti (Stripe) temporaneamente disattivato — nessun CTA di ricarica qui */}
                     <p className="text-sm text-white/80">{t('skill_zone.confirm.insufficient_balance')}</p>
-                    <Link to="/crediti/acquista" className="shrink-0 rounded-xl bg-white px-4 py-3 text-center text-sm font-black text-[#07060b]">
-                      {t('arena_page.hero.wallet_topup')}
-                    </Link>
                   </div>
                 ) : (
                   <p className="mt-5 text-sm leading-relaxed text-white/55">{t('skill_zone.confirm.warning')}</p>
@@ -1188,7 +1186,7 @@ export default function SkillZone() {
                 {t('skill_zone.diagnostics.description')}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 bg-black/40 rounded border border-white/5">
                   <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.user_info_title')}</div>
                   <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.user_info_text')}</p>
@@ -1203,16 +1201,8 @@ export default function SkillZone() {
                   </button>
                 </div>
 
-                <div className="p-3 bg-black/40 rounded border border-white/5">
-                  <div className="font-bold text-pink-400 uppercase mb-1">{t('skill_zone.diagnostics.buy_mock_title')}</div>
-                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.buy_mock_text')}</p>
-                  <button
-                    onClick={() => navigate('/crediti/acquista?amount=50')}
-                    className="px-3 py-1 bg-white/5 hover:bg-pink-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all"
-                  >
-                    {t('skill_zone.diagnostics.buy_mock_button')}
-                  </button>
-                </div>
+                {/* Tile "Acquista Monete Fittizie" rimossa: puntava al top-up Stripe
+                    (/crediti/acquista), ora disattivato — vedi src/routes/stripe.js. */}
 
                 <div className="p-3 bg-black/40 rounded border border-white/5">
                   <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.reset_title')}</div>

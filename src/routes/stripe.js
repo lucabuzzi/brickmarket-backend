@@ -63,6 +63,16 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
       return res.status(400).json({ error: 'Missing userId in metadata' });
     }
 
+    // Wallet top-up crediting is disattivato (non cancellato): i crediti CardBrix non
+    // devono avere valore monetario, ma questo ramo convertiva un pagamento con carta
+    // 1:1 in crediti. Non credita più il wallet; risponde comunque 200 a Stripe per
+    // evitare retry infiniti dell'evento (l'endpoint /api/wallet/create-topup-intent
+    // che genera questi PaymentIntent è a sua volta disattivato lato 410, quindi in
+    // condizioni normali questo ramo non dovrebbe più essere raggiunto).
+    console.warn(`⚠️ Wallet top-up crediting disabled: ignoring payment_intent.succeeded (${paymentIntentId}) for userId ${userId}, €${(amountInCents / 100).toFixed(2)} NOT credited.`);
+    return res.status(200).json({ received: true, walletTopupDisabled: true });
+
+    /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi il return sopra */
     const creditsToDeposit = amountInCents / 100;
     console.log(`💳 Stripe payment: €${(amountInCents/100).toFixed(2)} converted to ${creditsToDeposit} credits.`);
 
@@ -104,6 +114,14 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
 // and always credits the authenticated caller — never an arbitrary userId —
 // so it can't be used to mint credits into someone else's wallet.
 router.post('/simulate-checkout', authenticateToken, express.json(), async (req, res) => {
+  // Parte dello stesso flusso euro<->crediti disattivato — vedi CREDIT_MONEY_FLOW_DISABLED
+  // in src/controllers/walletController.js.
+  return res.status(410).json({
+    error: 'wallet_topup_and_conversion_disabled',
+    message: 'Ricarica e conversione crediti sono temporaneamente disattivate.',
+  });
+
+  /* eslint-disable no-unreachable -- disattivato, non cancellato */
   if (stripe) {
     return res.status(403).json({ error: 'Simulated checkout is disabled: Stripe is configured on this server.' });
   }

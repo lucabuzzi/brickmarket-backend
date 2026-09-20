@@ -52,8 +52,9 @@ const TcgCardPage = lazy(() => import('./pages/TcgCardPage'));
 const Archive = lazy(() => import('./pages/Archive'));
 const SkillZone = lazy(() => import('./pages/SkillZone'));
 const WalletInfo = lazy(() => import('./pages/WalletInfo'));
-const WalletPurchase = lazy(() => import('./pages/WalletPurchase'));
-const WalletConvert = lazy(() => import('./pages/WalletConvert'));
+// WalletPurchase/WalletConvert non sono più instradate (vedi le route crediti/acquista
+// e crediti/converti sotto) — i file restano sul disco per la fase 3 (rework),
+// ma questi import lazy sarebbero codice morto finché quella fase non li ricollega.
 const StripeOnboardingStatus = lazy(() => import('./pages/StripeOnboardingStatus'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 
@@ -102,22 +103,12 @@ export default function App() {
           <Route path="come-funziona" element={<HowItWorks />} />
           <Route path="skill-zone" element={<SkillZone />} />
           <Route path="crediti" element={<WalletInfo />} />
-          <Route
-            path="crediti/acquista"
-            element={
-              <ProtectedRoute>
-                <WalletPurchase />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="crediti/converti"
-            element={
-              <ProtectedRoute>
-                <WalletConvert />
-              </ProtectedRoute>
-            }
-          />
+          {/* Top-up (Stripe) e conversione crediti->IBAN sono temporaneamente disattivati
+              (endpoint 410 Gone) mentre il flusso euro<->crediti viene rivisto per conformità
+              alle regole di prodotto. Le pagine WalletPurchase/WalletConvert restano sul disco
+              ma non sono più raggiungibili: i vecchi link puntano di nuovo a /crediti. */}
+          <Route path="crediti/acquista" element={<Navigate to="/crediti" replace />} />
+          <Route path="crediti/converti" element={<Navigate to="/crediti" replace />} />
           <Route path="seller/onboarding-complete" element={<StripeOnboardingStatus outcome="complete" />} />
           <Route path="seller/onboarding-retry" element={<StripeOnboardingStatus outcome="retry" />} />
           <Route path="category/:slug" element={<CategoryPage />} />

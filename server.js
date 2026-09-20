@@ -134,6 +134,7 @@ app.use('/api/catalog', require('./src/routes/catalog'));
 // ClutchVault specific integrations
 const cvDb = require('./src/db/clutchvault-db');
 const { authenticateToken } = require('./src/routes/contest');
+const { adminAuth } = require('./src/middleware/auth');
 
 app.use('/api/wallet', require('./src/routes/wallet'));
 app.use('/api/contest', require('./src/routes/contest').router);
@@ -150,12 +151,12 @@ const crypto = require('crypto');
 // and the products.category CHECK constraint (src/db/migrate_products_category_all_games.js).
 const ALLOWED_PUZZLE_CATEGORIES = ['lego', 'magic', 'yugioh', 'lorcana', 'pokemon', 'onepiece', 'dragonball', 'funko'];
 
-app.post('/api/admin/upload-puzzle-image', authenticateToken, upload.single('image'), async (req, res) => {
+// adminAuth (src/middleware/auth.js) ricontrola role e is_active dal DB ad ogni
+// richiesta — un admin disattivato o degradato perde l'accesso anche con un JWT
+// ancora valido, a differenza del vecchio authenticateToken locale di contest.js
+// (che non ricontrollava is_active) + check inline su req.user.role.
+app.post('/api/admin/upload-puzzle-image', adminAuth, upload.single('image'), async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin permissions required to create contests.' });
-    }
-
     const {
       title, description, category = 'lego', marketValue = 100,
       slotCostCredits = 10, condition = 'New in Box', gradingInfo = 'Ungraded', totalSlots = 5
@@ -294,8 +295,18 @@ app.get('/api/auctions', async (req, res) => {
   }
 });
 
-// Place bid on ClutchVault auctions
+// Place bid on ClutchVault auctions — DISATTIVATO (non cancellato). Questa via non
+// addebita mai il wallet né chiude/finalizza l'asta (nessun job di finalizzazione
+// esiste in questo codebase): verificato che oggi non ci sono aste attive né bid
+// registrati in public.auctions, ma tenerla attiva sarebbe rischioso se mai lo fossero.
+// Non esiste inoltre nessun endpoint di creazione asta raggiungibile da client/API:
+// le righe di public.auctions possono nascere solo da SQL/seed diretto.
 app.post('/api/auctions/bid', authenticateToken, async (req, res) => {
+  return res.status(503).json({ error: 'Aste temporaneamente non disponibili.' });
+});
+
+// eslint-disable-next-line no-unused-vars
+async function _disabledAuctionBidHandler(req, res) {
   const { auctionId, bidAmount } = req.body;
   if (!auctionId || !bidAmount || bidAmount <= 0) {
     return res.status(400).json({ error: 'auctionId and positive bidAmount are required' });
@@ -354,7 +365,7 @@ app.post('/api/auctions/bid', authenticateToken, async (req, res) => {
     console.error('Place bid error:', error);
     return res.status(500).json({ error: 'Database error placing bid' });
   }
-});
+}
 
 // Health check under /api for the frontend helper
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));

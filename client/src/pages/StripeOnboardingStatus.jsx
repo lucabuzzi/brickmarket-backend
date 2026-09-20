@@ -29,16 +29,14 @@ export default function StripeOnboardingStatus({ outcome }) {
         <p className="text-stone-400 text-sm mb-8">
           {isComplete ? t('stripeOnboarding.complete_desc') : t('stripeOnboarding.retry_desc')}
         </p>
+        {/* Conversione crediti->IBAN temporaneamente disattivata: il link
+            "torna alla conversione" è stato rimosso, resta solo il ritorno
+            all'account (l'onboarding Stripe Connect serve anche ai venditori
+            del marketplace). */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            to="/crediti/converti"
-            className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all active-shrink"
-          >
-            {t('stripeOnboarding.back_to_convert')}
-          </Link>
-          <Link
             to="/account"
-            className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all"
+            className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all active-shrink"
           >
             {t('stripeOnboarding.back_to_account')}
           </Link>

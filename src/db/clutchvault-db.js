@@ -114,29 +114,49 @@ const seedMockData = () => {
   });
 };
 
+// In produzione il fallback in-memory è vietato: se il DB non è raggiungibile (o le
+// tabelle ClutchVault mancano) il processo deve fallire rumorosamente all'avvio
+// invece di ripartire silenziosamente con saldi/transazioni che vivono solo in RAM
+// e si azzerano ad ogni riavvio. Il mock resta disponibile solo fuori produzione
+// (sviluppo/test), dove serve a lavorare senza un DB Postgres configurato.
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+function refuseMockInProduction(reason) {
+  console.error(`❌ ClutchVault DB unavailable in production (${reason}). Refusing to start with the in-memory mock — balances/transactions would silently live only in RAM. Fix DATABASE_URL / run the ClutchVault migrations, then restart.`);
+  process.exit(1);
+}
+
 if (connectionString) {
   console.log('Connecting to database: postgresql pool...');
   pool = new Pool({
     connectionString,
     ssl: { rejectUnauthorized: false }
   });
-  
+
   // Verify tables exist
   pool.query("SELECT to_regclass('public.contests') AS exists").then(res => {
     if (!res.rows[0].exists) {
-      console.warn("⚠️ ClutchVault tables not found in PostgreSQL. Falling back to In-Memory mock DB.");
+      if (IS_PRODUCTION) {
+        return refuseMockInProduction('public.contests table not found — migrations not run?');
+      }
+      console.warn("⚠️ ClutchVault tables not found in PostgreSQL. Falling back to In-Memory mock DB (dev/test only).");
       isMock = true;
       seedMockData();
     } else {
       console.log("✅ ClutchVault PostgreSQL tables found. Using database pool.");
     }
   }).catch(err => {
-    console.warn("⚠️ Failed to verify ClutchVault tables. Falling back to In-Memory mock DB.", err.message);
+    if (IS_PRODUCTION) {
+      return refuseMockInProduction(`failed to verify ClutchVault tables: ${err.message}`);
+    }
+    console.warn("⚠️ Failed to verify ClutchVault tables. Falling back to In-Memory mock DB (dev/test only).", err.message);
     isMock = true;
     seedMockData();
   });
+} else if (IS_PRODUCTION) {
+  refuseMockInProduction('DATABASE_URL/SUPABASE_DB_URL is not set');
 } else {
-  console.warn('⚠️ DATABASE_URL is not set. Initializing Mock/In-Memory database fallback...');
+  console.warn('⚠️ DATABASE_URL is not set. Initializing Mock/In-Memory database fallback (dev/test only)...');
   isMock = true;
   seedMockData();
 }
@@ -194,6 +214,29 @@ const mockQuery = async (text, params = []) => {
       .filter(t => t.user_id === userId)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     return { rows: txs };
+  }
+
+  // 5a. IDEMPOTENT CONTEST REFUND INSERT (mirrors the real ON CONFLICT ... DO NOTHING
+  // against the partial unique index from migrate_contest_refund_idempotency.js):
+  // insert into public.credit_transactions (...) values ($1,$2,'contest_refund',$3) on conflict ...
+  if (normText.startsWith('insert into public.credit_transactions') && normText.includes("'contest_refund'") && normText.includes('on conflict')) {
+    const [userId, amount, referenceId] = params;
+    const alreadyRefunded = mockDb.credit_transactions.some(
+      t => t.user_id === userId && t.reference_id === referenceId && t.type === 'contest_refund'
+    );
+    if (alreadyRefunded) {
+      return { rows: [] }; // DO NOTHING — no row returned, caller must not credit the wallet
+    }
+    const tx = {
+      id: Math.random().toString(36).substring(2, 15),
+      user_id: userId,
+      amount: parseFloat(amount),
+      type: 'contest_refund',
+      reference_id: referenceId,
+      created_at: new Date().toISOString()
+    };
+    mockDb.credit_transactions.push(tx);
+    return { rows: [tx] };
   }
 
   // 5. INSERT TRANSACTION: insert into public.credit_transactions

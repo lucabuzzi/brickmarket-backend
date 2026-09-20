@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Coins, Sparkles, Trophy, Gavel, ArrowRight, History, PlusCircle, Landmark } from 'lucide-react';
+import { Coins, Sparkles, Trophy, Gavel, ArrowRight, History } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
 import { StitchCard, AnimateCounter } from '../components/StitchComponents';
@@ -9,7 +9,6 @@ import { StitchCard, AnimateCounter } from '../components/StitchComponents';
 export default function WalletInfo() {
   const { t } = useTranslation();
   const { user, wallet } = useAuth();
-  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(true);
 
@@ -78,20 +77,10 @@ export default function WalletInfo() {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => navigate(user ? '/crediti/acquista' : '/login')}
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-sm tracking-wider transition-all shadow-lg shadow-gold-500/25 active-shrink w-full sm:w-auto"
-            >
-              <PlusCircle className="h-4 w-4" /> {t('wallet.buy_credits_cta')}
-            </button>
-            <button
-              onClick={() => navigate(user ? '/crediti/converti' : '/login')}
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold uppercase text-sm tracking-wider transition-all active-shrink w-full sm:w-auto"
-            >
-              <Landmark className="h-4 w-4" /> {t('wallet.convert_credits_cta')}
-            </button>
-          </div>
+          {/* Top-up (Stripe) e conversione crediti->IBAN sono temporaneamente disattivati:
+              il flusso euro<->crediti è in revisione per conformita alle regole di prodotto
+              (i crediti non devono avere valore monetario). Vedi src/routes/stripe.js e
+              src/controllers/walletController.js. */}
         </div>
       </div>
 

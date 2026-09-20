@@ -4,6 +4,7 @@ const mainDb = require('../db');
 const JWT_SECRET = process.env.JWT_SECRET || 'clutchvault_secret_key_1337';
 const { upload } = require('../services/cloudinary');
 const contestController = require('../controllers/contestController');
+const { adminAuth } = require('../middleware/auth');
 
 // Custom JWT Authentication Middleware for ClutchVault endpoints
 // Resolves the real registered username from the main marketplace DB (always real
@@ -46,7 +47,11 @@ router.get('/leaderboard/:contestId', contestController.leaderboardHandler);
 router.post('/start', authenticateToken, contestController.startAttemptHandler);
 router.post('/lock-piece', authenticateToken, contestController.lockPieceHandler);
 router.post('/complete', authenticateToken, contestController.completeAttemptHandler);
-router.post('/refund/:contestId', authenticateToken, contestController.refundContestHandler);
-router.post('/create', authenticateToken, upload.single('image'), contestController.createContestHandler);
+// adminAuth (src/middleware/auth.js) ricontrola role e is_active dal DB ad ogni
+// richiesta, a differenza del vecchio authenticateToken locale (sopra) usato per
+// le altre route di questo router — un admin disattivato o degradato perde
+// l'accesso a refund/create anche con un JWT ancora valido.
+router.post('/refund/:contestId', adminAuth, contestController.refundContestHandler);
+router.post('/create', adminAuth, upload.single('image'), contestController.createContestHandler);
 
 module.exports = { router, authenticateToken };

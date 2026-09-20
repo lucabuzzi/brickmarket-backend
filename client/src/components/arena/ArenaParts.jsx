@@ -72,9 +72,7 @@ export function ArenaHero({ contests, user, wallet, spotlight, spotlightLeaderbo
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link to="/crediti/acquista" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-[#07060b] transition-transform hover:-translate-y-0.5">
-                  {t('arena_page.hero.wallet_topup')}
-                </Link>
+                {/* Top-up crediti (Stripe) temporaneamente disattivato — vedi WalletInfo.jsx */}
                 <Link to="/crediti" className="rounded-xl px-3 py-3 text-sm font-bold text-white/70 underline decoration-white/25 underline-offset-4 hover:text-white">
                   {t('arena_page.hero.wallet_how')}
                 </Link>
