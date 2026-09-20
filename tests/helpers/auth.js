@@ -2,7 +2,7 @@
 // ({ userId, role }, JWT_SECRET, 7d) — lets tests authenticate as a real,
 // already-existing user without going through registration/Turnstile/email
 // verification.
-require('dotenv').config();
+require('./loadTestEnv');
 const jwt = require('jsonwebtoken');
 
 function tokenFor(userId, role) {

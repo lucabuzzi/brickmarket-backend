@@ -1,3 +1,11 @@
+// Must be set before anything else is required: it's how src/db/index.js tells
+// the running application server apart from a migration/seed script required
+// directly (which it refuses to let connect — see that file). This is the
+// application declaring itself, not something derived from how the process was
+// launched, so it holds regardless of Render's start command, nodemon, or a
+// plain `node server.js`.
+process.env.APP_SERVER_BOOT = '1';
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');

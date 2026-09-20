@@ -2,6 +2,23 @@
  * Popola utenti e annunci demo (idempotente).
  * Supporta sia lo schema nuovo (schema.sql) sia DB legacy (category, location, type fixed).
  */
+
+// Refuse to run unless launched through scripts/run-db-script.js — this script
+// builds its own pg Pool directly (below), so it does NOT go through
+// src/db/index.js's own guard at all; without this check it would connect
+// straight to whatever DATABASE_URL ends up in .env (production) the moment
+// someone runs `node scripts/seed-dummy-data.js` directly, with zero target
+// confirmation. See CLAUDE.md.
+if (process.env.DB_TARGET_CONFIRMED !== '1') {
+  console.error(
+    '❌ Refusing to run: this script must be launched through scripts/run-db-script.js ' +
+    '(node scripts/run-db-script.js scripts/seed-dummy-data.js --target=test|production), ' +
+    'not directly. Running it directly would connect straight to whatever DATABASE_URL is ' +
+    'in .env — the production connection string — with no target confirmation at all.'
+  );
+  process.exit(1);
+}
+
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');

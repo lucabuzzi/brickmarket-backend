@@ -6,8 +6,24 @@
  * script is the *only* way funko cards end up in the catalog — run it once
  * (and re-run occasionally to pick up upstream updates).
  *
- * Run with: node src/db/seed_funko_pop.js
+ * Run with: node scripts/run-db-script.js src/db/seed_funko_pop.js --target=test|production
  */
+
+// Refuse to run unless launched through scripts/run-db-script.js. This script's
+// own DB access goes through ../services/cardCatalog -> ../db (src/db/index.js),
+// which already carries this same check — but that indirection is easy to break
+// in a future refactor without anyone noticing this script lost its protection,
+// so it gets its own explicit, first-thing check too. See CLAUDE.md.
+if (process.env.DB_TARGET_CONFIRMED !== '1') {
+  console.error(
+    '❌ Refusing to run: this script must be launched through scripts/run-db-script.js ' +
+    '(node scripts/run-db-script.js src/db/seed_funko_pop.js --target=test|production), ' +
+    'not directly. Running it directly would connect straight to whatever DATABASE_URL is ' +
+    'in .env — the production connection string — with no target confirmation at all.'
+  );
+  process.exit(1);
+}
+
 require('dotenv').config();
 const cardCatalog = require('../services/cardCatalog');
 

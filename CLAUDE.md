@@ -30,7 +30,12 @@ npm run preview               # preview a production build
 
 There is no test suite: the root `npm test` is an unimplemented stub and `client/package.json` has no test script. Don't invent test commands.
 
-Database migrations are ad-hoc, not framework-managed: `src/db/*.sql` and `src/db/migrate_*.js` are one-off scripts run manually with `node src/db/migrate_x.js` or against Supabase directly — there's no migration runner to invoke.
+Database migrations are ad-hoc, not framework-managed: `src/db/*.sql` and `src/db/migrate_*.js` are one-off scripts — there's no migration runner to invoke. **Never run a migration or seed script directly** (`node src/db/migrate_x.js`, `node scripts/seed-dummy-data.js`, `node src/db/seed_funko_pop.js`) — `src/db/index.js` refuses to open a DB connection unless it was launched through the wrapper. Always go through it instead:
+```bash
+node scripts/run-db-script.js <path-to-script> --target=test         # loads only .env.test
+node scripts/run-db-script.js <path-to-script> --target=production   # loads .env, prints only the host, requires a typed interactive confirmation (refuses outright if stdin isn't a TTY)
+```
+`--target` is required, with no default. `--target=test` also requires the DB host to be listed in `tests/config/allowedTestHosts.js` (empty until a real, separate test database exists — see that file). A handful of `migrate_*.js` files build their own `pg.Client` instead of going through `src/db/index.js` (grep for `new Client(` under `src/db/`); the wrapper still protects them (it controls `DATABASE_URL` before requiring the target script), but running one of *those* directly bypasses `index.js`'s own guard — the wrapper is the only thing standing between it and `.env`.
 
 ## Backend architecture (`/src`)
 

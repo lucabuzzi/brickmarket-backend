@@ -6,6 +6,16 @@
 const { spawn } = require('child_process');
 const net = require('net');
 const path = require('path');
+const { assertNotProduction } = require('./guardAgainstProduction');
+
+// Fails fast on require, before any test in a file that needs a live server
+// even starts running — see guardAgainstProduction.js for why this exists.
+// loadTestEnv.js (required transitively by the guard) has already populated
+// process.env from .env.test by this point, so the spawn() below — which
+// inherits ...process.env — passes the same, already-checked DATABASE_URL
+// through to the child server.js process rather than letting its own
+// require('dotenv').config() pick up .env instead.
+assertNotProduction();
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 

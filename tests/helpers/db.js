@@ -1,4 +1,7 @@
-require('dotenv').config();
+const { assertNotProduction } = require('./guardAgainstProduction');
+
+assertNotProduction();
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
