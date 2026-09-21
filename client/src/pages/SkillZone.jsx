@@ -4,7 +4,7 @@ import { apiFetch, normalizeImageUrl, formatRaceTime, TOKEN_STORAGE_KEY } from '
 import JigsawPuzzle from '../components/JigsawPuzzle';
 import { useNavigate } from 'react-router-dom';
 import {
-  Trophy, ShieldAlert, Layers, ChevronRight, RefreshCw, PlusCircle, CheckCircle, Play,
+  Trophy, ShieldAlert, ChevronRight, PlusCircle, CheckCircle, Play,
   Move, RotateCw, Puzzle, Smartphone, X, ArrowLeft
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -1167,62 +1167,6 @@ export default function SkillZone() {
         </>
       )}
 
-      {!playingContest && user?.role === 'admin' && (
-        <section className="lx-bleed relative pb-16">
-          <div className="mx-auto max-w-[1320px] px-5 md:px-10">
-                      /* ================= ADMIN DIAGNOSTICS & SANDBOX CONTROLS ================= */
-            <div className="mt-16 bento-card border border-white/5 border-dashed rounded-xl p-5 font-mono text-xs bg-[#14120b]/10">
-              <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
-                <h3 className="font-extrabold text-white uppercase flex items-center space-x-2">
-                  <Layers className="h-4 w-4 text-gold-400" />
-                  <span>{t('skill_zone.diagnostics.title')}</span>
-                </h3>
-                <span className="text-[10px] bg-gold-950 border border-gold-500 text-gold-400 px-2 py-0.5 rounded font-bold">
-                  {t('skill_zone.diagnostics.badge')}
-                </span>
-              </div>
-
-              <p className="text-[10px] text-stone-400 mb-4 leading-normal">
-                {t('skill_zone.diagnostics.description')}
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3 bg-black/40 rounded border border-white/5">
-                  <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.user_info_title')}</div>
-                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.user_info_text')}</p>
-                  <div className="text-[10px] font-semibold text-emerald-400 mb-2">
-                    ✅ {t('skill_zone.diagnostics.logged_as')} <span className="text-white font-bold">{user.username}</span>
-                  </div>
-                  <button
-                    onClick={() => setIsAdminFormOpen(!isAdminFormOpen)}
-                    className="px-2.5 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[9px] uppercase font-bold transition-all block w-full text-center"
-                  >
-                    {isAdminFormOpen ? t('skill_zone.diagnostics.close_puzzle_creator') : t('skill_zone.diagnostics.open_puzzle_creator')}
-                  </button>
-                </div>
-
-                {/* Tile "Acquista Monete Fittizie" rimossa: puntava al top-up Stripe
-                    (/crediti/acquista), ora disattivato — vedi src/routes/stripe.js. */}
-
-                <div className="p-3 bg-black/40 rounded border border-white/5">
-                  <div className="font-bold text-gold-400 uppercase mb-1">{t('skill_zone.diagnostics.reset_title')}</div>
-                  <p className="text-[10px] text-stone-500 mb-2">{t('skill_zone.diagnostics.reset_text')}</p>
-                  <button
-                    onClick={() => {
-                      fetchCatalogData();
-                      triggerSystemSuccess(t('skill_zone.alerts.sync_success'));
-                    }}
-                    className="px-3 py-1 bg-white/5 hover:bg-gold-500 hover:text-white rounded text-[10px] uppercase font-bold transition-all flex items-center space-x-1"
-                  >
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    <span>{t('skill_zone.diagnostics.sync_button')}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
