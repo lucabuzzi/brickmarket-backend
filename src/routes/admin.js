@@ -5,6 +5,11 @@ const { adminAuth } = require('../middleware/auth');
 const { computeDaySnapshot, backfillSnapshots } = require('../services/analyticsSnapshot');
 const { updateUserSchema, validate } = require('../validators/adminUserValidators');
 const featured = require('../services/featured');
+const creditConfigRepository = require('../repositories/creditConfigRepository');
+const { processMaturedGrants, reviewFlaggedGrant } = require('../services/creditMaturation');
+const orderDisputeService = require('../services/orderDisputeService');
+const { processAutoConfirmations } = require('../services/orderAutoConfirm');
+const creditBonusGrantRepository = require('../repositories/creditBonusGrantRepository');
 
 /**
  * GET /api/admin/stats
@@ -455,6 +460,158 @@ router.get('/wallet/transactions', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('ADMIN WALLET TRANSACTIONS ERROR:', err.message);
     res.status(500).json({ error: 'Errore nel recupero dello storico transazioni wallet.' });
+  }
+});
+
+/**
+ * GET /api/admin/credit-config
+ * Valori configurabili del sistema crediti (bonus registrazione/referral/vendita/acquisto,
+ * giorni di maturazione, importo minimo ordine) — mai hardcoded nel codice applicativo
+ * (CLAUDE.md, "REGOLE DI PRODOTTO DEFINITIVE SUI CREDITI"). Una chiave assente nel DB
+ * torna con isDefault:true e il valore di default in codice (vedi creditConfigRepository).
+ */
+router.get('/credit-config', adminAuth, async (req, res) => {
+  try {
+    const config = await creditConfigRepository.getAll();
+    res.json({ config });
+  } catch (err) {
+    console.error('ADMIN CREDIT CONFIG LIST ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero della configurazione crediti.' });
+  }
+});
+
+/**
+ * PUT /api/admin/credit-config/:key
+ * Aggiorna un singolo valore configurabile. Audit minimo sulla riga stessa
+ * (updated_by/updated_at) — non uno storico riga per riga di ogni cambio.
+ */
+router.put('/credit-config/:key', adminAuth, async (req, res) => {
+  const { key } = req.params;
+  const value = parseFloat(req.body.value);
+
+  if (!(key in creditConfigRepository.DEFAULTS)) {
+    return res.status(404).json({ error: 'Chiave di configurazione sconosciuta.' });
+  }
+  if (!Number.isFinite(value) || value < 0) {
+    return res.status(400).json({ error: 'Valore non valido: deve essere un numero maggiore o uguale a 0.' });
+  }
+
+  try {
+    await creditConfigRepository.set(key, value, req.user.userId);
+    res.json({ success: true, key, value });
+  } catch (err) {
+    console.error('ADMIN CREDIT CONFIG UPDATE ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'aggiornamento della configurazione crediti.' });
+  }
+});
+
+/**
+ * POST /api/admin/credit-bonus-grants/mature-now
+ * Forza subito il giro di maturazione bonus vendita/acquisto (normalmente è un cron
+ * notturno — vedi server.js / src/services/creditMaturation.js). Utile per verificare
+ * lo stato di un ordine specifico senza aspettare il prossimo giro programmato.
+ */
+router.post('/credit-bonus-grants/mature-now', adminAuth, async (req, res) => {
+  try {
+    const result = await processMaturedGrants();
+    res.json(result);
+  } catch (err) {
+    console.error('ADMIN CREDIT BONUS MATURATION ERROR:', err.message);
+    res.status(500).json({ error: 'Errore durante la maturazione dei bonus crediti.' });
+  }
+});
+
+/**
+ * GET /api/admin/credit-bonus-grants/flagged
+ * Grant vendita/acquisto bloccati da un tetto anti-abuso (giornaliero/mensile per
+ * utente, o mensile per coppia venditore-compratore — CLAUDE.md), in attesa di
+ * revisione manuale. Il cron di maturazione li salta finché non vengono approvati o
+ * respinti qui.
+ */
+router.get('/credit-bonus-grants/flagged', adminAuth, async (req, res) => {
+  try {
+    const grants = await creditBonusGrantRepository.findFlaggedGrants();
+    res.json({ grants });
+  } catch (err) {
+    console.error('ADMIN FLAGGED GRANTS ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero dei bonus in revisione.' });
+  }
+});
+
+/**
+ * POST /api/admin/credit-bonus-grants/:id/review
+ * 'approve' toglie il blocco e matura subito il grant (credito wallet); 'reject' lo
+ * annulla senza mai accreditare nulla.
+ */
+router.post('/credit-bonus-grants/:id/review', adminAuth, async (req, res) => {
+  const { decision } = req.body;
+  if (decision !== 'approve' && decision !== 'reject') {
+    return res.status(400).json({ error: "decision deve essere 'approve' o 'reject'." });
+  }
+
+  try {
+    const result = await reviewFlaggedGrant(req.params.id, decision);
+    if (!result) {
+      return res.status(404).json({ error: 'Grant non trovato o non più in revisione.' });
+    }
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('ADMIN GRANT REVIEW ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nella revisione del bonus.' });
+  }
+});
+
+/**
+ * POST /api/admin/orders/auto-confirm-now
+ * Forza subito il giro di auto-conferma consegna per gli ordini oltre confirm_deadline
+ * (normalmente è un cron orario — vedi server.js / src/services/orderAutoConfirm.js).
+ */
+router.post('/orders/auto-confirm-now', adminAuth, async (req, res) => {
+  try {
+    const result = await processAutoConfirmations();
+    res.json(result);
+  } catch (err) {
+    console.error('ADMIN AUTO-CONFIRM ERROR:', err.message);
+    res.status(500).json({ error: "Errore durante l'auto-conferma degli ordini." });
+  }
+});
+
+/**
+ * GET /api/admin/orders/disputed
+ * Ordini con una contestazione aperta, in attesa di revisione.
+ */
+router.get('/orders/disputed', adminAuth, async (req, res) => {
+  try {
+    const orders = await orderDisputeService.listDisputedOrders();
+    res.json({ orders });
+  } catch (err) {
+    console.error('ADMIN DISPUTED ORDERS ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero delle contestazioni.' });
+  }
+});
+
+/**
+ * POST /api/admin/orders/:id/dispute-resolution
+ * Risolve una contestazione: 'reject' (respinta, l'ordine torna completed) o
+ * 'refund' (accolta — clawback dei bonus crediti già maturati, annulla quelli
+ * ancora pending). NON esegue il rimborso reale in euro: quello resta
+ * un'operazione fuori piattaforma, come i payout venditori in /admin/payouts.
+ */
+router.post('/orders/:id/dispute-resolution', adminAuth, async (req, res) => {
+  const { outcome } = req.body;
+  if (outcome !== 'reject' && outcome !== 'refund') {
+    return res.status(400).json({ error: "outcome deve essere 'reject' o 'refund'." });
+  }
+
+  try {
+    const result = await orderDisputeService.resolveDispute(req.params.id, outcome);
+    if (!result) {
+      return res.status(404).json({ error: 'Ordine non trovato o stato non valido per questa risoluzione.' });
+    }
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('ADMIN DISPUTE RESOLUTION ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nella risoluzione della contestazione.' });
   }
 });
 

@@ -60,4 +60,37 @@ const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
     }
 };
 
-module.exports = { sendRecoveryEmail };
+const sendVerificationEmail = async (toEmail, verifyLink) => {
+    try {
+        const transporter = await initTransporter();
+        const fromEmail = process.env.FROM_EMAIL || '"CardBrix" <noreply@cardbrix.com>';
+
+        const info = await transporter.sendMail({
+            from: fromEmail,
+            to: toEmail,
+            subject: "Verifica la tua email - CardBrix",
+            text: `Conferma il tuo indirizzo email per attivare il bonus di benvenuto: ${verifyLink}`,
+            html: `
+              <div style="font-family: sans-serif; padding: 20px;">
+                <h2>Benvenuto su CardBrix</h2>
+                <p>Verifica il tuo indirizzo email per completare la registrazione e ricevere il bonus di benvenuto in crediti.</p>
+                <a href="${verifyLink}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verifica Email</a>
+                <p style="margin-top: 20px; font-size: 12px; color: #888;">Se non hai creato tu questo account, ignora questa email.</p>
+              </div>
+            `,
+        });
+
+        console.log("Messaggio inviato: %s", info.messageId);
+
+        if (info.messageId && (!process.env.SENDGRID_API_KEY || process.env.SENDGRID_API_KEY.includes('tuachiave'))) {
+            console.log("Preview URL test: %s", nodemailer.getTestMessageUrl(info));
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Errore invio email di verifica:", error);
+        throw error;
+    }
+};
+
+module.exports = { sendRecoveryEmail, sendVerificationEmail };

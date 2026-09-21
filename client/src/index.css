@@ -846,3 +846,13 @@ code {
 @media (prefers-reduced-motion: reduce) {
   .pd-stage { transform: none; }
 }
+
+/* Reset-password success: fills while the page counts down to the login redirect. */
+.rp-progress {
+  width: 0;
+  animation: rp-progress 2.5s linear forwards;
+}
+
+@keyframes rp-progress {
+  to { width: 100%; }
+}

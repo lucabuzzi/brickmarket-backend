@@ -9,6 +9,7 @@ import NotificationBell from './NotificationBell';
 import CookieConsent from './CookieConsent';
 import GeoLanguageSuggestion from './GeoLanguageSuggestion';
 import SiteAurora from './SiteAurora';
+import EmailVerificationBanner from './EmailVerificationBanner';
 import { hasConsent, trackPageview } from '../analytics';
 
 const LegoHeadIcon = ({ size = 16, color = "currentColor", strokeWidth = 2 }) => (
@@ -400,7 +401,10 @@ export default function Layout() {
       <CookieConsent />
       <GeoLanguageSuggestion />
 
-      <main className="main pt-16"><Outlet /></main>
+      <main className="main pt-16">
+        <EmailVerificationBanner />
+        <Outlet />
+      </main>
 
       <footer className="footer">
         <p>{t('ui.footer_copyright', { year: new Date().getFullYear() })}</p>

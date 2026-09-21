@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, Building2, Check, Eye, EyeOff, FileUp, Gavel, Puzzle, Scale, ShieldCheck, Tag, User,
@@ -10,6 +10,7 @@ import { trackEvent } from '../analytics';
 import Turnstile from '../components/Turnstile';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import AppleSignInButton from '../components/AppleSignInButton';
+import { STRENGTH_LEVELS, passwordScore } from '../components/auth/passwordStrength';
 
 const LIME = '#c6ff3d';
 // The social buttons render nothing unless their client id is configured at build time.
@@ -69,15 +70,6 @@ function PasswordInput({ value, onChange, autoComplete }) {
   );
 }
 
-/** 0–3 score: length plus character variety. Guidance only — the server enforces its own rules. */
-function passwordScore(pw) {
-  if (!pw) return 0;
-  const variety = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((re) => re.test(pw)).length;
-  if (pw.length >= 12 && variety >= 3) return 3;
-  if (pw.length >= 8 && variety >= 2) return 2;
-  return 1;
-}
-
 function FilePicker({ label, file, onChange }) {
   const { t } = useTranslation();
   return (
@@ -116,8 +108,10 @@ export default function Register() {
   const { register, loginWithGoogle, loginWithApple } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const registrationStartedRef = useRef(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
+  const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
 
   const handleFirstFieldFocus = () => {
     if (registrationStartedRef.current) return;
@@ -165,7 +159,7 @@ export default function Register() {
     setError('');
     setSubmitting(true);
     try {
-      await loginWithGoogle(credential);
+      await loginWithGoogle(credential, referralCode.trim() || null);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err?.data?.error || t('errors.oauth_failed'));
@@ -178,7 +172,7 @@ export default function Register() {
     setError('');
     setSubmitting(true);
     try {
-      await loginWithApple(id_token, user);
+      await loginWithApple(id_token, user, referralCode.trim() || null);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err?.data?.error || t('errors.oauth_failed'));
@@ -219,6 +213,7 @@ export default function Register() {
       formData.append('email', email.trim());
       formData.append('password', password);
       formData.append('turnstileToken', turnstileToken);
+      if (referralCode.trim()) formData.append('referralCode', referralCode.trim().toUpperCase());
 
       // Dati indirizzo inclusi per entrambi i tipi di account
       formData.append('street', street.trim());
@@ -252,7 +247,7 @@ export default function Register() {
 
   const isPro = tab === 'professional';
   const score = passwordScore(password);
-  const strength = [null, { key: 'weak', color: '#ff5a36' }, { key: 'medium', color: '#facc15' }, { key: 'strong', color: LIME }][score];
+  const strength = STRENGTH_LEVELS[score];
   const repeatState = repeatPassword ? (repeatPassword === password ? 'match' : 'mismatch') : null;
 
   let step = 0;
@@ -426,6 +421,18 @@ export default function Register() {
                       )}
                     </div>
                   </div>
+
+                  <Field label={t('register_page.referral_label')} hint={t('register_page.referral_hint')}>
+                    <input
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value)}
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      maxLength={20}
+                      placeholder={t('register_page.referral_placeholder')}
+                      className={inputClass}
+                    />
+                  </Field>
                 </Section>
 
                 <Section step={nextStep()} title={t('auth.address')}>

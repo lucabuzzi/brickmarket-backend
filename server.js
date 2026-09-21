@@ -86,7 +86,8 @@ app.use('/api/payments/stripe-webhook',
   payments.webhook
 );
 
-// Webhook Stripe per ClutchVault ricarica crediti
+// Webhook Stripe per ClutchVault (solo "featured listing" a pagamento: i crediti
+// non hanno valore monetario, quindi non esiste più nessun ramo che ricarica il wallet)
 app.use('/api/webhooks/stripe',
   express.raw({ type: 'application/json' }),
   require('./src/routes/stripe')
@@ -146,7 +147,6 @@ const { adminAuth } = require('./src/middleware/auth');
 
 app.use('/api/wallet', require('./src/routes/wallet'));
 app.use('/api/contest', require('./src/routes/contest').router);
-app.use('/api/webhooks', require('./src/routes/stripe')); // simulate-checkout
 
 app.use(require('./src/routes/sitemap'));
 
@@ -442,4 +442,35 @@ cron.schedule('10 0 * * *', () => {
 const { expireFeaturedListings } = require('./src/services/featured');
 cron.schedule('5 * * * *', () => {
   expireFeaturedListings().catch((err) => console.error('[Featured] Hourly expiry job failed:', err.message));
+});
+
+// Credit bonus maturation (sale_bonus/purchase_bonus, 15-day maturation window —
+// CLAUDE.md). Runs once at boot to catch anything overdue while the server was down,
+// then daily. Idempotent either way (see src/services/creditMaturation.js).
+const { processMaturedGrants } = require('./src/services/creditMaturation');
+
+processMaturedGrants()
+  .then(({ matured, cancelled, deferred, total }) => console.log(`[CreditMaturation] Startup pass: ${matured} matured, ${cancelled} cancelled, ${deferred} deferred (disputed), ${total} due.`))
+  .catch((err) => console.error('[CreditMaturation] Startup pass failed:', err.message));
+
+cron.schedule('20 0 * * *', () => {
+  processMaturedGrants()
+    .then(({ matured, cancelled, deferred, total }) => console.log(`[CreditMaturation] Daily job: ${matured} matured, ${cancelled} cancelled, ${deferred} deferred (disputed), ${total} due.`))
+    .catch((err) => console.error('[CreditMaturation] Daily job failed:', err.message));
+});
+
+// Auto-confirms delivery when the buyer never does within orders.confirm_deadline
+// (5 days from order creation). Runs once at boot, then hourly. Shares the exact same
+// transaction/effects as the manual "confirm delivery" button (order completed,
+// seller sales_count, pending credit bonus grants) — see paymentsRepository.js.
+const { processAutoConfirmations } = require('./src/services/orderAutoConfirm');
+
+processAutoConfirmations()
+  .then(({ confirmed, total }) => console.log(`[AutoConfirm] Startup pass: ${confirmed}/${total} order(s) auto-confirmed.`))
+  .catch((err) => console.error('[AutoConfirm] Startup pass failed:', err.message));
+
+cron.schedule('15 * * * *', () => {
+  processAutoConfirmations()
+    .then(({ confirmed, total }) => console.log(`[AutoConfirm] Hourly job: ${confirmed}/${total} order(s) auto-confirmed.`))
+    .catch((err) => console.error('[AutoConfirm] Hourly job failed:', err.message));
 });

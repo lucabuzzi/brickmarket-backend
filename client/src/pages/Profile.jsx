@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch, normalizeImageUrl } from '../api';
 import BrickRating from '../components/BrickRating';
-import { Package, Tag, CheckCircle, PlusCircle, Hammer, ShoppingCart, Activity } from 'lucide-react';
+import { Package, Tag, CheckCircle, PlusCircle, Hammer, ShoppingCart, Activity, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import DashboardStatCard from '../components/DashboardStatCard';
@@ -22,6 +22,12 @@ export default function Profile() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeOrder, setDisputeOrder] = useState(null);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputeError, setDisputeError] = useState('');
+  const [submittingDispute, setSubmittingDispute] = useState(false);
 
   const [purchasesError, setPurchasesError] = useState(null);
   const [listingsError, setListingsError] = useState(null);
@@ -83,6 +89,35 @@ export default function Profile() {
       alert(err.message || t('errors.generic'));
     } finally {
       setSubmittingFeedback(false);
+    }
+  };
+
+  const openDispute = (order) => {
+    setDisputeOrder(order);
+    setDisputeReason('');
+    setDisputeError('');
+    setDisputeModalOpen(true);
+  };
+
+  const submitDispute = async (e) => {
+    e.preventDefault();
+    if (disputeReason.trim().length < 5) {
+      setDisputeError(t('profile.dispute_reason_too_short'));
+      return;
+    }
+    setSubmittingDispute(true);
+    setDisputeError('');
+    try {
+      await apiFetch(`/api/orders/${disputeOrder.id}/dispute`, {
+        method: 'POST',
+        body: { reason: disputeReason.trim() },
+      });
+      setDisputeModalOpen(false);
+      refreshData();
+    } catch (err) {
+      setDisputeError(err?.data?.error || err.message || t('errors.generic'));
+    } finally {
+      setSubmittingDispute(false);
     }
   };
 
@@ -226,17 +261,34 @@ export default function Profile() {
                     <Link to={`/product/${order.listing_id}`} className="text-white font-bold text-sm sm:text-base line-clamp-2 hover:text-gold-400 transition-colors leading-tight mb-1">{order.listing_title || t('profile.unknown_item')}</Link>
                     <p className="text-xs text-stone-400 font-mono">{new Date(order.created_at).toLocaleDateString()}</p>
                   </div>
-                  <div className="flex items-end justify-between mt-1">
+                  <div className="flex items-end justify-between mt-1 gap-2">
                     <p className="text-base sm:text-lg font-black text-gold-400 leading-none">{formatPrice(order.total_buyer)}</p>
-                    {order.feedback_id ? (
-                      <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
-                        <CheckCircle size={12} /> {t('profile.feedback_given_badge')}
-                      </span>
-                    ) : (
-                      <button onClick={() => openFeedback(order)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 sm:px-3 sm:py-1 text-[10px] sm:text-xs rounded font-bold transition-colors shadow-lg shadow-emerald-600/20">
-                        {t('profile.leave_feedback_button')}
-                      </button>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      {order.feedback_id ? (
+                        <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+                          <CheckCircle size={12} /> {t('profile.feedback_given_badge')}
+                        </span>
+                      ) : (
+                        <button onClick={() => openFeedback(order)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 sm:px-3 sm:py-1 text-[10px] sm:text-xs rounded font-bold transition-colors shadow-lg shadow-emerald-600/20">
+                          {t('profile.leave_feedback_button')}
+                        </button>
+                      )}
+                      {(order.status === 'shipped' || order.status === 'completed') && (
+                        <button onClick={() => openDispute(order)} className="text-[10px] text-stone-500 hover:text-red-400 font-bold uppercase tracking-wider transition-colors">
+                          {t('profile.open_dispute_button')}
+                        </button>
+                      )}
+                      {order.status === 'disputed' && (
+                        <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-1 rounded">
+                          <AlertTriangle size={12} /> {t('profile.dispute_pending_badge')}
+                        </span>
+                      )}
+                      {order.status === 'refunded' && (
+                        <span className="text-[10px] font-black uppercase tracking-wider text-stone-400 bg-stone-800 px-2 py-1 rounded">
+                          {t('profile.refunded_badge')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -279,6 +331,46 @@ export default function Profile() {
             </div>
             {/* Decorative blob for modal */}
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-gold-600/10 rounded-full blur-2xl z-0 pointer-events-none"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Modal */}
+      {disputeModalOpen && (
+        <div className="fixed inset-0 bg-stone-950/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+          <div className="bg-[#120f0a] border border-stone-700 p-6 sm:p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-white font-black text-2xl mb-2 flex items-center gap-2">
+                <AlertTriangle size={22} className="text-amber-400" /> {t('profile.dispute_modal_title')}
+              </h3>
+              <p className="text-stone-400 text-sm mb-6 leading-relaxed">
+                {t('profile.dispute_modal_subtitle', { title: disputeOrder?.listing_title })}
+              </p>
+              <form onSubmit={submitDispute}>
+                <div className="mb-6">
+                  <label className="block text-stone-300 font-bold mb-2 text-sm uppercase tracking-wider">{t('profile.dispute_reason_label')}</label>
+                  <textarea
+                    value={disputeReason}
+                    onChange={(e) => setDisputeReason(e.target.value)}
+                    className="w-full bg-stone-900/80 border border-stone-700 rounded-xl text-white p-4 min-h-[100px] resize-y focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all text-sm"
+                    placeholder={t('profile.dispute_reason_placeholder')}
+                    maxLength={1000}
+                  />
+                </div>
+                {disputeError && (
+                  <p className="mb-4 text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-sm">{disputeError}</p>
+                )}
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setDisputeModalOpen(false)} className="flex-1 bg-stone-800 hover:bg-stone-700 text-white border border-stone-700 py-3 rounded-xl font-bold transition-colors">
+                    {t('profile.cancel_button')}
+                  </button>
+                  <button type="submit" disabled={submittingDispute} className="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {submittingDispute ? t('profile.dispute_submitting') : t('profile.dispute_submit_button')}
+                  </button>
+                </div>
+              </form>
+            </div>
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-600/10 rounded-full blur-2xl z-0 pointer-events-none"></div>
           </div>
         </div>
       )}

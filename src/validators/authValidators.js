@@ -17,6 +17,7 @@ const registerSchema = Joi.object({
   country: Joi.string().trim().max(100).allow('', null),
   phone: Joi.string().trim().max(30).allow('', null),
   turnstileToken: Joi.string().allow('', null),
+  referralCode: Joi.string().trim().max(20).allow('', null),
 }).unknown(false);
 
 const loginSchema = Joi.object({
@@ -32,6 +33,10 @@ const forgotPasswordSchema = Joi.object({
 const resetPasswordSchema = Joi.object({
   token: Joi.string().required(),
   newPassword: Joi.string().min(8).max(200).required(),
+});
+
+const verifyEmailSchema = Joi.object({
+  token: Joi.string().required(),
 });
 
 const updateProfileSchema = Joi.object({
@@ -52,6 +57,7 @@ const updateProfileSchema = Joi.object({
 // Google Identity Services restituisce un unico JWT firmato ("credential").
 const googleAuthSchema = Joi.object({
   credential: Joi.string().required(),
+  referralCode: Joi.string().trim().max(20).allow('', null),
 }).unknown(false);
 
 // Apple invia il nome dell'utente SOLO alla primissima autorizzazione, dentro
@@ -64,6 +70,7 @@ const appleAuthSchema = Joi.object({
       lastName: Joi.string().trim().max(100).allow('', null),
     }).unknown(true),
   }).unknown(true).allow(null),
+  referralCode: Joi.string().trim().max(20).allow('', null),
 }).unknown(false);
 
 function validate(schema, payload) {
@@ -79,6 +86,7 @@ module.exports = {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
   updateProfileSchema,
   googleAuthSchema,
   appleAuthSchema,

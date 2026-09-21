@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Coins, Sparkles, Trophy, Gavel, ArrowRight, History } from 'lucide-react';
+import { Coins, Sparkles, Trophy, Gavel, ArrowRight, History, Users, Check, Copy } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
 import { StitchCard, AnimateCounter } from '../components/StitchComponents';
@@ -11,6 +11,8 @@ export default function WalletInfo() {
   const { user, wallet } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(true);
+  const [referralInfo, setReferralInfo] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const TRANSACTION_LABELS = {
     deposit: { label: t('wallet.tx_deposit'), color: 'text-emerald-400' },
@@ -18,6 +20,11 @@ export default function WalletInfo() {
     contest_refund: { label: t('wallet.tx_contest_refund'), color: 'text-emerald-400' },
     shop_purchase: { label: t('wallet.tx_shop_purchase'), color: 'text-gold-400' },
     payout: { label: t('wallet.tx_payout'), color: 'text-stone-400' },
+    signup_bonus: { label: t('wallet.tx_signup_bonus'), color: 'text-emerald-400' },
+    referral_bonus: { label: t('wallet.tx_referral_bonus'), color: 'text-emerald-400' },
+    sale_bonus: { label: t('wallet.tx_sale_bonus'), color: 'text-emerald-400' },
+    purchase_bonus: { label: t('wallet.tx_purchase_bonus'), color: 'text-emerald-400' },
+    clawback: { label: t('wallet.tx_clawback'), color: 'text-red-400' },
   };
 
   useEffect(() => {
@@ -31,16 +38,34 @@ export default function WalletInfo() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiFetch('/api/wallet/transactions');
-        if (!cancelled) setTransactions((data?.transactions || []).slice(0, 5));
+        const [txData, referralData] = await Promise.all([
+          apiFetch('/api/wallet/transactions'),
+          apiFetch('/api/auth/referrals'),
+        ]);
+        if (!cancelled) {
+          setTransactions((txData?.transactions || []).slice(0, 5));
+          setReferralInfo(referralData);
+        }
       } catch (err) {
-        console.error('Error fetching wallet transactions:', err);
+        console.error('Error fetching wallet data:', err);
       } finally {
         if (!cancelled) setLoadingTx(false);
       }
     })();
     return () => { cancelled = true; };
   }, [user, t]);
+
+  const handleCopyReferralLink = async () => {
+    if (!referralInfo?.referralCode) return;
+    const link = `${window.location.origin}/register?ref=${referralInfo.referralCode}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+    }
+  };
 
   return (
     <div className="page max-w-[1100px] mx-auto px-4 py-12 animate-fadeIn">
@@ -77,10 +102,8 @@ export default function WalletInfo() {
             </div>
           )}
 
-          {/* Top-up (Stripe) e conversione crediti->IBAN sono temporaneamente disattivati:
-              il flusso euro<->crediti è in revisione per conformita alle regole di prodotto
-              (i crediti non devono avere valore monetario). Vedi src/routes/stripe.js e
-              src/controllers/walletController.js. */}
+          {/* I crediti CardBrix non hanno valore monetario: niente acquisto con carta,
+              niente conversione in euro. Si guadagnano partecipando alla piattaforma. */}
         </div>
       </div>
 
@@ -92,7 +115,7 @@ export default function WalletInfo() {
           </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-2">{t('wallet.card1_title')}</h3>
           <p className="text-xs text-stone-400 leading-relaxed">
-            <span className="text-white font-bold">{t('wallet.exchange_rate')}</span>. {t('wallet.card1_desc')}
+            {t('wallet.card1_desc')}
           </p>
         </StitchCard>
 
@@ -160,6 +183,44 @@ export default function WalletInfo() {
                 );
               })}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* REFERRAL */}
+      {user && (
+        <div className="bento-card p-6 border border-white/5 bg-[#14120b]/30 rounded-2xl mt-10">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Users className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white uppercase tracking-wide">{t('wallet.referral_title')}</h2>
+              <p className="text-[11px] text-stone-500">{t('wallet.referral_subtitle')}</p>
+            </div>
+          </div>
+
+          {referralInfo ? (
+            <>
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg font-black text-gold-400 tracking-widest text-center sm:text-left">
+                  {referralInfo.referralCode}
+                </div>
+                <button
+                  onClick={handleCopyReferralLink}
+                  className="px-4 py-3 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 shrink-0"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? t('wallet.referral_copied') : t('wallet.referral_copy')}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-stone-400">
+                <span>{t('wallet.referral_completed', { count: referralInfo.completedReferrals })}</span>
+                <span>{t('wallet.referral_pending', { count: referralInfo.pendingReferrals })}</span>
+              </div>
+            </>
+          ) : (
+            <div className="h-16 bg-white/5 rounded-lg animate-pulse" />
           )}
         </div>
       )}

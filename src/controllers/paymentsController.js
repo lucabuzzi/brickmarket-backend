@@ -8,6 +8,7 @@ const { resolveTcgShipping } = require('../services/shipping');
 const { checkoutAddressSchema, validate: validateAddress } = require('../validators/addressValidators');
 const shippingQuote = require('../services/shippingQuote');
 const { sellerAddressSnapshot } = shippingQuote;
+const identitySignalRepository = require('../repositories/identitySignalRepository');
 
 /** Cart shipping groups: one shipment per (seller × macro-category). Trading
  *  cards ship apart from LEGO/Funko even for the same seller. */
@@ -180,6 +181,18 @@ async function createCartPaymentIntentHandler(req, res) {
   if (addressError) {
     return res.status(400).json({ error: addressError });
   }
+
+  // Anti-abuso (CLAUDE.md): segnali di identità raccolti al checkout, usati insieme a
+  // quelli di registrazione/login per capire se un venditore e un compratore sono la
+  // stessa persona quando arriva il momento di concedere i bonus vendita/acquisto.
+  await identitySignalRepository.recordSignal(req.user.userId, 'ip', req.ip);
+  await identitySignalRepository.recordSignal(req.user.userId, 'device', req.headers['user-agent']);
+  await identitySignalRepository.recordAddressSignal(req.user.userId, {
+    street: buyerAddress.addressStreet,
+    houseNumber: buyerAddress.addressHouseNumber,
+    zip: buyerAddress.zip,
+    country: buyerAddress.country,
+  });
 
   try {
     const listings = await paymentsRepository.findActiveListingsByIds(itemIds);
@@ -402,6 +415,23 @@ async function webhookHandler(req, res) {
       for (const order of orders) {
         await paymentsRepository.markListingSold(order.listing_id);
         await recomputeUserRole(order.buyer_id);
+      }
+
+      // Anti-abuso (CLAUDE.md — "metodo di pagamento" condiviso tra venditore e
+      // compratore): l'impronta della carta (Stripe la calcola sul PAN, la stessa
+      // carta dà sempre la stessa impronta anche su PaymentMethod diversi) viene
+      // registrata come segnale del compratore. Un problema qui non deve mai far
+      // fallire il webhook — l'ordine è già stato processato sopra.
+      if (orders.length > 0 && pi.payment_method) {
+        try {
+          const paymentMethod = await stripe.paymentMethods.retrieve(pi.payment_method);
+          const fingerprint = paymentMethod.card?.fingerprint;
+          if (fingerprint) {
+            await identitySignalRepository.recordSignal(orders[0].buyer_id, 'payment_fingerprint', fingerprint);
+          }
+        } catch (err) {
+          console.error('[AntiAbuse] Failed to record payment fingerprint:', err.message);
+        }
       }
       break;
     }

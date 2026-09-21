@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../db');
 const auth = require('../middleware/auth');
 const Joi = require('joi');
+const orderDisputeService = require('../services/orderDisputeService');
 
 const shipSchema = Joi.object({
   trackingNumber: Joi.string().min(3).max(100).required(),
@@ -76,6 +77,29 @@ router.patch('/:id/ship', auth, async (req, res) => {
   } catch (err) {
     console.error('ship:', err.message);
     res.status(500).json({ error: 'Errore aggiornamento spedizione' });
+  }
+});
+
+// Compratore: apre una contestazione (CLAUDE.md — "resi/rimborsi"). Ammessa su
+// ordini spediti o già conclusi (la maturazione del bonus dura 15 giorni dopo la
+// consegna confermata, la contestazione deve poter arrivare anche in quella finestra).
+// Non blocca subito nulla di per sé: la revisione admin (POST /api/admin/orders/:id/
+// dispute-resolution) decide se respingerla o accoglierla come rimborso.
+router.post('/:id/dispute', auth, async (req, res) => {
+  const reason = (req.body?.reason || '').trim();
+  if (reason.length < 5 || reason.length > 1000) {
+    return res.status(400).json({ error: 'Descrivi il problema in almeno 5 caratteri (max 1000).' });
+  }
+
+  try {
+    const order = await orderDisputeService.openDispute(req.params.id, req.user.userId, reason);
+    if (!order) {
+      return res.status(400).json({ error: 'Ordine non trovato, non sei il compratore, o stato non valido per una contestazione.' });
+    }
+    res.json({ success: true, message: 'Contestazione aperta. Il nostro supporto la esaminerà a breve.' });
+  } catch (err) {
+    console.error('open dispute error:', err.message);
+    res.status(500).json({ error: 'Errore apertura contestazione' });
   }
 });
 

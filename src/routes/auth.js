@@ -23,4 +23,9 @@ router.patch('/me', auth, upload.single('avatar'), authController.updateMeHandle
 router.post('/forgot-password', authRateLimit, authController.forgotPasswordHandler);
 router.post('/reset-password', authRateLimit, authController.resetPasswordHandler);
 
+router.post('/verify-email', authRateLimit, authController.verifyEmailHandler);
+router.post('/resend-verification-email', auth, authRateLimit, authController.resendVerificationEmailHandler);
+
+router.get('/referrals', auth, authController.referralInfoHandler);
+
 module.exports = router;

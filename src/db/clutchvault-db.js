@@ -179,10 +179,12 @@ const mockQuery = async (text, params = []) => {
     const profile = { id, username, email, password_hash, role: role || 'user', created_at: new Date().toISOString() };
     mockDb.profiles.push(profile);
     
-    // Auto-create wallet on profile insert
+    // Auto-create wallet on profile insert. Starts at 0: crediti si guadagnano solo
+    // tramite gli eventi definiti (registrazione, referral, vendita, acquisto — vedi
+    // CLAUDE.md), mai da un saldo di partenza.
     mockDb.user_wallets[id] = {
       user_id: id,
-      balance_credits: 100.00,
+      balance_credits: 0.00,
       updated_at: new Date().toISOString()
     };
     return { rows: [profile] };
@@ -252,6 +254,17 @@ const mockQuery = async (text, params = []) => {
     };
     mockDb.credit_transactions.push(tx);
     return { rows: [tx] };
+  }
+
+  // 6a. UPSERT WALLET (creditWallet): insert into public.user_wallets ... on conflict ...
+  if (normText.startsWith('insert into public.user_wallets') && normText.includes('on conflict')) {
+    const [amount, userId] = params;
+    if (!mockDb.user_wallets[userId]) {
+      mockDb.user_wallets[userId] = { user_id: userId, balance_credits: 0.00 };
+    }
+    mockDb.user_wallets[userId].balance_credits = parseFloat(mockDb.user_wallets[userId].balance_credits) + parseFloat(amount);
+    mockDb.user_wallets[userId].updated_at = new Date().toISOString();
+    return { rows: [mockDb.user_wallets[userId]] };
   }
 
   // 6. UPDATE WALLET: update public.user_wallets

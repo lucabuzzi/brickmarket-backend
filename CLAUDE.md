@@ -79,3 +79,26 @@ Every page/component must render correctly at phone widths (~375–430px, e.g. i
 - Reduce paddings, font sizes, and image aspect ratios on mobile rather than letting desktop sizing bleed down (`p-6 md:p-8`, `text-3xl md:text-4xl` style scales are already used across hero banners — keep following that pattern for new sections).
 - Verify with a real narrow viewport, not just "does it not overflow": OS-level window resize / Chrome's device toolbar is not reliable to drive through the claude-in-chrome automation tools in this environment — instead inject a fixed-size (~390×844) `<iframe>` pointing at the target route into a scratch tab via `javascript_tool` and screenshot that, which gives a genuine narrow layout viewport for the page's media queries.
 - After any change, confirm there's no horizontal scroll (`document.documentElement.scrollWidth <= clientWidth`) at the test width before calling it done.
+
+PROGETTO: CardBrix (marketplace di carte/collezionismo con annunci, aste, Skill Zone con puzzle).
+
+REGOLE DI PRODOTTO DEFINITIVE SUI CREDITI
+- I crediti hanno valore solo interno. NON acquistabili con denaro, NON convertibili in denaro, NON trasferibili tra utenti. Nessun riferimento a un rapporto credito/euro in codice, UI, email o testi.
+- Si guadagnano solo così (tutti i valori sono configurabili da admin, mai hardcoded):
+  * Registrazione: +5 (dopo verifica email)
+  * Referral (link ?ref=CODICE o codice inserito in registrazione): +5 a chi ha invitato, quando l'invitato completa registrazione e verifica email
+  * Vendita completata: +5 al venditore
+  * Acquisto completato: +5 al compratore
+  * NESSUN credito per la pubblicazione di annunci.
+- Il pagamento delle vendite avviene DENTRO CardBrix, con commissione.
+- Bonus vendita/acquisto: maturano dopo un "periodo di maturazione" di 15 giorni (configurabile) dalla CONSEGNA CONFERMATA, solo se non ci sono contestazioni/resi/rimborsi aperti. Nei testi usa "periodo di maturazione", MAI "diritto di recesso" (il recesso non vale tra privati).
+- Importo minimo d'ordine per maturare crediti: 5 € (configurabile).
+- Anti-abuso obbligatorio: nessun bonus se venditore e compratore condividono IP, dispositivo, metodo di pagamento o indirizzo di spedizione; tetto mensile di bonus per coppia venditore-compratore; tetti giornalieri/mensili per utente; clawback su rimborso/reso/contestazione.
+- I crediti si usano per partecipare ai puzzle della Skill Zone. I premi li mette CardBrix.com, spedizione a carico del vincitore.
+
+METODO DI LAVORO
+- Prima di scrivere codice: mostra il piano e attendi conferma.
+- Ogni modifica DB con migrazione reversibile.
+- Ogni operazione sui crediti: transazionale, idempotente, con audit trail.
+- Test automatici obbligatori. Non dichiarare "fatto" senza aver eseguito i test e mostrato l'output.
+- Se una mia richiesta contrasta con una regola qui sopra o con il codice esistente, dimmelo prima di procedere.

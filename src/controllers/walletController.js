@@ -1,30 +1,17 @@
-const Stripe = require('stripe');
 const walletRepository = require('../repositories/walletRepository');
-const {
-  createTopupIntentSchema, confirmTopupSchema, buyProductSchema, convertSchema, validate,
-} = require('../validators/walletValidators');
-
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
-
-// Euro<->crediti flow disattivato (non cancellato): i crediti CardBrix non devono avere
-// valore monetario (CLAUDE.md, "REGOLE DI PRODOTTO DEFINITIVE SUI CREDITI"), ma il codice
-// sotto implementava un cambio fisso 1 CR = 1 EUR con acquisto via carta e conversione a
-// bonifico reale. Gli endpoint restano nel codice per la fase di rework (nuovo modello
-// crediti conforme) ma rispondono 410 Gone finché quel rework non è pronto.
-const CREDIT_MONEY_FLOW_DISABLED = {
-  error: 'wallet_topup_and_conversion_disabled',
-  message: 'Ricarica e conversione crediti sono temporaneamente disattivate.',
-};
+const { buyProductSchema, validate } = require('../validators/walletValidators');
 
 async function getBalanceHandler(req, res) {
   try {
     const wallet = await walletRepository.getBalance(req.user.id);
 
     if (!wallet) {
-      // Lazy wallet creation for main app users
+      // Lazy wallet creation for main app users. Starts at 0: crediti si guadagnano solo
+      // tramite gli eventi definiti (registrazione, referral, vendita, acquisto — vedi
+      // CLAUDE.md, "REGOLE DI PRODOTTO DEFINITIVE SUI CREDITI"), mai da un saldo di partenza.
       try {
-        await walletRepository.createWallet(req.user.id, 100.00);
-        return res.json({ balanceCredits: 100.00 });
+        await walletRepository.createWallet(req.user.id, 0.00);
+        return res.json({ balanceCredits: 0.00 });
       } catch (err) {}
       return res.status(404).json({ error: 'Wallet not found for user' });
     }
@@ -50,83 +37,6 @@ async function getTransactionsHandler(req, res) {
   } catch (error) {
     console.error('Fetch transaction history error:', error);
     return res.status(500).json({ error: 'Database error fetching transactions' });
-  }
-}
-
-// Real card payment (Stripe PaymentIntent) for topping up the wallet.
-// Credits are granted by the /api/webhooks/stripe handler on payment_intent.succeeded,
-// not here — this only starts the payment.
-async function createTopupIntentHandler(req, res) {
-  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
-
-  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
-  if (!stripe) {
-    return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
-  }
-
-  const { error, value } = validate(createTopupIntentSchema, req.body);
-  if (error) {
-    return res.status(400).json({ error });
-  }
-
-  try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(value.amountEuros * 100),
-      currency: 'eur',
-      payment_method_types: ['card'],
-      metadata: { userId: req.user.id, type: 'wallet_topup' },
-    });
-
-    return res.json({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    console.error('Create topup intent error:', error);
-    return res.status(500).json({ error: 'Impossibile avviare il pagamento' });
-  }
-}
-
-// Called by the client right after stripe.confirmCardPayment() resolves, so credits
-// land without waiting on webhook delivery (which needs the Stripe CLI forwarding to
-// localhost in dev). Verifies the PaymentIntent against Stripe directly rather than
-// trusting the client's word for it, and is a no-op if the webhook already credited it.
-async function confirmTopupHandler(req, res) {
-  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
-
-  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
-  if (!stripe) {
-    return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
-  }
-
-  const { error, value } = validate(confirmTopupSchema, req.body);
-  if (error) {
-    return res.status(400).json({ error });
-  }
-
-  try {
-    const intent = await stripe.paymentIntents.retrieve(value.paymentIntentId);
-    if (intent.status !== 'succeeded') {
-      return res.status(400).json({ error: 'Pagamento non completato' });
-    }
-    if (intent.metadata?.userId !== req.user.id) {
-      return res.status(403).json({ error: 'Pagamento non associato a questo utente' });
-    }
-
-    const existing = await walletRepository.findDepositByReference(value.paymentIntentId);
-    if (!existing) {
-      const creditsToDeposit = intent.amount / 100;
-      await walletRepository.creditWallet(req.user.id, creditsToDeposit, {
-        referenceId: value.paymentIntentId,
-        type: 'deposit',
-      });
-    }
-
-    const wallet = await walletRepository.getBalance(req.user.id);
-    return res.json({
-      success: true,
-      balanceCredits: parseFloat(wallet?.balance_credits || 0),
-    });
-  } catch (error) {
-    console.error('Confirm topup error:', error);
-    return res.status(500).json({ error: 'Errore nella conferma del pagamento' });
   }
 }
 
@@ -176,105 +86,8 @@ async function buyProductHandler(req, res) {
   }
 }
 
-// Whether this user can cash out credits to their bank account right now, and
-// whether they need to (re)complete Stripe Connect onboarding first. Reuses the
-// same Connect account marketplace sellers use (src/routes/payments.js onboard-seller) —
-// converting credits is just another payout onto that same account.
-async function getPayoutStatusHandler(req, res) {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
-  }
-
-  try {
-    const stripeAccountId = await walletRepository.getStripeAccountId(req.user.id);
-    if (!stripeAccountId) {
-      return res.json({ payoutsEnabled: false, onboardingStarted: false });
-    }
-
-    const account = await stripe.accounts.retrieve(stripeAccountId);
-    return res.json({ payoutsEnabled: !!account.payouts_enabled, onboardingStarted: true });
-  } catch (error) {
-    console.error('Payout status check error:', error);
-    return res.status(500).json({ error: 'Errore nel controllo dello stato pagamenti' });
-  }
-}
-
-// Converts credits to a real transfer onto the user's connected Stripe account
-// (1 CR = 1€, matching the wallet's exchange rate). Debit-then-transfer, with a
-// refund back to the wallet if the Stripe transfer itself fails, so credits are
-// never lost to a failed payout.
-async function convertHandler(req, res) {
-  return res.status(410).json(CREDIT_MONEY_FLOW_DISABLED);
-
-  /* eslint-disable no-unreachable -- disattivato, non cancellato: vedi CREDIT_MONEY_FLOW_DISABLED sopra */
-  if (!stripe) {
-    return res.status(503).json({ error: 'Pagamenti non configurati sul server' });
-  }
-
-  const { error, value } = validate(convertSchema, req.body);
-  if (error) {
-    return res.status(400).json({ error });
-  }
-  const credits = value.credits;
-
-  try {
-    const stripeAccountId = await walletRepository.getStripeAccountId(req.user.id);
-    if (!stripeAccountId) {
-      return res.status(400).json({ error: 'stripe_onboarding_required' });
-    }
-
-    const account = await stripe.accounts.retrieve(stripeAccountId);
-    if (!account.payouts_enabled) {
-      return res.status(400).json({ error: 'stripe_onboarding_incomplete' });
-    }
-
-    let debited;
-    try {
-      debited = await walletRepository.debitWalletIfSufficient(req.user.id, credits);
-    } catch (debitErr) {
-      console.error('Convert debit error:', debitErr);
-      return res.status(400).json({ error: 'Credito insufficiente' });
-    }
-
-    if (!debited) {
-      return res.status(400).json({ error: 'Credito insufficiente' });
-    }
-
-    let transfer;
-    try {
-      transfer = await stripe.transfers.create({
-        amount: Math.round(credits * 100),
-        currency: 'eur',
-        destination: stripeAccountId,
-        metadata: { userId: req.user.id, type: 'wallet_conversion' },
-      });
-    } catch (stripeErr) {
-      // Refund the credits since the payout itself never happened
-      await walletRepository.creditWallet(req.user.id, credits);
-      console.error('Stripe transfer failed during conversion:', stripeErr);
-      return res.status(502).json({ error: 'Trasferimento Stripe fallito, credito ripristinato' });
-    }
-
-    await walletRepository.recordTransaction(req.user.id, -credits, 'payout', transfer.id);
-
-    return res.json({
-      success: true,
-      convertedCredits: credits,
-      newBalanceCredits: parseFloat(debited.balance_credits),
-      transferId: transfer.id,
-    });
-  } catch (error) {
-    console.error('Convert credits error:', error);
-    return res.status(500).json({ error: 'Errore durante la conversione' });
-  }
-}
-
 module.exports = {
   getBalanceHandler,
   getTransactionsHandler,
-  createTopupIntentHandler,
-  confirmTopupHandler,
   buyProductHandler,
-  getPayoutStatusHandler,
-  convertHandler,
 };

@@ -78,18 +78,18 @@ export function AuthProvider({ children }) {
     return applyAuthResult(data, 'registration_completed');
   }, [applyAuthResult]);
 
-  const loginWithGoogle = useCallback(async (credential) => {
+  const loginWithGoogle = useCallback(async (credential, referralCode) => {
     const data = await apiFetch(AUTH_ENDPOINTS.google, {
       method: 'POST',
-      body: { credential },
+      body: { credential, referralCode: referralCode || undefined },
     });
     return applyAuthResult(data, data?.isNewUser ? 'registration_completed' : 'login');
   }, [applyAuthResult]);
 
-  const loginWithApple = useCallback(async (idToken, appleUser) => {
+  const loginWithApple = useCallback(async (idToken, appleUser, referralCode) => {
     const data = await apiFetch(AUTH_ENDPOINTS.apple, {
       method: 'POST',
-      body: { id_token: idToken, user: appleUser },
+      body: { id_token: idToken, user: appleUser, referralCode: referralCode || undefined },
     });
     return applyAuthResult(data, data?.isNewUser ? 'registration_completed' : 'login');
   }, [applyAuthResult]);

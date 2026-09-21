@@ -8,7 +8,7 @@ const { query } = require('../db');
 const PUBLIC_FIELDS = `id, email, username, full_name, role, city, avatar_url, seller_type, company_name,
        stripe_account_id, stripe_account_status,
        address_street, address_house_number, address_zip_code, address_country, phone,
-       rating_avg, rating_count, sales_count, is_verified, is_active, email_verified,
+       rating_avg, rating_count, sales_count, is_verified, is_active, email_verified, referral_code,
        created_at, updated_at`;
 
 function findByEmailOrUsername(email, username) {
@@ -39,21 +39,62 @@ function findByEmail(email) {
 async function createUser({
   email, passwordHash, username, fullName, role, city,
   fiscalCode, iban, sellerType, companyName, street, houseNumber,
-  zipCode, country, phone, idScanUrl, businessLicenseUrl,
+  zipCode, country, phone, idScanUrl, businessLicenseUrl, referralCode,
 }) {
   const result = await query(`
     INSERT INTO users
       (email, password_hash, username, full_name, role, city, fiscal_code, iban, seller_type,
        company_name, address_street, address_house_number, address_zip_code, address_country, phone,
-       id_scan_url, business_license_url)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+       id_scan_url, business_license_url, referral_code)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
     RETURNING id, email, username, role
   `, [
     email.toLowerCase(), passwordHash, username, fullName || null, role, city,
     fiscalCode, iban, sellerType, companyName, street, houseNumber, zipCode, country, phone,
-    idScanUrl, businessLicenseUrl,
+    idScanUrl, businessLicenseUrl, referralCode,
   ]);
   return result.rows[0];
+}
+
+function referralCodeExists(code, client) {
+  const db = client || { query };
+  return db.query('SELECT 1 FROM users WHERE referral_code = $1', [code])
+    .then((r) => r.rows.length > 0);
+}
+
+function findUserByReferralCode(code) {
+  return query('SELECT id FROM users WHERE referral_code = $1', [code])
+    .then((r) => r.rows[0] || null);
+}
+
+function createReferral(referrerId, referredId, referralCode) {
+  return query(
+    'INSERT INTO public.referrals (referrer_id, referred_id, referral_code) VALUES ($1, $2, $3)',
+    [referrerId, referredId, referralCode]
+  );
+}
+
+// Singola UPDATE atomica, stesso principio di verifyEmailByToken: solo la prima
+// chiamata per questo invitato può far scattare pending->completed, quindi il
+// bonus al referrer non può mai essere accreditato due volte per lo stesso invitato.
+function completeReferral(referredId) {
+  return query(
+    `UPDATE public.referrals
+     SET status = 'completed', completed_at = now()
+     WHERE referred_id = $1 AND status = 'pending'
+     RETURNING referrer_id`,
+    [referredId]
+  ).then((r) => r.rows[0] || null);
+}
+
+function getReferralStats(userId) {
+  return query(
+    `SELECT
+       COUNT(*) FILTER (WHERE status = 'completed')::int AS completed,
+       COUNT(*) FILTER (WHERE status = 'pending')::int AS pending
+     FROM public.referrals WHERE referrer_id = $1`,
+    [userId]
+  ).then((r) => r.rows[0] || { completed: 0, pending: 0 });
 }
 
 async function updateProfile(userId, fields) {
@@ -100,6 +141,27 @@ async function updatePassword(userId, passwordHash) {
   );
 }
 
+async function setEmailVerificationToken(userId, hashedToken, expires) {
+  await query(
+    'UPDATE users SET email_verification_token = $1, email_verification_expires = $2 WHERE id = $3',
+    [hashedToken, expires, userId]
+  );
+}
+
+// Singola UPDATE atomica: solo la prima richiesta con un token ancora valido riesce a
+// far scattare email_verified false->true (la condizione WHERE email_verified = false
+// smette di essere vera per qualunque tentativo successivo), quindi due click paralleli
+// sullo stesso link non possono mai accreditare il bonus di registrazione due volte.
+function verifyEmailByToken(hashedToken) {
+  return query(
+    `UPDATE users
+     SET email_verified = true, email_verification_token = NULL, email_verification_expires = NULL
+     WHERE email_verification_token = $1 AND email_verification_expires > NOW() AND email_verified = false
+     RETURNING id, email, username`,
+    [hashedToken]
+  ).then((r) => r.rows[0] || null);
+}
+
 // --- OAuth / account linking (all accept an optional transaction client) ---
 
 function findIdentity(provider, providerUserId, client) {
@@ -124,13 +186,13 @@ function usernameExists(username, client) {
     .then((r) => r.rows.length > 0);
 }
 
-async function createOAuthUser({ email, username, fullName, emailVerified }, client) {
+async function createOAuthUser({ email, username, fullName, emailVerified, referralCode }, client) {
   const db = client || { query };
   const result = await db.query(`
-    INSERT INTO users (email, password_hash, username, full_name, role, email_verified)
-    VALUES ($1, NULL, $2, $3, 'buyer', $4)
+    INSERT INTO users (email, password_hash, username, full_name, role, email_verified, referral_code)
+    VALUES ($1, NULL, $2, $3, 'buyer', $4, $5)
     RETURNING id, email, username, role
-  `, [email.toLowerCase(), username, fullName || null, emailVerified]);
+  `, [email.toLowerCase(), username, fullName || null, emailVerified, referralCode]);
   return result.rows[0];
 }
 
@@ -152,6 +214,13 @@ module.exports = {
   setResetToken,
   findByResetToken,
   updatePassword,
+  setEmailVerificationToken,
+  verifyEmailByToken,
+  referralCodeExists,
+  findUserByReferralCode,
+  createReferral,
+  completeReferral,
+  getReferralStats,
   findIdentity,
   findByEmailFull,
   usernameExists,

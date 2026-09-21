@@ -8,7 +8,12 @@ const TYPE_LABELS = {
   contest_entry: 'Ingresso Sfida',
   contest_refund: 'Rimborso Sfida',
   payout: 'Vincita',
-  shop_purchase: 'Acquisto Shop'
+  shop_purchase: 'Acquisto Shop',
+  signup_bonus: 'Bonus Registrazione',
+  referral_bonus: 'Bonus Referral',
+  sale_bonus: 'Bonus Vendita',
+  purchase_bonus: 'Bonus Acquisto',
+  clawback: 'Storno Bonus',
 };
 
 export default function AdminWalletTransactions() {

@@ -1,5 +1,6 @@
 // Covers the Definition of Done for the credits/auctions/admin-auth lockdown:
-//  - 410 on the euro<->crediti endpoints (wallet top-up, convert, stripe simulate-checkout)
+//  - 404 on the euro<->crediti endpoints (wallet top-up, convert, stripe simulate-checkout —
+//    removed outright, not just disabled, once the phase-0 cleanup shipped)
 //  - 503 on the ClutchVault-style auction bid endpoint
 //  - 403 for a deactivated admin on the three hardened admin endpoints
 //  - refund idempotency under two genuinely concurrent requests
@@ -53,37 +54,40 @@ async function post(path, { token, body, isForm = false } = {}) {
   return { status: res.status, body: json };
 }
 
-describe('Euro<->crediti flow disattivato (410 Gone)', () => {
-  test('POST /api/wallet/create-topup-intent -> 410', async () => {
-    const { status, body } = await post('/api/wallet/create-topup-intent', {
+describe('Euro<->crediti flow rimosso (route inesistenti, 404)', () => {
+  test('POST /api/wallet/create-topup-intent -> 404', async () => {
+    const { status } = await post('/api/wallet/create-topup-intent', {
       token: userToken, body: { amountEuros: 10 },
     });
-    expect(status).toBe(410);
-    expect(body.error).toBe('wallet_topup_and_conversion_disabled');
+    expect(status).toBe(404);
   });
 
-  test('POST /api/wallet/confirm-topup -> 410', async () => {
-    const { status, body } = await post('/api/wallet/confirm-topup', {
+  test('POST /api/wallet/confirm-topup -> 404', async () => {
+    const { status } = await post('/api/wallet/confirm-topup', {
       token: userToken, body: { paymentIntentId: 'pi_fake' },
     });
-    expect(status).toBe(410);
-    expect(body.error).toBe('wallet_topup_and_conversion_disabled');
+    expect(status).toBe(404);
   });
 
-  test('POST /api/wallet/convert -> 410', async () => {
-    const { status, body } = await post('/api/wallet/convert', {
+  test('POST /api/wallet/convert -> 404', async () => {
+    const { status } = await post('/api/wallet/convert', {
       token: userToken, body: { credits: 10 },
     });
-    expect(status).toBe(410);
-    expect(body.error).toBe('wallet_topup_and_conversion_disabled');
+    expect(status).toBe(404);
   });
 
-  test('POST /api/webhooks/simulate-checkout -> 410', async () => {
-    const { status, body } = await post('/api/webhooks/simulate-checkout', {
+  test('GET /api/wallet/payout-status -> 404', async () => {
+    const res = await fetch(`${server.baseUrl}/api/wallet/payout-status`, {
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    expect(res.status).toBe(404);
+  });
+
+  test('POST /api/webhooks/simulate-checkout -> 404', async () => {
+    const { status } = await post('/api/webhooks/simulate-checkout', {
       token: userToken, body: { amountEuros: 10 },
     });
-    expect(status).toBe(410);
-    expect(body.error).toBe('wallet_topup_and_conversion_disabled');
+    expect(status).toBe(404);
   });
 });
 

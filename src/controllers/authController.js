@@ -1,11 +1,12 @@
 const authService = require('../services/authService');
 const userRepository = require('../repositories/userRepository');
+const identitySignalRepository = require('../repositories/identitySignalRepository');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { verifyTurnstile } = require('../services/turnstile');
 const { verifyGoogleIdToken } = require('../services/googleAuth');
 const { verifyAppleIdToken } = require('../services/appleAuth');
 const {
-  registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema,
+  registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, updateProfileSchema,
   googleAuthSchema, appleAuthSchema, validate,
 } = require('../validators/authValidators');
 
@@ -57,6 +58,9 @@ async function registerHandler(req, res) {
       phone: value.phone || null,
       idScanUrl,
       businessLicenseUrl,
+      referralCode: value.referralCode || null,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
     });
 
     res.status(201).json({
@@ -81,7 +85,7 @@ async function loginHandler(req, res) {
   }
 
   try {
-    const { token, user } = await authService.login(value.email, value.password);
+    const { token, user } = await authService.login(value.email, value.password, req.ip, req.headers['user-agent']);
     res.json({ token, user });
   } catch (err) {
     handleAuthError(res, err, 'Errore login');
@@ -136,6 +140,18 @@ async function updateMeHandler(req, res) {
     if (!updated) {
       return res.status(404).json({ error: 'Utente non trovato' });
     }
+
+    // Anti-abuso (CLAUDE.md): se l'utente ha appena impostato/cambiato il proprio
+    // indirizzo, aggiorna anche il segnale usato per il confronto venditore-compratore.
+    if (updated.address_street) {
+      await identitySignalRepository.recordAddressSignal(updated.id, {
+        street: updated.address_street,
+        houseNumber: updated.address_house_number,
+        zip: updated.address_zip_code,
+        country: updated.address_country,
+      });
+    }
+
     res.json(updated);
   } catch (err) {
     console.error('ERRORE AGGIORNAMENTO PROFILO:', err.message);
@@ -173,6 +189,38 @@ async function resetPasswordHandler(req, res) {
   }
 }
 
+async function verifyEmailHandler(req, res) {
+  const { error, value } = validate(verifyEmailSchema, req.body);
+  if (error) {
+    return res.status(400).json({ error });
+  }
+
+  try {
+    const { email, bonusAmount } = await authService.verifyEmail(value.token);
+    res.json({ message: 'Email verificata con successo.', email, bonusAmount });
+  } catch (err) {
+    handleAuthError(res, err, 'Errore nella verifica email.');
+  }
+}
+
+async function referralInfoHandler(req, res) {
+  try {
+    const info = await authService.getReferralInfo(req.user.userId);
+    res.json(info);
+  } catch (err) {
+    handleAuthError(res, err, 'Errore nel recupero dei dati referral.');
+  }
+}
+
+async function resendVerificationEmailHandler(req, res) {
+  try {
+    await authService.resendVerificationEmail(req.user.userId);
+    res.json({ message: 'Email di verifica inviata.' });
+  } catch (err) {
+    handleAuthError(res, err, "Errore nell'invio della email di verifica.");
+  }
+}
+
 async function googleAuthHandler(req, res) {
   const { error, value } = validate(googleAuthSchema, req.body);
   if (error) {
@@ -188,6 +236,9 @@ async function googleAuthHandler(req, res) {
       email,
       emailVerified,
       fullName,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      referralCode: value.referralCode || null,
     });
 
     res.status(isNewUser ? 201 : 200).json({ token, user, isNewUser });
@@ -221,6 +272,9 @@ async function appleAuthHandler(req, res) {
       email,
       emailVerified,
       fullName,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      referralCode: value.referralCode || null,
     });
 
     res.status(isNewUser ? 201 : 200).json({ token, user, isNewUser });
@@ -240,6 +294,9 @@ module.exports = {
   updateMeHandler,
   forgotPasswordHandler,
   resetPasswordHandler,
+  verifyEmailHandler,
+  resendVerificationEmailHandler,
+  referralInfoHandler,
   googleAuthHandler,
   appleAuthHandler,
 };

@@ -58,7 +58,8 @@ export default function Login() {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  const [email, setEmail] = useState('');
+  // Coming back from a password reset pre-fills the account's email.
+  const [email, setEmail] = useState(location.state?.resetEmail || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');

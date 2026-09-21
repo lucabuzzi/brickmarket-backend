@@ -1,7 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ArrowRight, Check, Eye, EyeOff, Link2Off, Lock, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { apiUrl } from '../api';
+import RecoveryShell from '../components/auth/RecoveryShell';
+import { STRENGTH_LEVELS, passwordScore } from '../components/auth/passwordStrength';
+
+const LIME = '#c6ff3d';
+
+function PasswordField({ label, value, onChange, disabled, autoFocus }) {
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState(false);
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-white/50">{label}</span>
+      <span className="group flex h-14 items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 transition focus-within:border-white/45 focus-within:bg-black/60">
+        <Lock className="h-5 w-5 shrink-0 text-white/35 transition group-focus-within:text-white" />
+        <input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={onChange}
+          required
+          disabled={disabled}
+          autoComplete="new-password"
+          autoFocus={autoFocus}
+          className="h-full min-w-0 flex-1 bg-transparent text-base text-white outline-none disabled:opacity-50"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? t('login_page.hide_password') : t('login_page.show_password')}
+          aria-pressed={visible}
+          className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white/45 transition hover:bg-white/10 hover:text-white"
+        >
+          {visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+      </span>
+    </label>
+  );
+}
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -13,13 +50,6 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    if (!token) {
-      setStatus('error');
-      setMessage(t('auth.reset_token_missing'));
-    }
-  }, [token, t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,96 +85,118 @@ export default function ResetPassword() {
       }
 
       setStatus('success');
-      setMessage(data.message || t('auth.reset_success_default'));
 
-      // Reindirizzamento rapido auto-popolando la Quick Login
+      // Straight to login with the account's email already filled in.
       setTimeout(() => {
-        navigate('/', { state: { resetEmail: data.email }, replace: true });
-      }, 2000);
-
+        navigate('/login', { state: { resetEmail: data.email }, replace: true });
+      }, 2500);
     } catch (err) {
       setStatus('error');
       setMessage(err.message);
     }
   };
 
-  const calculateStrength = (pwd) => {
-    if (pwd.length === 0) return 0;
-    let strength = 0;
-    if (pwd.length >= 8) strength += 25;
-    if (/[A-Z]/.test(pwd)) strength += 25;
-    if (/[0-9]/.test(pwd)) strength += 25;
-    if (/[^A-Za-z0-9]/.test(pwd)) strength += 25;
-    return strength;
-  };
+  const score = passwordScore(password);
+  const strength = STRENGTH_LEVELS[score];
+  const repeatState = confirmPassword ? (confirmPassword === password ? 'match' : 'mismatch') : null;
+  const busy = status === 'loading';
 
-  const strength = calculateStrength(password);
-  let strengthColor = '#ef4444'; // res
-  if (strength >= 50) strengthColor = '#eab308'; // yellow
-  if (strength >= 75) strengthColor = '#34d399'; // green
+  if (!token) {
+    return (
+      <RecoveryShell icon={Link2Off} step={1} tone="#ff5a36">
+        <div className="text-center">
+          <h1 className="text-[clamp(2rem,6vw,2.8rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">{t('recover_page.missing_title')}</h1>
+          <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-white/60">{t('recover_page.missing_desc')}</p>
+          <Link
+            to="/forgot-password"
+            className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl font-black text-[#10140a] transition hover:brightness-110"
+            style={{ background: LIME }}
+          >
+            {t('recover_page.request_new')}
+            <ArrowRight className="h-5 w-5" />
+          </Link>
+        </div>
+      </RecoveryShell>
+    );
+  }
+
+  if (status === 'success') {
+    return (
+      <RecoveryShell icon={ShieldCheck} step={3}>
+        <div className="text-center">
+          <p className="text-xs font-black uppercase tracking-[0.22em]" style={{ color: LIME }}>{t('recover_page.kicker')}</p>
+          <h1 className="mt-3 text-[clamp(2rem,6vw,2.8rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">{t('recover_page.done_title')}</h1>
+          <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-white/60">{t('recover_page.done_desc')}</p>
+          <div className="mx-auto mt-6 h-1 w-40 overflow-hidden rounded-full bg-white/10">
+            <div className="rp-progress h-full rounded-full" style={{ background: LIME }} />
+          </div>
+          <p className="mt-3 text-xs text-white/40">{t('recover_page.done_redirect')}</p>
+          <Link
+            to="/login"
+            replace
+            className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl font-black text-[#10140a] transition hover:brightness-110"
+            style={{ background: LIME }}
+          >
+            {t('recover_page.go_login')}
+            <ArrowRight className="h-5 w-5" />
+          </Link>
+        </div>
+      </RecoveryShell>
+    );
+  }
 
   return (
-    <div className="page auth-page narrow" style={{ maxWidth: '400px', margin: '4rem auto' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.6rem' }}>{t('auth.reset_title')}</h1>
+    <RecoveryShell icon={LockKeyhole} step={2}>
+      <div className="text-center">
+        <p className="text-xs font-black uppercase tracking-[0.22em]" style={{ color: LIME }}>{t('recover_page.kicker')}</p>
+        <h1 className="mt-3 text-[clamp(2rem,6vw,2.8rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">{t('recover_page.reset_title')}</h1>
+        <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-white/60">{t('recover_page.reset_desc')}</p>
+      </div>
 
-      {status === 'success' ? (
-        <div style={{ backgroundColor: '#064e3b', color: '#34d399', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
-          <h3 style={{ marginTop: 0 }}>{t('auth.success_title')}</h3>
-          <p>{message}</p>
-          <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#a7f3d0' }}>{t('auth.redirecting_home')}</p>
+      <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+        {status === 'error' && (
+          <p className="rounded-2xl border border-[#ff5a36]/40 bg-[#ff5a36]/10 px-4 py-3 text-sm font-semibold text-[#ff7a5c]" role="alert">
+            {message}
+          </p>
+        )}
+
+        <div>
+          <PasswordField label={t('auth.new_password')} value={password} onChange={(e) => setPassword(e.target.value)} disabled={busy} autoFocus />
+          {strength && (
+            <div className="mt-2.5" aria-live="polite">
+              <div className="flex gap-1">
+                {[1, 2, 3].map((n) => (
+                  <span key={n} className="h-1 flex-1 rounded-full transition-colors" style={{ background: n <= score ? strength.color : 'rgba(255,255,255,0.1)' }} />
+                ))}
+              </div>
+              <p className="mt-1.5 flex justify-between gap-3 text-xs font-bold">
+                <span className="text-white/45">{password.length < 8 ? t('auth.min_chars_hint') : ' '}</span>
+                <span style={{ color: strength.color }}>{t(`register_page.strength_${strength.key}`)}</span>
+              </p>
+            </div>
+          )}
         </div>
-      ) : (
-        <form className="form" onSubmit={handleSubmit}>
-          {status === 'error' && (
-            <div style={{ color: '#ef4444', backgroundColor: '#450a0a', padding: '0.75rem', borderRadius: '4px', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              {message}
-            </div>
+
+        <div>
+          <PasswordField label={t('auth.confirm_new_password')} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={busy} />
+          {repeatState && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-bold" style={{ color: repeatState === 'match' ? LIME : '#ff7a5c' }} aria-live="polite">
+              {repeatState === 'match' && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+              {t(`register_page.passwords_${repeatState}`)}
+            </p>
           )}
+        </div>
 
-          <label>
-            {t('auth.new_password')}
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={!token || status === 'loading'}
-            />
-          </label>
-
-          {password.length > 0 && (
-            <div style={{ marginTop: '-0.5rem', marginBottom: '1rem' }}>
-              <div style={{ height: '4px', width: '100%', backgroundColor: '#292524', borderRadius: '2px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${strength}%`, backgroundColor: strengthColor, transition: 'all 0.3s' }}></div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#a8a29e', marginTop: '4px' }}>
-                <span>{password.length < 8 ? t('auth.min_chars_hint') : t('auth.strength_ok')}</span>
-                <span>{strength === 100 ? t('auth.strength_strong') : strength >= 50 ? t('auth.strength_medium') : t('auth.strength_weak')}</span>
-              </div>
-            </div>
-          )}
-
-          <label>
-            {t('auth.confirm_new_password')}
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              disabled={!token || status === 'loading'}
-            />
-          </label>
-
-          <button
-            type="submit"
-            className="btn btn--primary"
-            disabled={status === 'loading' || !token}
-            style={{ width: '100%', padding: '0.75rem', marginTop: '1rem' }}
-          >
-            {status === 'loading' ? t('auth.saving') : t('auth.change_password_btn')}
-          </button>
-        </form>
-      )}
-    </div>
+        <button
+          type="submit"
+          disabled={busy}
+          className="lx-shine relative mt-2 flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-base font-black text-[#10140a] shadow-[0_18px_40px_-14px_rgba(198,255,61,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          style={{ background: LIME }}
+        >
+          {busy ? t('recover_page.saving') : t('recover_page.reset_cta')}
+          {!busy && <ArrowRight className="h-5 w-5" />}
+        </button>
+      </form>
+    </RecoveryShell>
   );
 }

@@ -184,9 +184,11 @@ async function migrate() {
 
   // Backfill: give every existing registered user a wallet row if they don't have one yet,
   // so nobody's balance silently reads as "not found" the first time this ships.
+  // Starts at 0: crediti si guadagnano solo tramite gli eventi definiti (registrazione,
+  // referral, vendita, acquisto — vedi CLAUDE.md), mai da un saldo di partenza.
   const backfilled = await query(`
     INSERT INTO public.user_wallets (user_id, balance_credits)
-    SELECT id, 100.00 FROM public.users
+    SELECT id, 0.00 FROM public.users
     ON CONFLICT (user_id) DO NOTHING
     RETURNING user_id;
   `);

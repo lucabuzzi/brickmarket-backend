@@ -19,6 +19,7 @@ const MyListings = lazy(() => import('./pages/MyListings'));
 const SellerShipments = lazy(() => import('./pages/SellerShipments'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Profile = lazy(() => import('./pages/Profile'));
 const FAQ = lazy(() => import('./pages/FAQ'));
@@ -34,6 +35,9 @@ const MarketCategory = lazy(() => import('./pages/MarketCategory'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminArchive = lazy(() => import('./pages/AdminArchive'));
 const AdminWalletTransactions = lazy(() => import('./pages/AdminWalletTransactions'));
+const AdminCreditConfig = lazy(() => import('./pages/AdminCreditConfig'));
+const AdminDisputes = lazy(() => import('./pages/AdminDisputes'));
+const AdminFlaggedGrants = lazy(() => import('./pages/AdminFlaggedGrants'));
 const AdminPayouts = lazy(() => import('./pages/AdminPayouts'));
 const AdminUsersList = lazy(() => import('./pages/AdminUsersList'));
 const AdminListings = lazy(() => import('./pages/AdminListings'));
@@ -52,9 +56,6 @@ const TcgCardPage = lazy(() => import('./pages/TcgCardPage'));
 const Archive = lazy(() => import('./pages/Archive'));
 const SkillZone = lazy(() => import('./pages/SkillZone'));
 const WalletInfo = lazy(() => import('./pages/WalletInfo'));
-// WalletPurchase/WalletConvert non sono più instradate (vedi le route crediti/acquista
-// e crediti/converti sotto) — i file restano sul disco per la fase 3 (rework),
-// ma questi import lazy sarebbero codice morto finché quella fase non li ricollega.
 const StripeOnboardingStatus = lazy(() => import('./pages/StripeOnboardingStatus'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 
@@ -103,10 +104,9 @@ export default function App() {
           <Route path="come-funziona" element={<HowItWorks />} />
           <Route path="skill-zone" element={<SkillZone />} />
           <Route path="crediti" element={<WalletInfo />} />
-          {/* Top-up (Stripe) e conversione crediti->IBAN sono temporaneamente disattivati
-              (endpoint 410 Gone) mentre il flusso euro<->crediti viene rivisto per conformità
-              alle regole di prodotto. Le pagine WalletPurchase/WalletConvert restano sul disco
-              ma non sono più raggiungibili: i vecchi link puntano di nuovo a /crediti. */}
+          {/* Acquisto crediti con carta e conversione crediti->IBAN sono stati rimossi
+              definitivamente (i crediti CardBrix non hanno valore monetario): i vecchi
+              link/bookmark a queste pagine tornano semplicemente a /crediti. */}
           <Route path="crediti/acquista" element={<Navigate to="/crediti" replace />} />
           <Route path="crediti/converti" element={<Navigate to="/crediti" replace />} />
           <Route path="seller/onboarding-complete" element={<StripeOnboardingStatus outcome="complete" />} />
@@ -149,11 +149,15 @@ export default function App() {
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="verifica-email" element={<VerifyEmail />} />
           <Route path="product/:id" element={<ListingDetail />} />
           <Route path="account" element={<Account />} />
           <Route path="admin" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
           <Route path="admin/archive" element={<ProtectedRoute adminOnly={true}><AdminArchive /></ProtectedRoute>} />
           <Route path="admin/wallet-transactions" element={<ProtectedRoute adminOnly={true}><AdminWalletTransactions /></ProtectedRoute>} />
+          <Route path="admin/credit-config" element={<ProtectedRoute adminOnly={true}><AdminCreditConfig /></ProtectedRoute>} />
+          <Route path="admin/disputes" element={<ProtectedRoute adminOnly={true}><AdminDisputes /></ProtectedRoute>} />
+          <Route path="admin/flagged-grants" element={<ProtectedRoute adminOnly={true}><AdminFlaggedGrants /></ProtectedRoute>} />
           <Route path="admin/payouts" element={<ProtectedRoute adminOnly={true}><AdminPayouts /></ProtectedRoute>} />
           <Route path="admin/users" element={<ProtectedRoute adminOnly={true}><AdminUsersList /></ProtectedRoute>} />
           <Route path="admin/listings" element={<ProtectedRoute adminOnly={true}><AdminListings /></ProtectedRoute>} />

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
-import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound, Award, Trash2, Sparkles } from 'lucide-react';
+import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound, Award, Trash2, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, flexRender } from '@tanstack/react-table';
 import { StitchCard, AnimateCounter, PulsingGlow, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import SellerTypeBadge from '../components/SellerTypeBadge';
@@ -430,6 +430,42 @@ export default function AdminDashboard() {
           <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Registro immutabile di ogni ricarica, acquisto e movimento wallet di tutti gli utenti.</p>
           <div style={{ marginTop: 'auto' }}>
             <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI STORICO →</span>
+          </div>
+        </StitchCard>
+
+        {/* CREDIT CONFIG CARD */}
+        <StitchCard glowColor="amber" onClick={() => navigate('/admin/credit-config')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(212,175,55, 0.1)', borderRadius: '12px' }}><SlidersHorizontal size={24} color="#d4af37" /></div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Configurazione Crediti</h2>
+          </div>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Bonus registrazione/referral/vendita/acquisto, giorni di maturazione, importo minimo ordine.</p>
+          <div style={{ marginTop: 'auto' }}>
+            <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI CONFIGURAZIONE →</span>
+          </div>
+        </StitchCard>
+
+        {/* DISPUTES CARD */}
+        <StitchCard glowColor="rose" onClick={() => navigate('/admin/disputes')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}><ShieldAlert size={24} color="#ef4444" /></div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Contestazioni</h2>
+          </div>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Ordini contestati dal compratore, in attesa di essere respinti o rimborsati.</p>
+          <div style={{ marginTop: 'auto' }}>
+            <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>GESTISCI CONTESTAZIONI →</span>
+          </div>
+        </StitchCard>
+
+        {/* FLAGGED GRANTS CARD */}
+        <StitchCard glowColor="amber" onClick={() => navigate('/admin/flagged-grants')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(212,175,55, 0.1)', borderRadius: '12px' }}><ShieldAlert size={24} color="#d4af37" /></div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Bonus in Revisione</h2>
+          </div>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Bonus vendita/acquisto bloccati da un tetto anti-abuso, da approvare o respingere a mano.</p>
+          <div style={{ marginTop: 'auto' }}>
+            <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI REVISIONE →</span>
           </div>
         </StitchCard>
 
