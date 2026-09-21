@@ -164,12 +164,12 @@ export default function Layout() {
                  <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
                  <Link to="/register" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.register')}</Link>
                </>
-             ) : (user.role === 'seller' || user.role === 'both') ? (
+             ) : (
                <>
                  <Link to="/sell" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
                  <Link to="/create-auction" style={{ color: '#e4c159', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
                </>
-             ) : null}
+             )}
 
              {user && user.role === 'admin' && (
                <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
@@ -269,7 +269,7 @@ export default function Layout() {
             <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pink-400 font-extrabold' : 'text-stone-400 hover:text-pink-300'}`}>
               {t('nav.skill_zone') || 'Puzzle Arena'}
             </NavLink>
-            {user && (user.role === 'seller' || user.role === 'both') && (
+            {user && (
               <>
                 <NavLink to="/sell" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
                   {t('nav.sell')}
@@ -328,9 +328,7 @@ export default function Layout() {
                     </div>
                     <Link to="/profile" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.profile')}</Link>
                     <Link to="/my-listings" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_listings')}</Link>
-                    {(user.role === 'seller' || user.role === 'both') && (
-                      <Link to="/my-shipments" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_shipments')}</Link>
-                    )}
+                    <Link to="/my-shipments" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.my_shipments')}</Link>
                     <Link to="/account" className="block px-4 py-2 text-xs text-stone-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>{t('nav.account')}</Link>
                     {user.role === 'admin' && (
                       <Link to="/admin" className="block px-4 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 font-bold" onClick={() => setDropdownOpen(false)}>{t('nav.admin_panel')}</Link>

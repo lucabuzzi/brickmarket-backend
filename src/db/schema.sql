@@ -8,7 +8,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   username      VARCHAR(100) UNIQUE NOT NULL,
   full_name     VARCHAR(200),
-  role          VARCHAR(20) DEFAULT 'buyer' CHECK (role IN ('buyer','seller','both','admin')),
+  role          VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user','admin')),
   city          VARCHAR(100),
   avatar_url    TEXT,
 

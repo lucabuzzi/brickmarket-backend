@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const ROLES = ['buyer', 'seller', 'both', 'shop', 'admin'];
+const ROLES = ['user', 'admin'];
 const STATUSES = ['active', 'banned', 'deleted'];
 
 const updateUserSchema = Joi.object({

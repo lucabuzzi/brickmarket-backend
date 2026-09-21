@@ -44,7 +44,7 @@ async function post(path, { token, body } = {}) {
 async function createUser(label) {
   const email = `test-antiabuse-${label}-${Date.now()}-${crypto.randomInt(1e6)}@example.invalid`;
   const result = await db.query(
-    `INSERT INTO users (email, password_hash, username, role) VALUES ($1, 'x', $2, 'buyer') RETURNING id`,
+    `INSERT INTO users (email, password_hash, username, role) VALUES ($1, 'x', $2, 'user') RETURNING id`,
     [email, `${label}_${Date.now()}_${crypto.randomInt(1e6)}`]
   );
   userIds.push(result.rows[0].id);
@@ -102,7 +102,7 @@ test('a buyer and seller sharing an IP signal get no bonus grant at all', async 
   const sellerId = await createUser('shared-seller');
   const buyerId = await createUser('shared-buyer');
   const listingId = await createListing(sellerId);
-  const buyerToken = tokenFor(buyerId, 'buyer');
+  const buyerToken = tokenFor(buyerId, 'user');
 
   const sharedIp = hashValue('203.0.113.99'); // stesso hash per entrambi
   await db.query(
@@ -124,7 +124,7 @@ test('a grant that would exceed the daily per-user cap is created but flagged fo
   const sellerId = await createUser('daily-seller');
   const buyerId = await createUser('daily-buyer');
   const listingId = await createListing(sellerId);
-  const buyerToken = tokenFor(buyerId, 'buyer');
+  const buyerToken = tokenFor(buyerId, 'user');
 
   const configRes = await db.query("SELECT value FROM public.credit_config WHERE key = 'daily_bonus_cap_per_user'");
   const dailyCap = parseFloat(configRes.rows[0]?.value ?? 20);
@@ -183,7 +183,7 @@ test('a grant that would exceed the monthly per-pair cap is flagged, then approv
   const sellerId = await createUser('pair-seller');
   const buyerId = await createUser('pair-buyer');
   const listingId = await createListing(sellerId);
-  const buyerToken = tokenFor(buyerId, 'buyer');
+  const buyerToken = tokenFor(buyerId, 'user');
 
   const pairCapRes = await db.query("SELECT value FROM public.credit_config WHERE key = 'monthly_bonus_cap_per_pair'");
   const pairCap = parseFloat(pairCapRes.rows[0]?.value ?? 15);

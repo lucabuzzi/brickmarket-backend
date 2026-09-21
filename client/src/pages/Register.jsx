@@ -224,11 +224,9 @@ export default function Register() {
       formData.append('phone', phone.trim());
 
       if (tab === 'private') {
-        formData.append('role', 'buyer');
         formData.append('sellerType', 'private');
         if (privateFullName.trim()) formData.append('fullName', privateFullName.trim());
       } else {
-        formData.append('role', 'seller');
         formData.append('sellerType', 'professional');
         formData.append('companyName', companyName.trim());
         formData.append('fullName', `${firstName.trim()} ${lastName.trim()}`);

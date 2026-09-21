@@ -8,7 +8,6 @@ export default function Account() {
   const { user, loading, refreshMe } = useAuth();
   const { t } = useTranslation();
   
-  const [role, setRole] = useState('buyer');
   const [city, setCity] = useState('');
   const [fullName, setFullName] = useState('');
   const [street, setStreet] = useState('');
@@ -25,7 +24,6 @@ export default function Account() {
 
   useEffect(() => {
     if (user) {
-      setRole(user.role || 'buyer');
       setCity(user.city || '');
       setFullName(user.full_name || '');
       setStreet(user.address_street || '');
@@ -56,16 +54,13 @@ export default function Account() {
     
     try {
       const formData = new FormData();
-      formData.append('role', role);
       formData.append('full_name', fullName);
-      if (role === 'seller' || role === 'both') {
-        formData.append('city', city);
-        formData.append('street', street);
-        formData.append('houseNumber', houseNumber);
-        formData.append('zipCode', zipCode);
-        formData.append('country', country);
-        formData.append('phone', phone);
-      }
+      formData.append('city', city);
+      formData.append('street', street);
+      formData.append('houseNumber', houseNumber);
+      formData.append('zipCode', zipCode);
+      formData.append('country', country);
+      formData.append('phone', phone);
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
@@ -116,15 +111,6 @@ export default function Account() {
         </dl>
 
         <label>
-          {t('profile.role_label')}
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="buyer">{t('profile.role_buyer')}</option>
-            <option value="seller">{t('profile.role_seller')}</option>
-            <option value="both">{t('profile.role_both')}</option>
-          </select>
-        </label>
-
-        <label>
           {t('profile.full_name_label')}
           <input
             type="text" 
@@ -133,50 +119,46 @@ export default function Account() {
           />
         </label>
 
-        {(role === 'seller' || role === 'both') && (
-          <>
-            <label>
-              {t('auth.city')} {t('review.comment_optional')}
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
-            </label>
+        <label>
+          {t('auth.city')} {t('review.comment_optional')}
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+        </label>
 
-            <p className="muted" style={{ margin: '1rem 0 0.5rem' }}>{t('profile.seller_address_note')}</p>
+        <p className="muted" style={{ margin: '1rem 0 0.5rem' }}>{t('profile.seller_address_note')}</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '0.75rem' }}>
-              <label>
-                {t('auth.street')}
-                <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} />
-              </label>
-              <label>
-                {t('auth.house_number')}
-                <input type="text" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} />
-              </label>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '0.75rem' }}>
+          <label>
+            {t('auth.street')}
+            <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} />
+          </label>
+          <label>
+            {t('auth.house_number')}
+            <input type="text" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} />
+          </label>
+        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '0.75rem' }}>
-              <label>
-                {t('auth.zip')}
-                <input type="text" value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
-              </label>
-              <label>
-                {t('auth.country')}
-                <input
-                  type="text" maxLength={2} placeholder="IT"
-                  value={country} onChange={(e) => setCountry(e.target.value.toUpperCase())}
-                />
-              </label>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '0.75rem' }}>
+          <label>
+            {t('auth.zip')}
+            <input type="text" value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
+          </label>
+          <label>
+            {t('auth.country')}
+            <input
+              type="text" maxLength={2} placeholder="IT"
+              value={country} onChange={(e) => setCountry(e.target.value.toUpperCase())}
+            />
+          </label>
+        </div>
 
-            <label>
-              {t('auth.phone')}
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </label>
-          </>
-        )}
+        <label>
+          {t('auth.phone')}
+          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </label>
 
         {error && <p className="error-banner">{error}</p>}
         {success && <p className="success-banner" style={{ color: '#4ade80', background: '#14532d', padding: '0.75rem', borderRadius: '0.25rem', marginTop: '1rem' }}>{success}</p>}

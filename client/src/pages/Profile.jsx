@@ -133,7 +133,7 @@ export default function Profile() {
     return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n);
   };
 
-  const canSell = user && (user.role === 'seller' || user.role === 'both');
+  const canSell = !!user;
 
   // Stats Calculations
   const activeListingsCount = listings.filter(l => l.status === 'active').length;

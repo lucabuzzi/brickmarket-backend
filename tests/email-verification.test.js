@@ -42,7 +42,7 @@ beforeAll(async () => {
   const email = `test-email-verification-${Date.now()}@example.invalid`;
   const result = await db.query(
     `INSERT INTO users (email, password_hash, username, role)
-     VALUES ($1, 'x', $2, 'buyer') RETURNING id`,
+     VALUES ($1, 'x', $2, 'user') RETURNING id`,
     [email, `tester_${Date.now()}`]
   );
   userId = result.rows[0].id;

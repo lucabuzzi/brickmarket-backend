@@ -41,7 +41,7 @@ async function post(path, { token, body } = {}) {
 async function createThrowawayUser(label) {
   const email = `test-maturation-${label}-${Date.now()}-${crypto.randomInt(1e6)}@example.invalid`;
   const result = await db.query(
-    `INSERT INTO users (email, password_hash, username, role) VALUES ($1, 'x', $2, 'buyer') RETURNING id`,
+    `INSERT INTO users (email, password_hash, username, role) VALUES ($1, 'x', $2, 'user') RETURNING id`,
     [email, `${label}_${Date.now()}_${crypto.randomInt(1e6)}`]
   );
   return result.rows[0].id;
@@ -66,7 +66,7 @@ beforeAll(async () => {
 
   sellerId = await createThrowawayUser('seller');
   buyerId = await createThrowawayUser('buyer');
-  buyerToken = tokenFor(buyerId, 'buyer');
+  buyerToken = tokenFor(buyerId, 'user');
 
   const listingRes = await db.query(
     `INSERT INTO listings (seller_id, title, type) VALUES ($1, 'Test listing', 'used') RETURNING id`,

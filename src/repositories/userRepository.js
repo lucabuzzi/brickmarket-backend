@@ -37,7 +37,7 @@ function findByEmail(email) {
 }
 
 async function createUser({
-  email, passwordHash, username, fullName, role, city,
+  email, passwordHash, username, fullName, role = 'user', city,
   fiscalCode, iban, sellerType, companyName, street, houseNumber,
   zipCode, country, phone, idScanUrl, businessLicenseUrl, referralCode,
 }) {
@@ -190,7 +190,7 @@ async function createOAuthUser({ email, username, fullName, emailVerified, refer
   const db = client || { query };
   const result = await db.query(`
     INSERT INTO users (email, password_hash, username, full_name, role, email_verified, referral_code)
-    VALUES ($1, NULL, $2, $3, 'buyer', $4, $5)
+    VALUES ($1, NULL, $2, $3, 'user', $4, $5)
     RETURNING id, email, username, role
   `, [email.toLowerCase(), username, fullName || null, emailVerified, referralCode]);
   return result.rows[0];

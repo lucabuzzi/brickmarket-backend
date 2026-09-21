@@ -6,7 +6,7 @@ const { upload, hasCloudinaryConfig } = require('../services/cloudinary');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { calculateShippingRates } = require('../services/shipping');
 const { applyDimensionDefaults, packageSizeFromWeight } = require('../services/productDimensions');
-const { recomputeUserRole, expireEndedAuctionsAndPromoteWinners } = require('../services/userRoleAuto');
+const { expireEndedAuctions } = require('../services/auctionExpiry');
 const featured = require('../services/featured');
 const walletRepository = require('../repositories/walletRepository');
 const jwt = require('jsonwebtoken');
@@ -317,8 +317,6 @@ router.post('/', auth, async (req, res) => {
       ]
     );
 
-    await recomputeUserRole(req.user.userId);
-
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('\n=== FULL DB ERROR ===');
@@ -347,7 +345,7 @@ router.get('/', async (req, res) => {
   const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category, product_type, game } = req.query;
   try {
     // Auto-Expire Logic: Check for expired auctions and mark them as expired
-    await expireEndedAuctionsAndPromoteWinners();
+    await expireEndedAuctions();
     // Same lazy-expiry pass for paid/admin "in evidenza" windows that have lapsed
     await featured.expireFeaturedListings();
 
@@ -468,7 +466,7 @@ router.get('/', async (req, res) => {
 router.get('/archive', async (req, res) => {
   try {
     // Ensure auto-expire is run here too, just in case
-    await expireEndedAuctionsAndPromoteWinners();
+    await expireEndedAuctions();
 
     const result = await query(
       `SELECT l.*,

@@ -18,7 +18,7 @@ let userToken;
 beforeAll(async () => {
   server = await startServer();
   adminToken = tokenFor(ADMIN_ID, 'admin');
-  userToken = tokenFor(USER_ID, 'buyer');
+  userToken = tokenFor(USER_ID, 'user');
 }, 30000);
 
 afterAll(async () => {

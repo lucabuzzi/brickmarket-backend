@@ -41,7 +41,7 @@ async function createThrowawayUser(label) {
   const code = crypto.randomBytes(6).toString('hex').toUpperCase().slice(0, 8);
   const result = await db.query(
     `INSERT INTO users (email, password_hash, username, role, referral_code)
-     VALUES ($1, 'x', $2, 'buyer', $3) RETURNING id`,
+     VALUES ($1, 'x', $2, 'user', $3) RETURNING id`,
     [email, `${label}_${Date.now()}_${crypto.randomInt(1e6)}`, code]
   );
   return { id: result.rows[0].id, code };

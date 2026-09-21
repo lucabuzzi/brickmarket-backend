@@ -3,7 +3,6 @@ const paymentsRepository = require('../repositories/paymentsRepository');
 const userRepository = require('../repositories/userRepository');
 const addressRepository = require('../repositories/addressRepository');
 const shipmentRepository = require('../repositories/shipmentRepository');
-const { recomputeUserRole } = require('../services/userRoleAuto');
 const { resolveTcgShipping } = require('../services/shipping');
 const { checkoutAddressSchema, validate: validateAddress } = require('../validators/addressValidators');
 const shippingQuote = require('../services/shippingQuote');
@@ -414,7 +413,6 @@ async function webhookHandler(req, res) {
       // /admin/payouts (CardBrix paga fuori Stripe, non un transfer automatico).
       for (const order of orders) {
         await paymentsRepository.markListingSold(order.listing_id);
-        await recomputeUserRole(order.buyer_id);
       }
 
       // Anti-abuso (CLAUDE.md — "metodo di pagamento" condiviso tra venditore e

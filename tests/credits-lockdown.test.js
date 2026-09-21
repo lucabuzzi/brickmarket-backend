@@ -28,7 +28,7 @@ let userToken;
 beforeAll(async () => {
   server = await startServer();
   adminToken = tokenFor(ADMIN_ID, 'admin');
-  userToken = tokenFor(USER_ID, 'buyer');
+  userToken = tokenFor(USER_ID, 'user');
 }, 30000);
 
 afterAll(async () => {
@@ -144,7 +144,7 @@ describe('Refund contest idempotente sotto richieste parallele', () => {
 
     // Three real users each buy one slot.
     for (const userId of PARTICIPANT_IDS) {
-      const tok = tokenFor(userId, 'buyer');
+      const tok = tokenFor(userId, 'user');
       const { status: buyStatus } = await post('/api/contest/buy-slot', { token: tok, body: { contestId } });
       expect(buyStatus).toBe(200);
     }

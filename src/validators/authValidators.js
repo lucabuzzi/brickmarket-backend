@@ -5,7 +5,6 @@ const registerSchema = Joi.object({
   password: Joi.string().min(8).max(200).required(),
   username: Joi.string().trim().min(3).max(100).required(),
   fullName: Joi.string().trim().max(200).allow('', null),
-  role: Joi.string().valid('buyer', 'seller', 'both', 'admin').default('buyer'),
   city: Joi.string().trim().max(100).allow('', null),
   fiscalCode: Joi.string().trim().max(20).allow('', null),
   iban: Joi.string().trim().max(34).allow('', null),
@@ -40,7 +39,6 @@ const verifyEmailSchema = Joi.object({
 });
 
 const updateProfileSchema = Joi.object({
-  role: Joi.string().valid('buyer', 'seller', 'both', 'admin'),
   city: Joi.string().trim().max(100).allow('', null),
   full_name: Joi.string().trim().max(200).allow('', null),
   // Was signup-only (authController.registerHandler is the only writer of

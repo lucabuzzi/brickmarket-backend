@@ -45,7 +45,6 @@ async function registerHandler(req, res) {
       password: value.password,
       username: value.username,
       fullName: value.fullName,
-      role: value.role,
       city: value.city || null,
       fiscalCode: value.fiscalCode || null,
       iban: value.iban || null,
@@ -118,11 +117,9 @@ async function updateMeHandler(req, res) {
     }
 
     const fields = {};
-    if (value.role !== undefined) fields.role = value.role;
 
-    // Il ruolo "buyer" non ha città associata.
-    if (value.city !== undefined || value.role === 'buyer') {
-      fields.city = value.role === 'buyer' ? null : (value.city || null);
+    if (value.city !== undefined) {
+      fields.city = value.city || null;
     }
     if (value.full_name !== undefined) fields.full_name = value.full_name || null;
     if (newAvatarUrl !== undefined) fields.avatar_url = newAvatarUrl;

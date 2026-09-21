@@ -23,7 +23,7 @@ router.get('/stats', adminAuth, async (req, res) => {
         SELECT
           COUNT(*)::int                                                  AS total_users,
           COUNT(*) FILTER (WHERE role = 'admin')::int                   AS total_admins,
-          COUNT(*) FILTER (WHERE role = 'seller' OR role = 'both')::int AS total_sellers,
+          (SELECT COUNT(DISTINCT seller_id) FROM listings)::int         AS total_sellers,
           COUNT(*) FILTER (WHERE is_pro = true)::int                    AS total_pro,
           COUNT(*) FILTER (WHERE is_verified = true)::int               AS total_verified,
           COUNT(*) FILTER (WHERE is_active = false)::int                AS total_inactive,
@@ -346,10 +346,10 @@ router.get('/users/:id/activity', adminAuth, async (req, res) => {
 
 /**
  * PATCH /api/admin/users/:id
- * Body: { role?, status? } — admin-editable role (buyer/seller/both/shop/admin)
- * and account status (active/banned/deleted). is_active is kept in sync with
- * status (true only when active) so every existing is_active check elsewhere
- * — login, stats, listings — keeps working unchanged.
+ * Body: { role?, status? } — admin-editable role (user/admin) and account
+ * status (active/banned/deleted). is_active is kept in sync with status
+ * (true only when active) so every existing is_active check elsewhere —
+ * login, stats, listings — keeps working unchanged.
  */
 router.patch('/users/:id', adminAuth, async (req, res) => {
   const { error, value } = validate(updateUserSchema, req.body);
@@ -359,6 +359,9 @@ router.patch('/users/:id', adminAuth, async (req, res) => {
 
   if (req.params.id === req.user.userId && value.status && value.status !== 'active') {
     return res.status(400).json({ error: 'Non puoi bannare o cancellare il tuo stesso account.' });
+  }
+  if (req.params.id === req.user.userId && value.role && value.role !== 'admin') {
+    return res.status(400).json({ error: 'Non puoi rimuovere il ruolo admin dal tuo stesso account.' });
   }
 
   const sets = [];

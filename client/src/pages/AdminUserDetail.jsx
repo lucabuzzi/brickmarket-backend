@@ -8,18 +8,12 @@ import {
 } from 'lucide-react';
 
 const ROLES = [
-  { value: 'buyer', label: 'Buyer' },
-  { value: 'seller', label: 'Seller' },
-  { value: 'both', label: 'Trader (Buyer + Seller)' },
-  { value: 'shop', label: 'Shop' },
+  { value: 'user', label: 'User' },
   { value: 'admin', label: 'Admin' },
 ];
 
-// role is auto-promoted from marketplace activity (see src/services/userRoleAuto.js)
-// for buyer/seller/both — admins can still override it here, including to
-// shop/admin, which the auto-promotion logic never touches on its own.
 function roleBadgeLabel(role) {
-  return role === 'both' ? 'Trader' : (ROLES.find((r) => r.value === role)?.label || role);
+  return ROLES.find((r) => r.value === role)?.label || role;
 }
 
 const STATUSES = [
@@ -165,7 +159,7 @@ export default function AdminUserDetail() {
         </div>
         <div className="flex items-center gap-2">
           <span className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${
-            user.role === 'both' ? 'bg-gold-500/15 text-gold-400 border-gold-500/40' : 'bg-stone-800/60 text-stone-300 border-stone-700'
+            user.role === 'admin' ? 'bg-gold-500/15 text-gold-400 border-gold-500/40' : 'bg-stone-800/60 text-stone-300 border-stone-700'
           }`}>
             {roleBadgeLabel(user.role)}
           </span>
