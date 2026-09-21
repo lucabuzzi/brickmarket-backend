@@ -17,14 +17,19 @@ require('dotenv').config();
 const { query } = require('./index');
 
 async function migrate() {
+  // The old constraint doesn't allow 'user' yet, so it has to come off
+  // before the backfill can write that value — added back (narrowed) only
+  // once every row already satisfies it.
+  console.log('Dropping old role CHECK constraint...');
+  await query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check`);
+
   console.log("Collapsing buyer/seller/both/shop -> 'user'...");
   await query(`UPDATE users SET role = 'user' WHERE role IN ('buyer','seller','both','shop')`);
 
   console.log("Setting default role to 'user'...");
   await query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'user'`);
 
-  console.log('Narrowing role CHECK constraint to user/admin...');
-  await query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check`);
+  console.log('Adding narrowed role CHECK constraint (user/admin)...');
   await query(`ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('user','admin'))`);
 
   console.log('Done.');
