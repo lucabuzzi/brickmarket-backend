@@ -472,12 +472,37 @@ export default function JigsawPuzzle({
       drawPiecePath(ctx, -pieceWidth / 2, -pieceHeight / 2, pieceWidth, pieceHeight, piece.topTab, piece.rightTab, piece.bottomTab, piece.leftTab);
       ctx.clip();
 
-      // Draw image sliced area inside the mask
+      // Draw image sliced area inside the mask.
+      //
+      // The uploaded photo's own aspect ratio almost never matches the
+      // board's fixed one (boardWidth/boardHeight is always 560x320 or
+      // 320x560, but a real card/box photo is neither) — slicing the RAW
+      // image into a gridRows x gridCols grid and stretching each slice to
+      // fill a pieceWidth x pieceHeight rectangle would scale width and
+      // height by different factors, visibly warping the artwork. Instead,
+      // crop the source to the board's own aspect ratio first (centered,
+      // like CSS `object-fit: cover`), then slice THAT — every piece's
+      // source slice already has the right aspect ratio, so drawImage below
+      // scales it uniformly.
+      const imgW = imageRef.current.width;
+      const imgH = imageRef.current.height;
+      const boardAspect = boardWidth / boardHeight;
+      const imgAspect = imgW / imgH;
+      let coverW = imgW;
+      let coverH = imgH;
+      if (imgAspect > boardAspect) {
+        coverW = imgH * boardAspect;
+      } else {
+        coverH = imgW / boardAspect;
+      }
+      const coverX = (imgW - coverW) / 2;
+      const coverY = (imgH - coverH) / 2;
+
       // Image source crop box
-      const sx = piece.col * (imageRef.current.width / gridCols);
-      const sy = piece.row * (imageRef.current.height / gridRows);
-      const sw = imageRef.current.width / gridCols;
-      const sh = imageRef.current.height / gridRows;
+      const sx = coverX + piece.col * (coverW / gridCols);
+      const sy = coverY + piece.row * (coverH / gridRows);
+      const sw = coverW / gridCols;
+      const sh = coverH / gridRows;
 
       // Tabs bulge outside the piece's own rectangle — draw the image
       // oversized (padding > that bulge) so the tab/socket areas are filled
