@@ -510,8 +510,6 @@
     "actions": {
       "upload_full": "Téléverser un Puzzle",
       "upload_short": "Téléverser",
-      "add_credits_full": "Ajouter des Crédits",
-      "add_credits_short": "Crédits",
       "portal_sync": "Synchro Portail :",
       "online": "EN LIGNE"
     },
@@ -1219,7 +1217,7 @@
     "feature3_title": "Profil public",
     "feature3_desc": "Chaque collectionneur dispose d'une vitrine avec ses annonces, sa note moyenne et son historique de ventes.",
     "feature4_title": "Portefeuille et crédits",
-    "feature4_desc": "Rechargez votre portefeuille avec des crédits CardBrix : ils vous permettent de participer aux défis de la Skill Zone et de gagner des prix.",
+    "feature4_desc": "Gagnez des crédits CardBrix en vous inscrivant, en vendant, en achetant ou en invitant des amis : ils vous permettent de participer aux défis de la Skill Zone et de gagner des prix.",
     "cta_title": "Prêt à commencer ?",
     "cta_desc": "Créez un compte gratuit et commencez tout de suite à acheter, vendre ou jouer.",
     "cta_register": "Créer un compte",
@@ -1381,8 +1379,8 @@
       "kicker": "Puzzle Arena",
       "title_1": "Des réflexes rapides ?",
       "title_2": "Remportez la pièce.",
-      "step1_title": "Rechargez des crédits",
-      "step1_desc": "1 € = 1 crédit, disponibles immédiatement sur votre solde.",
+      "step1_title": "Gagnez des crédits",
+      "step1_desc": "Inscrivez-vous, vendez, achetez ou invitez un ami : les crédits arrivent sur votre solde.",
       "step2_title": "Prenez une place",
       "step2_desc": "Choisissez le concours avec le lot qui vous plaît et réservez votre place.",
       "step3_title": "Battez le chrono",
@@ -1412,7 +1410,7 @@
       "contest_play": "Jouer",
       "contest_watch": "Classement",
       "credits_title": "Nouveau avec les crédits ?",
-      "credits_desc": "Découvrez comment les recharger et les utiliser.",
+      "credits_desc": "Découvrez comment les gagner et les utiliser.",
       "credits_cta": "Comment ça marche"
     },
     "trust": {
@@ -1523,7 +1521,6 @@
       "stat_prizes": "de lots",
       "stat_players": "places prises",
       "wallet_title": "Votre solde",
-      "wallet_topup": "Recharger des crédits",
       "wallet_how": "Comment fonctionnent les crédits",
       "guest_title": "Entrez dans la partie",
       "guest_text": "Le lobby est ouvert à tous : pour prendre une place et jouer, il faut un compte.",
@@ -1539,8 +1536,8 @@
     "steps": {
       "kicker": "Comment ça marche",
       "title": "Trois étapes, un lot.",
-      "step1_title": "Rechargez des crédits",
-      "step1_text": "1 € = 1 crédit : achat en quelques secondes, solde mis à jour immédiatement.",
+      "step1_title": "Gagnez des crédits",
+      "step1_text": "En vous inscrivant, en vendant, en achetant ou en invitant des amis : les crédits se gagnent en participant, ils ne s'achètent pas avec de l'argent.",
       "step2_title": "Prenez une place et jouez",
       "step2_text": "Chaque place donne droit à un essai. Faites glisser et pivoter les pièces : le chrono ne démarre que lorsque vous appuyez sur Démarrer.",
       "step3_title": "Le plus rapide gagne",

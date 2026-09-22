@@ -510,8 +510,6 @@
     "actions": {
       "upload_full": "Puzzle hochladen",
       "upload_short": "Hochladen",
-      "add_credits_full": "Guthaben hinzufügen",
-      "add_credits_short": "Guthaben",
       "portal_sync": "Portal-Sync:",
       "online": "ONLINE"
     },
@@ -1219,7 +1217,7 @@
     "feature3_title": "Öffentliches Profil",
     "feature3_desc": "Jeder Sammler hat eine Vitrine mit seinen Angeboten, der durchschnittlichen Bewertung und dem Verkaufsverlauf.",
     "feature4_title": "Guthaben und Credits",
-    "feature4_desc": "Lade dein Guthaben mit CardBrix-Credits auf: Du brauchst sie, um an Skill-Zone-Herausforderungen teilzunehmen und Preise zu gewinnen.",
+    "feature4_desc": "Verdiene CardBrix-Credits durch Registrierung, Verkauf, Kauf oder das Einladen von Freunden: Du brauchst sie, um an Skill-Zone-Herausforderungen teilzunehmen und Preise zu gewinnen.",
     "cta_title": "Bereit loszulegen?",
     "cta_desc": "Erstelle ein kostenloses Konto und beginne sofort mit Kaufen, Verkaufen oder Spielen.",
     "cta_register": "Konto erstellen",
@@ -1381,8 +1379,8 @@
       "kicker": "Puzzle Arena",
       "title_1": "Schnelle Reflexe?",
       "title_2": "Gewinn das Stück.",
-      "step1_title": "Credits aufladen",
-      "step1_desc": "1 € = 1 Credit, sofort auf deinem Guthaben.",
+      "step1_title": "Credits verdienen",
+      "step1_desc": "Registrieren, verkaufen, kaufen oder einen Freund einladen: Credits landen auf deinem Guthaben.",
       "step2_title": "Platz sichern",
       "step2_desc": "Wähle den Contest mit dem Preis, den du willst, und belege einen Platz.",
       "step3_title": "Schlag die Uhr",
@@ -1411,7 +1409,7 @@
       "contest_play": "Spielen",
       "contest_watch": "Rangliste",
       "credits_title": "Neu bei Credits?",
-      "credits_desc": "So lädst du sie auf und setzt sie ein.",
+      "credits_desc": "So verdienst du sie und setzt sie ein.",
       "credits_cta": "So funktioniert’s"
     },
     "trust": {
@@ -1519,7 +1517,6 @@
       "stat_prizes": "an Preisen",
       "stat_players": "belegte Plätze",
       "wallet_title": "Dein Guthaben",
-      "wallet_topup": "Credits aufladen",
       "wallet_how": "So funktionieren Credits",
       "guest_title": "Mach mit",
       "guest_text": "Die Lobby ist für alle offen. Um einen Platz zu sichern und zu spielen, brauchst du ein Konto.",
@@ -1535,8 +1532,8 @@
     "steps": {
       "kicker": "So funktioniert's",
       "title": "Drei Schritte, ein Preis.",
-      "step1_title": "Credits aufladen",
-      "step1_text": "1 € = 1 Credit: in Sekunden gekauft, dein Guthaben ist sofort aktualisiert.",
+      "step1_title": "Credits verdienen",
+      "step1_text": "Durch Registrierung, Verkauf, Kauf oder das Einladen von Freunden: Credits verdienst du durch Teilnahme, nicht durch Kauf mit Geld.",
       "step2_title": "Platz sichern und spielen",
       "step2_text": "Jeder Platz ist ein Versuch. Du ziehst und drehst die Teile, die Uhr startet erst, wenn du auf Start drückst.",
       "step3_title": "Der Schnellste gewinnt",

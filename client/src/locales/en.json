@@ -510,8 +510,6 @@
     "actions": {
       "upload_full": "Upload Jigsaw Puzzle",
       "upload_short": "Upload",
-      "add_credits_full": "Add Credits",
-      "add_credits_short": "Credits",
       "portal_sync": "Portal Sync:",
       "online": "ONLINE"
     },
@@ -1219,7 +1217,7 @@
     "feature3_title": "Public profile",
     "feature3_desc": "Every collector has a showcase with their listings, average rating and sales history.",
     "feature4_title": "Wallet and credits",
-    "feature4_desc": "Top up your wallet with CardBrix credits: you need them to enter Skill Zone challenges and win prizes.",
+    "feature4_desc": "Earn CardBrix credits by signing up, selling, buying, or inviting friends: you need them to enter Skill Zone challenges and win prizes.",
     "cta_title": "Ready to get started?",
     "cta_desc": "Create a free account and start buying, selling or playing right away.",
     "cta_register": "Create an account",
@@ -1381,8 +1379,8 @@
       "kicker": "Puzzle Arena",
       "title_1": "Quick reflexes?",
       "title_2": "Win the piece.",
-      "step1_title": "Top up credits",
-      "step1_desc": "€1 = 1 credit, on your balance instantly.",
+      "step1_title": "Earn credits",
+      "step1_desc": "Sign up, sell, buy, or invite a friend: credits land on your balance.",
       "step2_title": "Grab a spot",
       "step2_desc": "Pick the contest with the prize you want and take a slot.",
       "step3_title": "Beat the clock",
@@ -1411,7 +1409,7 @@
       "contest_play": "Play",
       "contest_watch": "Leaderboard",
       "credits_title": "New to credits?",
-      "credits_desc": "See how to top up and how to spend them.",
+      "credits_desc": "See how to earn them and how to spend them.",
       "credits_cta": "How they work"
     },
     "trust": {
@@ -1519,7 +1517,6 @@
       "stat_prizes": "in prizes",
       "stat_players": "spots taken",
       "wallet_title": "Your balance",
-      "wallet_topup": "Top up credits",
       "wallet_how": "How credits work",
       "guest_title": "Get in the game",
       "guest_text": "The lobby is open to everyone. To grab a spot and play you need an account.",
@@ -1535,8 +1532,8 @@
     "steps": {
       "kicker": "How it works",
       "title": "Three moves, one prize.",
-      "step1_title": "Top up credits",
-      "step1_text": "€1 = 1 credit: buy them in seconds and your balance updates instantly.",
+      "step1_title": "Earn credits",
+      "step1_text": "Sign up, sell, buy, or invite friends: credits are earned by taking part, not bought with money.",
       "step2_title": "Grab a spot and play",
       "step2_text": "Each spot is one attempt. Drag and rotate the pieces; the clock only starts when you press Start.",
       "step3_title": "Fastest wins",

@@ -510,8 +510,6 @@
     "actions": {
       "upload_full": "Carica Puzzle",
       "upload_short": "Carica",
-      "add_credits_full": "Aggiungi Crediti",
-      "add_credits_short": "Crediti",
       "portal_sync": "Sincronizzazione Portale:",
       "online": "ONLINE"
     },
@@ -1219,7 +1217,7 @@
     "feature3_title": "Profilo pubblico",
     "feature3_desc": "Ogni collezionista ha una vetrina con i propri annunci, la valutazione media e lo storico delle vendite.",
     "feature4_title": "Wallet e crediti",
-    "feature4_desc": "Ricarica il tuo wallet con i crediti CardBrix: ti servono per partecipare alle sfide della Skill Zone e vincere premi.",
+    "feature4_desc": "Guadagna crediti CardBrix registrandoti, vendendo, comprando o invitando amici: ti servono per partecipare alle sfide della Skill Zone e vincere premi.",
     "cta_title": "Pronto a iniziare?",
     "cta_desc": "Crea un account gratuito e inizia subito a comprare, vendere o giocare.",
     "cta_register": "Crea un account",
@@ -1381,8 +1379,8 @@
       "kicker": "Puzzle Arena",
       "title_1": "Riflessi veloci?",
       "title_2": "Vinci il pezzo.",
-      "step1_title": "Ricarica i crediti",
-      "step1_desc": "1 € = 1 credito, subito disponibili sul tuo saldo.",
+      "step1_title": "Guadagna crediti",
+      "step1_desc": "Registrati, vendi, compra o invita un amico: i crediti arrivano sul tuo saldo.",
       "step2_title": "Prendi un posto",
       "step2_desc": "Scegli il contest con il premio che vuoi e occupa uno slot.",
       "step3_title": "Batti il tempo",
@@ -1411,7 +1409,7 @@
       "contest_play": "Gioca",
       "contest_watch": "Classifica",
       "credits_title": "Nuovo ai crediti?",
-      "credits_desc": "Scopri come si ricaricano e come si usano.",
+      "credits_desc": "Scopri come si guadagnano e come si usano.",
       "credits_cta": "Come funzionano"
     },
     "trust": {
@@ -1519,7 +1517,6 @@
       "stat_prizes": "in premi",
       "stat_players": "posti occupati",
       "wallet_title": "Il tuo saldo",
-      "wallet_topup": "Ricarica crediti",
       "wallet_how": "Come funzionano i crediti",
       "guest_title": "Entra in gioco",
       "guest_text": "La lobby è aperta a tutti: per prendere un posto e giocare serve un account.",
@@ -1535,8 +1532,8 @@
     "steps": {
       "kicker": "Come funziona",
       "title": "Tre mosse, un premio.",
-      "step1_title": "Ricarica i crediti",
-      "step1_text": "1 € = 1 credito: li acquisti in pochi secondi e il saldo si aggiorna subito.",
+      "step1_title": "Guadagna crediti",
+      "step1_text": "Registrandoti, vendendo, comprando o invitando amici: i crediti si guadagnano partecipando, non si comprano con denaro.",
       "step2_title": "Prendi un posto e gioca",
       "step2_text": "Ogni posto vale un tentativo. Trascini e ruoti i pezzi, e il cronometro parte solo quando premi Avvia.",
       "step3_title": "Il più veloce vince",
