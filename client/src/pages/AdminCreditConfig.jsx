@@ -94,7 +94,7 @@ export default function AdminCreditConfig() {
           <SlidersHorizontal className="text-gold-400" /> Configurazione Crediti
         </h1>
         <p className="text-stone-400">
-          Valori del sistema crediti, mai hardcoded nel codice. I tetti anti-abuso giornalieri/mensili verranno aggiunti qui in una fase successiva.
+          Valori del sistema crediti, mai hardcoded nel codice. Include i bonus di guadagno e i tetti anti-abuso giornalieri/mensili.
         </p>
       </div>
 
