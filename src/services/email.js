@@ -3,7 +3,6 @@ const nodemailer = require('nodemailer');
 const initTransporter = async () => {
     // Usa SendGrid se la chiave SENDGRID esiste ed è valida, altrimenti Ethereal
     if (process.env.SENDGRID_API_KEY && !process.env.SENDGRID_API_KEY.includes('tuachiave')) {
-        console.log('[Email] SendGrid configurato:', !!process.env.SENDGRID_API_KEY, process.env.SENDGRID_API_KEY?.slice(0,6));
         return nodemailer.createTransport({
             host: 'smtp.sendgrid.net',
             port: 587,
