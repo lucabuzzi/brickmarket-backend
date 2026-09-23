@@ -149,6 +149,7 @@ app.use('/api/wallet', require('./src/routes/wallet'));
 app.use('/api/contest', require('./src/routes/contest').router);
 
 app.use(require('./src/routes/sitemap'));
+app.use(require('./src/routes/seoFiles')); // /llms.txt, /llms-full.txt, /<INDEXNOW_KEY>.txt
 
 // Admin Jigsaw Puzzle Image Upload Router
 const { upload } = require('./src/services/cloudinary');

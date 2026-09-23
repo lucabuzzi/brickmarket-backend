@@ -1,4 +1,5 @@
 const { query } = require('../db');
+const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -93,7 +94,8 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
   const listingId = productMatch[1];
   try {
     const { rows } = await query(
-      `SELECT id, title, description, price, current_bid, auction_start, type, status, images
+      `SELECT id, title, description, price, current_bid, auction_start, auction_end, type, status, images,
+              condition, product_type, game, set_number
        FROM listings WHERE id = $1`,
       [listingId]
     );
@@ -122,21 +124,15 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
 
     let html = applyMeta(baseHtml, { title, description, canonical, ogImage });
 
-    html = injectJsonLd(html, {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: listing.title,
+    const images = (Array.isArray(listing.images) ? listing.images : []).slice(0, 5).map(resolveImageUrl);
+    html = injectJsonLd(html, buildProductJsonLd({
+      listing,
+      canonical,
+      images: images.length ? images : [ogImage],
       description,
-      image: ogImage,
-      url: canonical,
-      offers: {
-        '@type': 'Offer',
-        priceCurrency: 'EUR',
-        price: effectivePrice != null ? Number(effectivePrice).toFixed(2) : undefined,
-        availability: listing.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
-        url: canonical,
-      },
-    });
+      effectivePrice,
+    }));
+    html = injectJsonLd(html, breadcrumbForListing(listing, BASE_URL));
 
     return html;
   } catch (err) {
@@ -150,4 +146,4 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
   }
 }
 
-module.exports = { renderIndexHtmlForRequest };
+module.exports = { renderIndexHtmlForRequest, resolveImageUrl };

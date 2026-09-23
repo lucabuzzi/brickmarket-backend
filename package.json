@@ -9,7 +9,8 @@
     "build": "npm install --prefix client --include=dev && npm run build --prefix client",
     "seed": "node scripts/seed-dummy-data.js",
     "client": "npm run dev --prefix client",
-    "test": "jest --runInBand --forceExit"
+    "test": "jest --runInBand --forceExit",
+    "seo:audit": "node scripts/seo-audit/index.js"
   },
   "jest": {
     "testEnvironment": "node",

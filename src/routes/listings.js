@@ -8,6 +8,7 @@ const { calculateShippingRates } = require('../services/shipping');
 const { applyDimensionDefaults, packageSizeFromWeight } = require('../services/productDimensions');
 const { expireEndedAuctions } = require('../services/auctionExpiry');
 const featured = require('../services/featured');
+const { notifyListingChanged } = require('../services/indexnow');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const Stripe = require('stripe');
@@ -316,6 +317,8 @@ router.post('/', auth, async (req, res) => {
       ]
     );
 
+    // Public listing -> tell IndexNow (Bing & co.) right away. Fire-and-forget; no-op without INDEXNOW_KEY.
+    if (result.rows[0].status === 'active') notifyListingChanged(result.rows[0].id);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('\n=== FULL DB ERROR ===');

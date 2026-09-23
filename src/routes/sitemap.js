@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
+const { resolveImageUrl } = require('../services/seoMeta');
 
 const BASE_URL = 'https://cardbrix.com';
 
@@ -51,18 +52,22 @@ function xmlEscape(str) {
     .replace(/>/g, '&gt;');
 }
 
-function urlTag(loc, lastmod) {
+function urlTag(loc, lastmod, images = []) {
   const lastmodTag = lastmod ? `<lastmod>${new Date(lastmod).toISOString().slice(0, 10)}</lastmod>` : '';
-  return `<url><loc>${xmlEscape(loc)}</loc>${lastmodTag}</url>`;
+  const imageTags = images.map((src) => `<image:image><image:loc>${xmlEscape(src)}</image:loc></image:image>`).join('');
+  return `<url><loc>${xmlEscape(loc)}</loc>${lastmodTag}${imageTags}</url>`;
 }
 
 router.get('/sitemap.xml', async (req, res) => {
   let listingUrls = [];
   try {
     const { rows } = await query(
-      `SELECT id, updated_at FROM listings WHERE status = 'active' ORDER BY updated_at DESC LIMIT 5000`
+      `SELECT id, updated_at, images FROM listings WHERE status = 'active' ORDER BY updated_at DESC LIMIT 5000`
     );
-    listingUrls = rows.map((r) => urlTag(`${BASE_URL}/product/${r.id}`, r.updated_at));
+    listingUrls = rows.map((r) => {
+      const images = (Array.isArray(r.images) ? r.images : []).slice(0, 3).map(resolveImageUrl);
+      return urlTag(`${BASE_URL}/product/${r.id}`, r.updated_at, images);
+    });
   } catch (err) {
     // Se il DB non risponde, pubblichiamo comunque le pagine statiche invece di rispondere 500.
     console.error('sitemap.xml: errore nel recupero degli annunci attivi:', err.message);
@@ -72,7 +77,7 @@ router.get('/sitemap.xml', async (req, res) => {
   const body = [...staticUrls, ...listingUrls].join('');
 
   res.set('Content-Type', 'application/xml; charset=UTF-8');
-  res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`);
+  res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${body}</urlset>`);
 });
 
 module.exports = router;
