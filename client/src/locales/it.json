@@ -1733,5 +1733,11 @@
   },
   "brand": {
     "skip_intro": "Salta l'intro"
+  },
+  "not_found": {
+    "title": "Pagina non trovata",
+    "text": "La pagina che cerchi non esiste o è stata spostata. Prova dalla home o sfoglia gli annunci.",
+    "home": "Torna alla home",
+    "listings": "Esplora gli annunci"
   }
 }

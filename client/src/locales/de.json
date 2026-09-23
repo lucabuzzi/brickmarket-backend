@@ -1733,5 +1733,11 @@
   },
   "brand": {
     "skip_intro": "Intro überspringen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "text": "Die gesuchte Seite existiert nicht oder wurde verschoben. Versuche es über die Startseite oder stöbere in den Anzeigen.",
+    "home": "Zurück zur Startseite",
+    "listings": "Anzeigen ansehen"
   }
 }

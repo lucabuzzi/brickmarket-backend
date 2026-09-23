@@ -15,7 +15,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
 const payments = require('./src/routes/payments');
-const { renderIndexHtmlForRequest } = require('./src/services/seoMeta');
+const { createSpaFallback } = require('./src/routes/spaFallback');
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -386,25 +386,8 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 // listings) since the static template always declares them as "/" — see src/services/seoMeta.js.
 const clientDistPath = path.join(__dirname, 'client', 'dist');
 app.use(express.static(clientDistPath));
-app.get(/^\/(?!api\/|uploads\/).*/, async (req, res) => {
-  const indexPath = path.join(clientDistPath, 'index.html');
-  let baseHtml;
-  try {
-    baseHtml = fs.readFileSync(indexPath, 'utf-8');
-  } catch (err) {
-    return res.status(404).send('Frontend build not found — run `npm run build` first.');
-  }
-
-  try {
-    const html = await renderIndexHtmlForRequest(req.path, baseHtml);
-    res.set('Content-Type', 'text/html; charset=UTF-8');
-    res.send(html);
-  } catch (err) {
-    console.error('index.html render error:', err.message);
-    res.set('Content-Type', 'text/html; charset=UTF-8');
-    res.send(baseHtml);
-  }
-});
+// Unknown URLs and missing listings answer HTTP 404 (with the same shell) — see src/routes/spaFallback.js.
+app.get(/^\/(?!api\/|uploads\/).*/, createSpaFallback(clientDistPath));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

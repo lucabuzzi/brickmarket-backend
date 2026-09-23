@@ -27,7 +27,10 @@ user explicitly asks; you propose.
      uses the listing's own data) and `src/services/seoJsonLd.js`. Catalog detail pages
      (`/catalog/<game>/<cardId>`) still share one title per game: making them unique needs a lookup
      of the card name from the catalog cache
-   - Unknown routes returning 200 (soft 404) -> the SPA fallback in `server.js` (last `app.get`)
+   - HTTP status of unknown URLs / missing listings -> `src/routes/spaFallback.js` and
+     `src/services/seoMeta.js` (`renderPage`). Which URLs are real pages is `src/services/knownRoutes.js`,
+     a mirror of the route table in `client/src/App.jsx`: a new client route must be added there too
+     (`tests/not-found.test.js` fails otherwise). The client shows `pages/NotFound.jsx` for the catch-all
    - `robots.txt` -> `client/public/robots.txt`; sitemap -> `src/routes/sitemap.js`
    - `llms.txt`, IndexNow key file -> `src/routes/seoFiles.js`, `src/services/llmsTxt.js`,
      `src/services/indexnow.js` (IndexNow is inert until `INDEXNOW_KEY` is set in the environment)

@@ -1,6 +1,7 @@
 const { query } = require('../db');
 const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
 const { getRouteMeta } = require('./pageMeta');
+const { isKnownRoute } = require('./knownRoutes');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -72,6 +73,20 @@ function injectJsonLd(html, obj) {
   return html.replace('</head>', `<script type="application/ld+json">${json}</script></head>`);
 }
 
+const NOT_FOUND_TITLE = 'Pagina non trovata | CardBrix';
+const NOT_FOUND_DESCRIPTION = 'La pagina che cerchi non esiste o è stata spostata. Torna alla home di CardBrix o sfoglia gli annunci.';
+
+/** HTTP 404 + the app shell (so the client renders its not-found page), marked noindex as a second signal. */
+function notFoundPage(baseHtml, canonical) {
+  const html = applyMeta(baseHtml, {
+    title: NOT_FOUND_TITLE,
+    description: NOT_FOUND_DESCRIPTION,
+    canonical,
+    ogImage: DEFAULT_OG_IMAGE,
+  }).replace('</head>', '<meta name="robots" content="noindex"></head>');
+  return { status: 404, html };
+}
+
 /**
  * Returns a per-request version of the SPA's index.html: the static template always declares
  * canonical/OG as "/", which would tell crawlers every URL on the site is the homepage. This
@@ -79,19 +94,27 @@ function injectJsonLd(html, obj) {
  * and social-share unfurlers (which don't run the client JS that updates these tags) see the
  * actual title, price and photo instead of generic branding.
  */
-async function renderIndexHtmlForRequest(reqPath, baseHtml) {
+async function renderPage(reqPath, baseHtml) {
   const canonical = `${BASE_URL}${reqPath === '/' ? '' : reqPath}`;
+
+  // A URL that matches no client route would otherwise get the app shell with HTTP 200 (a "soft 404":
+  // Google treats every invented URL as a real page). Answer 404 with the same shell so the client
+  // can show its own "not found" page.
+  if (!isKnownRoute(reqPath)) return notFoundPage(baseHtml, canonical);
 
   const productMatch = reqPath.match(/^\/product\/([^/]+)$/);
   if (!productMatch) {
     // Every other route: its own title/description when we have them (see pageMeta.js), else the site default.
     const routeMeta = getRouteMeta(reqPath);
-    return applyMeta(baseHtml, {
-      title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
-      description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
-      canonical,
-      ogImage: DEFAULT_OG_IMAGE,
-    });
+    return {
+      status: 200,
+      html: applyMeta(baseHtml, {
+        title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
+        description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
+        canonical,
+        ogImage: DEFAULT_OG_IMAGE,
+      }),
+    };
   }
 
   const listingId = productMatch[1];
@@ -103,14 +126,7 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
       [listingId]
     );
 
-    if (rows.length === 0) {
-      return applyMeta(baseHtml, {
-        title: DEFAULT_TITLE,
-        description: DEFAULT_DESCRIPTION,
-        canonical,
-        ogImage: DEFAULT_OG_IMAGE,
-      });
-    }
+    if (rows.length === 0) return notFoundPage(baseHtml, canonical);
 
     const listing = rows[0];
     const isAuction = listing.type === 'auction';
@@ -137,16 +153,28 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
     }));
     html = injectJsonLd(html, breadcrumbForListing(listing, BASE_URL));
 
-    return html;
+    return { status: 200, html };
   } catch (err) {
-    console.error('renderIndexHtmlForRequest: errore nel recupero annuncio per meta tag:', err.message);
-    return applyMeta(baseHtml, {
-      title: DEFAULT_TITLE,
-      description: DEFAULT_DESCRIPTION,
-      canonical,
-      ogImage: DEFAULT_OG_IMAGE,
-    });
+    // Postgres 22P02 = the id is not a valid uuid, so no listing can have it: that is a plain 404.
+    if (err.code === '22P02') return notFoundPage(baseHtml, canonical);
+    // Any other error (DB down, timeout) says nothing about whether the listing exists: keep serving the
+    // app shell as before (the client loads the listing from the API itself) instead of claiming 404.
+    console.error('renderPage: errore nel recupero annuncio per meta tag:', err.message);
+    return {
+      status: 200,
+      html: applyMeta(baseHtml, {
+        title: DEFAULT_TITLE,
+        description: DEFAULT_DESCRIPTION,
+        canonical,
+        ogImage: DEFAULT_OG_IMAGE,
+      }),
+    };
   }
 }
 
-module.exports = { renderIndexHtmlForRequest, resolveImageUrl };
+/** Same as renderPage but only the HTML (kept for callers that don't care about the status). */
+async function renderIndexHtmlForRequest(reqPath, baseHtml) {
+  return (await renderPage(reqPath, baseHtml)).html;
+}
+
+module.exports = { renderPage, renderIndexHtmlForRequest, resolveImageUrl };

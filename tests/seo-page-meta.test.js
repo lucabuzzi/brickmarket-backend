@@ -108,12 +108,12 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
     expect(query).not.toHaveBeenCalled(); // static routes never hit the database
   });
 
-  test('the home and unknown routes keep the site default', async () => {
-    for (const path of ['/', '/una/rotta/sconosciuta']) {
-      const p = parseHtml(await renderIndexHtmlForRequest(path, template));
-      expect(p.title).toBe('CardBrix - LEGO, Trading Cards & Auctions Marketplace');
-      expect(p.description).toBe('CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests.');
-    }
+  test('the home keeps the site default; unknown routes get the not-found text (and a 404, see not-found.test.js)', async () => {
+    const home = parseHtml(await renderIndexHtmlForRequest('/', template));
+    expect(home.title).toBe('CardBrix - LEGO, Trading Cards & Auctions Marketplace');
+    expect(home.description).toBe('CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests.');
+    const unknown = parseHtml(await renderIndexHtmlForRequest('/una/rotta/sconosciuta', template));
+    expect(unknown.title).toBe('Pagina non trovata | CardBrix');
   });
 
   test('HTML-special characters in a username are escaped, not injected', async () => {

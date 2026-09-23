@@ -1733,5 +1733,11 @@
   },
   "brand": {
     "skip_intro": "Skip intro"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist or has moved. Try the home page or browse the listings.",
+    "home": "Back to home",
+    "listings": "Browse listings"
   }
 }

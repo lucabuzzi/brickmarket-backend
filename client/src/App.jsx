@@ -9,6 +9,7 @@ import Home from './pages/Home';
 // Every other route is code-split: without this the whole app (including admin, wallet and
 // TCG catalog pages most visitors never open) shipped as a single ~1.3MB JS bundle. Home stays
 // a static import since it's the most common entry point and shouldn't wait on a chunk fetch.
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ListingDetail = lazy(() => import('./pages/ListingDetail'));
@@ -201,6 +202,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
         </Suspense>

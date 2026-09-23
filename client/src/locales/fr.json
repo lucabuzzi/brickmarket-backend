@@ -1741,5 +1741,11 @@
   },
   "brand": {
     "skip_intro": "Passer l'intro"
+  },
+  "not_found": {
+    "title": "Page introuvable",
+    "text": "La page que vous cherchez n'existe pas ou a été déplacée. Essayez la page d'accueil ou parcourez les annonces.",
+    "home": "Retour à l'accueil",
+    "listings": "Parcourir les annonces"
   }
 }
