@@ -1,5 +1,6 @@
 const { query } = require('../db');
 const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
+const { getRouteMeta } = require('./pageMeta');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -83,9 +84,11 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
 
   const productMatch = reqPath.match(/^\/product\/([^/]+)$/);
   if (!productMatch) {
+    // Every other route: its own title/description when we have them (see pageMeta.js), else the site default.
+    const routeMeta = getRouteMeta(reqPath);
     return applyMeta(baseHtml, {
-      title: DEFAULT_TITLE,
-      description: DEFAULT_DESCRIPTION,
+      title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
+      description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
       canonical,
       ogImage: DEFAULT_OG_IMAGE,
     });

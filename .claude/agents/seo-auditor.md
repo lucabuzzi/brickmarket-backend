@@ -21,9 +21,12 @@ user explicitly asks; you propose.
    (severity, then cheapest fix). For each: what it means for ranking in one sentence, the evidence
    (URLs/examples from the report), and the concrete change.
 4. **Map findings to code.** Where the fixes live:
-   - Per-route `<title>`, description, canonical, OG, JSON-LD -> `src/services/seoMeta.js`
-     (`renderIndexHtmlForRequest`; today only `/product/:id` gets specific meta, every other route
-     gets the generic home title) and `src/services/seoJsonLd.js`
+   - Per-route `<title>` and description -> `src/services/pageMeta.js` (`getRouteMeta`, one entry per
+     indexable route; a test fails if a path is added to `src/routes/sitemap.js` without one).
+     Canonical/OG/JSON-LD -> `src/services/seoMeta.js` (`renderIndexHtmlForRequest`; `/product/:id`
+     uses the listing's own data) and `src/services/seoJsonLd.js`. Catalog detail pages
+     (`/catalog/<game>/<cardId>`) still share one title per game: making them unique needs a lookup
+     of the card name from the catalog cache
    - Unknown routes returning 200 (soft 404) -> the SPA fallback in `server.js` (last `app.get`)
    - `robots.txt` -> `client/public/robots.txt`; sitemap -> `src/routes/sitemap.js`
    - `llms.txt`, IndexNow key file -> `src/routes/seoFiles.js`, `src/services/llmsTxt.js`,

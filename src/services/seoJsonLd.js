@@ -91,4 +91,4 @@ function breadcrumbForListing(listing, baseUrl) {
   return buildBreadcrumbJsonLd(items);
 }
 
-module.exports = { buildProductJsonLd, buildBreadcrumbJsonLd, breadcrumbForListing, brandFor, conditionUrl };
+module.exports = { TCG_BRANDS, buildProductJsonLd, buildBreadcrumbJsonLd, breadcrumbForListing, brandFor, conditionUrl };

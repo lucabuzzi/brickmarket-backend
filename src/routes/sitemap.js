@@ -81,3 +81,4 @@ router.get('/sitemap.xml', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.STATIC_PATHS = STATIC_PATHS; // exposed so tests can prove every listed page has its own meta
