@@ -116,4 +116,4 @@ function getRouteMeta(pathname) {
   return null;
 }
 
-module.exports = { getRouteMeta };
+module.exports = { getRouteMeta, SHORT };

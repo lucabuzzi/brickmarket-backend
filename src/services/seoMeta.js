@@ -2,6 +2,7 @@ const { query } = require('../db');
 const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
 const { getRouteMeta } = require('./pageMeta');
 const { isKnownRoute } = require('./knownRoutes');
+const { shellForRoute, shellForListing, shellForNotFound, injectShell } = require('./seoContent');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -78,13 +79,13 @@ const NOT_FOUND_DESCRIPTION = 'La pagina che cerchi non esiste o è stata sposta
 
 /** HTTP 404 + the app shell (so the client renders its not-found page), marked noindex as a second signal. */
 function notFoundPage(baseHtml, canonical) {
-  const html = applyMeta(baseHtml, {
+  const meta = applyMeta(baseHtml, {
     title: NOT_FOUND_TITLE,
     description: NOT_FOUND_DESCRIPTION,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
   }).replace('</head>', '<meta name="robots" content="noindex"></head>');
-  return { status: 404, html };
+  return { status: 404, html: injectShell(meta, shellForNotFound()) };
 }
 
 /**
@@ -106,22 +107,24 @@ async function renderPage(reqPath, baseHtml) {
   if (!productMatch) {
     // Every other route: its own title/description when we have them (see pageMeta.js), else the site default.
     const routeMeta = getRouteMeta(reqPath);
-    return {
-      status: 200,
-      html: applyMeta(baseHtml, {
-        title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
-        description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
-        canonical,
-        ogImage: DEFAULT_OG_IMAGE,
-      }),
-    };
+    let html = applyMeta(baseHtml, {
+      title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
+      description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
+      canonical,
+      ogImage: DEFAULT_OG_IMAGE,
+    });
+    // Page-specific text inside #root for crawlers that do not run JavaScript (see services/seoContent).
+    const shell = await shellForRoute(reqPath);
+    html = injectShell(html, shell.html);
+    if (shell.jsonLd) html = injectJsonLd(html, shell.jsonLd);
+    return { status: 200, html };
   }
 
   const listingId = productMatch[1];
   try {
     const { rows } = await query(
       `SELECT id, title, description, price, current_bid, auction_start, auction_end, type, status, images,
-              condition, product_type, game, set_number
+              condition, product_type, game, set_number, theme, year, pieces, box_condition
        FROM listings WHERE id = $1`,
       [listingId]
     );
@@ -153,6 +156,10 @@ async function renderPage(reqPath, baseHtml) {
     }));
     html = injectJsonLd(html, breadcrumbForListing(listing, BASE_URL));
 
+    // The listing's own text (title, price, description, details, similar listings) inside #root.
+    const shell = await shellForListing(listing, images.length ? images : [ogImage]);
+    html = injectShell(html, shell.html);
+
     return { status: 200, html };
   } catch (err) {
     // Postgres 22P02 = the id is not a valid uuid, so no listing can have it: that is a plain 404.
@@ -160,15 +167,13 @@ async function renderPage(reqPath, baseHtml) {
     // Any other error (DB down, timeout) says nothing about whether the listing exists: keep serving the
     // app shell as before (the client loads the listing from the API itself) instead of claiming 404.
     console.error('renderPage: errore nel recupero annuncio per meta tag:', err.message);
-    return {
-      status: 200,
-      html: applyMeta(baseHtml, {
-        title: DEFAULT_TITLE,
-        description: DEFAULT_DESCRIPTION,
-        canonical,
-        ogImage: DEFAULT_OG_IMAGE,
-      }),
-    };
+    const fallback = applyMeta(baseHtml, {
+      title: DEFAULT_TITLE,
+      description: DEFAULT_DESCRIPTION,
+      canonical,
+      ogImage: DEFAULT_OG_IMAGE,
+    });
+    return { status: 200, html: injectShell(fallback, (await shellForRoute(reqPath)).html) };
   }
 }
 

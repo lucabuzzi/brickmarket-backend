@@ -385,7 +385,9 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 // The fallback rewrites canonical/OG meta tags per-request (and injects Product JSON-LD for
 // listings) since the static template always declares them as "/" — see src/services/seoMeta.js.
 const clientDistPath = path.join(__dirname, 'client', 'dist');
-app.use(express.static(clientDistPath));
+// index: false -> GET "/" must reach the SPA fallback below (which puts the page text in the HTML and
+// rewrites the meta tags) instead of being answered by express.static with the raw dist/index.html.
+app.use(express.static(clientDistPath, { index: false }));
 // Unknown URLs and missing listings answer HTTP 404 (with the same shell) — see src/routes/spaFallback.js.
 app.get(/^\/(?!api\/|uploads\/).*/, createSpaFallback(clientDistPath));
 

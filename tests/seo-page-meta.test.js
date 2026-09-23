@@ -105,7 +105,8 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
     expect(p.og.title).toBe(p.title);
     expect(p.og.description).toBe(p.description);
     expect(html).toContain('<meta name="twitter:title" content="Annunci di carte Pokémon | CardBrix">');
-    expect(query).not.toHaveBeenCalled(); // static routes never hit the database
+    // category pages read the ACTIVE listings list for the content shell, but never look up a single listing
+    expect(query.mock.calls.every(([sql]) => !/FROM listings WHERE id = \$1/.test(sql))).toBe(true);
   });
 
   test('the home keeps the site default; unknown routes get the not-found text (and a 404, see not-found.test.js)', async () => {

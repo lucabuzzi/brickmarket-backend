@@ -906,3 +906,41 @@ html.brand-landed .brand-mark-header {
   .brand-mark-wrap::after { display: none; }
   html.brand-landed .brand-mark-header { animation: none; }
 }
+
+/* ---- Server-rendered content shell (src/services/seoContent) ----
+   Lives inside <div id="root"> in the HTML the server sends, so crawlers that never run JavaScript read
+   real page text. React replaces it when the app boots; these rules only make it readable (and on-theme)
+   for the moment before that. */
+.seo-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 24px 20px 48px;
+  background: #07060b;
+  color: #e5e7eb;
+  font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.seo-shell > header,
+.seo-shell > main,
+.seo-shell > footer {
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.seo-shell a { color: #c6ff3d; }
+.seo-shell h1 { margin: 16px 0 8px; font-size: 2rem; line-height: 1.15; letter-spacing: -0.02em; color: #fff; }
+.seo-shell h2 { margin: 28px 0 8px; font-size: 1.25rem; color: #fff; }
+.seo-shell h3 { margin: 18px 0 4px; font-size: 1.05rem; color: #fff; }
+.seo-shell p { margin: 0 0 12px; }
+.seo-shell .seo-lead { font-size: 1.1rem; color: rgba(255, 255, 255, 0.75); }
+.seo-shell .seo-brand { margin: 0 0 8px; font-size: 1.25rem; font-weight: 900; }
+.seo-shell ul { margin: 0 0 12px; padding-left: 1.2rem; }
+.seo-shell header nav ul, .seo-shell footer nav ul, .seo-shell .seo-crumbs ul { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; }
+.seo-shell .seo-crumbs { margin-bottom: 8px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); }
+.seo-shell .seo-crumbs li + li::before { content: '/'; margin-right: 8px; opacity: 0.5; }
+.seo-shell dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 12px; }
+.seo-shell dt { color: rgba(255, 255, 255, 0.6); }
+.seo-shell dd { margin: 0; }
+.seo-shell img { max-width: 100%; height: auto; border-radius: 12px; }
+.seo-shell footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); }

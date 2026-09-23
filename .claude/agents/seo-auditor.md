@@ -34,7 +34,13 @@ user explicitly asks; you propose.
    - `robots.txt` -> `client/public/robots.txt`; sitemap -> `src/routes/sitemap.js`
    - `llms.txt`, IndexNow key file -> `src/routes/seoFiles.js`, `src/services/llmsTxt.js`,
      `src/services/indexnow.js` (IndexNow is inert until `INDEXNOW_KEY` is set in the environment)
-   - What crawlers without JavaScript see -> `client/index.html` (the static fallback inside `#root`)
+   - What crawlers without JavaScript see -> the content shell in `src/services/seoContent/`:
+     `pages.js` (per-route headline/body from `client/src/locales/it.json`, so no second copy of the
+     text), `listings.js` (active listings for hubs/home, and the text of a listing page; 5-minute
+     cache), `layout.js` (frame and navigation), `index.js` (`injectShell` swaps it into `#root`;
+     React replaces it on boot). Its CSS is `.seo-shell` in `client/src/index.css`. Pages still under
+     150 words after this: catalog pages, Assistenza and Ricerca utente (catalog detail pages need a
+     lookup of the card/set data first)
    - Multilingual: 5 languages share one URL, so there is no hreflang; fixing it means language URLs
 5. **Be honest about limits.** The engine measures the raw HTML a crawler receives, not a rendered
    page; PageSpeed data only exists when `--psi` succeeded (Performance is labelled "parziale"
