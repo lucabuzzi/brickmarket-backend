@@ -16,8 +16,12 @@
  * even under concurrent/parallel requests (Postgres enforces this at the index
  * level, not in application code).
  *
- * Reversible: node src/db/migrate_contest_refund_idempotency.js         (up)
- *             node src/db/migrate_contest_refund_idempotency.js down    (down)
+ * Reversible (always through the wrapper — src/db/index.js refuses direct runs):
+ *   node scripts/run-db-script.js src/db/migrate_contest_refund_idempotency.js --target=production          (up)
+ *   node scripts/run-db-script.js src/db/migrate_contest_refund_idempotency.js --target=production --down   (down)
+ * "--down", not "down": the wrapper loads this file with require(), so process.argv
+ * is the wrapper's and argv[2] is this script's path — the old `argv[2] === 'down'`
+ * check never matched, so "down" silently ran "up" instead.
  * Idempotent: safe to run "up" more than once (IF NOT EXISTS).
  */
 require('dotenv').config();
@@ -41,7 +45,7 @@ async function down() {
   console.log(`✅  ${INDEX_NAME} dropped.`);
 }
 
-const direction = process.argv[2] === 'down' ? down : up;
+const direction = process.argv.includes('--down') ? down : up;
 
 direction()
   .then(() => process.exit(0))
