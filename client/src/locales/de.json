@@ -1730,5 +1730,8 @@
     "missing_title": "Ungültiger Link.",
     "missing_desc": "Dieser Wiederherstellungslink ist unvollständig. Öffne ihn erneut aus der E-Mail oder fordere einen neuen an.",
     "request_new": "Neuen Link anfordern"
+  },
+  "brand": {
+    "skip_intro": "Intro überspringen"
   }
 }

@@ -1730,5 +1730,8 @@
     "missing_title": "Enlace no válido.",
     "missing_desc": "Este enlace de recuperación está incompleto. Ábrelo de nuevo desde el email o solicita uno nuevo.",
     "request_new": "Solicitar un nuevo enlace"
+  },
+  "brand": {
+    "skip_intro": "Saltar intro"
   }
 }

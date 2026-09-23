@@ -1730,5 +1730,8 @@
     "missing_title": "Invalid link.",
     "missing_desc": "This recovery link is incomplete. Open it again from the email or request a new one.",
     "request_new": "Request a new link"
+  },
+  "brand": {
+    "skip_intro": "Skip intro"
   }
 }

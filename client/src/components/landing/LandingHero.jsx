@@ -4,6 +4,11 @@ import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } fro
 import { ArrowRight, Search, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatEUR } from './landingUtils';
+import art from '../../assets/brand/art-1100.webp';
+
+// The art is a rectangle of dark image; fading every edge to transparent is what lets it dissolve
+// into the page instead of reading as a pasted-on box.
+const BACKDROP_MASK = 'radial-gradient(ellipse 48% 48% at 50% 50%, #000 38%, transparent 100%)';
 
 // Fan layout for the floating card stack, front card first. x/y are desktop pixels,
 // multiplied by --k (smaller on mobile) so the same arrangement scales down.
@@ -81,6 +86,10 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
   const my = useMotionValue(0);
   const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-14, 14]), { stiffness: 120, damping: 18 });
   const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [10, -10]), { stiffness: 120, damping: 18 });
+
+  // Logo backdrop drifts against the card fan's tilt, which reads as depth between the two layers.
+  const bx = useSpring(useTransform(mx, [-0.5, 0.5], [30, -30]), { stiffness: 60, damping: 20 });
+  const by = useSpring(useTransform(my, [-0.5, 0.5], [20, -20]), { stiffness: 60, damping: 20 });
 
   const handlePointerMove = (e) => {
     if (reduceMotion || e.pointerType !== 'mouse') return;
@@ -194,20 +203,42 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
           </div>
         </div>
 
-        {stackItems.length > 0 ? (
-          <div className="relative mx-auto h-[340px] w-full max-w-[640px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center [--card-w:170px] [--k:0.55] [perspective:1400px] min-[430px]:[--k:0.62] sm:h-[460px] sm:[--card-w:210px] md:[--k:0.8] lg:h-[540px] lg:[--card-w:220px] lg:[--k:0.6] xl:[--k:0.82] 2xl:[--card-w:240px] 2xl:[--k:1]">
-            <div className="lx-float h-full w-full">
-              <motion.div
-                className="relative h-full w-full pt-6 [transform-style:preserve-3d]"
-                style={reduceMotion ? undefined : { rotateX, rotateY }}
-              >
-                {stackItems.slice(0, FAN.length).map((item, i) => (
-                  <StackCard key={item.key} item={item} slot={i} index={i} />
-                ))}
-              </motion.div>
+        <div className="relative lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+          <motion.div
+            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            aria-hidden="true"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.img
+              src={art}
+              alt=""
+              width="1100"
+              height="649"
+              decoding="async"
+              draggable="false"
+              className="w-[135%] max-w-none select-none opacity-[0.4] sm:w-[125%]"
+              style={{ x: reduceMotion ? 0 : bx, y: reduceMotion ? 0 : by, maskImage: BACKDROP_MASK, WebkitMaskImage: BACKDROP_MASK }}
+            />
+          </motion.div>
+          {stackItems.length > 0 ? (
+            <div className="relative mx-auto h-[340px] w-full max-w-[640px] [--card-w:170px] [--k:0.55] [perspective:1400px] min-[430px]:[--k:0.62] sm:h-[460px] sm:[--card-w:210px] md:[--k:0.8] lg:h-[540px] lg:[--card-w:220px] lg:[--k:0.6] xl:[--k:0.82] 2xl:[--card-w:240px] 2xl:[--k:1]">
+              <div className="lx-float h-full w-full">
+                <motion.div
+                  className="relative h-full w-full pt-6 [transform-style:preserve-3d]"
+                  style={reduceMotion ? undefined : { rotateX, rotateY }}
+                >
+                  {stackItems.slice(0, FAN.length).map((item, i) => (
+                    <StackCard key={item.key} item={item} slot={i} index={i} />
+                  ))}
+                </motion.div>
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : (
+            <div className="h-[340px] w-full sm:h-[460px] lg:h-[540px]" />
+          )}
+        </div>
 
         <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:self-start">
           <motion.form

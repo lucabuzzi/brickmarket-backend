@@ -1,7 +1,7 @@
 const { query } = require('../db');
 
 const BASE_URL = 'https://cardbrix.com';
-const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
+const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_TITLE = 'CardBrix - LEGO, Trading Cards & Auctions Marketplace';
 const DEFAULT_DESCRIPTION =
   "CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests.";

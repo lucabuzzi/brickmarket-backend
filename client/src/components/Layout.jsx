@@ -10,16 +10,10 @@ import CookieConsent from './CookieConsent';
 import GeoLanguageSuggestion from './GeoLanguageSuggestion';
 import SiteAurora from './SiteAurora';
 import EmailVerificationBanner from './EmailVerificationBanner';
+import BrandMark from './brand/BrandMark';
+import BrandIntro from './brand/BrandIntro';
+import { shouldPlayIntro } from './brand/introGate';
 import { hasConsent, trackPageview } from '../analytics';
-
-const LegoHeadIcon = ({ size = 16, color = "currentColor", strokeWidth = 2 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M8 3h8v2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V3z" />
-    <circle cx="9" cy="12" r="1.5" fill={color} stroke="none" />
-    <circle cx="15" cy="12" r="1.5" fill={color} stroke="none" />
-    <path d="M10 16c.6.4 1.4.6 2 .6s1.4-.2 2-.6" />
-  </svg>
-);
 
 const LANGUAGES = [
   { code: 'it', name: 'ITALIANO', flag: 'fi fi-it' },
@@ -35,6 +29,8 @@ export default function Layout() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [apiStatus, setApiStatus] = useState('checking');
+  // First-visit brand reveal; decided once per page load, before the first paint of the shell.
+  const [introActive, setIntroActive] = useState(shouldPlayIntro);
 
   // User Menu State
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -125,6 +121,7 @@ export default function Layout() {
   return (
     <div className="app-shell" style={{ overflowX: 'clip', position: 'relative' }}>
       <SiteAurora />
+      {introActive && <BrandIntro onDone={() => setIntroActive(false)} />}
       {isMenuOpen && (
         <div 
           onClick={() => setIsMenuOpen(false)}
@@ -227,9 +224,7 @@ export default function Layout() {
       <header className="fixed top-0 left-0 right-0 h-16 bg-[#0a0806]/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 z-[60] shadow-lg shadow-black/25">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-900/30">
-            <LegoHeadIcon size={20} color="#100d07" />
-          </div>
+          <BrandMark id="brand-mark-target" size={36} className="brand-mark-header" />
           <span className="hidden min-[400px]:block text-lg font-black tracking-tighter text-white">
             CardBrix
           </span>
@@ -405,7 +400,10 @@ export default function Layout() {
       </main>
 
       <footer className="footer">
-        <p>{t('ui.footer_copyright', { year: new Date().getFullYear() })}</p>
+        <p className="flex items-center justify-center gap-2.5">
+          <BrandMark size={22} />
+          <span>{t('ui.footer_copyright', { year: new Date().getFullYear() })}</span>
+        </p>
       </footer>
 
       <style>{`

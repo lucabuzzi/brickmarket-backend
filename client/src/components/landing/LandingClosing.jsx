@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, BadgeCheck, CreditCard, Gavel, LineChart, MessageSquareQuote, ShoppingBag, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
+import BrandSignature from '../brand/BrandSignature';
 
 const TRUST = [
   { key: 'verified', icon: BadgeCheck },
@@ -89,6 +90,8 @@ export default function LandingClosing() {
             </div>
           </div>
         </motion.div>
+
+        <BrandSignature />
       </div>
     </section>
   );

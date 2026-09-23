@@ -1738,5 +1738,8 @@
     "missing_title": "Lien non valide.",
     "missing_desc": "Ce lien de récupération est incomplet. Ouvrez-le à nouveau depuis l'e-mail ou demandez-en un nouveau.",
     "request_new": "Demander un nouveau lien"
+  },
+  "brand": {
+    "skip_intro": "Passer l'intro"
   }
 }
