@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import logo1600 from '../../assets/brand/logo-1600.webp';
 import logo800 from '../../assets/brand/logo-800.webp';
 import cmark from '../../assets/brand/cmark-256.webp';
-import { SEEN_KEY } from './introGate';
+import { markIntroSeen } from './introGate';
 
 const TARGET_ID = 'brand-mark-target';
 
@@ -70,7 +70,7 @@ export default function BrandIntro({ onDone }) {
     const root = document.documentElement;
     root.classList.add('brand-intro');
     root.style.overflow = 'hidden';
-    try { window.localStorage.setItem(SEEN_KEY, String(Date.now())); } catch { /* ignore */ }
+    markIntroSeen();
     const failsafe = setTimeout(finish, FAILSAFE_MS);
     return () => {
       clearTimeout(failsafe);
