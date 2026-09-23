@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Coins, Sparkles, Trophy, Gavel, ArrowRight, History, Users, Check, Copy } from 'lucide-react';
+import { Coins, Sparkles, Trophy, Gift, ArrowRight, History, Users, Check, Copy } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
 import { StitchCard, AnimateCounter } from '../components/StitchComponents';
@@ -131,7 +131,7 @@ export default function WalletInfo() {
 
         <StitchCard glowColor="amber" className="p-6">
           <div className="h-10 w-10 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 mb-4">
-            <Gavel className="h-5 w-5" />
+            <Gift className="h-5 w-5" />
           </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-2">{t('wallet.card3_title')}</h3>
           <p className="text-xs text-stone-400 leading-relaxed">

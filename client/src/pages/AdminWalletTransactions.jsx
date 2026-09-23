@@ -4,7 +4,7 @@ import { apiFetch } from '../api';
 import { ArrowLeft, Wallet, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const TYPE_LABELS = {
-  deposit: 'Ricarica',
+  deposit: 'Accredito',
   contest_entry: 'Ingresso Sfida',
   contest_refund: 'Rimborso Sfida',
   payout: 'Vincita',
