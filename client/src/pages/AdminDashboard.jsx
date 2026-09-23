@@ -445,6 +445,18 @@ export default function AdminDashboard() {
           </div>
         </StitchCard>
 
+        {/* FEATURED PRICING CARD */}
+        <StitchCard glowColor="amber" onClick={() => navigate('/admin/featured-pricing')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(212,175,55, 0.1)', borderRadius: '12px' }}><Sparkles size={24} color="#d4af37" /></div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Prezzi Messa in Evidenza</h2>
+          </div>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Prezzi in euro (solo carta) delle messe in evidenza da 7, 14 e 30 giorni.</p>
+          <div style={{ marginTop: 'auto' }}>
+            <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI PREZZI →</span>
+          </div>
+        </StitchCard>
+
         {/* DISPUTES CARD */}
         <StitchCard glowColor="rose" onClick={() => navigate('/admin/disputes')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>

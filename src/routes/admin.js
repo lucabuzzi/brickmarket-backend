@@ -5,6 +5,7 @@ const { adminAuth } = require('../middleware/auth');
 const { computeDaySnapshot, backfillSnapshots } = require('../services/analyticsSnapshot');
 const { updateUserSchema, validate } = require('../validators/adminUserValidators');
 const featured = require('../services/featured');
+const featuredPricing = require('../services/featuredPricing');
 const creditConfigRepository = require('../repositories/creditConfigRepository');
 const { processMaturedGrants, reviewFlaggedGrant } = require('../services/creditMaturation');
 const orderDisputeService = require('../services/orderDisputeService');
@@ -505,6 +506,49 @@ router.put('/credit-config/:key', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('ADMIN CREDIT CONFIG UPDATE ERROR:', err.message);
     res.status(500).json({ error: 'Errore nell\'aggiornamento della configurazione crediti.' });
+  }
+});
+
+/**
+ * GET /api/admin/featured-tariffs
+ * Prezzi in euro delle messe in evidenza a pagamento (solo carta, nessun credito).
+ * Una tariffa assente nel DB torna con isDefault:true e il prezzo di default in codice
+ * (vedi src/services/featuredPricing.js).
+ */
+router.get('/featured-tariffs', adminAuth, async (req, res) => {
+  try {
+    const tariffs = await featured.getTariffs();
+    res.json({ tariffs });
+  } catch (err) {
+    console.error('ADMIN FEATURED TARIFFS LIST ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero delle tariffe in evidenza.' });
+  }
+});
+
+/**
+ * PUT /api/admin/featured-tariffs/:id
+ *   body { priceCents: <intero> }
+ * Aggiorna il prezzo di una tariffa esistente (7/14/30 giorni). Le durate sono fisse.
+ */
+router.put('/featured-tariffs/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const priceCents = Number(req.body?.priceCents);
+
+  if (!featuredPricing.isKnownTariff(id)) {
+    return res.status(404).json({ error: 'Tariffa sconosciuta.' });
+  }
+  if (!featuredPricing.validatePriceCents(priceCents)) {
+    return res.status(400).json({
+      error: `Prezzo non valido: deve essere un importo fra ${featuredPricing.MIN_PRICE_CENTS / 100} € e ${featuredPricing.MAX_PRICE_CENTS / 100} €.`,
+    });
+  }
+
+  try {
+    await featured.setTariffPrice(id, priceCents, req.user.userId);
+    res.json({ success: true, id, priceCents });
+  } catch (err) {
+    console.error('ADMIN FEATURED TARIFF UPDATE ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'aggiornamento della tariffa.' });
   }
 });
 

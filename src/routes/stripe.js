@@ -41,12 +41,12 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
     if (meta.type === 'featured_listing') {
       try {
         const featured = require('../services/featured');
-        const tariff = featured.getTariff(meta.tariff);
+        const tariff = await featured.getTariff(meta.tariff);
         if (tariff && meta.listingId && !(await featured.purchaseExists(paymentIntentId))) {
           await featured.applyFeature(meta.listingId, { days: tariff.days, source: 'paid' });
           await featured.recordPurchase({
             listingId: meta.listingId, userId, tariff: String(meta.tariff), days: tariff.days,
-            method: 'card', amountCredits: tariff.credits, paymentRef: paymentIntentId,
+            method: 'card', amountCents: amountInCents, paymentRef: paymentIntentId,
           });
         }
         return res.status(200).json({ received: true, featured: true });

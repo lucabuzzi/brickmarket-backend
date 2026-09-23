@@ -3,12 +3,15 @@ import { createPortal } from 'react-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useTranslation } from 'react-i18next';
-import { X, Sparkles, Wallet, CreditCard, CheckCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '../auth/useAuth';
+import { X, Sparkles, CreditCard, CheckCircle, Loader2 } from 'lucide-react';
 import { apiFetch } from '../api';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+
+function formatEuroCents(cents, locale) {
+  return new Intl.NumberFormat(locale || 'it-IT', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+}
 
 const cardElementOptions = {
   style: {
@@ -18,37 +21,34 @@ const cardElementOptions = {
 };
 
 function FeatureModalInner({ listing, onClose, onFeatured }) {
-  const { t } = useTranslation();
-  const { wallet, refreshWallet } = useAuth();
+  const { t, i18n } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
 
   const [tariffs, setTariffs] = useState(null);
   const [tariffId, setTariffId] = useState('7');
-  const [method, setMethod] = useState('wallet');
   const [status, setStatus] = useState('idle'); // idle | processing | success | error
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     apiFetch('/api/listings/featured/tariffs')
       .then((data) => {
-        setTariffs(data);
-        const keys = Object.keys(data || {});
-        if (keys.length && !keys.includes(tariffId)) setTariffId(keys[0]);
+        const list = data?.tariffs || [];
+        setTariffs(list);
+        if (list.length && !list.some((tf) => tf.id === tariffId)) setTariffId(list[0].id);
       })
-      .catch(() => setTariffs({}));
+      .catch(() => setTariffs([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const balance = parseFloat(wallet?.balanceCredits ?? 0);
-  const selected = tariffs?.[tariffId];
-  const price = selected?.credits ?? 0;
-  const insufficientWallet = method === 'wallet' && price > balance;
-
   const orderedTariffs = useMemo(
-    () => Object.entries(tariffs || {}).sort((a, b) => a[1].days - b[1].days),
+    () => [...(tariffs || [])].sort((a, b) => a.days - b.days),
     [tariffs]
   );
+  const selected = orderedTariffs.find((tf) => tf.id === tariffId);
+  const fmt = (cents) => formatEuroCents(cents, i18n.language);
+  // Per-day price is display-only: rounded to the cent, never used for charging.
+  const perDay = (tf) => fmt(Math.round(tf.priceCents / tf.days));
 
   const handleConfirm = async () => {
     if (!selected || status === 'processing') return;
@@ -56,18 +56,6 @@ function FeatureModalInner({ listing, onClose, onFeatured }) {
     setErrorMessage('');
 
     try {
-      if (method === 'wallet') {
-        const res = await apiFetch(`/api/listings/${listing.id}/feature`, {
-          method: 'POST',
-          body: { tariff: tariffId, method: 'wallet' },
-        });
-        await refreshWallet();
-        setStatus('success');
-        onFeatured?.(res.listing);
-        return;
-      }
-
-      // card
       if (!stripe || !elements) {
         setStatus('error');
         setErrorMessage(t('feature.stripe_unavailable'));
@@ -151,13 +139,13 @@ function FeatureModalInner({ listing, onClose, onFeatured }) {
 
             {/* Tariff cards */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem', marginBottom: '1.25rem' }}>
-              {orderedTariffs.map(([id, tf]) => {
-                const active = id === tariffId;
+              {orderedTariffs.map((tf) => {
+                const active = tf.id === tariffId;
                 return (
                   <button
-                    key={id}
+                    key={tf.id}
                     type="button"
-                    onClick={() => setTariffId(id)}
+                    onClick={() => setTariffId(tf.id)}
                     style={{
                       padding: '0.9rem 0.4rem', borderRadius: '12px', cursor: 'pointer',
                       border: `2px solid ${active ? '#d4af37' : '#44403c'}`,
@@ -172,51 +160,28 @@ function FeatureModalInner({ listing, onClose, onFeatured }) {
                       {t('feature.days')}
                     </div>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: active ? '#fff' : '#78716c' }}>
-                      {tf.credits} CR
+                      {fmt(tf.priceCents)}
+                    </div>
+                    <div style={{ fontSize: '0.62rem', color: active ? '#a8a29e' : '#57534e', marginTop: '0.15rem' }}>
+                      {t('feature.per_day_short', { price: perDay(tf) })}
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Payment method */}
-            <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1rem' }}>
-              {[
-                { id: 'wallet', label: t('feature.method_wallet') },
-                { id: 'card', label: t('feature.method_card') },
-              ].map((m) => {
-                const active = m.id === method;
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setMethod(m.id)}
-                    style={{
-                      flex: 1, padding: '0.7rem 0.5rem', borderRadius: '10px', cursor: 'pointer',
-                      border: `2px solid ${active ? '#d4af37' : '#44403c'}`,
-                      backgroundColor: active ? 'rgba(212,175,55,0.08)' : '#1c1917',
-                      color: active ? '#fff' : '#a8a29e', fontWeight: 700, fontSize: '0.8rem',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                    }}
-                  >
-                    {m.id === 'wallet' ? <Wallet size={15} /> : <CreditCard size={15} />} {m.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {method === 'wallet' && (
-              <p style={{ fontSize: '0.8rem', color: insufficientWallet ? '#fca5a5' : '#78716c', marginBottom: '1rem' }}>
-                {t('feature.wallet_balance', { balance: balance.toFixed(0) })}
-                {insufficientWallet && ` — ${t('feature.wallet_insufficient')}`}
+            {selected && (
+              <p style={{ fontSize: '0.85rem', color: '#d6d3d1', marginBottom: '1rem', textAlign: 'center' }}>
+                {t('feature.price_summary', { total: fmt(selected.priceCents), days: selected.days, perDay: perDay(selected) })}
               </p>
             )}
 
-            {method === 'card' && (
-              <div style={{ padding: '0.8rem', border: '1px solid #44403c', borderRadius: '10px', backgroundColor: '#1c1917', marginBottom: '1rem' }}>
-                <CardElement options={cardElementOptions} />
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a8a29e', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+              <CreditCard size={14} /> {t('feature.card_label')}
+            </div>
+            <div style={{ padding: '0.8rem', border: '1px solid #44403c', borderRadius: '10px', backgroundColor: '#1c1917', marginBottom: '1rem' }}>
+              <CardElement options={cardElementOptions} />
+            </div>
 
             {status === 'error' && (
               <div style={{ padding: '0.7rem 0.9rem', backgroundColor: '#450a0a', border: '1px solid #7f1d1d', borderRadius: '8px', color: '#fca5a5', fontSize: '0.82rem', marginBottom: '1rem' }}>
@@ -226,19 +191,19 @@ function FeatureModalInner({ listing, onClose, onFeatured }) {
 
             <button
               onClick={handleConfirm}
-              disabled={status === 'processing' || !selected || insufficientWallet || (method === 'card' && !stripe)}
+              disabled={status === 'processing' || !selected || !stripe}
               style={{
                 width: '100%', padding: '0.85rem', borderRadius: '10px', border: 'none',
-                backgroundColor: status === 'processing' || insufficientWallet ? '#57534e' : '#d4af37',
+                backgroundColor: status === 'processing' ? '#57534e' : '#d4af37',
                 color: '#000', fontWeight: 800, fontSize: '0.95rem',
-                cursor: status === 'processing' || insufficientWallet ? 'not-allowed' : 'pointer',
+                cursor: status === 'processing' ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
               }}
             >
               {status === 'processing' ? (
                 <><Loader2 size={16} className="animate-spin" /> {t('feature.processing')}</>
               ) : (
-                t('feature.confirm', { price })
+                t('feature.confirm', { price: selected ? fmt(selected.priceCents) : '' })
               )}
             </button>
           </>

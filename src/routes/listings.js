@@ -8,7 +8,6 @@ const { calculateShippingRates } = require('../services/shipping');
 const { applyDimensionDefaults, packageSizeFromWeight } = require('../services/productDimensions');
 const { expireEndedAuctions } = require('../services/auctionExpiry');
 const featured = require('../services/featured');
-const walletRepository = require('../repositories/walletRepository');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const Stripe = require('stripe');
@@ -558,31 +557,39 @@ router.get('/search', async (req, res) => {
 
 // ── "In evidenza" (featured listings) ──────────────────────────────────────
 
-/** Public: the paid-promotion tariff table, for the seller-facing modal */
-router.get('/featured/tariffs', (req, res) => {
-  res.json(featured.FEATURED_TARIFFS);
+/**
+ * Public: the paid-promotion tariff table (euro prices, admin-configurable), for
+ * the seller-facing modal. -> { tariffs: [{ id, days, priceCents }] } sorted by days.
+ */
+router.get('/featured/tariffs', async (req, res) => {
+  const tariffs = await featured.getTariffs();
+  res.json({ tariffs: tariffs.map(({ id, days, priceCents }) => ({ id, days, priceCents })) });
 });
 
 /**
  * POST /api/listings/:id/feature
  * Seller promotes their own active listing for one tariff (7/14/30 days).
- *   body { tariff: '7'|'14'|'30', method: 'wallet'|'card' }
- *   - wallet: debits credits and applies the feature synchronously
- *   - card:   returns { clientSecret }; the feature is applied by
- *             POST /:id/confirm-feature (or the Stripe webhook)
+ * Card only — credits can't be spent on promotions (CLAUDE.md: credits are only
+ * for Skill Zone puzzles).
+ *   body { tariff: '7'|'14'|'30', method: 'card' }
+ *   -> { clientSecret, amountCents }; the feature is applied by
+ *      POST /:id/confirm-feature (or the Stripe webhook)
  */
 router.post('/:id/feature', auth, async (req, res) => {
   const userId = req.user.userId;
   const listingId = req.params.id;
   const { tariff: tariffId, method } = req.body || {};
 
-  const tariff = featured.getTariff(tariffId);
-  if (!tariff) return res.status(400).json({ error: 'Tariffa non valida' });
-  if (method !== 'wallet' && method !== 'card') {
+  // Explicit rather than defaulting: a stale client still sending 'wallet' must
+  // get an error, not a card charge it didn't ask for.
+  if (method !== 'card') {
     return res.status(400).json({ error: 'Metodo di pagamento non valido' });
   }
 
   try {
+    const tariff = await featured.getTariff(tariffId);
+    if (!tariff) return res.status(400).json({ error: 'Tariffa non valida' });
+
     const lr = await query(
       'SELECT id, seller_id, status FROM listings WHERE id = $1',
       [listingId]
@@ -596,55 +603,14 @@ router.post('/:id/feature', auth, async (req, res) => {
       return res.status(400).json({ error: 'Solo gli annunci attivi possono essere messi in evidenza' });
     }
 
-    if (method === 'card') {
-      if (!stripe) return res.status(503).json({ error: 'Pagamenti con carta non configurati' });
-      const intent = await stripe.paymentIntents.create({
-        amount: Math.round(tariff.credits * 100),
-        currency: 'eur',
-        payment_method_types: ['card'],
-        metadata: { type: 'featured_listing', listingId, userId, tariff: String(tariffId) },
-      });
-      return res.json({ clientSecret: intent.client_secret, amountCredits: tariff.credits });
-    }
-
-    // wallet: atomic conditional debit, then apply. Refund only if the feature
-    // itself can't be written (mirrors walletController.convert's debit→act→refund).
-    const debited = await walletRepository.debitWalletIfSufficient(userId, tariff.credits);
-    if (!debited) {
-      return res.status(400).json({ error: 'Credito insufficiente', requiredCredits: tariff.credits });
-    }
-
-    let updated;
-    try {
-      updated = await featured.applyFeature(listingId, { days: tariff.days, source: 'paid' });
-    } catch (applyErr) {
-      await walletRepository.creditWallet(userId, tariff.credits);
-      console.error('Feature apply failed, credits refunded:', applyErr.message);
-      return res.status(500).json({ error: 'Errore nella messa in evidenza, credito ripristinato' });
-    }
-
-    // Ledger + audit: best-effort, the promotion already succeeded and the
-    // credits already moved — a hiccup here must not 500 the request.
-    // 'shop_purchase' is the existing credit_transactions type for "spent
-    // credits on a service"; featured_purchases carries the real detail.
-    try {
-      await walletRepository.recordTransaction(userId, -tariff.credits, 'shop_purchase', listingId);
-      await featured.recordPurchase({
-        listingId, userId, tariff: String(tariffId), days: tariff.days,
-        method: 'wallet', amountCredits: tariff.credits, paymentRef: `wallet:${listingId}:${Date.now()}`,
-      });
-    } catch (ledgerErr) {
-      console.error('Feature ledger/audit write failed (non-fatal):', ledgerErr.message);
-    }
-
-    const broadcast = req.app.get('broadcast');
-    if (broadcast) broadcast({ type: 'LISTING_FEATURED', listingId });
-
-    return res.json({
-      success: true,
-      listing: updated,
-      newBalanceCredits: parseFloat(debited.balance_credits),
+    if (!stripe) return res.status(503).json({ error: 'Pagamenti con carta non configurati' });
+    const intent = await stripe.paymentIntents.create({
+      amount: tariff.priceCents,
+      currency: 'eur',
+      payment_method_types: ['card'],
+      metadata: { type: 'featured_listing', listingId, userId, tariff: String(tariffId) },
     });
+    return res.json({ clientSecret: intent.client_secret, amountCents: tariff.priceCents });
   } catch (err) {
     console.error('FEATURE ERROR:', err.message);
     return res.status(500).json({ error: 'Errore nella messa in evidenza' });
@@ -677,14 +643,16 @@ router.post('/:id/confirm-feature', auth, async (req, res) => {
     }
 
     const tariffId = intent.metadata.tariff;
-    const tariff = featured.getTariff(tariffId);
+    const tariff = await featured.getTariff(tariffId);
     if (!tariff) return res.status(400).json({ error: 'Tariffa non valida' });
 
     if (!(await featured.purchaseExists(paymentIntentId))) {
       const updated = await featured.applyFeature(listingId, { days: tariff.days, source: 'paid' });
+      // intent.amount, not tariff.priceCents: an admin may have changed the price
+      // between intent creation and confirmation — record what was really charged.
       await featured.recordPurchase({
         listingId, userId, tariff: String(tariffId), days: tariff.days,
-        method: 'card', amountCredits: tariff.credits, paymentRef: paymentIntentId,
+        method: 'card', amountCents: intent.amount, paymentRef: paymentIntentId,
       });
       const broadcast = req.app.get('broadcast');
       if (broadcast) broadcast({ type: 'LISTING_FEATURED', listingId });
