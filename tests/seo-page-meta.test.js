@@ -126,7 +126,7 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
   test('product pages still use listing data, not route meta', async () => {
     query.mockResolvedValueOnce({ rows: [{ id: 'x', title: 'Il mio set', description: 'Bello', price: '10', type: 'used', status: 'active', images: [], condition: 'new', product_type: 'lego' }] });
     const p = parseHtml(await renderIndexHtmlForRequest('/product/x', template));
-    expect(p.title).toBe('Il mio set | CardBrix');
+    expect(p.title).toBe('Il mio set – LEGO in vendita | CardBrix'); // built from the listing (short titles are completed)
   });
 
   test('end to end with the audit: the duplicate-title/description checks pass on sitemap pages', async () => {

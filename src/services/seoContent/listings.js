@@ -6,22 +6,9 @@ const { query } = require('../../db');
 const { cached } = require('./cache');
 const { esc, link, paragraphs, list, section } = require('./html');
 const { t } = require('./copy');
+const { eur, conditionLabel, TYPE_LABELS } = require('../listingText');
 
 const TTL_MS = 5 * 60 * 1000;
-
-const eur = (v) => {
-  const n = v == null || v === '' ? NaN : Number(v);
-  return Number.isFinite(n) ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n) : null;
-};
-
-const CONDITION_LABELS = {
-  new: 'Nuovo', used: 'Usato', 'like new': 'Come nuovo', damaged: 'Danneggiato',
-  near_mint: 'Near Mint', slightly_played: 'Leggermente giocata', moderately_played: 'Moderatamente giocata',
-  heavy_played: 'Molto giocata', poor_damaged: 'Danneggiata',
-};
-const conditionLabel = (c) => (c ? CONDITION_LABELS[String(c).trim().toLowerCase()] || null : null);
-
-const TYPE_LABELS = { lego: 'LEGO', funko: 'Funko', tcg: 'Carte collezionabili' };
 
 const priceOf = (l) => eur(l.type === 'auction' ? l.current_bid ?? l.auction_start : l.price);
 

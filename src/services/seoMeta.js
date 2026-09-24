@@ -2,6 +2,7 @@ const { query } = require('../db');
 const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
 const { getRouteMeta } = require('./pageMeta');
 const { isKnownRoute } = require('./knownRoutes');
+const { buildListingTitle, buildListingDescription } = require('./listingMeta');
 const { shellForRoute, shellForListing, shellForNotFound, injectShell } = require('./seoContent');
 
 const BASE_URL = 'https://cardbrix.com';
@@ -24,13 +25,6 @@ function escapeForInlineScript(json) {
   return json.replace(/</g, '\\u003c');
 }
 
-function truncate(str, max) {
-  if (!str) return '';
-  const clean = String(str).replace(/\s+/g, ' ').trim();
-  if (clean.length <= max) return clean;
-  return `${clean.slice(0, max - 1).trim()}…`;
-}
-
 /** Mirrors client/src/api.js normalizeImageUrl: Cloudinary URLs are absolute already, local uploads are not. */
 function resolveImageUrl(url) {
   if (!url || typeof url !== 'string') return DEFAULT_OG_IMAGE;
@@ -39,13 +33,6 @@ function resolveImageUrl(url) {
   if (path.startsWith('/')) path = path.slice(1);
   if (!path.startsWith('uploads/')) path = `uploads/${path}`;
   return `${BASE_URL}/${path}`;
-}
-
-function formatPriceEUR(v) {
-  if (v == null || v === '') return null;
-  const n = typeof v === 'string' ? parseFloat(v) : v;
-  if (Number.isNaN(n)) return null;
-  return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 function applyMeta(html, { title, description, canonical, ogImage }) {
@@ -134,14 +121,11 @@ async function renderPage(reqPath, baseHtml) {
     const listing = rows[0];
     const isAuction = listing.type === 'auction';
     const effectivePrice = isAuction ? (listing.current_bid ?? listing.auction_start) : listing.price;
-    const priceLabel = formatPriceEUR(effectivePrice);
 
-    const title = `${listing.title} | CardBrix`;
-    const description = truncate(
-      listing.description ||
-        `${listing.title}${priceLabel ? ` a ${priceLabel}` : ''} su CardBrix. Compra o fai un'offerta in sicurezza.`,
-      160
-    );
+    // Sellers' own words when they are enough; short titles/descriptions are completed with facts from
+    // the listing (see listingMeta.js), so search results and link previews are never a bare "Froakie".
+    const title = buildListingTitle(listing);
+    const description = buildListingDescription(listing);
     const ogImage = resolveImageUrl(Array.isArray(listing.images) ? listing.images[0] : null);
 
     let html = applyMeta(baseHtml, { title, description, canonical, ogImage });

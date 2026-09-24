@@ -85,7 +85,7 @@ describe('renderPage', () => {
     query.mockResolvedValueOnce({ rows: [LISTING] });
     const r = await renderPage('/product/abc', TEMPLATE);
     expect(r.status).toBe(200);
-    expect(r.html).toContain('<title>Il mio set | CardBrix</title>');
+    expect(r.html).toContain('<title>Il mio set – LEGO in vendita | CardBrix</title>');
   });
 
   test('listing that does not exist: 404', async () => {
