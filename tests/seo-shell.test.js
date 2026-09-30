@@ -46,7 +46,7 @@ describe('html helpers', () => {
 
 describe('copy', () => {
   test('reads the app locale, interpolates variables, and returns "" for anything missing', () => {
-    expect(copy.t('landing.hero.word_win')).toBe('Vinci.');
+    expect(copy.t('landing.hero.word_win')).toBe('Vinci');
     expect(copy.t('annunci.subtitle', { title: 'LEGO' })).toContain('LEGO');
     expect(copy.t('annunci.subtitle', { title: 'LEGO' })).not.toContain('{{');
     expect(copy.t('non.esiste')).toBe('');
@@ -98,7 +98,7 @@ describe('page definitions (Phase A: text pages)', () => {
       expect([p, Boolean(d.h1)]).toEqual([p, true]);
       expect([p, wordCount(d.body) > 30]).toEqual([p, true]);
     }
-    expect(pageFor('/').h1).toBe('CardBrix: Colleziona. Rilancia. Vinci.');
+    expect(pageFor('/').h1).toBe('CardBrix: Colleziona Rilancia Vinci');
   });
 
   test('FAQ renders every question and mirrors them in FAQPage JSON-LD', () => {
@@ -255,7 +255,7 @@ describe('renderPage puts the content shell in the HTML', () => {
   test('the English placeholder is gone from every page; the home has real text and many links', async () => {
     const { html, parsed } = await doc('/');
     expect(html).not.toContain('Buy, Sell and Trade');
-    expect(parsed.headings.h1).toEqual(['CardBrix: Colleziona. Rilancia. Vinci.']);
+    expect(parsed.headings.h1).toEqual(['CardBrix: Colleziona Rilancia Vinci']);
     expect(parsed.wordCount).toBeGreaterThan(300);
     expect(parsed.anchors.filter((a) => a.href.startsWith('/')).length).toBeGreaterThanOrEqual(12);
   });
