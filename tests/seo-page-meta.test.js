@@ -4,14 +4,14 @@ jest.mock('../src/db', () => ({ query: jest.fn() }));
 
 const { query } = require('../src/db');
 const { getRouteMeta } = require('../src/services/pageMeta');
-const { renderIndexHtmlForRequest } = require('../src/services/seoMeta');
+const { renderIndexHtmlForRequest, DEFAULT_TITLE, DEFAULT_DESCRIPTION } = require('../src/services/seoMeta');
 const { STATIC_PATHS } = require('../src/routes/sitemap');
 const { parseHtml } = require('../scripts/seo-audit/lib/htmlParse');
 const { checkPage } = require('../scripts/seo-audit/lib/pageChecks');
 const { checkDuplicates } = require('../scripts/seo-audit/lib/siteChecks');
 
 const GAMES = ['pokemon', 'magic', 'yugioh', 'lorcana', 'onepiece', 'dragonball'];
-const template = `<!doctype html><html lang="it"><head><title>CardBrix - LEGO, Trading Cards &amp; Auctions Marketplace</title>
+const template = `<!doctype html><html lang="it"><head><title>Old default title</title>
 <link rel="canonical" href="https://cardbrix.com/"><meta name="description" content="Default description">
 <meta property="og:url" content="https://cardbrix.com/"><meta property="og:title" content="Default"><meta property="og:description" content="Default">
 <meta property="og:image" content="https://cardbrix.com/og-image.jpg"><meta property="og:image:alt" content="Default">
@@ -111,8 +111,10 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
 
   test('the home keeps the site default; unknown routes get the not-found text (and a 404, see not-found.test.js)', async () => {
     const home = parseHtml(await renderIndexHtmlForRequest('/', template));
-    expect(home.title).toBe('CardBrix - LEGO, Trading Cards & Auctions Marketplace');
-    expect(home.description).toBe('CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests.');
+    expect(home.title).toBe(DEFAULT_TITLE);
+    expect(home.description).toBe(DEFAULT_DESCRIPTION);
+    expect(DEFAULT_TITLE).toBe('CardBrix - Marketplace di LEGO, carte collezionabili e aste');
+    expect(DEFAULT_DESCRIPTION).toMatch(/^Il marketplace per set LEGO/); // Italian, like the page content and <html lang="it">
     const unknown = parseHtml(await renderIndexHtmlForRequest('/una/rotta/sconosciuta', template));
     expect(unknown.title).toBe('Pagina non trovata | CardBrix');
   });
@@ -144,5 +146,26 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
       return checkPage(r, p.parsed, { baseUrl: 'https://cardbrix.com' }).filter((i) => ['title-length', 'desc-length', 'title-missing', 'desc-missing'].includes(i.id));
     });
     expect(lengthIssues).toEqual([]);
+  });
+});
+
+describe('client/index.html static template', () => {
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'client', 'index.html'), 'utf8');
+  const parsed = parseHtml(html);
+
+  test('uses the same Italian title and description as the server default (no drift between the two copies)', () => {
+    expect(parsed.title).toBe(DEFAULT_TITLE);
+    expect(parsed.description).toBe(DEFAULT_DESCRIPTION);
+    expect(parsed.title.length).toBeGreaterThanOrEqual(30);
+    expect(parsed.title.length).toBeLessThanOrEqual(65);
+    expect(parsed.description.length).toBeGreaterThanOrEqual(70);
+    expect(parsed.description.length).toBeLessThanOrEqual(160);
+  });
+
+  test('declares Italian everywhere: html lang, og:locale, WebSite inLanguage; no English default left', () => {
+    expect(html).toMatch(/<html lang="it">/);
+    expect(html).toContain('<meta property="og:locale" content="it_IT" />');
+    expect(html).toContain('"inLanguage": "it-IT"');
+    expect(html).not.toMatch(/Trading Cards & Auctions|marketplace for LEGO sets/);
   });
 });

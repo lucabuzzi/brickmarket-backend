@@ -7,9 +7,9 @@ const { shellForRoute, shellForListing, shellForNotFound, injectShell } = requir
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
-const DEFAULT_TITLE = 'CardBrix - LEGO, Trading Cards & Auctions Marketplace';
+const DEFAULT_TITLE = 'CardBrix - Marketplace di LEGO, carte collezionabili e aste';
 const DEFAULT_DESCRIPTION =
-  "CardBrix is the marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions, or win rare items in Puzzle Arena skill contests.";
+  "Il marketplace per set LEGO, carte collezionabili e oggetti da collezione: compra, vendi, rilancia nelle aste live o vinci pezzi rari nella Puzzle Arena.";
 
 function escapeHtml(str) {
   return String(str)
@@ -166,4 +166,4 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
   return (await renderPage(reqPath, baseHtml)).html;
 }
 
-module.exports = { renderPage, renderIndexHtmlForRequest, resolveImageUrl };
+module.exports = { renderPage, renderIndexHtmlForRequest, resolveImageUrl, DEFAULT_TITLE, DEFAULT_DESCRIPTION };
