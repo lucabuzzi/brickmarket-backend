@@ -13,7 +13,7 @@ import EmailVerificationBanner from './EmailVerificationBanner';
 import BrandMark from './brand/BrandMark';
 import BrandIntro from './brand/BrandIntro';
 import { shouldPlayIntro } from './brand/introGate';
-import { hasConsent, trackPageview } from '../analytics';
+import { hasConsent, trackPageview, OPEN_COOKIE_SETTINGS_EVENT } from '../analytics';
 
 const LANGUAGES = [
   { code: 'it', name: 'ITALIANO', flag: 'fi fi-it' },
@@ -225,7 +225,7 @@ export default function Layout() {
 
       <header className="fixed top-0 left-0 right-0 h-16 bg-[#0a0806]/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 z-[60] shadow-lg shadow-black/25">
         {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
+        <Link to="/" aria-label="CardBrix" className="flex items-center gap-2 shrink-0">
           <BrandMark id="brand-mark-target" size={36} className="brand-mark-header" />
           <span className="hidden min-[400px]:block text-lg font-black tracking-tighter text-white">
             CardBrix
@@ -240,10 +240,11 @@ export default function Layout() {
             value={topbarQuery}
             onChange={e => setTopbarQuery(e.target.value)}
             placeholder={t('ui.search_placeholder')}
+            aria-label={t('a11y.search')}
             className="w-full px-4 py-1.5 pr-10 text-sm rounded-full border border-white/10 bg-[#14120b]/50 text-white outline-none focus:border-gold-500 transition-all backdrop-blur-md"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-gold-400">
-            <Search size={16} strokeWidth={3} />
+          <button type="submit" aria-label={t('a11y.search')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-gold-400">
+            <Search size={16} strokeWidth={3} aria-hidden="true" />
           </button>
         </form>
 
@@ -347,20 +348,27 @@ export default function Layout() {
             <div className="flex items-center gap-0.5 min-[350px]:gap-1.5 md:gap-3 border-l border-white/5 pl-1.5 min-[350px]:pl-3 md:pl-4 ml-0.5 min-[350px]:ml-1">
               <NotificationBell onNewNotification={handleNewNotification} />
               
-              <Link to="/cart" className="relative p-1.5 text-stone-400 hover:text-white transition-colors shrink-0">
-                <ShoppingCart size={20} className={cartIsAnimating ? 'scale-125' : ''} />
+              <Link
+                to="/cart"
+                aria-label={cart?.length > 0 ? t('a11y.cart_count', { count: cart.length }) : t('a11y.cart')}
+                className="relative p-1.5 text-stone-400 hover:text-white transition-colors shrink-0"
+              >
+                <ShoppingCart size={20} aria-hidden="true" className={cartIsAnimating ? 'scale-125' : ''} />
                 {cart?.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#0a0806]">
+                  <span aria-hidden="true" className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-[#0a0806]">
                     {cart.length}
                   </span>
                 )}
               </Link>
 
-              <button 
+              <button
+                type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label={isMenuOpen ? t('a11y.close_menu') : t('a11y.open_menu')}
+                aria-expanded={isMenuOpen}
                 className="p-1.5 text-stone-400 hover:text-white transition-colors shrink-0"
               >
-                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                {isMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
               </button>
             </div>
           </div>
@@ -386,8 +394,8 @@ export default function Layout() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
             <strong style={{ color: '#ef4444', fontSize: '1.05rem' }}>{t('ui.attention')}</strong>
-            <button onClick={() => setToastNotif(null)} style={{ background: 'none', border: 'none', color: '#a89a7f', cursor: 'pointer' }}>
-              <X size={16} />
+            <button type="button" onClick={() => setToastNotif(null)} aria-label={t('a11y.close')} style={{ background: 'none', border: 'none', color: '#a89a7f', cursor: 'pointer' }}>
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
           <p style={{ margin: 0, fontSize: '0.95rem' }}>
@@ -408,6 +416,32 @@ export default function Layout() {
       </main>
 
       <footer className="footer">
+        <nav aria-label={t('footer.nav_label')} className="mb-3">
+          <ul className="m-0 flex list-none flex-col items-center gap-x-5 gap-y-2 p-0 sm:flex-row sm:flex-wrap sm:justify-center">
+            {[
+              ['/come-funziona', 'footer.how_it_works'],
+              ['/faq', 'footer.faq'],
+              ['/help', 'footer.help'],
+              ['/crediti', 'footer.credits'],
+              ['/norme-legali', 'footer.legal_rules'],
+              ['/privacy', 'footer.privacy'],
+              ['/cookie-policy', 'footer.cookie_policy'],
+            ].map(([to, key]) => (
+              <li key={to}>
+                <Link to={to} className="text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline">{t(key)}</Link>
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_SETTINGS_EVENT))}
+                className="cursor-pointer border-0 bg-transparent p-0 text-sm text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline"
+              >
+                {t('footer.manage_cookies')}
+              </button>
+            </li>
+          </ul>
+        </nav>
         <p className="flex items-center justify-center gap-2.5">
           <BrandMark size={22} />
           <span>{t('ui.footer_copyright', { year: new Date().getFullYear() })}</span>

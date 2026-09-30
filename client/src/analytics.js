@@ -1,6 +1,8 @@
 import { apiFetch } from './api';
 
 const CONSENT_COOKIE = 'bm_cookie_consent';
+// Fired by the footer's "Gestisci cookie" link so the visitor can change an earlier choice.
+export const OPEN_COOKIE_SETTINGS_EVENT = 'cardbrix:open-cookie-settings';
 const SESSION_STORAGE_KEY = 'bm_session_id';
 const HEARTBEAT_INTERVAL_MS = 30000;
 

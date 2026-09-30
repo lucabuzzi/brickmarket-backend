@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { normalizeImageUrl } from '../api';
+import { altForListing } from '../utils/altText';
 import { Star } from 'lucide-react';
 import AuctionTimer from './AuctionTimer';
 import SellerTypeBadge from './SellerTypeBadge';
@@ -91,7 +92,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
       <Link to={`/product/${l.id}`} className="block w-full overflow-hidden">
         <img
           src={listingImage(l)}
-          alt={l.title}
+          alt={altForListing(l, t)}
           loading="lazy"
           className="w-full aspect-[4/3] md:aspect-[3/2] object-cover group-hover/card:scale-105 transition-transform duration-500"
         />

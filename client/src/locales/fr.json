@@ -1749,5 +1749,25 @@
     "text": "La page que vous cherchez n'existe pas ou a été déplacée. Essayez la page d'accueil ou parcourez les annonces.",
     "home": "Retour à l'accueil",
     "listings": "Parcourir les annonces"
+  },
+  "a11y": {
+    "cart": "Panier",
+    "cart_count": "Panier, {{count}} articles",
+    "open_menu": "Ouvrir le menu",
+    "close_menu": "Fermer le menu",
+    "close": "Fermer",
+    "gallery_photo": "{{title}}, photo {{index}} sur {{total}}",
+    "search": "Rechercher"
+  },
+  "footer": {
+    "nav_label": "Informations et mentions légales",
+    "privacy": "Politique de confidentialité",
+    "cookie_policy": "Politique de cookies",
+    "legal_rules": "Règles juridiques",
+    "faq": "FAQ",
+    "help": "Aide",
+    "how_it_works": "Comment ça marche",
+    "credits": "Crédits",
+    "manage_cookies": "Gérer les cookies"
   }
 }

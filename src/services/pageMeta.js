@@ -88,6 +88,8 @@ const STATIC = {
   '/faq': meta('Domande frequenti su acquisti e vendite', 'Le risposte alle domande più frequenti su acquisti, vendite, aste, spedizioni e Puzzle Arena su CardBrix.'),
   '/help': meta('Assistenza per ordini, annunci e account', "Hai bisogno di aiuto con un ordine, un annuncio o il tuo account? Trova le guide e i modi per contattare l'assistenza CardBrix."),
   '/norme-legali': meta("Norme legali e condizioni d'uso", "Consulta le norme legali e le condizioni d'uso di CardBrix: regole per venditori e acquirenti, aste e concorsi di abilità."),
+  '/privacy': meta('Informativa sulla privacy e dati personali', 'Come CardBrix tratta i tuoi dati personali: quali raccogliamo, perché, con chi li condividiamo e come esercitare i tuoi diritti.'),
+  '/cookie-policy': meta('Cookie Policy: cookie e tecnologie simili', 'Quali cookie usa CardBrix, a cosa servono, quanto durano e come accettarli, rifiutarli o cambiare scelta in qualsiasi momento.'),
   '/ricerca-utente': meta('Cerca un utente o un venditore', 'Cerca un utente o un venditore su CardBrix per vederne il profilo, le valutazioni e gli annunci pubblicati.'),
   '/search-results': meta('Risultati di ricerca', 'Risultati della ricerca su CardBrix tra annunci, aste e catalogo di LEGO, carte collezionabili e Funko.'),
 };

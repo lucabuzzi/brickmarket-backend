@@ -6,6 +6,7 @@ import {
   ShieldCheck, ShoppingCart, Sparkles, Timer, Trophy, Truck, X,
 } from 'lucide-react';
 import { apiFetch, normalizeImageUrl } from '../api';
+import { galleryPhotoLabel } from '../utils/altText';
 import { MOCK_LISTINGS } from '../utils/mockData';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../auth/useAuth';
@@ -229,7 +230,7 @@ function Gallery({ images, title, accent, badge }) {
               key={`${src}-${i}`}
               type="button"
               onClick={() => setIndex(i)}
-              aria-label={`${i + 1} / ${images.length}`}
+              aria-label={galleryPhotoLabel(title, i, images.length, t)}
               aria-current={i === index}
               className={`relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl border-2 bg-[#0d0c12] transition ${
                 i === index ? 'opacity-100' : 'border-white/10 opacity-50 hover:opacity-90'

@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { hasConsent, setConsent, initAnalytics, trackPageview } from '../analytics';
+import { hasConsent, setConsent, initAnalytics, trackPageview, OPEN_COOKIE_SETTINGS_EVENT } from '../analytics';
 
 export default function CookieConsent() {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const reopen = () => setVisible(true);
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, reopen);
+    return () => window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, reopen);
+  }, []);
 
   useEffect(() => {
     const cookieChoiceMade = document.cookie.split('; ').some(c => c.startsWith('bm_cookie_consent='));
@@ -40,7 +46,7 @@ export default function CookieConsent() {
       <div className="max-w-4xl mx-auto flex flex-col gap-3">
         <p className="text-sm text-stone-300 leading-relaxed">
           {t('cookies.banner_text')}{' '}
-          <Link to="/norme-legali" className="text-gold-400 underline">{t('cookies.learn_more')}</Link>
+          <Link to="/cookie-policy" className="text-gold-400 underline">{t('cookies.learn_more')}</Link>
         </p>
         <div className="grid grid-cols-1 sm:flex sm:justify-end gap-2">
           <button

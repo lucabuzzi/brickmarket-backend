@@ -98,6 +98,16 @@ function legal() {
   };
 }
 
+// Policy texts (privacy, cookie_policy) are numbered `${ns}.sN_title` / `${ns}.sN_body` pairs in it.json.
+function policy(ns) {
+  const nums = numbered(`${ns}.s`, '_title');
+  return {
+    h1: t(`${ns}.title`),
+    lead: t(`${ns}.subtitle`),
+    body: nums.map((n) => `<section><h2>${esc(t(`${ns}.s${n}_title`))}</h2>${paragraphs(t(`${ns}.s${n}_body`))}</section>`).join(''),
+  };
+}
+
 function skillZone() {
   const steps = [1, 2, 3].map((n) => `<h3>${esc(t(`landing.arena.step${n}_title`))}</h3><p>${esc(t(`landing.arena.step${n}_desc`))}</p>`).join('');
   const facts = [1, 2, 3].map((n) => t(`landing.pillars.arena.fact${n}`)).filter(Boolean);
@@ -123,6 +133,8 @@ const STATIC = {
   '/faq': faq,
   '/help': help,
   '/norme-legali': legal,
+  '/privacy': () => policy('privacy'),
+  '/cookie-policy': () => policy('cookie_policy'),
   '/skill-zone': skillZone,
   '/crediti': crediti,
 };

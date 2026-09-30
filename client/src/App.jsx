@@ -28,6 +28,7 @@ const Help = lazy(() => import('./pages/Help'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
 const UserSearch = lazy(() => import('./pages/UserSearch'));
 const LegalRules = lazy(() => import('./pages/LegalRules'));
+const PolicyPage = lazy(() => import('./pages/PolicyPage'));
 const PublicProfile = lazy(() => import('./pages/PublicProfile'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const MarketHub = lazy(() => import('./pages/MarketHub'));
@@ -146,6 +147,8 @@ export default function App() {
           <Route path="ricerca-utente" element={<UserSearch />} />
           <Route path="user/:username" element={<PublicProfile />} />
           <Route path="norme-legali" element={<LegalRules />} />
+          <Route path="privacy" element={<PolicyPage ns="privacy" />} />
+          <Route path="cookie-policy" element={<PolicyPage ns="cookie_policy" />} />
           <Route path="search-results" element={<SearchResults />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />

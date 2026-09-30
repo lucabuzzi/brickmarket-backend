@@ -42,6 +42,8 @@ const STATIC_PATHS = [
   '/faq',
   '/help',
   '/norme-legali',
+  '/privacy',
+  '/cookie-policy',
   '/ricerca-utente',
 ];
 

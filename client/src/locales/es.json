@@ -1741,5 +1741,25 @@
     "text": "La página que buscas no existe o se ha movido. Prueba desde la página de inicio o explora los anuncios.",
     "home": "Volver al inicio",
     "listings": "Explorar anuncios"
+  },
+  "a11y": {
+    "cart": "Carrito",
+    "cart_count": "Carrito, {{count}} artículos",
+    "open_menu": "Abrir menú",
+    "close_menu": "Cerrar menú",
+    "close": "Cerrar",
+    "gallery_photo": "{{title}}, foto {{index}} de {{total}}",
+    "search": "Buscar"
+  },
+  "footer": {
+    "nav_label": "Información y avisos legales",
+    "privacy": "Política de privacidad",
+    "cookie_policy": "Política de cookies",
+    "legal_rules": "Normas legales",
+    "faq": "Preguntas frecuentes",
+    "help": "Ayuda",
+    "how_it_works": "Cómo funciona",
+    "credits": "Créditos",
+    "manage_cookies": "Gestionar cookies"
   }
 }

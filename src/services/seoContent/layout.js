@@ -23,6 +23,8 @@ function footerNav() {
     ['/faq', 'FAQ'],
     ['/help', 'Assistenza'],
     ['/norme-legali', 'Norme legali'],
+    ['/privacy', 'Privacy'],
+    ['/cookie-policy', 'Cookie Policy'],
     ['/crediti', 'Crediti'],
   ];
 }

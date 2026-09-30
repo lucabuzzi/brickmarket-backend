@@ -1741,5 +1741,25 @@
     "text": "The page you are looking for does not exist or has moved. Try the home page or browse the listings.",
     "home": "Back to home",
     "listings": "Browse listings"
+  },
+  "a11y": {
+    "cart": "Cart",
+    "cart_count": "Cart, {{count}} items",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu",
+    "close": "Close",
+    "gallery_photo": "{{title}}, photo {{index}} of {{total}}",
+    "search": "Search"
+  },
+  "footer": {
+    "nav_label": "Information and legal notices",
+    "privacy": "Privacy Policy",
+    "cookie_policy": "Cookie Policy",
+    "legal_rules": "Legal rules",
+    "faq": "FAQ",
+    "help": "Help",
+    "how_it_works": "How it works",
+    "credits": "Credits",
+    "manage_cookies": "Manage cookies"
   }
 }

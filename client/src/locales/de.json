@@ -1741,5 +1741,25 @@
     "text": "Die gesuchte Seite existiert nicht oder wurde verschoben. Versuche es über die Startseite oder stöbere in den Anzeigen.",
     "home": "Zurück zur Startseite",
     "listings": "Anzeigen ansehen"
+  },
+  "a11y": {
+    "cart": "Warenkorb",
+    "cart_count": "Warenkorb, {{count}} Artikel",
+    "open_menu": "Menü öffnen",
+    "close_menu": "Menü schließen",
+    "close": "Schließen",
+    "gallery_photo": "{{title}}, Foto {{index}} von {{total}}",
+    "search": "Suchen"
+  },
+  "footer": {
+    "nav_label": "Informationen und rechtliche Hinweise",
+    "privacy": "Datenschutzerklärung",
+    "cookie_policy": "Cookie-Richtlinie",
+    "legal_rules": "Rechtliche Hinweise",
+    "faq": "FAQ",
+    "help": "Hilfe",
+    "how_it_works": "So funktioniert's",
+    "credits": "Credits",
+    "manage_cookies": "Cookies verwalten"
   }
 }
