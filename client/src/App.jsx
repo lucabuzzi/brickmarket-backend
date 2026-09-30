@@ -149,6 +149,7 @@ export default function App() {
           <Route path="norme-legali" element={<LegalRules />} />
           <Route path="privacy" element={<PolicyPage ns="privacy" />} />
           <Route path="cookie-policy" element={<PolicyPage ns="cookie_policy" />} />
+          <Route path="accessibilita" element={<PolicyPage ns="accessibility" />} />
           <Route path="search-results" element={<SearchResults />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />

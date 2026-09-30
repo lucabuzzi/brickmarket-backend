@@ -90,6 +90,7 @@ const STATIC = {
   '/norme-legali': meta("Norme legali e condizioni d'uso", "Consulta le norme legali e le condizioni d'uso di CardBrix: regole per venditori e acquirenti, aste e concorsi di abilità."),
   '/privacy': meta('Informativa sulla privacy e dati personali', 'Come CardBrix tratta i tuoi dati personali: quali raccogliamo, perché, con chi li condividiamo e come esercitare i tuoi diritti.'),
   '/cookie-policy': meta('Cookie Policy: cookie e tecnologie simili', 'Quali cookie usa CardBrix, a cosa servono, quanto durano e come accettarli, rifiutarli o cambiare scelta in qualsiasi momento.'),
+  '/accessibilita': meta('Dichiarazione di accessibilità del sito', "Come CardBrix lavora per l'accessibilità: misure adottate, limiti noti e come segnalare una barriera o chiedere un contenuto accessibile."),
   '/ricerca-utente': meta('Cerca un utente o un venditore', 'Cerca un utente o un venditore su CardBrix per vederne il profilo, le valutazioni e gli annunci pubblicati.'),
   '/search-results': meta('Risultati di ricerca', 'Risultati della ricerca su CardBrix tra annunci, aste e catalogo di LEGO, carte collezionabili e Funko.'),
 };

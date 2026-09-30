@@ -47,6 +47,7 @@ const STATIC_PATHS = [
   '/norme-legali',
   '/ricerca-utente',
   ...(legalPages.published ? ['/privacy', '/cookie-policy'] : []),
+  ...(legalPages.accessibilityPublished ? ['/accessibilita'] : []),
 ];
 
 function xmlEscape(str) {

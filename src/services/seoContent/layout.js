@@ -25,6 +25,7 @@ function footerNav() {
     ['/help', 'Assistenza'],
     ['/norme-legali', 'Norme legali'],
     ...(legalPages.published ? [['/privacy', 'Privacy'], ['/cookie-policy', 'Cookie Policy']] : []),
+    ...(legalPages.accessibilityPublished ? [['/accessibilita', 'Accessibilità']] : []),
     ['/crediti', 'Crediti'],
   ];
 }

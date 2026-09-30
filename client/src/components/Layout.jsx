@@ -454,6 +454,7 @@ export default function Layout() {
               ['/crediti', 'footer.credits'],
               ['/norme-legali', 'footer.legal_rules'],
               ...(legalPages.published ? [['/privacy', 'footer.privacy'], ['/cookie-policy', 'footer.cookie_policy']] : []),
+              ...(legalPages.accessibilityPublished ? [['/accessibilita', 'footer.accessibility']] : []),
             ].map(([to, key]) => (
               <li key={to}>
                 <Link to={to} className="text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline">{t(key)}</Link>

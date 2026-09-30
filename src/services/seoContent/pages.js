@@ -138,6 +138,7 @@ const STATIC = {
   '/norme-legali': legal,
   '/privacy': () => policy('privacy'),
   '/cookie-policy': () => policy('cookie_policy'),
+  '/accessibilita': () => policy('accessibility'),
   '/skill-zone': skillZone,
   '/crediti': crediti,
 };

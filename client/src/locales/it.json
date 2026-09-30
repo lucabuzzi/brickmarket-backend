@@ -1778,7 +1778,8 @@
     "manage_cookies": "Gestisci cookie",
     "social_label": "Profili social di CardBrix",
     "follow_facebook": "CardBrix su Facebook",
-    "follow_instagram": "CardBrix su Instagram"
+    "follow_instagram": "CardBrix su Instagram",
+    "accessibility": "Accessibilità"
   },
   "privacy": {
     "title": "Informativa sulla privacy",
@@ -1825,5 +1826,23 @@
     "s5_body": "• Da CardBrix: usa il link “Gestisci cookie” in fondo alla pagina.\n• Dal browser: impostazioni del browser, sezione privacy, cookie e dati dei siti (Chrome, Firefox, Safari, Edge). Cancellando bm_cookie_consent il banner riappare.",
     "s6_title": "6. Titolare e contatti",
     "s6_body": "[DA COMPILARE: come nell’Informativa sulla privacy]. Per esercitare i tuoi diritti scrivi a [EMAIL PRIVACY]."
+  },
+  "accessibility": {
+    "title": "Dichiarazione di accessibilità",
+    "subtitle": "Ultimo aggiornamento: [DATA]. Come CardBrix lavora perché il sito sia utilizzabile da tutte le persone, comprese quelle che usano tecnologie assistive.",
+    "s1_title": "1. Il nostro impegno",
+    "s1_body": "CardBrix (https://cardbrix.com) vuole essere un sito utilizzabile da tutti, anche con screen reader, tastiera o ingrandimento del testo.\nCome riferimento usiamo le Linee guida per l’accessibilità dei contenuti web (WCAG) 2.1, livello AA, e la normativa europea sull’accessibilità di prodotti e servizi (European Accessibility Act).",
+    "s2_title": "2. Stato di conformità",
+    "s2_body": "Non abbiamo ancora svolto una valutazione di conformità completa né una verifica con persone che usano tecnologie assistive.\nIl sito va quindi considerato parzialmente conforme alle WCAG 2.1 livello AA: applichiamo le misure elencate qui sotto e stiamo correggendo i limiti noti. [DA VERIFICARE: aggiornare dopo un audit completo]",
+    "s3_title": "3. Cosa abbiamo già fatto",
+    "s3_body": "• Le immagini che portano informazione, come le foto degli annunci, hanno un testo alternativo; le immagini solo decorative sono ignorate dagli screen reader.\n• Le icone e i pulsanti senza testo (carrello, menu, ricerca, profili social) hanno un nome leggibile dagli screen reader.\n• In cima a ogni pagina c’è il collegamento “Vai al contenuto principale” per saltare la navigazione usando la tastiera.\n• La lingua di ogni pagina è dichiarata e il sito si adatta agli schermi dei telefoni.\n• Un controllo automatico nel nostro processo di sviluppo segnala le immagini senza testo alternativo.",
+    "s4_title": "4. Limiti noti",
+    "s4_body": "• Alcuni elementi interattivi, come certe finestre, le valutazioni a stelle e alcuni elenchi a comparsa, non sono ancora utilizzabili in modo completo con la sola tastiera.\n• Annunci, foto e descrizioni sono scritti dagli utenti: i testi alternativi e la lingua possono variare da un annuncio all’altro.\n• Non abbiamo ancora verificato in modo sistematico i contrasti dei colori né il comportamento con tutti gli screen reader.\n• I testi legali sono disponibili solo in italiano.",
+    "s5_title": "5. Segnalazioni e contatti",
+    "s5_body": "Se trovi una barriera o hai bisogno di un contenuto in un formato accessibile, scrivi a [EMAIL ACCESSIBILITÀ] indicando la pagina e il problema.\nRispondiamo entro [DA COMPILARE] giorni lavorativi.",
+    "s6_title": "6. Se non sei soddisfatto della risposta",
+    "s6_body": "Puoi rivolgerti all’autorità competente per la vigilanza sull’accessibilità dei servizi digitali. In Italia è l’Agenzia per l’Italia Digitale (AgID). [DA VERIFICARE: conferma con un legale l’autorità e la procedura applicabili a CardBrix]",
+    "s7_title": "7. Come abbiamo valutato il sito",
+    "s7_body": "Questa dichiarazione si basa su un’autovalutazione interna, svolta con controlli automatici e prove manuali sulle pagine principali, il [DATA]."
   }
 }

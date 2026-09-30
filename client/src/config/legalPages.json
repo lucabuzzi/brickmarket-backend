@@ -1,4 +1,5 @@
 {
-  "_comment": "Set published to true only after the [DA COMPILARE]/[DA VERIFICARE] placeholders in locales/it.json (privacy, cookie_policy) are filled and the texts are legally reviewed. While false, /privacy and /cookie-policy exist but are not linked (footer, cookie banner, server-rendered footer) nor listed in the sitemap.",
-  "published": false
+  "_comment": "Flags that keep unfinished pages out of the footer, cookie banner, server-rendered footer and sitemap. Set `published` to true only after the [DA COMPILARE]/[DA VERIFICARE] placeholders of privacy and cookie_policy in locales/it.json are filled and legally reviewed; set `accessibilityPublished` to true only after the same for accessibility. While false the routes exist but are not linked anywhere.",
+  "published": false,
+  "accessibilityPublished": false
 }

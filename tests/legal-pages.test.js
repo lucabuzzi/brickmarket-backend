@@ -18,7 +18,7 @@ const locale = (lang) => JSON.parse(fs.readFileSync(path.join(ROOT, 'client/src/
 const strip = (html) => html.replace(/<[^>]+>/g, ' ');
 
 describe('policy pages in the server-rendered shell', () => {
-  test.each([['/privacy', 13], ['/cookie-policy', 6]])('%s renders every section of the locale text', (p, sections) => {
+  test.each([['/privacy', 13], ['/cookie-policy', 6], ['/accessibilita', 7]])('%s renders every section of the locale text', (p, sections) => {
     const d = pageFor(p);
     expect(d.h1).toBeTruthy();
     expect(d.lead).toBeTruthy();
@@ -26,18 +26,23 @@ describe('policy pages in the server-rendered shell', () => {
   });
 
   test('routes are known and have their own meta', () => {
-    for (const p of ['/privacy', '/cookie-policy']) {
+    for (const p of ['/privacy', '/cookie-policy', '/accessibilita']) {
       expect(isKnownRoute(p)).toBe(true);
       expect(getRouteMeta(p)).toBeTruthy();
     }
   });
 
-  test('sitemap and server footer list the pages only when legalPages.published is true', () => {
-    const { published } = legalPages;
-    for (const p of ['/privacy', '/cookie-policy']) {
-      expect(STATIC_PATHS.includes(p)).toBe(published);
-      expect(footerNav().map(([href]) => href).includes(p)).toBe(published);
+  test('sitemap and server footer list each page only when its flag is true', () => {
+    const flags = { '/privacy': legalPages.published, '/cookie-policy': legalPages.published, '/accessibilita': legalPages.accessibilityPublished };
+    for (const [p, published] of Object.entries(flags)) {
+      expect([p, STATIC_PATHS.includes(p)]).toEqual([p, published]);
+      expect([p, footerNav().map(([href]) => href).includes(p)]).toEqual([p, published]);
     }
+  });
+
+  test('the client footer follows the accessibility flag', () => {
+    const layout = fs.readFileSync(path.join(ROOT, 'client/src/components/Layout.jsx'), 'utf8');
+    expect(layout).toContain("legalPages.accessibilityPublished ? [['/accessibilita', 'footer.accessibility']]");
   });
 
   test('the client footer and cookie banner follow the same flag', () => {
@@ -51,6 +56,22 @@ describe('policy pages in the server-rendered shell', () => {
     const it = locale('it');
     const text = JSON.stringify([it.privacy, it.cookie_policy]);
     if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL PRIVACY\]/.test(text)) expect(legalPages.published).toBe(false);
+    if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL ACCESSIBILIT/.test(JSON.stringify(it.accessibility))) expect(legalPages.accessibilityPublished).toBe(false);
+  });
+
+  test('accessibility statement only claims what the code really does (drift guard)', () => {
+    const it = locale('it');
+    const body = JSON.stringify(it.accessibility);
+    // skip link text quoted in the statement is the real one, and the skip link exists
+    expect(body).toContain(it.a11y.skip_to_content);
+    expect(fs.readFileSync(path.join(ROOT, 'client/src/components/Layout.jsx'), 'utf8')).toContain('href="#contenuto-principale"');
+    // "automatic check for images without alt text" = the jsx-a11y alt rules are errors
+    const eslintConfig = fs.readFileSync(path.join(ROOT, 'client/eslint.config.js'), 'utf8');
+    expect(eslintConfig).toContain("'jsx-a11y/alt-text': 'error'");
+    // known limits stay in sync with the backlog file: if it is emptied, the statement must be revisited
+    expect(fs.existsSync(path.join(ROOT, 'docs/a11y-backlog.md'))).toBe(true);
+    // never claims full conformity
+    expect(body).not.toMatch(/pienamente conforme|totalmente conforme|conforme al 100/i);
   });
 
   test('credit rule holds in the policy text: credits are never described as purchasable or convertible', () => {
@@ -77,7 +98,7 @@ describe('policy pages in the server-rendered shell', () => {
 
 describe('accessible names and footer strings exist in every locale', () => {
   const A11Y = ['cart', 'cart_count', 'open_menu', 'close_menu', 'close', 'gallery_photo', 'search', 'skip_to_content'];
-  const FOOTER = ['social_label', 'follow_facebook', 'follow_instagram', 'nav_label', 'privacy', 'cookie_policy', 'legal_rules', 'faq', 'help', 'how_it_works', 'credits', 'manage_cookies'];
+  const FOOTER = ['accessibility', 'social_label', 'follow_facebook', 'follow_instagram', 'nav_label', 'privacy', 'cookie_policy', 'legal_rules', 'faq', 'help', 'how_it_works', 'credits', 'manage_cookies'];
 
   test.each(LOCALES)('%s has all a11y.* and footer.* keys', (lang) => {
     const data = locale(lang);

@@ -6,7 +6,7 @@
 // (a client route missing here, or a route here that the client no longer has).
 const KNOWN_ROUTES = [
   '', // the home
-  'account', 'archive', 'cart', 'come-funziona', 'create-auction', 'crediti', 'crediti/acquista', 'crediti/converti',
+  'account', 'accessibilita', 'archive', 'cart', 'come-funziona', 'create-auction', 'crediti', 'crediti/acquista', 'crediti/converti',
   'cookie-policy', 'faq', 'forgot-password', 'help', 'login', 'my-listings', 'my-shipments', 'norme-legali', 'privacy', 'profile', 'register',
   'reset-password', 'ricerca-utente', 'search-results', 'sell', 'seller/onboarding-complete', 'seller/onboarding-retry',
   'skill-zone', 'verifica-email',
