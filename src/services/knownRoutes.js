@@ -29,9 +29,19 @@ const KNOWN_ROUTES = [
 const toRegex = (route) => new RegExp(`^${route.split('/').map((seg) => (seg.startsWith(':') ? '[^/]+' : seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('/')}$`, 'i');
 const MATCHERS = [...new Set(KNOWN_ROUTES)].map(toRegex);
 
+// Pages that exist in the client but whose texts are not final yet (see client/src/config/legalPages.json).
+// Until their flag is on they answer like any invented URL: 404 + noindex. They stay in KNOWN_ROUTES so the
+// in-sync test with App.jsx keeps working.
+const legalPages = require('../../client/src/config/legalPages.json');
+const UNPUBLISHED = new Set([
+  ...(legalPages.published ? [] : ['privacy', 'cookie-policy']),
+  ...(legalPages.accessibilityPublished ? [] : ['accessibilita']),
+]);
+
 function isKnownRoute(pathname) {
   const path = String(pathname || '/').replace(/^\/+/, '').replace(/\/+$/, '');
+  if (UNPUBLISHED.has(path.toLowerCase())) return false;
   return MATCHERS.some((re) => re.test(path));
 }
 
-module.exports = { KNOWN_ROUTES, isKnownRoute };
+module.exports = { KNOWN_ROUTES, isKnownRoute, UNPUBLISHED };

@@ -8,6 +8,7 @@ const { pageFor } = require('../src/services/seoContent/pages');
 const { footerNav } = require('../src/services/seoContent/layout');
 const { getRouteMeta } = require('../src/services/pageMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');
+const { renderPage } = require('../src/services/seoMeta');
 const { STATIC_PATHS } = require('../src/routes/sitemap');
 
 const legalPages = require('../client/src/config/legalPages.json');
@@ -25,11 +26,30 @@ describe('policy pages in the server-rendered shell', () => {
     expect((d.body.match(/<h2>/g) || []).length).toBe(sections);
   });
 
-  test('routes are known and have their own meta', () => {
-    for (const p of ['/privacy', '/cookie-policy', '/accessibilita']) {
-      expect(isKnownRoute(p)).toBe(true);
+  const FLAGS = { '/privacy': legalPages.published, '/cookie-policy': legalPages.published, '/accessibilita': legalPages.accessibilityPublished };
+
+  test('every policy route has its own meta, and is a known route only once its flag is on', () => {
+    for (const [p, published] of Object.entries(FLAGS)) {
       expect(getRouteMeta(p)).toBeTruthy();
+      expect([p, isKnownRoute(p)]).toEqual([p, published]);
+      expect([p, isKnownRoute(p.toUpperCase()), isKnownRoute(`${p}/`)]).toEqual([p, published, published]); // case and trailing slash cannot bypass it
     }
+  });
+
+  test('an unpublished page answers 404 + noindex on the server, like any invented URL; a published one answers 200', async () => {
+    const template = '<!doctype html><html lang="it"><head><title>x</title><link rel="canonical" href="https://cardbrix.com/"></head><body><div id="root"></div></body></html>';
+    for (const [p, published] of Object.entries(FLAGS)) {
+      const { status, html } = await renderPage(p, template);
+      expect([p, status]).toEqual([p, published ? 200 : 404]);
+      expect([p, /<meta name="robots" content="noindex">/.test(html)]).toEqual([p, !published]);
+      if (!published) expect(html).not.toMatch(/\[DA COMPILARE|\[DATA\]|\[EMAIL/); // the placeholder text never reaches the HTML
+    }
+  });
+
+  test('the client route also shows "not found" while the flag is off', () => {
+    const page = fs.readFileSync(path.join(ROOT, 'client/src/pages/PolicyPage.jsx'), 'utf8');
+    expect(page).toContain('if (!published) return <NotFound />');
+    expect(page).toContain("accessibility: 'accessibilityPublished'");
   });
 
   test('sitemap and server footer list each page only when its flag is true', () => {

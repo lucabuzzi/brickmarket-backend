@@ -8,7 +8,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const { query } = require('../src/db');
-const { KNOWN_ROUTES, isKnownRoute } = require('../src/services/knownRoutes');
+const { KNOWN_ROUTES, isKnownRoute, UNPUBLISHED } = require('../src/services/knownRoutes');
 const { renderPage, renderIndexHtmlForRequest } = require('../src/services/seoMeta');
 const { createSpaFallback } = require('../src/routes/spaFallback');
 const { STATIC_PATHS } = require('../src/routes/sitemap');
@@ -26,7 +26,8 @@ describe('knownRoutes stays in sync with client/src/App.jsx', () => {
   });
 
   test('every route the client declares is known to the server (else a real page would 404)', () => {
-    const missing = clientPaths.filter((p) => !isKnownRoute(`/${p.replace(/:[^/]+/g, 'x')}`));
+    // pages whose flag is still off (legalPages.json) stay listed but answer 404 on purpose, so check the list itself for them
+    const missing = clientPaths.filter((p) => !(UNPUBLISHED.has(p) ? KNOWN_ROUTES.includes(p) : isKnownRoute(`/${p.replace(/:[^/]+/g, 'x')}`)));
     expect(missing).toEqual([]);
   });
 

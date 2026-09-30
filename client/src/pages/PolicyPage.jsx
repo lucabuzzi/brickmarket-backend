@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import legalPages from '../config/legalPages.json';
+import NotFound from './NotFound';
+
+// Which flag in config/legalPages.json publishes each policy; while it is off the page answers "not found".
+const PUBLISHED_FLAG = { privacy: 'published', cookie_policy: 'published', accessibility: 'accessibilityPublished' };
 
 // Renders a policy whose text lives in the locale files as `${ns}.title`, `${ns}.subtitle` and numbered
 // `${ns}.sN_title` / `${ns}.sN_body` pairs (privacy, cookie_policy). Lines starting with "• " become a list.
 export default function PolicyPage({ ns }) {
   const { t, i18n } = useTranslation();
+  const published = Boolean(legalPages[PUBLISHED_FLAG[ns]]);
+
+  if (!published) return <NotFound />;
 
   const sections = [];
   for (let n = 1; i18n.exists(`${ns}.s${n}_title`); n += 1) sections.push(n);
