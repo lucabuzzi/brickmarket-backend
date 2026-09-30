@@ -1775,7 +1775,10 @@
     "help": "Assistenza",
     "how_it_works": "Come funziona",
     "credits": "Crediti",
-    "manage_cookies": "Gestisci cookie"
+    "manage_cookies": "Gestisci cookie",
+    "social_label": "Profili social di CardBrix",
+    "follow_facebook": "CardBrix su Facebook",
+    "follow_instagram": "CardBrix su Instagram"
   },
   "privacy": {
     "title": "Informativa sulla privacy",

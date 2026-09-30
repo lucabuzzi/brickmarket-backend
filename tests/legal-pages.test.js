@@ -77,7 +77,7 @@ describe('policy pages in the server-rendered shell', () => {
 
 describe('accessible names and footer strings exist in every locale', () => {
   const A11Y = ['cart', 'cart_count', 'open_menu', 'close_menu', 'close', 'gallery_photo', 'search', 'skip_to_content'];
-  const FOOTER = ['nav_label', 'privacy', 'cookie_policy', 'legal_rules', 'faq', 'help', 'how_it_works', 'credits', 'manage_cookies'];
+  const FOOTER = ['social_label', 'follow_facebook', 'follow_instagram', 'nav_label', 'privacy', 'cookie_policy', 'legal_rules', 'faq', 'help', 'how_it_works', 'credits', 'manage_cookies'];
 
   test.each(LOCALES)('%s has all a11y.* and footer.* keys', (lang) => {
     const data = locale(lang);
@@ -103,5 +103,33 @@ describe('skip link', () => {
     expect(layout).toMatch(new RegExp(`<main id="${target}" tabIndex=\{-1\}`));
     expect(layout.indexOf('href="#contenuto-principale"')).toBeLessThan(layout.indexOf('<SiteAurora />'));
     expect(layout).toContain("t('a11y.skip_to_content')");
+  });
+});
+
+describe('official social profiles', () => {
+  const profiles = require('../client/src/config/socialProfiles.json');
+  const html = fs.readFileSync(path.join(ROOT, 'client/index.html'), 'utf8');
+  const layout = fs.readFileSync(path.join(ROOT, 'client/src/components/Layout.jsx'), 'utf8');
+  const urls = [profiles.facebook, profiles.instagram];
+
+  test('are canonical https URLs without tracking or locale parameters', () => {
+    for (const u of urls) {
+      expect(u).toMatch(/^https:\/\/(www\.facebook\.com|www\.instagram\.com)\//);
+      expect(u).not.toMatch(/locale=|utm_|fbclid|igsh/);
+    }
+  });
+
+  test('the Organization sameAs in index.html lists exactly the footer profiles', () => {
+    const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+    const org = ld.flatMap((b) => b['@graph'] || [b]).find((b) => b['@type'] === 'Organization');
+    expect(org.sameAs.slice().sort()).toEqual(urls.slice().sort());
+  });
+
+  test('the footer links open safely and have an accessible name', () => {
+    expect(layout).toContain("import socialProfiles from '../config/socialProfiles.json'");
+    expect(layout).toContain('rel="noopener noreferrer"');
+    expect(layout).toContain('aria-label={label}');
+    expect(layout).toContain("t('footer.follow_facebook')");
+    expect(layout).toContain("t('footer.follow_instagram')");
   });
 });

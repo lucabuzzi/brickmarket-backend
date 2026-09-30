@@ -15,6 +15,8 @@ import BrandIntro from './brand/BrandIntro';
 import { shouldPlayIntro } from './brand/introGate';
 import { hasConsent, trackPageview, OPEN_COOKIE_SETTINGS_EVENT } from '../analytics';
 import legalPages from '../config/legalPages.json';
+import socialProfiles from '../config/socialProfiles.json';
+import { FacebookIcon, InstagramIcon } from './SocialIcons';
 
 const LANGUAGES = [
   { code: 'it', name: 'ITALIANO', flag: 'fi fi-it' },
@@ -23,6 +25,20 @@ const LANGUAGES = [
   { code: 'es', name: 'ESPAÑOL', flag: 'fi fi-es' },
   { code: 'fr', name: 'FRANÇAIS', flag: 'fi fi-fr' },
 ];
+
+function SocialLink({ href, label, children }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-stone-400 transition-colors hover:border-white/30 hover:text-white"
+    >
+      {children}
+    </a>
+  );
+}
 
 export default function Layout() {
   const { user, logout, wallet } = useAuth();
@@ -451,6 +467,16 @@ export default function Layout() {
               >
                 {t('footer.manage_cookies')}
               </button>
+            </li>
+          </ul>
+        </nav>
+        <nav aria-label={t('footer.social_label')} className="mb-3">
+          <ul className="m-0 flex list-none items-center justify-center gap-2 p-0">
+            <li>
+              <SocialLink href={socialProfiles.facebook} label={t('footer.follow_facebook')}><FacebookIcon /></SocialLink>
+            </li>
+            <li>
+              <SocialLink href={socialProfiles.instagram} label={t('footer.follow_instagram')}><InstagramIcon /></SocialLink>
             </li>
           </ul>
         </nav>
