@@ -23,6 +23,7 @@ function PasswordField({ label, value, onChange, disabled, autoFocus }) {
           required
           disabled={disabled}
           autoComplete="new-password"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- opt-in via the autoFocus prop
           autoFocus={autoFocus}
           className="h-full min-w-0 flex-1 bg-transparent text-base text-white outline-none disabled:opacity-50"
         />
@@ -161,7 +162,7 @@ export default function ResetPassword() {
         )}
 
         <div>
-          <PasswordField label={t('auth.new_password')} value={password} onChange={(e) => setPassword(e.target.value)} disabled={busy} autoFocus />
+          <PasswordField label={t('auth.new_password')} value={password} onChange={(e) => setPassword(e.target.value)} disabled={busy} autoFocus /* eslint-disable-line jsx-a11y/no-autofocus -- first field of a single-purpose form */ />
           {strength && (
             <div className="mt-2.5" aria-live="polite">
               <div className="flex gap-1">

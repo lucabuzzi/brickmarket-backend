@@ -121,6 +121,18 @@ export default function Layout() {
 
   return (
     <div className="app-shell" style={{ overflowX: 'clip', position: 'relative' }}>
+      <a
+        href="#contenuto-principale"
+        onClick={(e) => {
+          e.preventDefault();
+          const main = document.getElementById('contenuto-principale');
+          main?.focus();
+          main?.scrollIntoView();
+        }}
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-black"
+      >
+        {t('a11y.skip_to_content')}
+      </a>
       <SiteAurora />
       {introActive && <BrandIntro onDone={() => setIntroActive(false)} />}
       {isMenuOpen && (
@@ -214,10 +226,10 @@ export default function Layout() {
            </div>
 
            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>news</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>spoilers</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>insight</span></a>
-             <a href="#" onClick={() => setIsMenuOpen(false)} style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d946ef' }}>sponsorship</span></a>
+             <span style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>news</span></span>
+             <span style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>spoilers</span></span>
+             <span style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d4af37' }}>insight</span></span>
+             <span style={{ color: '#a89a7f', fontSize: '0.8rem', textDecoration: 'none', fontFamily: 'monospace', fontWeight: '600' }}>@cardbrix<span style={{ color: '#d946ef' }}>sponsorship</span></span>
            </div>
 
          </div>
@@ -411,7 +423,7 @@ export default function Layout() {
       <CookieConsent />
       <GeoLanguageSuggestion />
 
-      <main className="main pt-16">
+      <main id="contenuto-principale" tabIndex={-1} className="main pt-16 focus:outline-none">
         <EmailVerificationBanner />
         <Outlet />
       </main>

@@ -76,7 +76,7 @@ describe('policy pages in the server-rendered shell', () => {
 });
 
 describe('accessible names and footer strings exist in every locale', () => {
-  const A11Y = ['cart', 'cart_count', 'open_menu', 'close_menu', 'close', 'gallery_photo', 'search'];
+  const A11Y = ['cart', 'cart_count', 'open_menu', 'close_menu', 'close', 'gallery_photo', 'search', 'skip_to_content'];
   const FOOTER = ['nav_label', 'privacy', 'cookie_policy', 'legal_rules', 'faq', 'help', 'how_it_works', 'credits', 'manage_cookies'];
 
   test.each(LOCALES)('%s has all a11y.* and footer.* keys', (lang) => {
@@ -91,5 +91,17 @@ describe('accessible names and footer strings exist in every locale', () => {
       expect(a11y.cart_count).toContain('{{count}}');
       for (const v of ['title', 'index', 'total']) expect(a11y.gallery_photo).toContain(`{{${v}}}`);
     }
+  });
+});
+
+describe('skip link', () => {
+  const layout = fs.readFileSync(path.join(ROOT, 'client/src/components/Layout.jsx'), 'utf8');
+
+  test('the first link of the page jumps to a focusable <main> that has the same id', () => {
+    const target = layout.match(/href="#([^"]+)"/)[1];
+    expect(target).toBe('contenuto-principale');
+    expect(layout).toMatch(new RegExp(`<main id="${target}" tabIndex=\{-1\}`));
+    expect(layout.indexOf('href="#contenuto-principale"')).toBeLessThan(layout.indexOf('<SiteAurora />'));
+    expect(layout).toContain("t('a11y.skip_to_content')");
   });
 });

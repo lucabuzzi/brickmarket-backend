@@ -114,6 +114,7 @@ export default function ForgotPassword() {
                   placeholder={t('auth.email_placeholder')}
                   autoComplete="email"
                   inputMode="email"
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- single-field page: the field is the whole task
                   autoFocus
                   className="h-full min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/30"
                 />

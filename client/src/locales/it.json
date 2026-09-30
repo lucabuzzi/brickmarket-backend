@@ -1749,7 +1749,8 @@
     "close_menu": "Chiudi il menu",
     "close": "Chiudi",
     "gallery_photo": "{{title}}, foto {{index}} di {{total}}",
-    "search": "Cerca"
+    "search": "Cerca",
+    "skip_to_content": "Vai al contenuto principale"
   },
   "footer": {
     "nav_label": "Informazioni e note legali",

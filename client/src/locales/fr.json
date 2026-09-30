@@ -1757,7 +1757,8 @@
     "close_menu": "Fermer le menu",
     "close": "Fermer",
     "gallery_photo": "{{title}}, photo {{index}} sur {{total}}",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "skip_to_content": "Aller au contenu principal"
   },
   "footer": {
     "nav_label": "Informations et mentions légales",
