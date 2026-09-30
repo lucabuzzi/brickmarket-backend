@@ -47,14 +47,17 @@ export default function CategoryPage() {
               to={item.slug ? `/category/${item.slug}` : `/search-results?q=${encodeURIComponent(item.name)}`}
               className="flex flex-col items-center gap-2 min-w-[60px] flex-shrink-0 group no-underline"
             >
-              <div className={`w-8 h-8 rounded-full p-0.5 border-2 group-active:scale-95 transition-transform shrink-0 ${isActive ? 'border-gold-400' : 'border-[#d4af37]'}`}>
+              {/* Was 'border-gold-400' vs 'border-[#d4af37]' — the same color either way, so
+                  active/inactive never actually differed. Annunci-scoped browse UI, so the
+                  active state now uses the listings pillar instead of gold. */}
+              <div className={`w-8 h-8 rounded-full p-0.5 border-2 group-active:scale-95 transition-transform shrink-0 ${isActive ? 'border-pillar-listings' : 'border-white/15'}`}>
                 <img 
                   src={item.img} 
                   alt={item.name} 
                   className="w-full h-full rounded-full object-cover transition-all" 
                 />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-gold-400' : 'text-stone-300'}`}>{item.name}</span>
+              <span className={`text-[9px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-pillar-listings' : 'text-stone-300'}`}>{item.name}</span>
             </Link>
           );
         })}

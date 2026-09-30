@@ -218,7 +218,7 @@ export default function MyListings() {
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', color: '#d4af37' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', color: '#c6ff3d' }}>
                     {formatPrice(item.price)}
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
@@ -257,7 +257,7 @@ export default function MyListings() {
                         to={`/sell?edit=${item.id}`}
                         className="btn-icon"
                         title={t('my_listings.action_edit')}
-                        style={{ color: '#d4af37' }}
+                        style={{ color: '#c6ff3d' }}
                       >
                         <Pencil size={18} />
                       </Link>

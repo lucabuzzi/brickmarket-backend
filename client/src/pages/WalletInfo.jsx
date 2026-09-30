@@ -18,7 +18,7 @@ export default function WalletInfo() {
     deposit: { label: t('wallet.tx_deposit'), color: 'text-emerald-400' },
     contest_entry: { label: t('wallet.tx_contest_entry'), color: 'text-pink-400' },
     contest_refund: { label: t('wallet.tx_contest_refund'), color: 'text-emerald-400' },
-    shop_purchase: { label: t('wallet.tx_shop_purchase'), color: 'text-gold-400' },
+    shop_purchase: { label: t('wallet.tx_shop_purchase'), color: 'text-pillar-arena' },
     payout: { label: t('wallet.tx_payout'), color: 'text-stone-400' },
     signup_bonus: { label: t('wallet.tx_signup_bonus'), color: 'text-emerald-400' },
     referral_bonus: { label: t('wallet.tx_referral_bonus'), color: 'text-emerald-400' },
@@ -71,11 +71,11 @@ export default function WalletInfo() {
     <div className="page max-w-[1100px] mx-auto px-4 py-12 animate-fadeIn">
       {/* HERO */}
       <div className="bento-card p-8 md:p-12 relative overflow-hidden mb-10 border border-white/5 bg-[#14120b]/30 rounded-3xl text-center">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-pillar-arena/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-gold-400 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-pillar-arena/30 bg-pillar-arena/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-pillar-arena mb-6">
             <Coins className="h-3.5 w-3.5" /> {t('wallet.badge')}
           </div>
 
@@ -89,14 +89,14 @@ export default function WalletInfo() {
           {user ? (
             <div className="inline-flex flex-col items-center gap-1 bg-black/30 border border-white/10 rounded-2xl px-8 py-5 mb-8">
               <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{t('wallet.your_balance')}</span>
-              <span className="text-4xl font-black text-gold-400 text-glow-cyan font-mono">
+              <span className="text-4xl font-black text-pillar-arena text-glow-cyan font-mono">
                 <AnimateCounter value={wallet.balanceCredits || 0} suffix=" CR" />
               </span>
             </div>
           ) : (
             <div className="inline-flex flex-col items-center gap-2 bg-black/30 border border-white/10 rounded-2xl px-8 py-5 mb-8">
               <span className="text-sm text-stone-400">{t('wallet.login_prompt')}</span>
-              <Link to="/login" className="text-gold-400 font-bold text-xs uppercase tracking-wider hover:underline">
+              <Link to="/login" className="text-pillar-arena font-bold text-xs uppercase tracking-wider hover:underline">
                 {t('wallet.login_cta')}
               </Link>
             </div>
@@ -109,8 +109,8 @@ export default function WalletInfo() {
 
       {/* EXPLANATION GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StitchCard glowColor="blue" className="p-6">
-          <div className="h-10 w-10 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 mb-4">
+        <StitchCard glowColor="purple" className="p-6">
+          <div className="h-10 w-10 rounded-xl bg-pillar-arena/10 border border-pillar-arena/20 flex items-center justify-center text-pillar-arena mb-4">
             <Coins className="h-5 w-5" />
           </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-2">{t('wallet.card1_title')}</h3>
@@ -129,8 +129,8 @@ export default function WalletInfo() {
           </p>
         </StitchCard>
 
-        <StitchCard glowColor="amber" className="p-6">
-          <div className="h-10 w-10 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 mb-4">
+        <StitchCard glowColor="purple" className="p-6">
+          <div className="h-10 w-10 rounded-xl bg-pillar-arena/10 border border-pillar-arena/20 flex items-center justify-center text-pillar-arena mb-4">
             <Gift className="h-5 w-5" />
           </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-2">{t('wallet.card3_title')}</h3>
@@ -203,12 +203,12 @@ export default function WalletInfo() {
           {referralInfo ? (
             <>
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <div className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg font-black text-gold-400 tracking-widest text-center sm:text-left">
+                <div className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 font-mono text-lg font-black text-pillar-arena tracking-widest text-center sm:text-left">
                   {referralInfo.referralCode}
                 </div>
                 <button
                   onClick={handleCopyReferralLink}
-                  className="px-4 py-3 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 shrink-0"
+                  className="px-4 py-3 bg-pillar-arena hover:bg-pillar-arena/85 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 shrink-0"
                 >
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? t('wallet.referral_copied') : t('wallet.referral_copy')}
@@ -229,7 +229,7 @@ export default function WalletInfo() {
         <div className="mt-10 text-center">
           <Link
             to="/skill-zone"
-            className="inline-flex items-center gap-2 text-xs font-bold text-gold-400 hover:text-gold-300 uppercase tracking-widest"
+            className="inline-flex items-center gap-2 text-xs font-bold text-pillar-arena hover:text-pillar-arena/80 uppercase tracking-widest"
           >
             {t('wallet.goto_skillzone')} <ArrowRight className="h-3.5 w-3.5" />
           </Link>

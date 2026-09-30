@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { apiUrl } from '../api';
-import { Menu, X, Key, ShoppingCart, Search, BookOpen, Coins } from 'lucide-react';
+import { Menu, X, Key, ShoppingCart, Search, Coins } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell';
@@ -143,9 +143,7 @@ export default function Layout() {
 
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => setIsMenuOpen(false)}>
-               <BookOpen size={20} className="text-gold-400" /> {t('nav.catalog')}
-             </Link>
+             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
              <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
              <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
              <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
@@ -156,6 +154,8 @@ export default function Layout() {
              <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
              <Link to="/jobs" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.jobs')}</Link>
              
+             {/* Login/Register are genuine CTAs (gold). Sell/New-auction now match their
+                 desktop-nav pillar colors instead of two different ad hoc gold shades. */}
              {!user ? (
                <>
                  <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
@@ -163,8 +163,8 @@ export default function Layout() {
                </>
              ) : (
                <>
-                 <Link to="/sell" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
-                 <Link to="/create-auction" style={{ color: '#e4c159', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
+                 <Link to="/sell" style={{ color: 'var(--color-pillar-listings)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
+                 <Link to="/create-auction" style={{ color: 'var(--color-pillar-auctions)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
                </>
              )}
 
@@ -252,24 +252,30 @@ export default function Layout() {
             <NavLink to="/" end className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.home')}
             </NavLink>
-            <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'} flex items-center gap-1.5`}>
-               <BookOpen size={14} /> {t('nav.catalog')}
-            </NavLink>
-            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
+            {/* Each pillar's nav link now tints with that pillar's own color when active — was
+                gold (or, for Puzzle Arena, an unrelated pink) for every entry regardless of
+                which section it led to. Home stays gold: it isn't any one pillar. */}
+            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-listings' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.listings')}
             </NavLink>
-            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-gold-300'}`}>
+            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-auctions' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.auctions')}
             </NavLink>
-            <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pink-400 font-extrabold' : 'text-stone-400 hover:text-pink-300'}`}>
+            <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-arena font-extrabold' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.skill_zone') || 'Puzzle Arena'}
+            </NavLink>
+            <NavLink to="/help" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
+              {t('nav.help')}
+            </NavLink>
+            <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-catalog' : 'text-stone-400 hover:text-white'}`}>
+              {t('nav.catalog')}
             </NavLink>
             {user && (
               <>
-                <NavLink to="/sell" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
+                <NavLink to="/sell" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-listings' : 'text-stone-400 hover:text-white'}`}>
                   {t('nav.sell')}
                 </NavLink>
-                <NavLink to="/create-auction" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-gold-300'}`}>
+                <NavLink to="/create-auction" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-auctions' : 'text-stone-400 hover:text-white'}`}>
                   {t('nav.new_auction')}
                 </NavLink>
               </>
@@ -288,13 +294,13 @@ export default function Layout() {
                 <div className="flex items-center gap-1 min-[450px]:gap-2 mr-1">
                   <div
                     onClick={() => navigate('/crediti')}
-                    className="flex items-center gap-1 min-[450px]:gap-1.5 rounded-lg border border-gold-500/30 bg-gold-500/5 px-1 py-0.5 min-[450px]:px-2 min-[450px]:py-1 cursor-pointer hover:border-gold-500 transition-all duration-300 group"
+                    className="flex items-center gap-1 min-[450px]:gap-1.5 rounded-lg border border-pillar-arena/30 bg-pillar-arena/5 px-1 py-0.5 min-[450px]:px-2 min-[450px]:py-1 cursor-pointer hover:border-pillar-arena transition-all duration-300 group"
                     title={t('nav.wallet_tooltip')}
                   >
-                    <Coins className="h-3.5 w-3.5 text-gold-400 group-hover:scale-110 transition-transform" />
+                    <Coins className="h-3.5 w-3.5 text-pillar-arena group-hover:scale-110 transition-transform" />
                     <div className="text-right">
                       <div className="hidden min-[500px]:block text-[8px] uppercase text-stone-400 font-bold leading-none">{t('nav.wallet_label')}</div>
-                      <span className="font-mono text-xs font-bold text-gold-400 text-glow-cyan">
+                      <span className="font-mono text-xs font-bold text-pillar-arena text-glow-cyan">
                         {wallet.balanceCredits?.toFixed(0) || '0'} <span className="text-[9px]">CR</span>
                       </span>
                     </div>

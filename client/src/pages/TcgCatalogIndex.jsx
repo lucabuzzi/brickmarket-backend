@@ -80,20 +80,20 @@ export default function TcgCatalogIndex({ gameSlug }) {
   return (
     <div className="page catalog-index max-w-[1400px] mx-auto px-4 py-12 animate-fadeIn">
 
-      <Link to="/catalog" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-gold-400 transition-colors mb-8 w-fit">
+      <Link to="/catalog" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
         <ArrowLeft size={14} /> {t('tcg.all_catalogs')}
       </Link>
 
       {/* SEARCH TERMINAL */}
       <section className="relative mb-24 py-20 px-8 bg-[#050402] rounded-[48px] border border-white/5 shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.08),transparent_50%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-pillar-catalog/50 to-transparent" />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gold-500/10 border border-gold-500/20 rounded-full text-gold-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-pillar-catalog/10 border border-pillar-catalog/20 rounded-full text-pillar-catalog text-[10px] font-black uppercase tracking-[0.3em] mb-8"
           >
             <Database size={14} className="animate-pulse" /> {t('tcg.source_powered_search', { source: game.source })}
           </motion.div>
@@ -118,13 +118,13 @@ export default function TcgCatalogIndex({ gameSlug }) {
 
           <div className="relative max-w-3xl mx-auto" ref={dropdownRef}>
             <form onSubmit={handleSearchSubmit} className="relative z-30 group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-gold-500 to-gold-500 rounded-[28px] blur opacity-20 group-focus-within:opacity-40 transition duration-500" />
-              <div className="relative flex items-center bg-[#120f0a] border-2 border-white/5 rounded-[24px] overflow-hidden focus-within:border-gold-500/50 transition-all shadow-2xl">
+              <div className="absolute -inset-1 bg-gradient-to-r from-pillar-catalog to-pillar-catalog rounded-[28px] blur opacity-20 group-focus-within:opacity-40 transition duration-500" />
+              <div className="relative flex items-center bg-[#120f0a] border-2 border-white/5 rounded-[24px] overflow-hidden focus-within:border-pillar-catalog/50 transition-all shadow-2xl">
                 <div className="pl-8 flex items-center pointer-events-none">
                   {isSearching ? (
-                    <Loader2 size={32} className="text-gold-500 animate-spin" />
+                    <Loader2 size={32} className="text-pillar-catalog animate-spin" />
                   ) : (
-                    <Search className="text-stone-600 group-focus-within:text-gold-400 transition-colors" size={32} strokeWidth={2.5} />
+                    <Search className="text-stone-600 group-focus-within:text-pillar-catalog transition-colors" size={32} strokeWidth={2.5} />
                   )}
                 </div>
                 <input
@@ -137,7 +137,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
                 <div className="absolute right-4">
                   <button
                     type="submit"
-                    className="h-12 md:h-16 px-8 md:px-12 bg-gold-600 hover:bg-gold-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-gold-900/40 active:scale-95 flex items-center gap-3"
+                    className="h-12 md:h-16 px-8 md:px-12 bg-pillar-catalog hover:bg-pillar-catalog/85 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-pillar-catalog/40 active:scale-95 flex items-center gap-3"
                   >
                     {t('tcg.search_button')} <Zap size={18} fill="currentColor" />
                   </button>
@@ -157,7 +157,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
                     <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest">
                       {isSearching ? t('tcg.searching') : t('tcg.suggestions')}
                     </span>
-                    {!isSearching && <span className="text-[10px] font-black text-gold-500 uppercase tracking-widest">{t('tcg.results_count', { count: searchResults.length })}</span>}
+                    {!isSearching && <span className="text-[10px] font-black text-pillar-catalog uppercase tracking-widest">{t('tcg.results_count', { count: searchResults.length })}</span>}
                   </div>
 
                   <div className="max-h-[480px] overflow-y-auto">
@@ -172,21 +172,21 @@ export default function TcgCatalogIndex({ gameSlug }) {
                           <Link
                             to={`/catalog/${game.slug}/${card.external_id}`}
                             onClick={() => setIsDropdownOpen(false)}
-                            className="flex items-center gap-6 p-5 hover:bg-gold-500/10 border-b border-white/5 last:border-0 transition-all group"
+                            className="flex items-center gap-6 p-5 hover:bg-pillar-catalog/10 border-b border-white/5 last:border-0 transition-all group"
                           >
-                            <div className="w-16 h-16 bg-stone-900 rounded-2xl flex-shrink-0 flex items-center justify-center p-2 border border-white/5 group-hover:border-gold-500/30 transition-all">
+                            <div className="w-16 h-16 bg-stone-900 rounded-2xl flex-shrink-0 flex items-center justify-center p-2 border border-white/5 group-hover:border-pillar-catalog/30 transition-all">
                               <img src={card.img_url} alt="" className="max-h-full max-w-full object-contain drop-shadow-xl" />
                             </div>
                             <div className="flex-1 text-left min-w-0">
-                              <div className="text-[10px] font-black text-gold-500 uppercase tracking-[0.2em] mb-1">{card.set_code || game.name}</div>
-                              <div className="text-lg font-black text-white truncate group-hover:text-gold-400 transition-colors uppercase italic">{card.name}</div>
+                              <div className="text-[10px] font-black text-pillar-catalog uppercase tracking-[0.2em] mb-1">{card.set_code || game.name}</div>
+                              <div className="text-lg font-black text-white truncate group-hover:text-pillar-catalog transition-colors uppercase italic">{card.name}</div>
                               {card.rarity && (
                                 <div className="flex items-center gap-3 mt-1">
                                   <span className="text-xs font-bold text-stone-500 capitalize">{card.rarity}</span>
                                 </div>
                               )}
                             </div>
-                            <ArrowRight className="text-stone-700 group-hover:text-gold-400 transform group-hover:translate-x-2 transition-all" size={24} />
+                            <ArrowRight className="text-stone-700 group-hover:text-pillar-catalog transform group-hover:translate-x-2 transition-all" size={24} />
                           </Link>
                         </motion.div>
                       ))
@@ -195,7 +195,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
                         <div className="text-stone-600 font-bold mb-2 uppercase tracking-widest">{t('tcg.no_card_found')}</div>
                         <button
                           onClick={handleSearchSubmit}
-                          className="text-gold-400 text-xs font-black uppercase tracking-widest hover:underline"
+                          className="text-pillar-catalog text-xs font-black uppercase tracking-widest hover:underline"
                         >
                           {t('tcg.search_anyway')}
                         </button>
@@ -223,7 +223,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
       <section>
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400">
+            <div className="w-12 h-12 rounded-2xl bg-pillar-catalog/10 border border-pillar-catalog/20 flex items-center justify-center text-pillar-catalog">
               <Clock size={24} />
             </div>
             <div>
@@ -249,7 +249,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
               <Link
                 key={card.external_id}
                 to={`/catalog/${game.slug}/${card.external_id}`}
-                className="group relative bg-[#120f0a] border border-white/5 rounded-[32px] overflow-hidden hover:border-gold-500/50 hover:-translate-y-2 transition-all duration-500 shadow-2xl"
+                className="group relative bg-[#120f0a] border border-white/5 rounded-[32px] overflow-hidden hover:border-pillar-catalog/50 hover:-translate-y-2 transition-all duration-500 shadow-2xl"
               >
                 <div className="aspect-square p-6 flex items-center justify-center relative overflow-hidden bg-stone-900/40">
                   <img
@@ -259,8 +259,8 @@ export default function TcgCatalogIndex({ gameSlug }) {
                   />
                 </div>
                 <div className="p-6">
-                  <span className="text-[9px] font-black text-gold-500 uppercase tracking-widest block mb-1">{card.set_code || game.name}</span>
-                  <h3 className="text-white font-black text-xs uppercase truncate mb-1 group-hover:text-gold-400 transition-colors">{card.name}</h3>
+                  <span className="text-[9px] font-black text-pillar-catalog uppercase tracking-widest block mb-1">{card.set_code || game.name}</span>
+                  <h3 className="text-white font-black text-xs uppercase truncate mb-1 group-hover:text-pillar-catalog transition-colors">{card.name}</h3>
                 </div>
               </Link>
             ))}

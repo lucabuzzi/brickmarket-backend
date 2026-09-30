@@ -5,10 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown, Database, Lock } from 'lucide-react';
 import { CATALOG_GAMES } from '../config/catalogGames';
 
+// Per-game hover glow, independent of the page's own pillar-catalog accent below. Was
+// accidentally pointing 'blue' and 'purple' at gold; restored to their actual named colors.
 const GLOW_STYLES = {
-  blue: 'hover:border-gold-500/50 hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]',
-  purple: 'hover:border-gold-500/50 hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]',
-  amber: 'hover:border-gold-500/50 hover:shadow-[0_0_30px_rgba(191,154,46,0.15)]',
+  blue: 'hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]',
+  purple: 'hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]',
+  amber: 'hover:border-amber-500/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]',
   emerald: 'hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]',
   rose: 'hover:border-rose-500/50 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)]',
 };
@@ -37,7 +39,7 @@ function CatalogPickerDropdown() {
         className="inline-flex items-center gap-2 px-5 py-2 bg-white/5 border border-white/10 rounded-full text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-colors"
       >
         {t('hubs.catalog.cta')}
-        <ChevronDown size={16} className={`text-gold-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`text-pillar-catalog transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
@@ -87,14 +89,14 @@ export default function CatalogHub() {
     <div className="page catalog-hub max-w-[1400px] mx-auto px-4 py-12 animate-fadeIn">
       {/* HERO */}
       <section className="relative mb-16 py-20 px-8 bg-[#050402] rounded-[48px] border border-white/5 shadow-2xl overflow-hidden text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.08),transparent_50%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.08),transparent_50%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-pillar-catalog/50 to-transparent" />
 
         <div className="relative z-10 max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gold-500/10 border border-gold-500/20 rounded-full text-gold-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-pillar-catalog/10 border border-pillar-catalog/20 rounded-full text-pillar-catalog text-[10px] font-black uppercase tracking-[0.3em] mb-8"
           >
             <Database size={14} /> {t('hubs.catalog.eyebrow')}
           </motion.div>
@@ -105,7 +107,7 @@ export default function CatalogHub() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter leading-[0.9] italic"
           >
-            {t('hubs.catalog.title_pre')} <span className="text-gold-500">CardBrix</span>
+            {t('hubs.catalog.title_pre')} <span className="text-pillar-catalog">CardBrix</span>
           </motion.h1>
 
           <motion.p

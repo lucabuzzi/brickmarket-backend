@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../api';
 import { ANNUNCI_CARD_GAMES } from '../../config/annunciCategories';
+import { PILLARS } from '../../config/pillars';
 
 // Two faces of the same marketplace UI: fixed-price listings and live auctions.
-// Colours match the landing page pillars (components/landing).
+// Colours come from the shared pillar tokens (config/pillars.js / index.css --color-pillar-*).
 export const MARKET_MODES = {
   listings: {
     key: 'listings',
     base: '/annunci',
     isAuction: false,
-    accent: '#c6ff3d',
-    accentInk: '#10140a',
+    accent: PILLARS.listings.accent,
+    accentInk: PILLARS.listings.accentInk,
     createTo: '/sell',
     defaultSort: 'recent',
     sorts: ['recent', 'price-asc', 'price-desc'],
@@ -19,8 +20,8 @@ export const MARKET_MODES = {
     key: 'auctions',
     base: '/aste',
     isAuction: true,
-    accent: '#ff5a36',
-    accentInk: '#ffffff',
+    accent: PILLARS.auctions.accent,
+    accentInk: PILLARS.auctions.accentInk,
     createTo: '/create-auction',
     defaultSort: 'closing-soon',
     sorts: ['closing-soon', 'recent'],

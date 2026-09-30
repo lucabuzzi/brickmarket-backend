@@ -157,16 +157,16 @@ export default function Profile() {
 
       {/* Stats Header */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        <DashboardStatCard title={t('profile.stat_active_listings')} value={activeListingsCount} icon={Activity} />
-        <DashboardStatCard title={t('profile.stat_sold_items')} value={soldListingsCount} icon={Tag} />
-        <DashboardStatCard title={t('profile.stat_bids_placed')} value={totalBids} icon={Hammer} />
-        <DashboardStatCard title={t('profile.stat_purchases')} value={totalPurchases} icon={ShoppingCart} />
+        <DashboardStatCard title={t('profile.stat_active_listings')} value={activeListingsCount} icon={Activity} accent="group-hover:text-pillar-listings" />
+        <DashboardStatCard title={t('profile.stat_sold_items')} value={soldListingsCount} icon={Tag} accent="group-hover:text-emerald-400" />
+        <DashboardStatCard title={t('profile.stat_bids_placed')} value={totalBids} icon={Hammer} accent="group-hover:text-pillar-auctions" />
+        <DashboardStatCard title={t('profile.stat_purchases')} value={totalPurchases} icon={ShoppingCart} accent="group-hover:text-emerald-400" />
       </div>
 
       {/* I Miei Annunci */}
       <section className="mb-12">
         <h2 className="text-xl font-black text-white mb-6 flex items-center gap-2 border-b border-stone-700/50 pb-3">
-          <Tag size={22} className="text-gold-400" /> {t('nav.my_listings')}
+          <Tag size={22} className="text-pillar-listings" /> {t('nav.my_listings')}
         </h2>
         {listingsError ? (
           <p className="text-red-500 bg-red-500/10 p-4 rounded-lg">{listingsError}</p>
@@ -191,7 +191,7 @@ export default function Profile() {
       {/* Le Mie Offerte */}
       <section className="mb-12">
         <h2 className="text-xl font-black text-white mb-6 flex items-center gap-2 border-b border-stone-700/50 pb-3">
-          <Hammer size={22} className="text-gold-500" /> {t('profile.my_bids') || 'Le Mie Offerte'}
+          <Hammer size={22} className="text-pillar-auctions" /> {t('profile.my_bids') || 'Le Mie Offerte'}
         </h2>
         {bidsError ? (
           <p className="text-red-500 bg-red-500/10 p-4 rounded-lg">{bidsError}</p>
@@ -208,11 +208,11 @@ export default function Profile() {
               return (
                 <div key={item.id} className={`bg-[#120f0a] rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300 shadow-sm flex flex-col border ${outbid ? 'border-red-500/50 hover:border-red-500 shadow-red-500/10' : (winning || won ? 'border-emerald-500/50 hover:border-emerald-500 shadow-emerald-500/10' : 'border-stone-700 hover:border-stone-500')}`}>
                   <div className="p-4 flex-1 flex flex-col">
-                    <Link to={`/product/${item.id}`} className="text-white font-bold text-base sm:text-lg mb-4 hover:text-gold-400 transition-colors line-clamp-2 leading-tight">{item.title}</Link>
+                    <Link to={`/product/${item.id}`} className="text-white font-bold text-base sm:text-lg mb-4 hover:text-pillar-auctions transition-colors line-clamp-2 leading-tight">{item.title}</Link>
                     <div className="mt-auto flex justify-between items-end">
                       <div>
                         <p className="text-[10px] sm:text-xs text-stone-400 font-medium mb-1 uppercase tracking-wider">{t('auction.current_bid')}</p>
-                        <p className="text-xl sm:text-2xl font-black text-gold-400 leading-none">{formatPrice(item.current_bid || item.starting_price)}</p>
+                        <p className="text-xl sm:text-2xl font-black text-pillar-auctions leading-none">{formatPrice(item.current_bid || item.starting_price)}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         {winning && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded uppercase tracking-wider">{t('profile.badge_winning')}</span>}
@@ -221,7 +221,7 @@ export default function Profile() {
                         {outbid && (
                           <div className="flex flex-col items-end gap-1.5">
                             <span className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] font-black rounded uppercase tracking-wider">{t('profile.badge_outbid')}</span>
-                            <Link to={`/product/${item.id}`} className="bg-gold-600 hover:bg-gold-500 text-white px-3 py-1.5 text-xs rounded font-bold transition-colors">{t('profile.bid_again_button')}</Link>
+                            <Link to={`/product/${item.id}`} className="bg-pillar-auctions hover:bg-pillar-auctions/85 text-white px-3 py-1.5 text-xs rounded font-bold transition-colors">{t('profile.bid_again_button')}</Link>
                           </div>
                         )}
                       </div>
@@ -258,11 +258,11 @@ export default function Profile() {
                 </div>
                 <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between overflow-hidden">
                   <div>
-                    <Link to={`/product/${order.listing_id}`} className="text-white font-bold text-sm sm:text-base line-clamp-2 hover:text-gold-400 transition-colors leading-tight mb-1">{order.listing_title || t('profile.unknown_item')}</Link>
+                    <Link to={`/product/${order.listing_id}`} className="text-white font-bold text-sm sm:text-base line-clamp-2 hover:text-emerald-400 transition-colors leading-tight mb-1">{order.listing_title || t('profile.unknown_item')}</Link>
                     <p className="text-xs text-stone-400 font-mono">{new Date(order.created_at).toLocaleDateString()}</p>
                   </div>
                   <div className="flex items-end justify-between mt-1 gap-2">
-                    <p className="text-base sm:text-lg font-black text-gold-400 leading-none">{formatPrice(order.total_buyer)}</p>
+                    <p className="text-base sm:text-lg font-black text-emerald-400 leading-none">{formatPrice(order.total_buyer)}</p>
                     <div className="flex flex-col items-end gap-1">
                       {order.feedback_id ? (
                         <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
@@ -352,7 +352,7 @@ export default function Profile() {
                   <textarea
                     value={disputeReason}
                     onChange={(e) => setDisputeReason(e.target.value)}
-                    className="w-full bg-stone-900/80 border border-stone-700 rounded-xl text-white p-4 min-h-[100px] resize-y focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all text-sm"
+                    className="w-full bg-stone-900/80 border border-stone-700 rounded-xl text-white p-4 min-h-[100px] resize-y focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-sm"
                     placeholder={t('profile.dispute_reason_placeholder')}
                     maxLength={1000}
                   />

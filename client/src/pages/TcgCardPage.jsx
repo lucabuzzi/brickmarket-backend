@@ -38,7 +38,7 @@ export default function TcgCardPage({ gameSlug }) {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center text-stone-400">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-gold-500 mr-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-pillar-catalog mr-3" />
         {t('catalog.loading')}
       </div>
     );
@@ -67,14 +67,14 @@ export default function TcgCardPage({ gameSlug }) {
 
   return (
     <div className="p-4 md:p-8 max-w-[1200px] mx-auto animate-fadeIn">
-      <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-gold-400 transition-colors mb-8 w-fit">
+      <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
         <ArrowLeft size={14} /> {t('tcg.back_to_catalog_game', { name: game.name })}
       </Link>
 
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
         <div className="lg:col-span-5 bg-[#120f0a] rounded-3xl border border-stone-800 p-8 flex items-center justify-center relative overflow-hidden group shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pillar-catalog/5 to-transparent opacity-50" />
           <img
             src={data.img_url}
             alt={data.name}
@@ -84,7 +84,7 @@ export default function TcgCardPage({ gameSlug }) {
 
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="bg-[#120f0a] rounded-3xl border border-stone-800 p-8 shadow-xl flex-1 flex flex-col justify-center">
-            <span className="text-gold-400 font-black tracking-widest text-xs uppercase mb-2 block">{game.name} Catalog Reference</span>
+            <span className="text-pillar-catalog font-black tracking-widest text-xs uppercase mb-2 block">{game.name} Catalog Reference</span>
             <h1 className="text-4xl font-black text-white leading-none tracking-tight mb-4 uppercase">{data.name}</h1>
             <div className="flex items-center gap-3 flex-wrap">
               {data.set_name && (
@@ -94,7 +94,7 @@ export default function TcgCardPage({ gameSlug }) {
                 <span className="font-mono text-stone-500 font-bold uppercase">{data.set_code}</span>
               )}
               {data.rarity && (
-                <span className="px-3 py-1 bg-gold-500/10 border border-gold-500/20 rounded-full text-xs font-bold text-gold-400 uppercase tracking-widest">{data.rarity}</span>
+                <span className="px-3 py-1 bg-pillar-catalog/10 border border-pillar-catalog/20 rounded-full text-xs font-bold text-pillar-catalog uppercase tracking-widest">{data.rarity}</span>
               )}
             </div>
 
@@ -150,7 +150,7 @@ export default function TcgCardPage({ gameSlug }) {
         </div>
         <Link
           to={`/search-results?q=${encodeURIComponent(data.name)}`}
-          className="flex items-center justify-between gap-3 px-6 py-4 bg-stone-800 rounded-2xl text-white font-bold text-sm hover:bg-stone-700 transition-all group-hover:border-gold-500/50 border border-transparent shrink-0"
+          className="flex items-center justify-between gap-3 px-6 py-4 bg-stone-800 rounded-2xl text-white font-bold text-sm hover:bg-stone-700 transition-all group-hover:border-pillar-catalog/50 border border-transparent shrink-0"
         >
           {t('tcg.view_active_listings')}
           <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />

@@ -10,6 +10,10 @@
  *   onClear()            — called when the user clears the lookup
  *   condition            — current condition from Sell form ('new'|'used'|'complete'|'parts')
  *   className            — optional extra Tailwind classes for the container
+ *   pillar               — 'listings' (default, used from Sell.jsx) or 'auctions' (used from
+ *                           CreateAuction.jsx) — picks which pillar accent the input/button use.
+ *                           Full literal class strings on purpose (not built with a template
+ *                           string) so Tailwind's static scanner can see every one of them.
  */
 
 import { useState, useRef } from 'react';
@@ -18,7 +22,27 @@ import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../api';
 import MarketValueBadge from './MarketValueBadge';
 
-export default function SetLookupInput({ onSetFound, onClear, condition = '', className = '' }) {
+const PILLAR_STYLES = {
+  listings: {
+    focusInput: 'focus:border-pillar-listings/70 focus:ring-2 focus:ring-pillar-listings/20',
+    button: 'bg-pillar-listings hover:bg-pillar-listings/85 text-[#10140a]',
+    loadingIcon: 'text-pillar-listings',
+    notFoundBox: 'bg-pillar-listings/10 border-pillar-listings/30 text-pillar-listings',
+    notFoundSubtitle: 'text-pillar-listings/80',
+    rebrickableLink: 'hover:text-pillar-listings',
+  },
+  auctions: {
+    focusInput: 'focus:border-pillar-auctions/70 focus:ring-2 focus:ring-pillar-auctions/20',
+    button: 'bg-pillar-auctions hover:bg-pillar-auctions/85 text-white',
+    loadingIcon: 'text-pillar-auctions',
+    notFoundBox: 'bg-pillar-auctions/10 border-pillar-auctions/30 text-pillar-auctions',
+    notFoundSubtitle: 'text-pillar-auctions/80',
+    rebrickableLink: 'hover:text-pillar-auctions',
+  },
+};
+
+export default function SetLookupInput({ onSetFound, onClear, condition = '', className = '', pillar = 'listings' }) {
+  const style = PILLAR_STYLES[pillar] || PILLAR_STYLES.listings;
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | found | not_found | error
@@ -102,7 +126,7 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
             onChange={handleInputChange}
             placeholder={t('set_lookup.placeholder')}
             maxLength={20}
-            className="w-full bg-stone-900/60 border border-stone-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-stone-500 outline-none focus:border-gold-500/70 focus:ring-2 focus:ring-gold-500/20 transition-all duration-200"
+            className={`w-full bg-stone-900/60 border border-stone-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-stone-500 outline-none transition-all duration-200 ${style.focusInput}`}
           />
           {query && (
             <button
@@ -118,7 +142,7 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
         <button
           type="submit"
           disabled={!query.trim() || status === 'loading'}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gold-600 hover:bg-gold-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all duration-200 shrink-0"
+          className={`flex items-center gap-2 px-4 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold rounded-xl transition-all duration-200 shrink-0 ${style.button}`}
         >
           {status === 'loading' ? (
             <Loader2 size={16} className="animate-spin" />
@@ -132,17 +156,17 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
       {/* Status Feedback */}
       {status === 'loading' && (
         <div className="flex items-center gap-2 text-xs text-stone-400 animate-pulse">
-          <Loader2 size={13} className="animate-spin text-gold-400" />
+          <Loader2 size={13} className={`animate-spin ${style.loadingIcon}`} />
           <span>{t('set_lookup.searching')}</span>
         </div>
       )}
 
       {status === 'not_found' && (
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-gold-500/10 border border-gold-500/30 text-xs text-gold-300">
+        <div className={`flex items-start gap-2 p-3 rounded-lg border text-xs ${style.notFoundBox}`}>
           <AlertCircle size={14} className="shrink-0 mt-0.5" />
           <div>
             <span className="font-bold">{t('set_lookup.not_found_title')}</span>
-            <span className="text-gold-400/80">{t('set_lookup.not_found_subtitle')}</span>
+            <span className={style.notFoundSubtitle}>{t('set_lookup.not_found_subtitle')}</span>
           </div>
         </div>
       )}
@@ -199,7 +223,7 @@ export default function SetLookupInput({ onSetFound, onClear, condition = '', cl
               href={foundSet.rebrickable_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-stone-500 hover:text-gold-400 transition-colors shrink-0"
+              className={`text-stone-500 transition-colors shrink-0 ${style.rebrickableLink}`}
               title={t('set_lookup.rebrickable_link_title')}
             >
               <ExternalLink size={14} />

@@ -46,7 +46,7 @@ export default function MarketValueBadge({ pricing, condition }) {
     trendText = `+${appreciationPct}% sul prezzo originale`;
   } else if (appreciationPct >= 15) {
     TrendIcon = TrendingUp;
-    trendColor = '#d4af37';
+    trendColor = '#c6ff3d';
     trendText = `+${appreciationPct}% sul prezzo originale`;
   } else if (appreciationPct < 0) {
     TrendIcon = TrendingDown;
@@ -62,7 +62,7 @@ export default function MarketValueBadge({ pricing, condition }) {
         marginTop: '0.75rem',
         padding: '1rem 1.25rem',
         backgroundColor: 'rgba(12, 10, 8, 0.9)',
-        border: `1px solid ${isTrending ? 'rgba(16,185,129,0.4)' : 'rgba(212,175,55,0.25)'}`,
+        border: `1px solid ${isTrending ? 'rgba(16,185,129,0.4)' : 'rgba(198,255,61,0.25)'}`,
         borderRadius: '12px',
         backdropFilter: 'blur(8px)',
         boxShadow: isTrending ? '0 0 20px rgba(16,185,129,0.12)' : 'none',
@@ -138,12 +138,12 @@ export default function MarketValueBadge({ pricing, condition }) {
             key={key}
             style={{
               textAlign: 'center', padding: '0.4rem 0.25rem', borderRadius: '8px',
-              backgroundColor: conditionKey === key ? 'rgba(212,175,55,0.08)' : 'transparent',
-              border: conditionKey === key ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
+              backgroundColor: conditionKey === key ? 'rgba(198,255,61,0.08)' : 'transparent',
+              border: conditionKey === key ? '1px solid rgba(198,255,61,0.2)' : '1px solid transparent',
             }}
           >
             <div style={{ fontSize: '0.6rem', color: '#78716c', marginBottom: '0.2rem' }}>{label}</div>
-            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: conditionKey === key ? '#d4af37' : '#a8a29e' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '700', color: conditionKey === key ? '#c6ff3d' : '#a8a29e' }}>
               {fmt(Math.round(pricing.marketValue * m))}
             </div>
           </div>

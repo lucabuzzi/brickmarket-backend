@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Check, Gavel, ShoppingBag, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PILLARS as PILLAR_TOKENS } from '../../config/pillars';
 
 const PILLARS = [
   {
     id: 'listings',
     icon: ShoppingBag,
-    accent: '#c6ff3d',
+    accent: PILLAR_TOKENS.listings.accent,
     accentText: 'text-[#10140a]',
     to: '/annunci',
     secondaryTo: '/sell',
@@ -16,7 +17,7 @@ const PILLARS = [
   {
     id: 'auctions',
     icon: Gavel,
-    accent: '#ff5a36',
+    accent: PILLAR_TOKENS.auctions.accent,
     accentText: 'text-white',
     to: '/aste',
     secondaryTo: '/create-auction',
@@ -24,7 +25,7 @@ const PILLARS = [
   {
     id: 'arena',
     icon: Swords,
-    accent: '#8b5cf6',
+    accent: PILLAR_TOKENS.arena.accent,
     accentText: 'text-white',
     to: '/skill-zone',
     secondaryTo: '/crediti',

@@ -84,10 +84,10 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1.25rem 1.5rem',
           borderBottom: '1px solid #292524',
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.05) 0%, transparent 100%)',
+          background: 'linear-gradient(135deg, rgba(248,245,236,0.06) 0%, transparent 100%)',
         }}>
           <div>
-            <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.1em', color: '#d4af37', textTransform: 'uppercase' }}>
+            <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.1em', color: '#a8a29e', textTransform: 'uppercase' }}>
               {t('review.title')}
             </p>
             <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#f8fafc' }}>
@@ -136,7 +136,7 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
                 {counterpart_username}
               </p>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: '#78716c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {listing_set_number && <span style={{ color: '#d4af37', marginRight: '0.4rem' }}>{listing_set_number}</span>}
+                {listing_set_number && <span style={{ color: '#c6ff3d', marginRight: '0.4rem' }}>{listing_set_number}</span>}
                 {listing_title}
               </p>
             </div>
@@ -190,7 +190,7 @@ export default function ReviewModal({ order, onClose, onSubmitted }) {
                     resize: 'vertical', outline: 'none', fontFamily: 'inherit',
                     transition: 'border-color 0.2s',
                   }}
-                  onFocus={e => e.target.style.borderColor = '#d4af37'}
+                  onFocus={e => e.target.style.borderColor = '#a8a29e'}
                   onBlur={e => e.target.style.borderColor = '#44403c'}
                 />
                 <p style={{ textAlign: 'right', margin: '0.25rem 0 0 0', fontSize: '0.65rem', color: '#57534e' }}>

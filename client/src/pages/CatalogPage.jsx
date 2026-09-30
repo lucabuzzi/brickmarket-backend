@@ -43,7 +43,7 @@ export default function CatalogPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center text-stone-400">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-gold-500 mr-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-pillar-catalog mr-3" />
         {t('catalog.loading')}
       </div>
     );
@@ -67,7 +67,7 @@ export default function CatalogPage() {
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
         <div className="lg:col-span-7 bg-[#120f0a] rounded-3xl border border-stone-800 p-8 flex items-center justify-center relative overflow-hidden group shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pillar-catalog/5 to-transparent opacity-50" />
           <img 
             src={data.img_url} 
             alt={data.name} 
@@ -77,7 +77,7 @@ export default function CatalogPage() {
 
         <div className="lg:col-span-5 flex flex-col gap-6">
           <div className="bg-[#120f0a] rounded-3xl border border-stone-800 p-8 shadow-xl flex-1 flex flex-col justify-center">
-            <span className="text-gold-400 font-black tracking-widest text-xs uppercase mb-2 block">{t('catalog.reference_label')}</span>
+            <span className="text-pillar-catalog font-black tracking-widest text-xs uppercase mb-2 block">{t('catalog.reference_label')}</span>
             <h1 className="text-4xl font-black text-white leading-none tracking-tight mb-2 uppercase">{data.name}</h1>
             <div className="flex items-center gap-3">
               <span className="text-2xl font-mono text-stone-500 font-bold">{data.set_num}</span>
@@ -168,7 +168,7 @@ export default function CatalogPage() {
                 <ShoppingBag size={14} />
                 <span className="text-[10px] font-black uppercase tracking-wider">{t('catalog.status_label')}</span>
               </div>
-              <span className={`text-xl font-black uppercase ${pricing.isRetired ? 'text-gold-500' : 'text-emerald-500'}`}>
+              <span className={`text-xl font-black uppercase ${pricing.isRetired ? 'text-pillar-catalog' : 'text-emerald-500'}`}>
                 {pricing.isRetired ? t('catalog.retired_product') : t('catalog.currently_active')}
               </span>
             </div>
@@ -185,7 +185,7 @@ export default function CatalogPage() {
            </div>
            <Link
              to={`/search-results?q=${data.set_num}`}
-             className="flex items-center justify-between w-full p-4 bg-stone-800 rounded-2xl text-white font-bold text-sm hover:bg-stone-700 transition-all group-hover:border-gold-500/50 border border-transparent"
+             className="flex items-center justify-between w-full p-4 bg-stone-800 rounded-2xl text-white font-bold text-sm hover:bg-stone-700 transition-all group-hover:border-pillar-catalog/50 border border-transparent"
            >
              {t('catalog.view_active_listings')}
              <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />

@@ -7,7 +7,7 @@ import {
   Bot, Send, User, Sparkles,
 } from 'lucide-react';
 
-function QuickLinkCard({ icon, title, desc, cta, to, href, color }) {
+function QuickLinkCard({ icon, title, desc, cta, to, href, color, ctaColor }) {
   const content = (
     <>
       <div className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 ${color}`}>
@@ -16,7 +16,8 @@ function QuickLinkCard({ icon, title, desc, cta, to, href, color }) {
       <div className="flex-1 min-w-0">
         <h3 className="text-sm font-bold text-white">{title}</h3>
         <p className="text-xs text-stone-400 mt-1 leading-relaxed">{desc}</p>
-        <span className="inline-flex items-center gap-1 mt-3 text-xs font-black uppercase tracking-wider text-gold-400 group-hover:text-gold-300 transition-colors">
+        {/* Was always gold regardless of the card's own icon color — now follows it. */}
+        <span className={`inline-flex items-center gap-1 mt-3 text-xs font-black uppercase tracking-wider transition-colors ${ctaColor}`}>
           {cta} <ArrowRight size={12} />
         </span>
       </div>
@@ -44,13 +45,13 @@ function ChatMessage({ role, text }) {
   const isUser = role === 'user';
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-gold-500/20 text-gold-400' : 'bg-pink-500/20 text-pink-400'}`}>
+      <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-pillar-catalog/20 text-pillar-catalog' : 'bg-pink-500/20 text-pink-400'}`}>
         {isUser ? <User size={13} /> : <Bot size={13} />}
       </div>
       <div
         className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line ${
           isUser
-            ? 'bg-gold-500 text-white font-medium rounded-tr-sm'
+            ? 'bg-pillar-catalog text-white font-medium rounded-tr-sm'
             : 'bg-white/5 border border-white/5 text-stone-200 rounded-tl-sm'
         }`}
       >
@@ -180,7 +181,8 @@ export default function Help() {
           desc={t('help.faq_card_desc')}
           cta={t('help.faq_card_cta')}
           to="/faq"
-          color="text-gold-400 bg-gold-500/10 border-gold-500/20"
+          color="text-pillar-catalog bg-pillar-catalog/10 border-pillar-catalog/20"
+          ctaColor="text-pillar-catalog group-hover:text-pillar-catalog/80"
         />
         <QuickLinkCard
           icon={<Mail size={18} />}
@@ -188,7 +190,8 @@ export default function Help() {
           desc={t('help.email_card_desc')}
           cta={t('help.email_card_cta')}
           href="mailto:support@cardbrix.com"
-          color="text-gold-400 bg-gold-500/10 border-gold-500/20"
+          color="text-sky-400 bg-sky-500/10 border-sky-500/20"
+          ctaColor="text-sky-400 group-hover:text-sky-300"
         />
         <QuickLinkCard
           icon={<ScrollText size={18} />}
@@ -197,6 +200,7 @@ export default function Help() {
           cta={t('help.legal_card_cta')}
           to="/norme-legali"
           color="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+          ctaColor="text-emerald-400 group-hover:text-emerald-300"
         />
       </div>
 

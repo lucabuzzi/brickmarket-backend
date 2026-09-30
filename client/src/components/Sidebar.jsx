@@ -43,12 +43,12 @@ export default function Sidebar() {
                 key={idx}
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={`flex items-center gap-2.5 p-1.5 rounded-lg transition-colors text-left ${isActive
-                    ? 'bg-gold-500/10 text-gold-400'
+                    ? 'bg-pillar-listings/10 text-pillar-listings'
                     : 'text-stone-300 hover:bg-stone-800'
                   }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full overflow-hidden border shrink-0 ${isActive ? 'border-gold-500' : 'border-[#2a2416]'
+                  className={`w-6 h-6 rounded-full overflow-hidden border shrink-0 ${isActive ? 'border-pillar-listings' : 'border-[#2a2416]'
                     }`}
                 >
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />

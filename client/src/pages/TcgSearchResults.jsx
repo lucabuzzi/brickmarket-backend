@@ -49,17 +49,17 @@ export default function TcgSearchResults({ gameSlug }) {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div>
-            <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-gold-400 transition-colors mb-4">
+            <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-4">
               <ArrowLeft size={14} /> {t('tcg.back_to_catalog_game', { name: game.name })}
             </Link>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-[20px] bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 shadow-xl shadow-gold-900/20">
+              <div className="w-16 h-16 rounded-[20px] bg-pillar-catalog/10 border border-pillar-catalog/20 flex items-center justify-center text-pillar-catalog shadow-xl shadow-pillar-catalog/20">
                 <Search size={32} strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter italic">{t('tcg.results_title_pre')} <span className="text-gold-500">{t('tcg.results_title_accent')}</span></h1>
+                <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter italic">{t('tcg.results_title_pre')} <span className="text-pillar-catalog">{t('tcg.results_title_accent')}</span></h1>
                 <p className="text-stone-500 font-bold uppercase tracking-widest text-xs mt-1">
-                  {t('tcg.query_label')} <span className="text-stone-300">"{query}"</span> • {t('tcg.found_label')} <span className="text-gold-400">{t('tcg.cards_count', { count: results.length })}</span>
+                  {t('tcg.query_label')} <span className="text-stone-300">"{query}"</span> • {t('tcg.found_label')} <span className="text-pillar-catalog">{t('tcg.cards_count', { count: results.length })}</span>
                 </p>
               </div>
             </div>
@@ -72,7 +72,7 @@ export default function TcgSearchResults({ gameSlug }) {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
-            <Loader2 size={64} className="text-gold-500 animate-spin mb-6" />
+            <Loader2 size={64} className="text-pillar-catalog animate-spin mb-6" />
             <p className="text-stone-500 font-black uppercase tracking-[0.4em] animate-pulse">{t('tcg.searching')}</p>
           </div>
         ) : error ? (
@@ -83,7 +83,7 @@ export default function TcgSearchResults({ gameSlug }) {
           <div className="p-24 text-center bg-[#120f0a] rounded-[48px] border border-white/5 shadow-2xl">
             <div className="text-stone-700 font-black text-6xl mb-6 uppercase tracking-tighter opacity-20 italic">{t('tcg.no_data_title')}</div>
             <p className="text-stone-500 max-w-md mx-auto mb-12 font-medium">{t('tcg.no_data_desc')}</p>
-            <Link to={`/catalog/${game.slug}`} className="btn bg-gold-600 hover:bg-gold-500 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('tcg.new_search')}</Link>
+            <Link to={`/catalog/${game.slug}`} className="btn bg-pillar-catalog hover:bg-pillar-catalog/85 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('tcg.new_search')}</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -97,7 +97,7 @@ export default function TcgSearchResults({ gameSlug }) {
                 <Link to={`/catalog/${game.slug}/${card.external_id}`} className="group block h-full">
                   <StitchCard className="h-full flex flex-col p-8" glowColor="blue">
                     <div className="aspect-square bg-stone-900/50 rounded-[32px] p-6 mb-8 flex items-center justify-center relative overflow-hidden group-hover:bg-stone-900 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-t from-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-pillar-catalog/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       <img
                         src={card.img_url}
                         alt={card.name}
@@ -107,7 +107,7 @@ export default function TcgSearchResults({ gameSlug }) {
 
                     <div className="flex-1 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-[10px] font-black text-gold-500 uppercase tracking-[0.2em]">{card.set_code || game.name}</span>
+                        <span className="text-[10px] font-black text-pillar-catalog uppercase tracking-[0.2em]">{card.set_code || game.name}</span>
                         {card.rarity && (
                           <div className="px-2 py-0.5 bg-stone-800 rounded text-[9px] font-black text-stone-400 uppercase tracking-widest">
                             {card.rarity}
@@ -115,7 +115,7 @@ export default function TcgSearchResults({ gameSlug }) {
                         )}
                       </div>
 
-                      <h3 className="text-xl font-black text-white uppercase italic leading-[0.9] tracking-tighter group-hover:text-gold-400 transition-colors mb-6 line-clamp-2">
+                      <h3 className="text-xl font-black text-white uppercase italic leading-[0.9] tracking-tighter group-hover:text-pillar-catalog transition-colors mb-6 line-clamp-2">
                         {card.name}
                       </h3>
                     </div>

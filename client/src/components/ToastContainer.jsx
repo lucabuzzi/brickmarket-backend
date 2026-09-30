@@ -26,7 +26,7 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return <AlertCircle size={18} className="text-red-400" />;
       default:
-        return <Info size={18} className="text-gold-400" />;
+        return <Info size={18} className="text-blue-400" />;
     }
   };
 
@@ -37,7 +37,7 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return 'border-red-500/50';
       default:
-        return 'border-gold-500/50';
+        return 'border-blue-500/50';
     }
   };
 
@@ -48,7 +48,7 @@ const Toast = ({ toast, removeToast }) => {
       case 'error':
         return 'shadow-red-500/10';
       default:
-        return 'shadow-gold-500/10';
+        return 'shadow-blue-500/10';
     }
   };
 
@@ -73,7 +73,7 @@ const Toast = ({ toast, removeToast }) => {
       </button>
 
       {/* Subtle background glow */}
-      <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-2xl pointer-events-none ${toast.type === 'error' ? 'bg-red-500/10' : toast.type === 'success' ? 'bg-emerald-500/10' : 'bg-gold-500/10'}`}></div>
+      <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-2xl pointer-events-none ${toast.type === 'error' ? 'bg-red-500/10' : toast.type === 'success' ? 'bg-emerald-500/10' : 'bg-blue-500/10'}`}></div>
 
       <style>{`
         @keyframes slideIn {

@@ -309,7 +309,7 @@ export default function Sell() {
   if (loadingListing) {
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <Loader className="animate-spin" size={32} color="#d4af37" />
+        <Loader className="animate-spin" size={32} color="#c6ff3d" />
       </div>
     );
   }
@@ -321,9 +321,9 @@ export default function Sell() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', opacity: isActive || isPast ? 1 : 0.4 }}>
         <div style={{ 
           width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: isPast ? '#059669' : isActive ? '#d4af37' : '#44403c',
-          color: isActive || isPast ? '#fff' : '#a8a29e',
-          border: isActive ? '2px solid #eed690' : 'none'
+          backgroundColor: isPast ? '#059669' : isActive ? '#c6ff3d' : '#44403c',
+          color: isPast ? '#fff' : isActive ? '#10140a' : '#a8a29e',
+          border: isActive ? '2px solid #e4ff8f' : 'none'
         }}>
           {isPast ? <CheckCircle size={20} /> : <IconComponent size={20} />}
         </div>
@@ -373,7 +373,7 @@ export default function Sell() {
         };
         const appPct = lookupPricing.appreciationPct;
         const TIcon = appPct >= 15 ? TrendingUp : appPct < 0 ? TrendingDown : Minus;
-        const tColor = appPct >= 50 ? '#10b981' : appPct >= 15 ? '#d4af37' : appPct < 0 ? '#f87171' : '#78716c';
+        const tColor = appPct >= 50 ? '#10b981' : appPct >= 15 ? '#c6ff3d' : appPct < 0 ? '#f87171' : '#78716c';
 
         return (
           <div style={{
@@ -381,7 +381,7 @@ export default function Sell() {
             marginBottom: '1.25rem',
             padding: '0.75rem 1.25rem',
             backgroundColor: 'rgba(12, 10, 8,0.95)',
-            border: `1px solid ${lookupPricing.isTrending ? 'rgba(16,185,129,0.35)' : 'rgba(212,175,55,0.2)'}`,
+            border: `1px solid ${lookupPricing.isTrending ? 'rgba(16,185,129,0.35)' : 'rgba(198,255,61,0.2)'}`,
             borderRadius: '12px',
             backdropFilter: 'blur(12px)',
             boxShadow: lookupPricing.isTrending
@@ -392,10 +392,10 @@ export default function Sell() {
             {/* Zap icon */}
             <div style={{
               width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0,
-              backgroundColor: lookupPricing.isTrending ? 'rgba(16,185,129,0.12)' : 'rgba(212,175,55,0.08)',
+              backgroundColor: lookupPricing.isTrending ? 'rgba(16,185,129,0.12)' : 'rgba(198,255,61,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Zap size={16} color={lookupPricing.isTrending ? '#10b981' : '#d4af37'} />
+              <Zap size={16} color={lookupPricing.isTrending ? '#10b981' : '#c6ff3d'} />
             </div>
 
             {/* Label */}
@@ -441,7 +441,7 @@ export default function Sell() {
         {/* STEP 1 */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#d4af37', fontSize: '1.4rem' }}>{t('sell.step1_heading')}</h2>
+            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step1_heading')}</h2>
 
             {/* ── Tipo Prodotto ── */}
             <div>
@@ -456,7 +456,7 @@ export default function Sell() {
                       padding: '1rem 0.5rem',
                       borderRadius: '12px',
                       border: '2px solid',
-                      borderColor: productType === pt.id ? '#d4af37' : '#44403c',
+                      borderColor: productType === pt.id ? '#c6ff3d' : '#44403c',
                       backgroundColor: productType === pt.id ? '#0c4a6e' : '#292524',
                       color: productType === pt.id ? '#fff' : '#a8a29e',
                       display: 'flex',
@@ -488,7 +488,7 @@ export default function Sell() {
                         padding: '0.75rem 0.4rem',
                         borderRadius: '10px',
                         border: '2px solid',
-                        borderColor: game === g.slug ? '#d4af37' : '#44403c',
+                        borderColor: game === g.slug ? '#c6ff3d' : '#44403c',
                         backgroundColor: game === g.slug ? '#0c4a6e' : '#292524',
                         color: game === g.slug ? '#fff' : '#a8a29e',
                         display: 'flex',
@@ -535,7 +535,7 @@ export default function Sell() {
                   {lookupPieces != null && (
                     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '0.5rem' }}>
                       <span style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '0.25rem' }}>{t('sell.pieces_total_label')}</span>
-                      <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#d4af37' }}>{lookupPieces.toLocaleString()}</span>
+                      <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#c6ff3d' }}>{lookupPieces.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
@@ -555,7 +555,7 @@ export default function Sell() {
                         padding: '1rem 0.5rem',
                         borderRadius: '12px',
                         border: '2px solid',
-                        borderColor: mainCategory === cat.id ? '#d4af37' : '#44403c',
+                        borderColor: mainCategory === cat.id ? '#c6ff3d' : '#44403c',
                         backgroundColor: mainCategory === cat.id ? '#0c4a6e' : '#292524',
                         color: mainCategory === cat.id ? '#fff' : '#a8a29e',
                         display: 'flex',
@@ -604,7 +604,7 @@ export default function Sell() {
         {/* STEP 2 */}
         {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#d4af37', fontSize: '1.4rem' }}>{t('sell.step2_heading')}</h2>
+            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step2_heading')}</h2>
 
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.condition_label')}</label>
@@ -651,7 +651,7 @@ export default function Sell() {
                 </div>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginTop: '0.5rem', padding: '1rem', backgroundColor: '#292524', borderRadius: '8px', border: '1px solid #44403c', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={isComplete} onChange={(e) => setIsComplete(e.target.checked)} style={{ width: '1.2rem', height: '1.2rem', accentColor: '#d4af37' }} />
+                  <input type="checkbox" checked={isComplete} onChange={(e) => setIsComplete(e.target.checked)} style={{ width: '1.2rem', height: '1.2rem', accentColor: '#c6ff3d' }} />
                   <div>
                     <span style={{ color: '#f8fafc', fontWeight: 'bold', display: 'block' }}>{t('sell.complete_set_label')}</span>
                     <span style={{ color: '#a8a29e', fontSize: '0.8rem' }}>{t('sell.complete_set_desc')}</span>
@@ -665,13 +665,13 @@ export default function Sell() {
         {/* STEP 3 */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#d4af37', fontSize: '1.4rem' }}>{t('sell.step3_heading')}</h2>
+            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step3_heading')}</h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.price_label')}</label>
                 <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t('sell.price_placeholder')}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #d4af37', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }} />
+                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #c6ff3d', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }} />
               </div>
             </div>
 
@@ -685,7 +685,7 @@ export default function Sell() {
                     <div 
                       key={c.id} 
                       style={{ 
-                        border: isActive ? '2px solid #d4af37' : '1px solid #44403c', 
+                        border: isActive ? '2px solid #c6ff3d' : '1px solid #44403c', 
                         borderRadius: '12px', 
                         padding: '1rem', 
                         backgroundColor: isActive ? 'rgba(212,175,55,0.05)' : '#292524',
@@ -701,7 +701,7 @@ export default function Sell() {
                             ...prev, 
                             [c.id]: { ...prev[c.id], selected: e.target.checked } 
                           }))}
-                          style={{ width: '1.2rem', height: '1.2rem', accentColor: '#d4af37' }}
+                          style={{ width: '1.2rem', height: '1.2rem', accentColor: '#c6ff3d' }}
                         />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <img src={c.icon} alt={c.name} style={{ height: '20px', width: 'auto', maxWidth: '40px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px', borderRadius: '4px' }} />
@@ -775,7 +775,7 @@ export default function Sell() {
         {/* STEP 4 */}
         {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#d4af37', fontSize: '1.4rem' }}>{t('sell.step4_heading')}</h2>
+            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step4_heading')}</h2>
 
             <div style={{ border: '2px dashed #57534e', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', backgroundColor: '#292524', position: 'relative' }}>
               <Camera size={40} color="#a8a29e" style={{ margin: '0 auto 1rem auto' }} />
@@ -806,7 +806,7 @@ export default function Sell() {
             {previews.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4" style={{ marginTop: '1rem' }}>
                 {previews.map((p, i) => (
-                  <div key={p.url} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: i === 0 ? '3px solid #d4af37' : '1px solid #44403c' }}>
+                  <div key={p.url} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: i === 0 ? '3px solid #c6ff3d' : '1px solid #44403c' }}>
                     {i === 0 && <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(212,175,55,0.9)', color: '#000', fontSize: '0.6rem', fontWeight: 'bold', textAlign: 'center', padding: '0.1rem 0' }}>{t('sell.cover_badge')}</span>}
                     <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button type="button" onClick={() => removeFileAt(i)} style={{ position: 'absolute', right: '4px', top: '4px', backgroundColor: '#dc2626', color: '#fff', border: 'none', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', cursor: 'pointer' }}>×</button>
@@ -838,7 +838,7 @@ export default function Sell() {
 
           {step < totalSteps ? (
             <button type="button" onClick={nextStep} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#d4af37', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(212,175,55, 0.3)'
+              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#c6ff3d', border: 'none', color: '#10140a', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(198,255,61, 0.3)'
             }}>
               {t('sell.next_btn')} <ChevronRight size={18} />
             </button>

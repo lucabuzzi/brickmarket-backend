@@ -244,7 +244,7 @@ export default function CreateAuction() {
       
       <div className="flex flex-wrap items-center justify-between gap-3" style={{ marginBottom: '2rem' }}>
         <h1 className="text-2xl sm:text-3xl" style={{ fontWeight: '900', margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Gavel className="text-gold-500" size={32} /> {t('create_auction.page_title')}
+          <Gavel className="text-pillar-auctions" size={32} /> {t('create_auction.page_title')}
         </h1>
         <Link to="/my-listings" style={{
           padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #57534e', color: '#d6d3d1', textDecoration: 'none', fontSize: '0.9rem', transition: 'all 0.2s'
@@ -349,11 +349,12 @@ export default function CreateAuction() {
 
             {/* ── Rebrickable Set Lookup (solo LEGO) ── */}
             {isLego && (
-              <div style={{ padding: '1rem 1.25rem', backgroundColor: 'rgba(191,154,46,0.06)', border: '1px solid rgba(191,154,46,0.2)', borderRadius: '12px' }}>
+              <div style={{ padding: '1rem 1.25rem', backgroundColor: 'rgba(255,90,54,0.06)', border: '1px solid rgba(255,90,54,0.2)', borderRadius: '12px' }}>
                 <SetLookupInput
                   onSetFound={handleSetFound}
                   onClear={handleLookupClear}
                   condition={condition}
+                  pillar="auctions"
                 />
               </div>
             )}
@@ -480,31 +481,31 @@ export default function CreateAuction() {
                 {/* Custom Mode */}
                 <div
                   onClick={() => setDurationMode('custom')}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${durationMode === 'custom' ? 'border-gold-500 bg-gold-900/20' : 'border-stone-700 bg-stone-800'}`}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${durationMode === 'custom' ? 'border-pillar-auctions bg-pillar-auctions/10' : 'border-stone-700 bg-stone-800'}`}
                 >
                    <div className="flex justify-between items-start mb-2">
                     <div className="font-bold text-white flex items-center gap-2">
-                      <Edit size={16} className={durationMode === 'custom' ? 'text-gold-400' : 'text-stone-400'} />
+                      <Edit size={16} className={durationMode === 'custom' ? 'text-pillar-auctions' : 'text-stone-400'} />
                       {t('create_auction.duration_custom_title')}
                     </div>
                     <div className="w-4 h-4 rounded-full border-2 border-stone-500 flex items-center justify-center">
-                      {durationMode === 'custom' && <div className="w-2 h-2 rounded-full bg-gold-500" />}
+                      {durationMode === 'custom' && <div className="w-2 h-2 rounded-full bg-pillar-auctions" />}
                     </div>
                   </div>
                   <p className="text-xs text-stone-400 mb-3 leading-relaxed">
                     {t('create_auction.duration_custom_desc')}
                   </p>
-                  <div className="inline-block bg-gold-500/20 text-gold-400 text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider mb-3 border border-gold-500/30">
+                  <div className="inline-block bg-pillar-auctions/20 text-pillar-auctions text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider mb-3 border border-pillar-auctions/30">
                     {t('create_auction.cost_token_badge')}
                   </div>
 
                   {durationMode === 'custom' && (
                     <div className="mt-2">
-                      <input 
-                        type="datetime-local" 
+                      <input
+                        type="datetime-local"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full bg-stone-900 border border-gold-500/50 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-gold-500"
+                        className="w-full bg-stone-900 border border-pillar-auctions/50 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-pillar-auctions"
                         min={new Date().toISOString().slice(0, 16)}
                       />
                     </div>

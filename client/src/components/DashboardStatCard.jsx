@@ -1,12 +1,17 @@
 import React from 'react';
 
-export default function DashboardStatCard({ title, value, icon: Icon, trend }) {
+// `accent` lets callers tie a stat card to the pillar it reports on — pass the FULL class,
+// including the `group-hover:` prefix (e.g. "group-hover:text-pillar-listings"), so Tailwind's
+// static scanner can see the literal token; building it from a partial value at render time
+// (`group-hover:${accent}`) would never get generated. Every card used to hover gold regardless
+// of what it measured; defaults to a neutral tone for stats that aren't pillar-specific.
+export default function DashboardStatCard({ title, value, icon: Icon, trend, accent = 'group-hover:text-stone-100' }) {
   return (
     <div className="bg-[#120f0a] border border-stone-700 rounded-xl p-4 flex flex-col justify-between hover:scale-[1.02] hover:border-stone-500 transition-all duration-300 shadow-sm relative overflow-hidden group">
       <div className="flex justify-between items-start mb-4 relative z-10">
         <h3 className="text-stone-400 font-medium text-sm">{title}</h3>
         {Icon && (
-          <div className="p-2 bg-stone-800/50 rounded-lg text-stone-300 group-hover:text-gold-400 group-hover:bg-gold-400/10 transition-colors">
+          <div className={`p-2 bg-stone-800/50 rounded-lg text-stone-300 group-hover:bg-white/10 transition-colors ${accent}`}>
             <Icon size={20} />
           </div>
         )}
@@ -20,7 +25,7 @@ export default function DashboardStatCard({ title, value, icon: Icon, trend }) {
         )}
       </div>
       {/* Decorative gradient blob */}
-      <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-stone-800/50 rounded-full blur-2xl group-hover:bg-gold-600/20 transition-colors duration-500 z-0"></div>
+      <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-stone-800/50 rounded-full blur-2xl group-hover:bg-white/10 transition-colors duration-500 z-0"></div>
     </div>
   );
 }

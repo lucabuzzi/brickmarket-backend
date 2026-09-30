@@ -57,15 +57,22 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
   // LOGICA DI STATO
   const isAuction = l.type === 'auction' || l.is_auction;
   const isActive = l.status === 'active';
+  // Each card takes its accent from the pillar it belongs to (was gold for both branches,
+  // so auctions and listings were indistinguishable in the card's own chrome).
+  const pillarText = isAuction ? 'text-pillar-auctions' : 'text-pillar-listings';
+  const pillarBorderHover = isAuction ? 'hover:border-pillar-auctions/30' : 'hover:border-pillar-listings/30';
+  const pillarShadowHover = isAuction
+    ? 'hover:shadow-[0_15px_30px_-10px_rgba(255,90,54,0.18)]'
+    : 'hover:shadow-[0_15px_30px_-10px_rgba(198,255,61,0.18)]';
 
   return (
-    <article className="w-full h-full flex flex-col bg-[#14120b]/40 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 hover:border-gold-500/30 hover:shadow-[0_15px_30px_-10px_rgba(212,175,55,0.12)] transition-all duration-300 group/card">
+    <article className={`w-full h-full flex flex-col bg-[#14120b]/40 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 ${pillarBorderHover} ${pillarShadowHover} transition-all duration-300 group/card`}>
 
       {/* Header: Mostra il Timer solo se l'asta è ATTIVA */}
       <div className={`flex justify-between items-center px-3 py-1.5 ${isFeatured ? 'bg-gold-600/10' : 'bg-white/2'}`}>
         {isAuction && isActive ? (
           <div className="flex items-center gap-2">
-            <span className="bg-gradient-to-r from-gold-500 to-gold-600 text-black px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-sm">
+            <span className="bg-gradient-to-r from-pillar-auctions to-pillar-auctions/80 text-white px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider shadow-sm">
               {t('details.badge_auction')}
             </span>
             <AuctionTimer endDate={l.auction_end} />
@@ -112,7 +119,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
         </div>
 
         <h2 className="font-bold text-stone-100 leading-snug truncate text-sm sm:text-base mt-1">
-          <Link to={`/product/${l.id}`} className="hover:text-gold-400 transition-colors">
+          <Link to={`/product/${l.id}`} className={`${isAuction ? 'hover:text-pillar-auctions' : 'hover:text-pillar-listings'} transition-colors`}>
             {l.title}
           </Link>
         </h2>
@@ -127,11 +134,11 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
         <div className="mt-auto flex justify-between items-end pt-2">
           <div className="flex flex-col">
             {isAuction && isActive && (
-              <span className="text-[9px] text-gold-400 uppercase font-bold tracking-tighter leading-none mb-1">
+              <span className="text-[9px] text-pillar-auctions uppercase font-bold tracking-tighter leading-none mb-1">
                 {t('auction.current_bid')}
               </span>
             )}
-            <p className={`font-black text-lg leading-none ${isAuction ? 'text-gold-400' : 'text-gold-400'}`}>
+            <p className={`font-black text-lg leading-none ${pillarText}`}>
               {formatPrice(isAuction ? l.current_bid : l.price, i18n.language)}
             </p>
           </div>
@@ -162,9 +169,9 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
                   </span>
                 )}
 
-                {/* VERIFIED: blue badge */}
+                {/* VERIFIED: blue badge — the code was gold like PRO despite this comment. */}
                 {isVerified && (
-                  <span className="bg-gold-500 text-white px-1.5 py-0.5 text-[9px] rounded-md font-black uppercase">
+                  <span className="bg-blue-500 text-white px-1.5 py-0.5 text-[9px] rounded-md font-black uppercase">
                     {t('details.badge_verified_id')}
                   </span>
                 )}

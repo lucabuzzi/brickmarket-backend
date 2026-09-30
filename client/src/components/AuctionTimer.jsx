@@ -30,5 +30,5 @@ export default function AuctionTimer({ endDate }) {
         return () => clearInterval(interval);
     }, [endDate]);
 
-    return <span className="font-mono text-[10px] font-bold text-gold-400 ml-2">{timeLeft}</span>;
+    return <span className="font-mono text-[10px] font-bold text-pillar-auctions ml-2">{timeLeft}</span>;
 }

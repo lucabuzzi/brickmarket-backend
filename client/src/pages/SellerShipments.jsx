@@ -73,7 +73,7 @@ function ShipmentCard({ shipment, onPrepare, onRetry, onMarkShipped, busy, actio
               </div>
             )}
             <span className="text-sm text-stone-300 truncate flex-1">{o.listingTitle}</span>
-            <span className="text-sm text-gold-400 font-bold flex-shrink-0">{formatPrice(o.itemPrice)}</span>
+            <span className="text-sm text-emerald-400 font-bold flex-shrink-0">{formatPrice(o.itemPrice)}</span>
           </div>
         ))}
         <div className="flex justify-between text-xs text-stone-500 pt-1">
@@ -94,14 +94,14 @@ function ShipmentCard({ shipment, onPrepare, onRetry, onMarkShipped, busy, actio
             {shipment.carrier ? `${shipment.carrier} · ` : ''}{shipment.tracking_number}
           </span>
           {shipment.tracking_url && (
-            <a href={shipment.tracking_url} target="_blank" rel="noreferrer" className="ml-auto text-gold-400 flex items-center gap-1 flex-shrink-0">
+            <a href={shipment.tracking_url} target="_blank" rel="noreferrer" className="ml-auto text-emerald-400 flex items-center gap-1 flex-shrink-0">
               {t('seller_shipments.track_link')} <ExternalLink size={12} />
             </a>
           )}
         </div>
       )}
       {shipment.label_url && (
-        <a href={shipment.label_url} target="_blank" rel="noreferrer" className="text-xs text-gold-400 flex items-center gap-1">
+        <a href={shipment.label_url} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 flex items-center gap-1">
           {t('seller_shipments.label_link')} <ExternalLink size={12} />
         </a>
       )}

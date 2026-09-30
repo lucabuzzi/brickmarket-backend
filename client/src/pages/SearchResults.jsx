@@ -132,7 +132,7 @@ export default function SearchResults() {
               color: '#fff', outline: 'none',
               transition: 'border-color 0.2s',
             }}
-            onFocus={e => { e.target.style.borderColor = '#d4af37'; }}
+            onFocus={e => { e.target.style.borderColor = '#c6ff3d'; }}
             onBlur={e => { e.target.style.borderColor = '#44403c'; }}
           />
           {inputValue && (
@@ -154,12 +154,12 @@ export default function SearchResults() {
             style={{
               position: 'absolute', right: '6px', top: '6px', bottom: '6px',
               width: '42px', borderRadius: '50%',
-              backgroundColor: '#d4af37', border: 'none',
+              backgroundColor: '#c6ff3d', border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', cursor: 'pointer', transition: 'background-color 0.2s',
+              color: '#10140a', cursor: 'pointer', transition: 'background-color 0.2s',
             }}
-            onMouseOver={e => { e.currentTarget.style.backgroundColor = '#bf9a2e'; }}
-            onMouseOut={e => { e.currentTarget.style.backgroundColor = '#d4af37'; }}
+            onMouseOver={e => { e.currentTarget.style.backgroundColor = '#d4ff70'; }}
+            onMouseOut={e => { e.currentTarget.style.backgroundColor = '#c6ff3d'; }}
           >
             <Search size={18} strokeWidth={2.5} />
           </button>
@@ -175,10 +175,10 @@ export default function SearchResults() {
           }}>
             {t('search_results.results_for_label')}{' '}
             <span style={{
-              color: '#d4af37',
-              background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
+              color: '#c6ff3d',
+              background: 'linear-gradient(135deg, rgba(198,255,61,0.15), rgba(198,255,61,0.05))',
               padding: '0.1rem 0.6rem', borderRadius: '8px',
-              border: '1px solid rgba(212,175,55,0.3)',
+              border: '1px solid rgba(198,255,61,0.3)',
             }}>
               "{q}"
             </span>
@@ -219,7 +219,7 @@ export default function SearchResults() {
           </div>
           
           <div style={{ flex: 1, minWidth: '200px' }}>
-            <span style={{ color: '#d4af37', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '0.25rem' }}>{t('search_results.catalog_reference_label')}</span>
+            <span style={{ color: '#3b82f6', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '0.25rem' }}>{t('search_results.catalog_reference_label')}</span>
             <h2 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: '900', margin: '0 0 0.5rem 0', textTransform: 'uppercase' }}>{catalogRef.name}</h2>
             <div style={{ display: 'flex', gap: '1.5rem', color: '#a8a29e', fontSize: '0.9rem', fontWeight: 'bold' }}>
                <span>#{catalogRef.set_num}</span>
@@ -239,7 +239,7 @@ export default function SearchResults() {
              <Link
                to={`/catalog/lego/${catalogRef.set_num}`}
                style={{
-                 padding: '0.6rem 1.2rem', backgroundColor: '#d4af37', color: '#fff',
+                 padding: '0.6rem 1.2rem', backgroundColor: '#3b82f6', color: '#fff',
                  borderRadius: '30px', fontWeight: '900', fontSize: '0.8rem',
                  textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center',
                  transition: 'transform 0.2s'
@@ -306,14 +306,14 @@ export default function SearchResults() {
             to="/"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-              backgroundColor: '#d4af37', color: '#fff',
+              backgroundColor: '#c6ff3d', color: '#10140a',
               padding: '0.8rem 1.8rem', borderRadius: '30px',
               fontWeight: '700', fontSize: '1rem', textDecoration: 'none',
-              boxShadow: '0 4px 14px rgba(212,175,55,0.35)',
+              boxShadow: '0 4px 14px rgba(198,255,61,0.35)',
               transition: 'background-color 0.2s',
             }}
-            onMouseOver={e => { e.currentTarget.style.backgroundColor = '#bf9a2e'; }}
-            onMouseOut={e => { e.currentTarget.style.backgroundColor = '#d4af37'; }}
+            onMouseOver={e => { e.currentTarget.style.backgroundColor = '#d4ff70'; }}
+            onMouseOut={e => { e.currentTarget.style.backgroundColor = '#c6ff3d'; }}
           >
             <ArrowLeft size={18} /> {t('search_results.back_to_home')}
           </Link>

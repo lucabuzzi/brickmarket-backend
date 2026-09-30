@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* Luxury gold palette, exposed as Tailwind utilities: bg-gold-500, text-gold-400, border-gold-600, etc. */
+/* Gold, exposed as Tailwind utilities (bg-gold-500, text-gold-400, border-gold-600, etc.), is
+   reserved for the header/nav chrome and primary CTA buttons only — see --color-pillar-* below
+   for everything else. */
 @theme {
   --color-gold-50: #fbf4e3;
   --color-gold-100: #f7e8bf;
@@ -13,6 +15,20 @@
   --color-gold-800: #5c4714;
   --color-gold-900: #3d2f0d;
   --color-gold-950: #241b08;
+
+  /* The "four pillars": every section of the marketplace outside the header/CTA chrome takes its
+     accent from here instead of gold (bg-pillar-listings, text-pillar-arena, etc). Keep these in
+     sync with the JS accent/accentInk pairs in marketConfig.js and LandingPillars.jsx, which stay
+     the source of truth for components that need the value in JS, not just CSS classes. */
+  --color-pillar-listings: #c6ff3d; /* Annunci (fixed-price listings) */
+  --color-pillar-listings-ink: #10140a;
+  --color-pillar-auctions: #ff5a36; /* Aste (live auctions) */
+  --color-pillar-auctions-ink: #ffffff;
+  --color-pillar-arena: #8b5cf6; /* Puzzle Arena (skill contests) */
+  --color-pillar-arena-secondary: #22d3ee;
+  --color-pillar-arena-ink: #ffffff;
+  --color-pillar-catalog: #3b82f6; /* Catalogo / TCG catalog pages (cuts across all three pillars) */
+  --color-pillar-catalog-ink: #ffffff;
 }
 
 :root {
@@ -24,7 +40,7 @@
   --border-glow: rgba(212,175,55, 0.25); /* Gold glow for active states */
   --text: #f8f5ec; /* Warm ivory white */
   --muted: #9c9280; /* Warm taupe grey */
-  --accent: #d4af37; /* Signature metallic gold */
+  --accent: #d4af37; /* Signature metallic gold — header/nav chrome + primary CTA buttons ONLY, nowhere else */
   --accent-hover: #e9cd6f; /* Brighter champagne gold on hover */
   --radius-bento: 24px; /* Larger rounded corners for bento style */
   --radius: 16px;
@@ -181,7 +197,9 @@ body {
   height: 34vmax;
   top: 60%;
   left: -8%;
-  background: radial-gradient(circle, #e9c25f 0%, #e9c25f 35%, transparent 68%);
+  /* Was gold (#e9c25f) — gold is reserved for header/CTA now, so this blob uses the
+     listings pillar tint instead. */
+  background: radial-gradient(circle, var(--color-pillar-listings) 0%, var(--color-pillar-listings) 35%, transparent 68%);
   animation: auroraFloat3 20s ease-in-out infinite alternate;
 }
 
@@ -225,8 +243,9 @@ body {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: #f3dd93;
-  box-shadow: 0 0 6px 2px rgba(243, 221, 147, 0.8);
+  /* Neutral ivory, not gold — gold is reserved for header/CTA, and this dust drifts behind every page. */
+  background: #f8f5ec;
+  box-shadow: 0 0 6px 2px rgba(248, 245, 236, 0.8);
   opacity: 0;
   animation-name: sparkleFloat;
   animation-timing-function: ease-in-out;
@@ -916,8 +935,8 @@ html.brand-landed .brand-mark-header {
   box-sizing: border-box;
   padding: 24px 20px 48px;
   background: #07060b;
-  color: #e5e7eb;
-  font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  font: 16px/1.6 var(--font);
 }
 
 .seo-shell > header,
@@ -928,7 +947,7 @@ html.brand-landed .brand-mark-header {
   margin-right: auto;
 }
 
-.seo-shell a { color: #c6ff3d; }
+.seo-shell a { color: var(--color-pillar-listings); }
 .seo-shell h1 { margin: 16px 0 8px; font-size: 2rem; line-height: 1.15; letter-spacing: -0.02em; color: #fff; }
 .seo-shell h2 { margin: 28px 0 8px; font-size: 1.25rem; color: #fff; }
 .seo-shell h3 { margin: 18px 0 4px; font-size: 1.05rem; color: #fff; }

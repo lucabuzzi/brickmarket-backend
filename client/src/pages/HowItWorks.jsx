@@ -20,24 +20,27 @@ export default function HowItWorks() {
     { icon: <Gamepad2 className="h-5 w-5" />, glow: 'purple', title: t('how_it_works_page.why3_title'), desc: t('how_it_works_page.why3_desc') },
   ];
 
+  // Each step now takes its color from the pillar it actually links to (was gold for both
+  // step1/step2 despite pointing at two different sections, and pink for step4 instead of the
+  // arena's real violet).
   const steps = [
     {
-      icon: <Search size={20} />, color: 'text-gold-400 bg-gold-500/10 border-gold-500/20',
+      icon: <Search size={20} />, color: 'text-pillar-catalog bg-pillar-catalog/10 border-pillar-catalog/20', linkColor: 'text-pillar-catalog hover:text-pillar-catalog/80',
       title: t('how_it_works_page.step1_title'), desc: t('how_it_works_page.step1_long_desc'),
       cta: t('how_it_works_page.step1_cta'), to: '/catalog',
     },
     {
-      icon: <ShoppingCart size={20} />, color: 'text-gold-400 bg-gold-500/10 border-gold-500/20',
+      icon: <ShoppingCart size={20} />, color: 'text-pillar-listings bg-pillar-listings/10 border-pillar-listings/20', linkColor: 'text-pillar-listings hover:text-pillar-listings/80',
       title: t('how_it_works_page.step2_title'), desc: t('how_it_works_page.step2_long_desc'),
       cta: t('how_it_works_page.step2_cta'), to: '/annunci',
     },
     {
-      icon: <PackagePlus size={20} />, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+      icon: <PackagePlus size={20} />, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', linkColor: 'text-emerald-400 hover:text-emerald-300',
       title: t('how_it_works_page.step3_title'), desc: t('how_it_works_page.step3_long_desc'),
       cta: t('how_it_works_page.step3_cta'), to: '/sell',
     },
     {
-      icon: <Gamepad2 size={20} />, color: 'text-pink-400 bg-pink-500/10 border-pink-500/20',
+      icon: <Gamepad2 size={20} />, color: 'text-pillar-arena bg-pillar-arena/10 border-pillar-arena/20', linkColor: 'text-pillar-arena hover:text-pillar-arena/80',
       title: t('how_it_works_page.step4_title'), desc: t('how_it_works_page.step4_long_desc'),
       cta: t('how_it_works_page.step4_cta'), to: '/skill-zone',
     },
@@ -54,11 +57,11 @@ export default function HowItWorks() {
     <div className="page max-w-[1100px] mx-auto px-4 py-8 md:py-12 animate-fadeIn">
       {/* HERO */}
       <div className="bento-card p-6 md:p-12 relative overflow-hidden mb-10 border border-white/5 bg-[#14120b]/30 rounded-3xl text-center">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-pillar-catalog/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-pillar-arena/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-gold-400 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-pillar-catalog/30 bg-pillar-catalog/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-pillar-catalog mb-6">
             <Sparkles className="h-3.5 w-3.5" /> {t('how_it_works_page.hero_badge')}
           </div>
 
@@ -94,7 +97,11 @@ export default function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {whyCards.map((c, i) => (
             <StitchCard key={i} glowColor={c.glow} className="p-6">
-              <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gold-400 mb-4">
+              <div className={`h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 ${
+                c.glow === 'amber' ? 'text-amber-400'
+                : c.glow === 'purple' ? 'text-purple-400'
+                : 'text-blue-400'
+              }`}>
                 {c.icon}
               </div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-2">{c.title}</h3>
@@ -128,7 +135,7 @@ export default function HowItWorks() {
               </div>
               <Link
                 to={step.to}
-                className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-400 hover:text-gold-300 uppercase tracking-wider"
+                className={`mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${step.linkColor}`}
               >
                 {step.cta} <ArrowRight size={12} />
               </Link>
@@ -146,10 +153,10 @@ export default function HowItWorks() {
           {features.map((f, i) => (
             <div key={i} className="rounded-2xl border border-white/5 bg-white/2 p-5">
               <div className={`h-9 w-9 rounded-xl border flex items-center justify-center mb-3 ${
-                f.glow === 'amber' ? 'text-gold-400 bg-gold-500/10 border-gold-500/20'
-                : f.glow === 'purple' ? 'text-pink-400 bg-pink-500/10 border-pink-500/20'
+                f.glow === 'amber' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                : f.glow === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20'
                 : f.glow === 'emerald' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                : 'text-gold-400 bg-gold-500/10 border-gold-500/20'
+                : 'text-blue-400 bg-blue-500/10 border-blue-500/20'
               }`}>
                 {f.icon}
               </div>
