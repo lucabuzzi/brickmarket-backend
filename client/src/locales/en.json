@@ -1147,7 +1147,18 @@
     "payment_comm_error": "Communication error with the payment server.",
     "secure_payment_notice": "Payments are processed securely by Stripe. Your card details are never stored on our servers.",
     "stripe_not_configured": "Card payments aren't configured yet. Please contact support.",
-    "card_details_label": "Card details"
+    "card_details_label": "Card details",
+    "mat_title": "When credits mature",
+    "mat_intro": "Credits from sales and purchases don't arrive right away: they mature after a maturation period, so they are protected from returns and disputes.",
+    "mat_rule_days": "The bonus matures {{days}} days after the order's delivery is confirmed.",
+    "mat_rule_condition": "It only matures if there are no open disputes, returns or refunds.",
+    "mat_rule_min": "The order must be worth at least {{amount}} to earn credits.",
+    "mat_rule_clawback": "If the order is refunded or returned, the bonus is reversed.",
+    "mat_rewards_title": "What you earn",
+    "mat_reward_signup": "Signing up, after email verification: +{{amount}}",
+    "mat_reward_referral": "A friend you invited signs up and verifies their email: +{{amount}}",
+    "mat_reward_sale": "Completed sale: +{{amount}}",
+    "mat_reward_purchase": "Completed purchase: +{{amount}}"
   },
   "stripeOnboarding": {
     "complete_title": "Verification Completed",
@@ -1606,7 +1617,10 @@
     "gallery_close": "Close",
     "not_found_title": "This piece is no longer here.",
     "not_found_desc": "The listing may have been removed or the link is wrong.",
-    "not_found_cta": "Back to listings"
+    "not_found_cta": "Back to listings",
+    "seller_reviews_title": "Seller reviews",
+    "seller_reviews_all": "See all reviews",
+    "trust_dispute": "You can open a dispute on the order"
   },
   "seller_page": {
     "kicker_professional": "Shop",

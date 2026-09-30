@@ -30,16 +30,16 @@ function conditionUrl(condition) {
 
 /**
  * Who sells the item. On CardBrix that is a user, not the platform: Person for private sellers,
- * Organization for professional ones, linked to their public profile. Only the public username is
- * used (the company name is not shown on the site, so it is not published here either). Without a
- * known seller the offer falls back to CardBrix itself.
+ * Organization for professional ones, linked to their public profile. The name is the one the listing
+ * page shows next to the item: the company name when the seller has one, else the username.
+ * Without a known seller the offer falls back to CardBrix itself.
  */
 function sellerJsonLd(seller, baseUrl) {
   const username = seller && String(seller.username || '').trim();
   if (!username) return { '@type': 'Organization', name: 'CardBrix' };
   return {
     '@type': seller.sellerType === 'professional' ? 'Organization' : 'Person',
-    name: username,
+    name: String(seller.companyName || '').trim() || username,
     url: `${baseUrl}/user/${encodeURIComponent(username)}`,
   };
 }

@@ -7,12 +7,22 @@ import { apiFetch } from '../api';
 import { StitchCard, AnimateCounter } from '../components/StitchComponents';
 
 export default function WalletInfo() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, wallet } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(true);
   const [referralInfo, setReferralInfo] = useState(null);
   const [copied, setCopied] = useState(false);
+  // Bonus amounts, maturation period and minimum order come from the admin-configurable credit_config (never hardcoded here).
+  const [rules, setRules] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch('/api/wallet/rules')
+      .then((data) => { if (!cancelled) setRules(data?.rules || null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const TRANSACTION_LABELS = {
     deposit: { label: t('wallet.tx_deposit'), color: 'text-emerald-400' },
@@ -139,6 +149,34 @@ export default function WalletInfo() {
           </p>
         </StitchCard>
       </div>
+
+      {/* WHEN CREDITS MATURE */}
+      {rules && (
+        <section className="mb-10 rounded-2xl border border-white/5 bg-[#14120b]/30 p-6 md:p-8" aria-labelledby="credits-maturation-title">
+          <h2 id="credits-maturation-title" className="mb-3 text-lg font-black uppercase tracking-tight text-white">{t('wallet.mat_title')}</h2>
+          <p className="mb-5 text-sm leading-relaxed text-stone-400">{t('wallet.mat_intro')}</p>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <ul className="space-y-3 text-sm leading-relaxed text-stone-300">
+              {rules.maturation_days != null && <li>{t('wallet.mat_rule_days', { days: rules.maturation_days })}</li>}
+              <li>{t('wallet.mat_rule_condition')}</li>
+              {rules.min_order_amount != null && (
+                <li>{t('wallet.mat_rule_min', { amount: new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'EUR' }).format(rules.min_order_amount) })}</li>
+              )}
+              <li>{t('wallet.mat_rule_clawback')}</li>
+            </ul>
+            <div>
+              <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-stone-500">{t('wallet.mat_rewards_title')}</h3>
+              <ul className="space-y-2 text-sm text-stone-300">
+                {[['mat_reward_signup', 'signup_bonus'], ['mat_reward_referral', 'referral_bonus'], ['mat_reward_sale', 'sale_bonus'], ['mat_reward_purchase', 'purchase_bonus']]
+                  .filter(([, key]) => rules[key] != null)
+                  .map(([label, key]) => (
+                    <li key={key}>{t(`wallet.${label}`, { amount: `${rules[key]} CR` })}</li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* RECENT TRANSACTIONS */}
       {user && (

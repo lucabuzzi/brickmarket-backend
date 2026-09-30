@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, Expand, Eye, Gavel, MapPin,
-  ShieldCheck, ShoppingCart, Sparkles, Timer, Trophy, Truck, X,
+  MessageSquare, Scale, ShieldCheck, ShoppingCart, Sparkles, Timer, Trophy, Truck, X,
 } from 'lucide-react';
 import { apiFetch, normalizeImageUrl } from '../api';
 import { galleryPhotoLabel } from '../utils/altText';
@@ -403,6 +403,56 @@ function BidBox({ listing, user, accent, ended, onBid, bidLoading, inputRef }) {
 
 /* ------------------------------------------------------------------ related */
 
+/** Up to three of the seller's latest reviews (public API), so a buyer can read them without leaving the listing. */
+function SellerReviews({ sellerId, username, accent }) {
+  const { t, i18n } = useTranslation();
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (!sellerId) return undefined;
+    let cancelled = false;
+    apiFetch(`/api/reviews/user/${sellerId}`)
+      .then((rows) => { if (!cancelled && Array.isArray(rows)) setReviews(rows.slice(0, 3)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [sellerId]);
+
+  if (reviews.length === 0) return null;
+
+  return (
+    <section className="mx-auto max-w-[1320px] px-4 pt-8 md:px-10" aria-labelledby="seller-reviews-title">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <h2 id="seller-reviews-title" className="text-[clamp(1.5rem,3.5vw,2.4rem)] font-black leading-none tracking-[-0.04em] text-white">
+          {t('product.seller_reviews_title')}
+        </h2>
+        <Link to={`/user/${username}`} className="flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-5 text-sm font-bold text-white transition hover:border-white/40">
+          {t('product.seller_reviews_all')}
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
+        {reviews.map((review) => (
+          <article key={review.id} className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="truncate font-bold text-white">{review.reviewer_username}</p>
+              <BrickRating value={review.rating} interactive={false} />
+            </div>
+            <p className="mt-1 text-xs text-white/40">
+              {new Date(review.created_at).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' })}
+            </p>
+            {review.comment && (
+              <p className="mt-3 flex gap-2 text-[15px] leading-relaxed text-white/80">
+                <MessageSquare className="mt-1 h-4 w-4 shrink-0" style={{ color: accent }} aria-hidden="true" />
+                <span className="min-w-0 break-words">{review.comment}</span>
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Related({ listing, mode }) {
   const { t } = useTranslation();
   const productType = listing.product_type || 'lego';
@@ -752,6 +802,10 @@ export default function ListingDetail() {
                       <Truck className="h-4 w-4 shrink-0" style={{ color: accent }} />
                       {listing.shipping_method || t('product.trust_shipping')}
                     </li>
+                    <li className="flex items-center gap-2.5">
+                      <Scale className="h-4 w-4 shrink-0" style={{ color: accent }} />
+                      {t('product.trust_dispute')}
+                    </li>
                     {listing.location && (
                       <li className="flex items-center gap-2.5">
                         <MapPin className="h-4 w-4 shrink-0" style={{ color: accent }} />
@@ -825,6 +879,8 @@ export default function ListingDetail() {
           )}
         </div>
       </div>
+
+      <SellerReviews key={listing.seller_id} sellerId={listing.seller_id} username={seller.username} accent={accent} />
 
       <Related listing={listing} mode={mode} />
 

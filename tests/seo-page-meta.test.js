@@ -182,7 +182,7 @@ describe('listing page JSON-LD names the real seller', () => {
     const html = await renderIndexHtmlForRequest('/product/x', template);
     expect(offerSeller(html)).toEqual({ '@type': 'Person', name: 'mario_rossi', url: 'https://cardbrix.com/user/mario_rossi' });
     expect(query.mock.calls[1][0]).toMatch(/JOIN users u ON u.id = l.seller_id/);
-    expect(query.mock.calls[1][0]).not.toMatch(/email|password|company_name|iban|fiscal/i); // only public fields are read
+    expect(query.mock.calls[1][0]).not.toMatch(/email|password|iban|fiscal|phone|address/i); // only fields the public listing page already shows are read
   });
 
   test('a failing seller lookup never breaks the page: the offer falls back to CardBrix', async () => {

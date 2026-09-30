@@ -1147,7 +1147,18 @@
     "payment_comm_error": "Erreur de communication avec le serveur de paiement.",
     "secure_payment_notice": "Les paiements sont traités de manière sécurisée par Stripe. Les données de votre carte ne sont jamais stockées sur nos serveurs.",
     "stripe_not_configured": "Les paiements par carte ne sont pas encore configurés. Veuillez contacter le support.",
-    "card_details_label": "Détails de la carte"
+    "card_details_label": "Détails de la carte",
+    "mat_title": "Quand les crédits arrivent à maturité",
+    "mat_intro": "Les crédits des ventes et des achats n'arrivent pas tout de suite : ils arrivent à maturité après une période de maturation, ce qui les protège des retours et des litiges.",
+    "mat_rule_days": "Le bonus arrive à maturité {{days}} jours après la livraison confirmée de la commande.",
+    "mat_rule_condition": "Il n'arrive à maturité que s'il n'y a ni litige, ni retour, ni remboursement en cours.",
+    "mat_rule_min": "La commande doit valoir au moins {{amount}} pour générer des crédits.",
+    "mat_rule_clawback": "Si la commande est remboursée ou retournée, le bonus est annulé.",
+    "mat_rewards_title": "Ce que tu gagnes",
+    "mat_reward_signup": "Inscription, après vérification de l'e-mail : +{{amount}}",
+    "mat_reward_referral": "Ami invité qui s'inscrit et vérifie son e-mail : +{{amount}}",
+    "mat_reward_sale": "Vente terminée : +{{amount}}",
+    "mat_reward_purchase": "Achat terminé : +{{amount}}"
   },
   "stripeOnboarding": {
     "complete_title": "Vérification terminée",
@@ -1612,7 +1623,10 @@
     "gallery_close": "Fermer",
     "not_found_title": "Cette pièce n'est plus là.",
     "not_found_desc": "L'annonce a peut-être été supprimée ou le lien est incorrect.",
-    "not_found_cta": "Retour aux annonces"
+    "not_found_cta": "Retour aux annonces",
+    "seller_reviews_title": "Avis sur le vendeur",
+    "seller_reviews_all": "Voir tous les avis",
+    "trust_dispute": "Tu peux ouvrir un litige sur la commande"
   },
   "seller_page": {
     "kicker_professional": "Boutique",

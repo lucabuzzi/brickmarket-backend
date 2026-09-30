@@ -65,11 +65,11 @@ function injectJsonLd(html, obj) {
 async function fetchSeller(listingId) {
   try {
     const res = await query(
-      'SELECT u.username, u.seller_type FROM listings l JOIN users u ON u.id = l.seller_id WHERE l.id = $1',
+      'SELECT u.username, u.seller_type, u.company_name FROM listings l JOIN users u ON u.id = l.seller_id WHERE l.id = $1',
       [listingId]
     );
     const row = res && res.rows && res.rows[0];
-    return row && row.username ? { username: row.username, sellerType: row.seller_type } : null;
+    return row && row.username ? { username: row.username, sellerType: row.seller_type, companyName: row.company_name } : null;
   } catch (err) {
     console.error('renderPage: venditore non recuperabile per il JSON-LD:', err.message);
     return null;

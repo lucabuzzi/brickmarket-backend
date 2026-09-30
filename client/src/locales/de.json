@@ -1147,7 +1147,18 @@
     "payment_comm_error": "Kommunikationsfehler mit dem Zahlungsserver.",
     "secure_payment_notice": "Zahlungen werden sicher über Stripe abgewickelt. Deine Kartendaten werden niemals auf unseren Servern gespeichert.",
     "stripe_not_configured": "Kartenzahlungen sind noch nicht eingerichtet. Bitte kontaktiere den Support.",
-    "card_details_label": "Kartendaten"
+    "card_details_label": "Kartendaten",
+    "mat_title": "Wann Credits reifen",
+    "mat_intro": "Credits aus Verkäufen und Käufen kommen nicht sofort an: Sie reifen nach einer Reifezeit, damit sie vor Rückgaben und Beanstandungen geschützt sind.",
+    "mat_rule_days": "Der Bonus reift {{days}} Tage nach der bestätigten Lieferung der Bestellung.",
+    "mat_rule_condition": "Er reift nur, wenn keine Beanstandungen, Rückgaben oder Erstattungen offen sind.",
+    "mat_rule_min": "Die Bestellung muss mindestens {{amount}} wert sein, damit Credits reifen.",
+    "mat_rule_clawback": "Wird die Bestellung erstattet oder zurückgegeben, wird der Bonus storniert.",
+    "mat_rewards_title": "Was du verdienst",
+    "mat_reward_signup": "Registrierung nach E-Mail-Bestätigung: +{{amount}}",
+    "mat_reward_referral": "Eingeladener Freund registriert sich und bestätigt seine E-Mail: +{{amount}}",
+    "mat_reward_sale": "Abgeschlossener Verkauf: +{{amount}}",
+    "mat_reward_purchase": "Abgeschlossener Kauf: +{{amount}}"
   },
   "stripeOnboarding": {
     "complete_title": "Verifizierung abgeschlossen",
@@ -1606,7 +1617,10 @@
     "gallery_close": "Schließen",
     "not_found_title": "Dieses Stück ist nicht mehr da.",
     "not_found_desc": "Das Angebot wurde möglicherweise entfernt oder der Link ist falsch.",
-    "not_found_cta": "Zurück zu den Angeboten"
+    "not_found_cta": "Zurück zu den Angeboten",
+    "seller_reviews_title": "Bewertungen des Verkäufers",
+    "seller_reviews_all": "Alle Bewertungen ansehen",
+    "trust_dispute": "Du kannst eine Beanstandung zur Bestellung eröffnen"
   },
   "seller_page": {
     "kicker_professional": "Shop",

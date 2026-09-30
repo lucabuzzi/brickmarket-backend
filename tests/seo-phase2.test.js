@@ -247,10 +247,10 @@ describe('Product JSON-LD: the real seller', () => {
     expect(build({ username: 'mario_rossi', sellerType: 'private' }).offers.seller).toEqual({ '@type': 'Person', name: 'mario_rossi', url: `${BASE}/user/mario_rossi` });
   });
 
-  test('a professional seller is an Organization named by its username, never by its company name', () => {
-    const seller = build({ username: 'brick_shop', sellerType: 'professional', companyName: 'Segreta S.r.l.' }).offers.seller;
-    expect(seller).toEqual({ '@type': 'Organization', name: 'brick_shop', url: `${BASE}/user/brick_shop` });
-    expect(JSON.stringify(seller)).not.toContain('Segreta');
+  test('a professional seller is an Organization named like on the listing page: company name, else username', () => {
+    const seller = build({ username: 'brick_shop', sellerType: 'professional', companyName: 'Brick Shop S.r.l.' }).offers.seller;
+    expect(seller).toEqual({ '@type': 'Organization', name: 'Brick Shop S.r.l.', url: `${BASE}/user/brick_shop` }); // the link still uses the username
+    expect(build({ username: 'brick_shop', sellerType: 'professional', companyName: '  ' }).offers.seller.name).toBe('brick_shop'); // blank company name falls back
   });
 
   test('the username is URL-encoded in the profile link', () => {

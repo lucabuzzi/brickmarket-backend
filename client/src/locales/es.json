@@ -1147,7 +1147,18 @@
     "payment_comm_error": "Error de comunicación con el servidor de pago.",
     "secure_payment_notice": "Los pagos se procesan de forma segura con Stripe. Los datos de tu tarjeta nunca se almacenan en nuestros servidores.",
     "stripe_not_configured": "Los pagos con tarjeta aún no están configurados. Contacta con soporte.",
-    "card_details_label": "Datos de la tarjeta"
+    "card_details_label": "Datos de la tarjeta",
+    "mat_title": "Cuándo maduran los créditos",
+    "mat_intro": "Los créditos de ventas y compras no llegan al instante: maduran tras un periodo de maduración, así quedan protegidos frente a devoluciones y reclamaciones.",
+    "mat_rule_days": "El bono madura {{days}} días después de la entrega confirmada del pedido.",
+    "mat_rule_condition": "Solo madura si no hay reclamaciones, devoluciones ni reembolsos abiertos.",
+    "mat_rule_min": "El pedido debe valer al menos {{amount}} para que maduren créditos.",
+    "mat_rule_clawback": "Si el pedido se reembolsa o se devuelve, el bono se revierte.",
+    "mat_rewards_title": "Cuánto se gana",
+    "mat_reward_signup": "Registro, tras verificar el correo: +{{amount}}",
+    "mat_reward_referral": "Amigo invitado que se registra y verifica su correo: +{{amount}}",
+    "mat_reward_sale": "Venta completada: +{{amount}}",
+    "mat_reward_purchase": "Compra completada: +{{amount}}"
   },
   "stripeOnboarding": {
     "complete_title": "Verificación Completada",
@@ -1606,7 +1617,10 @@
     "gallery_close": "Cerrar",
     "not_found_title": "Esta pieza ya no está aquí.",
     "not_found_desc": "Es posible que el anuncio se haya eliminado o que el enlace no sea correcto.",
-    "not_found_cta": "Volver a los anuncios"
+    "not_found_cta": "Volver a los anuncios",
+    "seller_reviews_title": "Reseñas del vendedor",
+    "seller_reviews_all": "Ver todas las reseñas",
+    "trust_dispute": "Puedes abrir una reclamación sobre el pedido"
   },
   "seller_page": {
     "kicker_professional": "Tienda",

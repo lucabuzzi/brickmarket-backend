@@ -124,7 +124,10 @@ function skillZone() {
 
 function crediti() {
   const cards = [1, 2, 3].map((n) => `<h2>${esc(t(`wallet.card${n}_title`))}</h2><p>${esc(t(`wallet.card${n}_desc`))}</p>`).join('');
-  return { h1: t('wallet.hero_title'), lead: t('wallet.hero_subtitle'), body: cards + cta('/skill-zone', t('landing.pillars.arena.cta')) };
+  const maturation = has('wallet.mat_title')
+    ? section(t('wallet.mat_title'), `<p>${esc(t('wallet.mat_intro'))}</p>${list([t('wallet.mat_rule_condition'), t('wallet.mat_rule_clawback')].map(esc))}`)
+    : '';
+  return { h1: t('wallet.hero_title'), lead: t('wallet.hero_subtitle'), body: cards + maturation + cta('/skill-zone', t('landing.pillars.arena.cta')) };
 }
 
 const STATIC = {

@@ -1147,7 +1147,18 @@
     "payment_comm_error": "Errore di comunicazione con il server di pagamento.",
     "secure_payment_notice": "I pagamenti sono gestiti in modo sicuro da Stripe. I dati della tua carta non vengono mai salvati sui nostri server.",
     "stripe_not_configured": "I pagamenti con carta non sono ancora configurati. Contatta l'assistenza.",
-    "card_details_label": "Dati della carta"
+    "card_details_label": "Dati della carta",
+    "mat_title": "Quando maturano i crediti",
+    "mat_intro": "I crediti di vendite e acquisti non arrivano subito: maturano dopo un periodo di maturazione, così sono protetti da resi e contestazioni.",
+    "mat_rule_days": "Il bonus matura {{days}} giorni dopo la consegna confermata dell'ordine.",
+    "mat_rule_condition": "Matura solo se non ci sono contestazioni, resi o rimborsi aperti.",
+    "mat_rule_min": "L'ordine deve valere almeno {{amount}} per far maturare crediti.",
+    "mat_rule_clawback": "Se l'ordine viene rimborsato o reso, il bonus viene stornato.",
+    "mat_rewards_title": "Quanto si guadagna",
+    "mat_reward_signup": "Registrazione, dopo la verifica dell'email: +{{amount}}",
+    "mat_reward_referral": "Amico invitato che si registra e verifica l'email: +{{amount}}",
+    "mat_reward_sale": "Vendita completata: +{{amount}}",
+    "mat_reward_purchase": "Acquisto completato: +{{amount}}"
   },
   "stripeOnboarding": {
     "complete_title": "Verifica Completata",
@@ -1606,7 +1617,10 @@
     "gallery_close": "Chiudi",
     "not_found_title": "Questo pezzo non è più qui.",
     "not_found_desc": "L'annuncio potrebbe essere stato rimosso o il link non è corretto.",
-    "not_found_cta": "Torna agli annunci"
+    "not_found_cta": "Torna agli annunci",
+    "seller_reviews_title": "Recensioni del venditore",
+    "seller_reviews_all": "Vedi tutte le recensioni",
+    "trust_dispute": "Puoi aprire una contestazione sull'ordine"
   },
   "seller_page": {
     "kicker_professional": "Negozio",
