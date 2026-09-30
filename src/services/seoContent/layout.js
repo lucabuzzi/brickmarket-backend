@@ -4,6 +4,7 @@
 // Styling lives in client/src/index.css under `.seo-shell`.
 const { esc, link, list } = require('./html');
 const { t } = require('./copy');
+const legalPages = require('../../../client/src/config/legalPages.json');
 
 const label = (key, fallback) => t(key) || fallback;
 
@@ -23,8 +24,7 @@ function footerNav() {
     ['/faq', 'FAQ'],
     ['/help', 'Assistenza'],
     ['/norme-legali', 'Norme legali'],
-    ['/privacy', 'Privacy'],
-    ['/cookie-policy', 'Cookie Policy'],
+    ...(legalPages.published ? [['/privacy', 'Privacy'], ['/cookie-policy', 'Cookie Policy']] : []),
     ['/crediti', 'Crediti'],
   ];
 }

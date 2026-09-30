@@ -3,6 +3,9 @@ const router = express.Router();
 const { query } = require('../db');
 const { resolveImageUrl } = require('../services/seoMeta');
 
+// /privacy and /cookie-policy join the sitemap only once their texts are final (see the file's _comment).
+const legalPages = require('../../client/src/config/legalPages.json');
+
 const BASE_URL = 'https://cardbrix.com';
 
 /** Static, publicly indexable pages — kept in sync with the route table in client/src/App.jsx */
@@ -42,9 +45,8 @@ const STATIC_PATHS = [
   '/faq',
   '/help',
   '/norme-legali',
-  '/privacy',
-  '/cookie-policy',
   '/ricerca-utente',
+  ...(legalPages.published ? ['/privacy', '/cookie-policy'] : []),
 ];
 
 function xmlEscape(str) {

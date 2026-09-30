@@ -10,6 +10,8 @@ const { getRouteMeta } = require('../src/services/pageMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');
 const { STATIC_PATHS } = require('../src/routes/sitemap');
 
+const legalPages = require('../client/src/config/legalPages.json');
+
 const ROOT = path.join(__dirname, '..');
 const LOCALES = ['it', 'en', 'de', 'es', 'fr'];
 const locale = (lang) => JSON.parse(fs.readFileSync(path.join(ROOT, 'client/src/locales', `${lang}.json`), 'utf8'));
@@ -23,13 +25,32 @@ describe('policy pages in the server-rendered shell', () => {
     expect((d.body.match(/<h2>/g) || []).length).toBe(sections);
   });
 
-  test('routes are known, in the sitemap, in the footer and have their own meta', () => {
+  test('routes are known and have their own meta', () => {
     for (const p of ['/privacy', '/cookie-policy']) {
       expect(isKnownRoute(p)).toBe(true);
-      expect(STATIC_PATHS).toContain(p);
       expect(getRouteMeta(p)).toBeTruthy();
-      expect(footerNav().map(([href]) => href)).toContain(p);
     }
+  });
+
+  test('sitemap and server footer list the pages only when legalPages.published is true', () => {
+    const { published } = legalPages;
+    for (const p of ['/privacy', '/cookie-policy']) {
+      expect(STATIC_PATHS.includes(p)).toBe(published);
+      expect(footerNav().map(([href]) => href).includes(p)).toBe(published);
+    }
+  });
+
+  test('the client footer and cookie banner follow the same flag', () => {
+    const layout = fs.readFileSync(path.join(ROOT, 'client/src/components/Layout.jsx'), 'utf8');
+    const banner = fs.readFileSync(path.join(ROOT, 'client/src/components/CookieConsent.jsx'), 'utf8');
+    expect(layout).toMatch(/legalPages\.published \? \[\['\/privacy'/);
+    expect(banner).toMatch(/legalPages\.published \? '\/cookie-policy' : '\/norme-legali'/);
+  });
+
+  test('flag stays off while placeholders remain in the texts', () => {
+    const it = locale('it');
+    const text = JSON.stringify([it.privacy, it.cookie_policy]);
+    if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL PRIVACY\]/.test(text)) expect(legalPages.published).toBe(false);
   });
 
   test('credit rule holds in the policy text: credits are never described as purchasable or convertible', () => {

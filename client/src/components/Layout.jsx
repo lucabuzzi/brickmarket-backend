@@ -14,6 +14,7 @@ import BrandMark from './brand/BrandMark';
 import BrandIntro from './brand/BrandIntro';
 import { shouldPlayIntro } from './brand/introGate';
 import { hasConsent, trackPageview, OPEN_COOKIE_SETTINGS_EVENT } from '../analytics';
+import legalPages from '../config/legalPages.json';
 
 const LANGUAGES = [
   { code: 'it', name: 'ITALIANO', flag: 'fi fi-it' },
@@ -424,8 +425,7 @@ export default function Layout() {
               ['/help', 'footer.help'],
               ['/crediti', 'footer.credits'],
               ['/norme-legali', 'footer.legal_rules'],
-              ['/privacy', 'footer.privacy'],
-              ['/cookie-policy', 'footer.cookie_policy'],
+              ...(legalPages.published ? [['/privacy', 'footer.privacy'], ['/cookie-policy', 'footer.cookie_policy']] : []),
             ].map(([to, key]) => (
               <li key={to}>
                 <Link to={to} className="text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline">{t(key)}</Link>
