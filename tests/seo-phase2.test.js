@@ -5,7 +5,7 @@ jest.mock('../src/db', () => ({ query: jest.fn() }));
 const http = require('http');
 const express = require('express');
 const { query } = require('../src/db');
-const { buildProductJsonLd, breadcrumbForListing, brandFor, conditionUrl } = require('../src/services/seoJsonLd');
+const { buildProductJsonLd, breadcrumbForListing, brandFor, conditionUrl, sellerJsonLd } = require('../src/services/seoJsonLd');
 const { buildLlmsTxt, buildLlmsFullTxt } = require('../src/services/llmsTxt');
 const indexnow = require('../src/services/indexnow');
 
@@ -237,5 +237,27 @@ describe('seoMeta and sitemap integration', () => {
       expect(second).not.toContain('image:image');
       expect(xml).toContain('<loc>https://cardbrix.com/annunci</loc></url>'); // static pages: no invented lastmod
     });
+  });
+});
+
+describe('Product JSON-LD: the real seller', () => {
+  const build = (seller) => buildProductJsonLd({ listing: listing(), canonical: `${BASE}/product/abc-123`, images: ['a'], description: 'd', effectivePrice: 10, seller, baseUrl: BASE });
+
+  test('a private seller is a Person linked to the public profile', () => {
+    expect(build({ username: 'mario_rossi', sellerType: 'private' }).offers.seller).toEqual({ '@type': 'Person', name: 'mario_rossi', url: `${BASE}/user/mario_rossi` });
+  });
+
+  test('a professional seller is an Organization named by its username, never by its company name', () => {
+    const seller = build({ username: 'brick_shop', sellerType: 'professional', companyName: 'Segreta S.r.l.' }).offers.seller;
+    expect(seller).toEqual({ '@type': 'Organization', name: 'brick_shop', url: `${BASE}/user/brick_shop` });
+    expect(JSON.stringify(seller)).not.toContain('Segreta');
+  });
+
+  test('the username is URL-encoded in the profile link', () => {
+    expect(sellerJsonLd({ username: 'a b/c?', sellerType: null }, BASE).url).toBe(`${BASE}/user/a%20b%2Fc%3F`);
+  });
+
+  test('without a known seller the offer still names CardBrix', () => {
+    for (const seller of [undefined, null, {}, { username: '  ' }]) expect(build(seller).offers.seller).toEqual({ '@type': 'Organization', name: 'CardBrix' });
   });
 });

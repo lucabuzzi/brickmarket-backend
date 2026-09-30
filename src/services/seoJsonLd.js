@@ -28,7 +28,23 @@ function conditionUrl(condition) {
   return 'https://schema.org/UsedCondition';
 }
 
-function buildProductJsonLd({ listing, canonical, images, description, effectivePrice }) {
+/**
+ * Who sells the item. On CardBrix that is a user, not the platform: Person for private sellers,
+ * Organization for professional ones, linked to their public profile. Only the public username is
+ * used (the company name is not shown on the site, so it is not published here either). Without a
+ * known seller the offer falls back to CardBrix itself.
+ */
+function sellerJsonLd(seller, baseUrl) {
+  const username = seller && String(seller.username || '').trim();
+  if (!username) return { '@type': 'Organization', name: 'CardBrix' };
+  return {
+    '@type': seller.sellerType === 'professional' ? 'Organization' : 'Person',
+    name: username,
+    url: `${baseUrl}/user/${encodeURIComponent(username)}`,
+  };
+}
+
+function buildProductJsonLd({ listing, canonical, images, description, effectivePrice, seller, baseUrl = 'https://cardbrix.com' }) {
   const isAuction = listing.type === 'auction';
   const brand = brandFor(listing);
   const condition = conditionUrl(listing.condition);
@@ -39,7 +55,7 @@ function buildProductJsonLd({ listing, canonical, images, description, effective
     price: effectivePrice != null && effectivePrice !== '' ? Number(effectivePrice).toFixed(2) : undefined,
     availability: listing.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
     itemCondition: condition || undefined,
-    seller: { '@type': 'Organization', name: 'CardBrix' },
+    seller: sellerJsonLd(seller, baseUrl),
   };
   if (isAuction && listing.auction_end && listing.status === 'active') {
     offer.priceValidUntil = new Date(listing.auction_end).toISOString().slice(0, 10);
@@ -91,4 +107,4 @@ function breadcrumbForListing(listing, baseUrl) {
   return buildBreadcrumbJsonLd(items);
 }
 
-module.exports = { TCG_BRANDS, buildProductJsonLd, buildBreadcrumbJsonLd, breadcrumbForListing, brandFor, conditionUrl };
+module.exports = { TCG_BRANDS, buildProductJsonLd, sellerJsonLd, buildBreadcrumbJsonLd, breadcrumbForListing, brandFor, conditionUrl };

@@ -61,6 +61,21 @@ function injectJsonLd(html, obj) {
   return html.replace('</head>', `<script type="application/ld+json">${json}</script></head>`);
 }
 
+/** The listing's seller (public username + type), or null: JSON-LD then names CardBrix as the seller. */
+async function fetchSeller(listingId) {
+  try {
+    const res = await query(
+      'SELECT u.username, u.seller_type FROM listings l JOIN users u ON u.id = l.seller_id WHERE l.id = $1',
+      [listingId]
+    );
+    const row = res && res.rows && res.rows[0];
+    return row && row.username ? { username: row.username, sellerType: row.seller_type } : null;
+  } catch (err) {
+    console.error('renderPage: venditore non recuperabile per il JSON-LD:', err.message);
+    return null;
+  }
+}
+
 const NOT_FOUND_TITLE = 'Pagina non trovata | CardBrix';
 const NOT_FOUND_DESCRIPTION = 'La pagina che cerchi non esiste o è stata spostata. Torna alla home di CardBrix o sfoglia gli annunci.';
 
@@ -137,6 +152,8 @@ async function renderPage(reqPath, baseHtml) {
       images: images.length ? images : [ogImage],
       description,
       effectivePrice,
+      seller: await fetchSeller(listingId),
+      baseUrl: BASE_URL,
     }));
     html = injectJsonLd(html, breadcrumbForListing(listing, BASE_URL));
 

@@ -169,3 +169,25 @@ describe('client/index.html static template', () => {
     expect(html).not.toMatch(/Trading Cards & Auctions|marketplace for LEGO sets/);
   });
 });
+
+describe('listing page JSON-LD names the real seller', () => {
+  const LISTING = { id: 'x', title: 'Il mio set', description: 'Bello', price: '10', type: 'used', status: 'active', images: [], condition: 'new', product_type: 'lego' };
+  const offerSeller = (html) => {
+    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((b) => JSON.parse(b[1]));
+    return blocks.find((b) => b['@type'] === 'Product').offers.seller;
+  };
+
+  test('the seller comes from a second lookup and is published as a Person', async () => {
+    query.mockResolvedValueOnce({ rows: [LISTING] }).mockResolvedValueOnce({ rows: [{ username: 'mario_rossi', seller_type: 'private' }] }).mockResolvedValue({ rows: [] });
+    const html = await renderIndexHtmlForRequest('/product/x', template);
+    expect(offerSeller(html)).toEqual({ '@type': 'Person', name: 'mario_rossi', url: 'https://cardbrix.com/user/mario_rossi' });
+    expect(query.mock.calls[1][0]).toMatch(/JOIN users u ON u.id = l.seller_id/);
+    expect(query.mock.calls[1][0]).not.toMatch(/email|password|company_name|iban|fiscal/i); // only public fields are read
+  });
+
+  test('a failing seller lookup never breaks the page: the offer falls back to CardBrix', async () => {
+    query.mockResolvedValueOnce({ rows: [LISTING] }).mockRejectedValueOnce(new Error('users table down')).mockResolvedValue({ rows: [] });
+    const html = await renderIndexHtmlForRequest('/product/x', template);
+    expect(offerSeller(html)).toEqual({ '@type': 'Organization', name: 'CardBrix' });
+  });
+});
