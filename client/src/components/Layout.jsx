@@ -143,33 +143,35 @@ export default function Layout() {
 
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
              <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
              <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
              <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
-             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
-             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
-             <Link to="/terms" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.terms')}</Link>
+             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
              <Link to="/help" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
              <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
-             <Link to="/jobs" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.jobs')}</Link>
-             
-             {/* Login/Register are genuine CTAs (gold). Sell/New-auction now match their
-                 desktop-nav pillar colors instead of two different ad hoc gold shades. */}
+             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
+             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
+
              {!user ? (
-               <>
-                 <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
-                 <Link to="/register" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.register')}</Link>
-               </>
+               <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login') || 'Accedi'}</Link>
              ) : (
                <>
+                 <Link to="/profile" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.profile')}</Link>
                  <Link to="/sell" style={{ color: 'var(--color-pillar-listings)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
                  <Link to="/create-auction" style={{ color: 'var(--color-pillar-auctions)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
+                 {user.role === 'admin' && (
+                   <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
+                 )}
+                 <button 
+                   onClick={() => {
+                     logout();
+                     setIsMenuOpen(false);
+                   }} 
+                   style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: '#ef4444', textDecoration: 'none', fontWeight: 'bold', cursor: 'pointer', font: 'inherit' }}
+                 >
+                   {t('nav.logout')}
+                 </button>
                </>
-             )}
-
-             {user && user.role === 'admin' && (
-               <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
              )}
            </div>
            
