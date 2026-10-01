@@ -98,7 +98,7 @@ function notFoundPage(baseHtml, canonical) {
  * actual title, price and photo instead of generic branding.
  */
 async function renderPage(reqPath, baseHtml) {
-  const canonical = `${BASE_URL}${reqPath === '/' ? '' : reqPath}`;
+  const canonical = `${BASE_URL}${reqPath}`;
 
   // A URL that matches no client route would otherwise get the app shell with HTTP 200 (a "soft 404":
   // Google treats every invented URL as a real page). Answer 404 with the same shell so the client

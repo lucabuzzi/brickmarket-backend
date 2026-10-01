@@ -387,6 +387,8 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 const clientDistPath = path.join(__dirname, 'client', 'dist');
 // index: false -> GET "/" must reach the SPA fallback below (which puts the page text in the HTML and
 // rewrites the meta tags) instead of being answered by express.static with the raw dist/index.html.
+// /index.html is a raw copy of the shell reachable at a second address: send it to "/" with a permanent redirect.
+app.get('/index.html', (req, res) => res.redirect(301, '/'));
 app.use(express.static(clientDistPath, { index: false }));
 // Unknown URLs and missing listings answer HTTP 404 (with the same shell) — see src/routes/spaFallback.js.
 app.get(/^\/(?!api\/|uploads\/).*/, createSpaFallback(clientDistPath));
