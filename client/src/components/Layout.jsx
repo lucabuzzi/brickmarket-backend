@@ -172,31 +172,31 @@ export default function Layout() {
 
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-             <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
-             <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
-             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
-             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
-             <Link to="/help" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
-             <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
-             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
-             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
+             <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
+             <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
+             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
+             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
+             <Link to="/help" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
+             <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
+             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
+             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
 
              {!user ? (
-               <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login') || 'Accedi'}</Link>
+               <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login') || 'Accedi'}</Link>
              ) : (
                <>
-                 <Link to="/profile" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.profile')}</Link>
-                 <Link to="/sell" style={{ color: 'var(--color-pillar-listings)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
-                 <Link to="/create-auction" style={{ color: 'var(--color-pillar-auctions)', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
+                 <Link to="/profile" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.profile')}</Link>
+                 <Link to="/sell" style={{ color: 'var(--color-pillar-listings)', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.sell')}</Link>
+                 <Link to="/create-auction" style={{ color: 'var(--color-pillar-auctions)', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.new_auction')}</Link>
                  {user.role === 'admin' && (
-                   <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
+                   <Link to="/admin" style={{ color: '#10b981', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.admin_panel')}</Link>
                  )}
                  <button 
                    onClick={() => {
                      logout();
                      setIsMenuOpen(false);
                    }} 
-                   style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: '#ef4444', textDecoration: 'none', fontWeight: 'bold', cursor: 'pointer', font: 'inherit' }}
+                   style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: '#ef4444', textDecoration: 'none', fontWeight: 'bold', cursor: 'pointer', font: 'inherit', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}
                  >
                    {t('nav.logout')}
                  </button>
@@ -209,7 +209,7 @@ export default function Layout() {
 
            {/* Language Selector Section */}
            <div style={{ marginBottom: '2rem' }}>
-             <h4 style={{ color: '#a89a7f', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem', letterSpacing: '1px' }}>{t('ui.language')}</h4>
+             <h4 style={{ color: '#a89a7f', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{t('ui.language')}</h4>
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                {LANGUAGES.map((lang) => (
                  <button 
@@ -228,7 +228,7 @@ export default function Layout() {
                    className="lang-option"
                  >
                    <span className={lang.flag} style={{ borderRadius: '2px' }}></span>
-                   <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{lang.name}</span>
+                   <span style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{lang.name}</span>
                  </button>
                ))}
              </div>
