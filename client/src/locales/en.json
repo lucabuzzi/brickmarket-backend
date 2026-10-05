@@ -881,19 +881,22 @@
         "what": "What you sell",
         "photos": "Photos",
         "condition": "Condition",
-        "price": "Price"
+        "price": "Price",
+        "review": "Review"
       },
       "step_title": {
         "what": "What are you showcasing?",
         "photos": "Show it at its best",
         "condition": "How is it doing?",
-        "price": "Price and shipping"
+        "price": "Price and shipping",
+        "review": "One last look"
       },
       "step_sub": {
         "what": "Pick the type and give your piece a name.",
         "photos": "The first photo is the cover: it's buyers' first glance.",
         "condition": "Describe its condition as it really is: honesty builds trust.",
-        "price": "Set the price and choose how to ship it."
+        "price": "Set the price and choose how to ship it.",
+        "review": "Check the summary: you can fix anything before publishing."
       },
       "preview": {
         "title": "This is how buyers will see it",
@@ -1070,6 +1073,50 @@
         "card_extra": {
           "label": "Sleeve or slab",
           "tip": "If it's in a sleeve or protective case, show it."
+        }
+      },
+      "review_btn": "Review your listing",
+      "review": {
+        "edit": "Edit",
+        "ready_title": "Ready for the shop window",
+        "ready_sub": "When you hit publish, your listing is visible to everyone.",
+        "blockers_title": "Almost there",
+        "blockers_sub": "To publish you still need:",
+        "fix": "Fix",
+        "tips_title": "To make it shine even more",
+        "photos_value": "{{n}} of {{max}}",
+        "no_description": "No description yet: you can add one now.",
+        "rows": {
+          "what": "What you sell",
+          "photos": "Photos",
+          "condition": "Condition",
+          "price": "Price",
+          "shipping": "Shipping",
+          "description": "Description"
+        }
+      },
+      "celebrate": {
+        "title": "Your listing is live!",
+        "sub": "Anyone on CardBrix can find it now. Here is what is worth doing next.",
+        "view": "See your listing",
+        "mine": "My listings",
+        "another": "List another one",
+        "copy": "Copy the link",
+        "copied": "Link copied",
+        "next_title": "After publishing",
+        "next": {
+          "reply": {
+            "title": "Reply quickly",
+            "text": "Buyers appreciate a fast answer: keep an eye on your notifications."
+          },
+          "share": {
+            "title": "Share the link",
+            "text": "Every listing has its own page: send it to people who might be interested."
+          },
+          "pack": {
+            "title": "Get the packaging ready",
+            "text": "An intact box, protection around the piece and no rush: it will arrive in better shape."
+          }
         }
       }
     }

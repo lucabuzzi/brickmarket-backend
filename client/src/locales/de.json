@@ -881,19 +881,22 @@
         "what": "Was du verkaufst",
         "photos": "Fotos",
         "condition": "Zustand",
-        "price": "Preis"
+        "price": "Preis",
+        "review": "Prüfen"
       },
       "step_title": {
         "what": "Was stellst du aus?",
         "photos": "Zeig es von seiner besten Seite",
         "condition": "In welchem Zustand ist es?",
-        "price": "Preis und Versand"
+        "price": "Preis und Versand",
+        "review": "Ein letzter Blick"
       },
       "step_sub": {
         "what": "Wähle die Art und gib deinem Stück einen Namen.",
         "photos": "Das erste Foto ist das Titelbild: der erste Blick der Käufer.",
         "condition": "Beschreibe den Zustand, wie er wirklich ist: Ehrlichkeit schafft Vertrauen.",
-        "price": "Lege den Preis fest und wähle den Versand."
+        "price": "Lege den Preis fest und wähle den Versand.",
+        "review": "Sieh dir die Zusammenfassung an: Du kannst vor dem Veröffentlichen alles ändern."
       },
       "preview": {
         "title": "So sehen Käufer deine Anzeige",
@@ -1070,6 +1073,50 @@
         "card_extra": {
           "label": "Hülle oder Slab",
           "tip": "Wenn sie in einer Hülle oder einem Schutzgehäuse steckt, zeig es."
+        }
+      },
+      "review_btn": "Anzeige prüfen",
+      "review": {
+        "edit": "Ändern",
+        "ready_title": "Bereit fürs Schaufenster",
+        "ready_sub": "Sobald du veröffentlichst, ist deine Anzeige für alle sichtbar.",
+        "blockers_title": "Fast geschafft",
+        "blockers_sub": "Zum Veröffentlichen fehlt noch:",
+        "fix": "Beheben",
+        "tips_title": "Damit sie noch mehr glänzt",
+        "photos_value": "{{n}} von {{max}}",
+        "no_description": "Noch keine Beschreibung: Du kannst jetzt eine hinzufügen.",
+        "rows": {
+          "what": "Was du verkaufst",
+          "photos": "Fotos",
+          "condition": "Zustand",
+          "price": "Preis",
+          "shipping": "Versand",
+          "description": "Beschreibung"
+        }
+      },
+      "celebrate": {
+        "title": "Deine Anzeige ist online!",
+        "sub": "Jetzt kann jeder auf CardBrix sie finden. Das lohnt sich als Nächstes.",
+        "view": "Deine Anzeige ansehen",
+        "mine": "Meine Anzeigen",
+        "another": "Noch eine einstellen",
+        "copy": "Link kopieren",
+        "copied": "Link kopiert",
+        "next_title": "Nach dem Veröffentlichen",
+        "next": {
+          "reply": {
+            "title": "Antworte schnell",
+            "text": "Käufer schätzen eine schnelle Antwort: Behalte deine Benachrichtigungen im Blick."
+          },
+          "share": {
+            "title": "Teile den Link",
+            "text": "Jede Anzeige hat ihre eigene Seite: Schick sie an alle, die interessiert sein könnten."
+          },
+          "pack": {
+            "title": "Bereite die Verpackung vor",
+            "text": "Intakter Karton, Schutz rund um das Stück und keine Eile: So kommt es besser an."
+          }
         }
       }
     }

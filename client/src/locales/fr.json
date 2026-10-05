@@ -881,19 +881,22 @@
         "what": "Ce que vous vendez",
         "photos": "Photos",
         "condition": "État",
-        "price": "Prix"
+        "price": "Prix",
+        "review": "Vérifier"
       },
       "step_title": {
         "what": "Que mettez-vous en vitrine ?",
         "photos": "Montrez-le sous son meilleur jour",
         "condition": "Dans quel état est-il ?",
-        "price": "Prix et expédition"
+        "price": "Prix et expédition",
+        "review": "Un dernier coup d'œil"
       },
       "step_sub": {
         "what": "Choisissez le type et donnez un nom à votre pièce.",
         "photos": "La première photo sera la couverture : c'est le premier regard de l'acheteur.",
         "condition": "Décrivez son état tel qu'il est vraiment : l'honnêteté inspire confiance.",
-        "price": "Fixez le prix et choisissez comment l'expédier."
+        "price": "Fixez le prix et choisissez comment l'expédier.",
+        "review": "Relis le récapitulatif : tu peux tout corriger avant de publier."
       },
       "preview": {
         "title": "Voici comment les acheteurs le verront",
@@ -1070,6 +1073,50 @@
         "card_extra": {
           "label": "Pochette ou slab",
           "tip": "Si elle est dans une pochette ou un boîtier de protection, montrez-le."
+        }
+      },
+      "review_btn": "Vérifier l'annonce",
+      "review": {
+        "edit": "Modifier",
+        "ready_title": "Tout est prêt pour la vitrine",
+        "ready_sub": "Quand tu publies, ton annonce est visible par tout le monde.",
+        "blockers_title": "Encore un instant",
+        "blockers_sub": "Pour publier, il manque encore :",
+        "fix": "Corriger",
+        "tips_title": "Pour qu'elle brille encore plus",
+        "photos_value": "{{n}} sur {{max}}",
+        "no_description": "Pas de description : tu peux en ajouter une maintenant.",
+        "rows": {
+          "what": "Ce que tu vends",
+          "photos": "Photos",
+          "condition": "État",
+          "price": "Prix",
+          "shipping": "Expédition",
+          "description": "Description"
+        }
+      },
+      "celebrate": {
+        "title": "Ton annonce est en ligne !",
+        "sub": "Tout le monde sur CardBrix peut maintenant la trouver. Voici ce qu'il vaut mieux faire ensuite.",
+        "view": "Voir ton annonce",
+        "mine": "Mes annonces",
+        "another": "En publier une autre",
+        "copy": "Copier le lien",
+        "copied": "Lien copié",
+        "next_title": "Après la publication",
+        "next": {
+          "reply": {
+            "title": "Réponds vite",
+            "text": "Les acheteurs apprécient une réponse rapide : garde un œil sur tes notifications."
+          },
+          "share": {
+            "title": "Partage le lien",
+            "text": "Chaque annonce a sa propre page : envoie-la à ceux que ça pourrait intéresser."
+          },
+          "pack": {
+            "title": "Prépare l'emballage",
+            "text": "Boîte intacte, protection autour de la pièce et pas de précipitation : elle arrivera mieux."
+          }
         }
       }
     }

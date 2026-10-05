@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Camera, Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Package, RotateCcw, Save, ShieldCheck, Sparkles, Tag } from 'lucide-react';
+import { Camera, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Loader2, Package, RotateCcw, Save, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { LISTING_ENDPOINTS, apiPostForm, apiFetch, SERVER_URL } from '../api';
 import { useAuth } from '../auth/useAuth';
 import SetLookupInput from '../components/SetLookupInput';
@@ -14,6 +14,8 @@ import PhotoSlots from '../components/sell/PhotoSlots';
 import PhotoGuide from '../components/sell/PhotoGuide';
 import usePhotoQuality from '../components/sell/analyzePhoto';
 import MarketValueHint from '../components/sell/MarketValueHint';
+import ReviewStep from '../components/sell/ReviewStep';
+import Celebration from '../components/sell/Celebration';
 import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
 import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
 import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, selectGame } from '../lib/sell/form';
@@ -24,6 +26,7 @@ import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib
 import { buildPreviewListing } from '../lib/sell/preview';
 import { mergePhotos, movePhoto, removePhotoAt } from '../lib/sell/photos';
 import { shotListFor } from '../lib/sell/shots';
+import { chosenCarrierIds, publishBlockers, publishedPath } from '../lib/sell/review';
 
 const CATEGORIES = [
   { value: '', label: '— Seleziona categoria —' },
@@ -56,7 +59,7 @@ const CONDITION_ICONS = {
   near_mint: '💎', slightly_played: '👍', moderately_played: '👌', heavy_played: '😬', poor_damaged: '🩹',
 };
 
-const STEP_ICONS = { what: Package, photos: Camera, condition: ShieldCheck, price: Tag };
+const STEP_ICONS = { what: Package, photos: Camera, condition: ShieldCheck, price: Tag, review: ClipboardCheck };
 const STEPS = STEP_IDS.map((id) => ({ id, Icon: STEP_ICONS[id] }));
 const TOTAL_STEPS = STEPS.length;
 
@@ -72,6 +75,10 @@ export const CARRIERS = [
 const noStar = (s) => String(s).replace(/\s*\*\s*$/, '');
 
 const GUIDE_SEEN_KEY = 'cardbrix_sell_guide_seen';
+
+// stored value of a select -> the text key it is shown with
+const BOX_LABEL_KEYS = { 'Mint (Perfetta)': 'box_condition_mint', 'Damaged (Danneggiata)': 'box_condition_damaged', 'None (Assente)': 'box_condition_none' };
+const INSTRUCTIONS_LABEL_KEYS = { 'Yes (Presenti)': 'instructions_present', 'No (Assenti)': 'instructions_absent', 'Solo PDF': 'instructions_pdf_only' };
 
 const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
 const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
@@ -107,6 +114,7 @@ export default function Sell() {
   const [dimsOpen, setDimsOpen] = useState(false);
   const [focusReq, setFocusReq] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [published, setPublished] = useState(null); // { listing, path } once a new listing went live
   const [guideSeen, setGuideSeen] = useState(() => safeStorage(() => window.localStorage.getItem(GUIDE_SEEN_KEY)) === '1');
 
   const draftReady = useRef(false);
@@ -142,6 +150,38 @@ export default function Sell() {
     }),
     [form, user?.username, previews, existingImages, t]
   );
+
+  const carrierIds = useMemo(() => CARRIERS.map((c) => c.id), []);
+  const blockers = useMemo(() => (stepId === 'review' ? publishBlockers(form, ctx) : []), [stepId, form, ctx]);
+  const summary = useMemo(() => {
+    const isTcg = form.productType === 'tcg';
+    const conditionOf = (c) => (c ? (isTcg ? t(`sell.condition_grade_${c}`) : t(`sell.condition_option_${c}`)) : '');
+    const what = [
+      t(`sell.product_type_${form.productType}`),
+      form.productType === 'lego' && form.mainCategory ? t(`sell.category_${form.mainCategory}`) : form.category,
+      form.setNumber.trim() ? `#${form.setNumber.trim()}` : '',
+      form.productType === 'lego' ? String(form.year || '').trim() : '',
+    ].filter(Boolean);
+    const conditionExtras = form.productType === 'lego' ? [
+      BOX_LABEL_KEYS[form.boxCondition] ? `${noStar(t('sell.box_condition_label'))}: ${t(`sell.${BOX_LABEL_KEYS[form.boxCondition]}`)}` : '',
+      INSTRUCTIONS_LABEL_KEYS[form.instructions] ? `${noStar(t('sell.instructions_label'))}: ${t(`sell.${INSTRUCTIONS_LABEL_KEYS[form.instructions]}`)}` : '',
+      form.isComplete ? t('sell.complete_set_label') : '',
+    ].filter(Boolean) : [];
+    const photos = files.length ? previews.map((p) => p.url) : existingImages.map((img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`));
+    const names = Object.fromEntries(CARRIERS.map((c) => [c.id, c.name]));
+    return {
+      title: form.title.trim(),
+      what,
+      photos,
+      photoCount,
+      maxPhotos: MAX_PHOTOS,
+      condition: conditionOf(form.condition),
+      conditionExtras,
+      price: form.price,
+      carriers: chosenCarrierIds(form.shippingOptions, carrierIds).map((id) => names[id]),
+      description: form.description,
+    };
+  }, [form, files, previews, existingImages, photoCount, carrierIds, t]);
 
   // ── Edit mode: load the listing ──────────────────────────────────────────
   useEffect(() => {
@@ -209,7 +249,7 @@ export default function Sell() {
   }, [editId, userId]);
 
   useEffect(() => {
-    if (editId || !userId || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
+    if (editId || !userId || published || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
     const sig = serializeDraft(form, step, 0);
     if (sig === lastSig.current) return undefined;
     const id = setTimeout(() => {
@@ -217,7 +257,7 @@ export default function Sell() {
       if (ok) { lastSig.current = sig; setSavedFlash(true); }
     }, 700);
     return () => clearTimeout(id);
-  }, [form, step, editId, userId]);
+  }, [form, step, editId, userId, published]);
 
   useEffect(() => {
     if (!savedFlash) return undefined;
@@ -245,6 +285,8 @@ export default function Sell() {
     setLookupPieces(null);
     setLookupPricing(null);
     setRestoredAtStep(null);
+    setPhotoNotices([]);
+    setPublished(null);
   }
 
   // ── Keep error messages honest: a message goes away as soon as its field is fixed ──
@@ -324,6 +366,18 @@ export default function Sell() {
     setPhotoNotices([]);
   }
 
+  const jumpTo = (id) => {
+    const index = STEP_IDS.indexOf(id) + 1;
+    if (index < 1) return;
+    setStep(index);
+    setReached((r) => Math.max(r, index));
+  };
+  function fixBlocker(b) {
+    setErrors(validateAll(form, ctx, 'publish').errors);
+    jumpTo(b.step);
+    setFocusReq({ field: b.field });
+  }
+
   const toggleCarrier = (id, selected) => patch({ shippingOptions: { ...form.shippingOptions, [id]: { ...form.shippingOptions[id], selected } } });
 
   function goNext() {
@@ -361,6 +415,7 @@ export default function Sell() {
 
     setBusy(true);
     try {
+      let created = null;
       if (editId) {
         const token = localStorage.getItem('cardbrix_token');
         const res = await fetch(`${SERVER_URL}/api/listings/${editId}`, {
@@ -373,10 +428,16 @@ export default function Sell() {
           throw new Error(d.error || t('sell.error_update_generic'));
         }
       } else {
-        await apiPostForm(LISTING_ENDPOINTS.create, fd);
+        created = await apiPostForm(LISTING_ENDPOINTS.create, fd);
       }
       clearDraft();
-      navigate('/my-listings', { replace: true });
+      if (mode === 'publish' && !editId) {
+        // a new listing is live: celebrate here instead of dropping the seller into a list
+        const path = publishedPath(created);
+        setPublished({ path, listing: created?.id != null ? { ...previewListing, id: created.id } : previewListing });
+      } else {
+        navigate('/my-listings', { replace: true });
+      }
     } catch (e) {
       setServerError(e.message || t('sell.error_generic_operation'));
     } finally {
@@ -388,6 +449,18 @@ export default function Sell() {
     return (
       <div className="lx-page flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="animate-spin text-[#c6ff3d]" size={34} aria-label={t('sell.ui.eyebrow_edit')} />
+      </div>
+    );
+  }
+
+  if (published) {
+    return (
+      <div className="lx-page min-h-[calc(100vh-4rem)]">
+        <div className="lx-bleed lx-grid pointer-events-none absolute inset-y-0 opacity-30" aria-hidden="true" />
+        <div className="pointer-events-none absolute left-1/2 top-16 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-[#c6ff3d]/15 blur-[130px]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-28 sm:px-6">
+          <Celebration listing={published.listing} path={published.path} onAnother={discardDraft} />
+        </div>
       </div>
     );
   }
@@ -433,7 +506,7 @@ export default function Sell() {
               <Stepper steps={STEPS} current={step} reached={reached} onSelect={setStep} />
             </div>
 
-            <PreviewBar listing={previewListing} percent={meter.percent} hint={meter.hint} />
+            {stepId !== 'review' ? <PreviewBar listing={previewListing} percent={meter.percent} hint={meter.hint} /> : null}
 
             {lookupPricing && lookupPricing.marketValue != null && step > 1 ? (
               <MarketValueHint pricing={lookupPricing} condition={form.condition} setNumber={form.setNumber} />
@@ -626,6 +699,11 @@ export default function Sell() {
                   />
                 )}
 
+                {/* STEP 5 — review */}
+                {stepId === 'review' && (
+                  <ReviewStep summary={summary} blockers={blockers} hint={meter.hint} onEdit={jumpTo} onFix={fixBlocker} />
+                )}
+
                 {/* STEP 3 — condition */}
                 {stepId === 'condition' && (
                   <>
@@ -807,7 +885,7 @@ export default function Sell() {
                     onClick={goNext}
                     className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#c6ff3d] px-7 py-3.5 text-[15px] font-black text-[#10140a] shadow-[0_10px_30px_-10px_rgba(198,255,61,0.6)] transition-transform hover:-translate-y-0.5"
                   >
-                    {t('sell.next_btn')} <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    {step === TOTAL_STEPS - 1 ? t('sell.ui.review_btn') : t('sell.next_btn')} <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
                   </button>
                 ) : (
                   <button

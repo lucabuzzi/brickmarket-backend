@@ -881,19 +881,22 @@
         "what": "Qué vendes",
         "photos": "Fotos",
         "condition": "Estado",
-        "price": "Precio"
+        "price": "Precio",
+        "review": "Revisar"
       },
       "step_title": {
         "what": "¿Qué pones en el escaparate?",
         "photos": "Muéstralo en su mejor versión",
         "condition": "¿Cómo está?",
-        "price": "Precio y envío"
+        "price": "Precio y envío",
+        "review": "Una última mirada"
       },
       "step_sub": {
         "what": "Elige el tipo y ponle nombre a tu pieza.",
         "photos": "La primera foto será la portada: es la primera mirada de quien compra.",
         "condition": "Describe su estado tal como es: la honestidad genera confianza.",
-        "price": "Fija el precio y elige cómo enviarlo."
+        "price": "Fija el precio y elige cómo enviarlo.",
+        "review": "Comprueba el resumen: puedes corregir todo antes de publicar."
       },
       "preview": {
         "title": "Así lo verán los compradores",
@@ -1070,6 +1073,50 @@
         "card_extra": {
           "label": "Funda o slab",
           "tip": "Si está en una funda o en una caja protectora, muéstrala."
+        }
+      },
+      "review_btn": "Revisar el anuncio",
+      "review": {
+        "edit": "Editar",
+        "ready_title": "Todo listo para el escaparate",
+        "ready_sub": "Cuando pulses publicar, tu anuncio será visible para todos.",
+        "blockers_title": "Un momento más",
+        "blockers_sub": "Para publicar aún falta:",
+        "fix": "Corregir",
+        "tips_title": "Para que brille aún más",
+        "photos_value": "{{n}} de {{max}}",
+        "no_description": "Sin descripción: puedes añadirla ahora.",
+        "rows": {
+          "what": "Qué vendes",
+          "photos": "Fotos",
+          "condition": "Estado",
+          "price": "Precio",
+          "shipping": "Envío",
+          "description": "Descripción"
+        }
+      },
+      "celebrate": {
+        "title": "¡Tu anuncio ya está online!",
+        "sub": "Ahora cualquiera en CardBrix puede encontrarlo. Esto es lo que conviene hacer ahora.",
+        "view": "Ver tu anuncio",
+        "mine": "Mis anuncios",
+        "another": "Publicar otro",
+        "copy": "Copiar el enlace",
+        "copied": "Enlace copiado",
+        "next_title": "Después de publicar",
+        "next": {
+          "reply": {
+            "title": "Responde rápido",
+            "text": "A quien compra le gusta una respuesta rápida: vigila las notificaciones."
+          },
+          "share": {
+            "title": "Comparte el enlace",
+            "text": "Cada anuncio tiene su propia página: envíala a quien pueda estar interesado."
+          },
+          "pack": {
+            "title": "Prepara el embalaje",
+            "text": "Caja intacta, protección alrededor de la pieza y sin prisas: llegará mejor."
+          }
         }
       }
     }

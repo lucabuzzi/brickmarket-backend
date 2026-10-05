@@ -9,7 +9,7 @@
 //   'draft'   only what the server needs to store a draft: a title, and a game for cards
 import { MAX_PHOTOS, isPositive, parseDecimal, selectedCarriers } from './form.js';
 
-export const STEP_IDS = ['what', 'photos', 'condition', 'price'];
+export const STEP_IDS = ['what', 'photos', 'condition', 'price', 'review']; // 'review' has no fields of its own: it summarises the others
 
 export const FIELD_STEP = {
   title: 'what',
