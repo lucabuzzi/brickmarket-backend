@@ -1,11 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Camera, Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Package, RotateCcw, Save, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 import { LISTING_ENDPOINTS, apiPostForm, apiFetch, SERVER_URL } from '../api';
 import { useAuth } from '../auth/useAuth';
-import { Camera, CheckCircle, Package, Edit, ChevronRight, ChevronLeft, Save, Loader, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
 import SetLookupInput from '../components/SetLookupInput';
-import { ANNUNCI_CARD_GAMES, getAnnunciCardGame } from '../config/annunciCategories';
+import Stepper from '../components/sell/Stepper';
+import Field, { FieldGroup } from '../components/sell/FormField';
+import { inputCls } from '../components/sell/inputClass';
+import ChoiceTile from '../components/sell/ChoiceTile';
+import PhotoDropzone from '../components/sell/PhotoDropzone';
+import MarketValueHint from '../components/sell/MarketValueHint';
+import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
+import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
+import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, selectGame } from '../lib/sell/form';
+import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
+import { buildListingFields } from '../lib/sell/payload';
+import { completeness } from '../lib/sell/score';
+import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib/sell/draft';
+import { buildPreviewListing } from '../lib/sell/preview';
+import { mergePhotos, removePhotoAt } from '../lib/sell/photos';
 
 const CATEGORIES = [
   { value: '', label: '— Seleziona categoria —' },
@@ -27,14 +42,20 @@ const PRODUCT_TYPE_OPTIONS = [
   { id: 'funko', icon: '🧸' },
 ];
 
-// Condition codes for trading cards (product_type === 'tcg'); LEGO/Funko keep new/used/complete/parts
-const TCG_CONDITIONS = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
-
 const MAIN_CATEGORY_OPTIONS = [
   { id: 'sets', icon: '🧱' },
   { id: 'mocs', icon: '🏗️' },
   { id: 'minifigures', icon: '👤' },
 ];
+
+const CONDITION_ICONS = {
+  new: '✨', used: '🧱', complete: '📦', parts: '🔩',
+  near_mint: '💎', slightly_played: '👍', moderately_played: '👌', heavy_played: '😬', poor_damaged: '🩹',
+};
+
+const STEP_ICONS = { what: Package, photos: Camera, condition: ShieldCheck, price: Tag };
+const STEPS = STEP_IDS.map((id) => ({ id, Icon: STEP_ICONS[id] }));
+const TOTAL_STEPS = STEPS.length;
 
 export const CARRIERS = [
   { id: 'DHL', name: 'DHL Express', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/ac/DHL_Logo.svg' },
@@ -44,83 +65,56 @@ export const CARRIERS = [
   { id: 'POSTE', name: 'Poste Italiane', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Poste_Italiane_logo_2015.svg/120px-Poste_Italiane_logo_2015.svg.png' },
 ];
 
+// Some older labels end with "*" to mark them required; the wizard marks required fields with a dot instead.
+const noStar = (s) => String(s).replace(/\s*\*\s*$/, '');
+
+const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
+const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
+const safeStorage = (fn) => { try { return fn(); } catch { return null; } };
+
 export default function Sell() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   const { user } = useAuth();
-  
+  const userId = user?.id;
+  const reduceMotion = useReducedMotion();
+
   const isPro = user?.role === 'professional' || user?.role_name === 'professional' || user?.is_pro || user?.seller_type === 'professional';
 
-  // Wizard State
+  // ── State ────────────────────────────────────────────────────────────────
+  const [form, setForm] = useState(emptyForm);
+  const patch = useCallback((p) => setForm((f) => ({ ...f, ...p })), []);
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
-
-  // Form State
-  const [productType, setProductType] = useState('lego'); // lego | funko | tcg
-  const [game, setGame] = useState(''); // only when productType === 'tcg'
-  const [title, setTitle] = useState('');
-  const [setNumber, setSetNumber] = useState('');
-  const [mainCategory, setMainCategory] = useState(''); // mandatory: sets, mocs, minifigures (LEGO only)
-  const [category, setCategory] = useState(''); // this is "theme" in DB — LEGO theme select / Funko free text / TCG auto-filled
-  const [year, setYear] = useState('');
-
-  const isLego = productType === 'lego';
-
-  // TCG: auto-fill the generic "theme" field with the selected game's display name
-  useEffect(() => {
-    if (productType === 'tcg' && game) {
-      const g = getAnnunciCardGame(game);
-      if (g) setCategory(g.name);
-    }
-  }, [productType, game]);
-  
-  const [condition, setCondition] = useState('');
-  const [boxCondition, setBoxCondition] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-
-  const [price, setPrice] = useState('');
-  const [shippingOptions, setShippingOptions] = useState({});
-  // Replaces the old small/medium/large packageSize enum — real weight/dims,
-  // only meaningful for physical items (LEGO/Funko). Left blank for TCG and
-  // for physical listings where the seller skips them: the backend applies a
-  // per-category default rather than requiring them here.
-  const [weightKg, setWeightKg] = useState('');
-  const [lengthCm, setLengthCm] = useState('');
-  const [widthCm, setWidthCm] = useState('');
-  const [heightCm, setHeightCm] = useState('');
-  const [description, setDescription] = useState('');
-  const [proNotes, setProNotes] = useState('');
-  
+  const [reached, setReached] = useState(1);
   const [files, setFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  
-  // UI States
+  const [photoNotices, setPhotoNotices] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [busy, setBusy] = useState(false);
   const [loadingListing, setLoadingListing] = useState(!!editId);
-  const [error, setError] = useState('');
   const [lookupPieces, setLookupPieces] = useState(null);
-  const [lookupPricing, setLookupPricing] = useState(null); // pricing from Rebrickable lookup
+  const [lookupPricing, setLookupPricing] = useState(null);
+  const [restoredAtStep, setRestoredAtStep] = useState(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [dimsOpen, setDimsOpen] = useState(false);
+  const [focusReq, setFocusReq] = useState(null);
 
-  const handleSetFound = (setData) => {
-    if (setData.name) setTitle(setData.name);
-    if (setData.set_num) setSetNumber(setData.set_num);
-    if (setData.year) setYear(String(setData.year));
-    if (setData.num_parts) setLookupPieces(setData.num_parts);
-    if (setData.pricing) setLookupPricing(setData.pricing);
-  };
+  const draftReady = useRef(false);
+  const lastSig = useRef('');
+  const headingRef = useRef(null);
+  const wizardTopRef = useRef(null);
+  const firstRender = useRef(true);
 
-  const handleLookupClear = () => {
-    setLookupPieces(null);
-    setLookupPricing(null);
-  };
+  const isLego = form.productType === 'lego';
+  const stepId = STEP_IDS[step - 1];
+  const photoCount = files.length || (editId ? existingImages.length : 0);
+  const ctx = useMemo(() => ({ photoCount, editing: !!editId, isPro }), [photoCount, editId, isPro]);
 
-  const previews = useMemo(
-    () => files.map((f) => ({ file: f, url: URL.createObjectURL(f) })),
-    [files]
-  );
+  const previews = useMemo(() => files.map((f) => ({ file: f, url: URL.createObjectURL(f) })), [files]);
+  useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
 
   const localizedCategories = useMemo(
     () => CATEGORIES.map((c) => ({
@@ -130,166 +124,228 @@ export default function Sell() {
     [t]
   );
 
-  useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, [previews]);
+  const meter = useMemo(() => completeness(form, { photoCount }), [form, photoCount]);
+  const previewListing = useMemo(
+    () => ({
+      ...buildPreviewListing(form, { sellerName: user?.username || '', image: previews[0]?.url || existingImages[0] || '' }),
+      title: form.title.trim() || t('sell.ui.preview.title_fallback'),
+    }),
+    [form, user?.username, previews, existingImages, t]
+  );
 
-  // Hydrate form if in edit mode
+  // ── Edit mode: load the listing ──────────────────────────────────────────
   useEffect(() => {
-    if (!editId) return;
-
-    const fetchListing = async () => {
+    if (!editId) return undefined;
+    let cancelled = false;
+    (async () => {
       try {
         setLoadingListing(true);
         const data = await apiFetch(`/api/listings/${editId}`);
-        setProductType(data.product_type || 'lego');
-        setGame(data.game || '');
-        setTitle(data.title || '');
-        setSetNumber(data.set_number || '');
-        setMainCategory(data.category || 'sets');
-        setCategory(data.theme || '');
-        setYear(data.year || '');
-        
+        if (cancelled) return;
         const c = (data.condition || '').toLowerCase();
-        if (TCG_CONDITIONS.includes(c)) setCondition(c);
-        else if (c === 'new' || c === 'sealed') setCondition('new');
-        else if (c === 'complete') setCondition('complete');
-        else if (c === 'parts') setCondition('parts');
-        else setCondition('used');
+        let condition = 'used';
+        if (TCG_CONDITIONS.includes(c)) condition = c;
+        else if (c === 'new' || c === 'sealed') condition = 'new';
+        else if (c === 'complete') condition = 'complete';
+        else if (c === 'parts') condition = 'parts';
 
-        setBoxCondition(data.box_condition || '');
-        setInstructions(data.instructions || '');
-        setIsComplete(!!data.is_complete);
-        setPrice(data.price || '');
-        
-        const existingShipping = {};
-        if (data.shipping_options && Array.isArray(data.shipping_options)) {
-          data.shipping_options.forEach(opt => {
-             existingShipping[opt.carrier] = { selected: true, price: opt.cost };
-          });
+        const shippingOptions = {};
+        if (Array.isArray(data.shipping_options)) {
+          data.shipping_options.forEach((opt) => { shippingOptions[opt.carrier] = { selected: true, price: opt.cost }; });
         }
-        setShippingOptions(existingShipping);
-        setWeightKg(data.weight_kg != null ? String(data.weight_kg) : '');
-        setLengthCm(data.length_cm != null ? String(data.length_cm) : '');
-        setWidthCm(data.width_cm != null ? String(data.width_cm) : '');
-        setHeightCm(data.height_cm != null ? String(data.height_cm) : '');
-
-        setDescription(data.description || '');
-        setProNotes(data.pro_notes || '');
+        patch({
+          productType: data.product_type || 'lego',
+          game: data.game || '',
+          title: data.title || '',
+          setNumber: data.set_number || '',
+          mainCategory: data.category || 'sets',
+          category: data.theme || '',
+          year: data.year || '',
+          condition,
+          boxCondition: data.box_condition || '',
+          instructions: data.instructions || '',
+          isComplete: !!data.is_complete,
+          price: data.price || '',
+          shippingOptions,
+          weightKg: data.weight_kg != null ? String(data.weight_kg) : '',
+          lengthCm: data.length_cm != null ? String(data.length_cm) : '',
+          widthCm: data.width_cm != null ? String(data.width_cm) : '',
+          heightCm: data.height_cm != null ? String(data.height_cm) : '',
+          description: data.description || '',
+          proNotes: data.pro_notes || '',
+        });
         setExistingImages(data.images || []);
-      } catch (err) {
-        setError(t('sell.error_load_listing'));
+      } catch {
+        if (!cancelled) setServerError(t('sell.error_load_listing'));
       } finally {
-        setLoadingListing(false);
+        if (!cancelled) setLoadingListing(false);
       }
-    };
+    })();
+    return () => { cancelled = true; };
+  }, [editId, t, patch]);
 
-    fetchListing();
-  }, [editId, t]);
-
-  function onFilesChange(e) {
-    const list = e.target.files ? Array.from(e.target.files) : [];
-    setFiles(list.slice(0, 5));
-  }
-
-  function removeFileAt(i) {
-    setFiles((prev) => prev.filter((_, idx) => idx !== i));
-  }
-
-  const nextStep = () => {
-    setError('');
-    if (step === 1) {
-      if (!title) {
-        setError(t('sell.error_title_required'));
-        return;
-      }
-      if (isLego && !mainCategory) {
-        setError(t('sell.error_title_category_required'));
-        return;
-      }
-      if (productType === 'tcg' && !game) {
-        setError(t('sell.error_select_game'));
-        return;
-      }
+  // ── Automatic draft: restore once, then save while typing ────────────────
+  useEffect(() => {
+    if (editId || !userId) return;
+    const saved = parseDraft(safeStorage(() => window.localStorage.getItem(draftKey(userId))));
+    if (saved) {
+      setForm({ ...emptyForm(), ...saved.form });
+      setStep(saved.step);
+      setReached(saved.step);
+      setRestoredAtStep(saved.step);
+      lastSig.current = serializeDraft(saved.form, saved.step, 0);
     }
-    if (step === 2 && !condition) {
-      setError(t('sell.error_condition_required'));
+    draftReady.current = true;
+  }, [editId, userId]);
+
+  useEffect(() => {
+    if (editId || !userId || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
+    const sig = serializeDraft(form, step, 0);
+    if (sig === lastSig.current) return undefined;
+    const id = setTimeout(() => {
+      const ok = safeStorage(() => { window.localStorage.setItem(draftKey(userId), serializeDraft(form, step)); return true; });
+      if (ok) { lastSig.current = sig; setSavedFlash(true); }
+    }, 700);
+    return () => clearTimeout(id);
+  }, [form, step, editId, userId]);
+
+  useEffect(() => {
+    if (!savedFlash) return undefined;
+    const id = setTimeout(() => setSavedFlash(false), 2500);
+    return () => clearTimeout(id);
+  }, [savedFlash]);
+
+  // the "we recovered your draft" note has done its job once the seller moves on
+  useEffect(() => {
+    if (restoredAtStep != null && step !== restoredAtStep) setRestoredAtStep(null);
+  }, [step, restoredAtStep]);
+
+  const clearDraft = useCallback(() => {
+    lastSig.current = '';
+    if (userId) safeStorage(() => window.localStorage.removeItem(draftKey(userId)));
+  }, [userId]);
+
+  function discardDraft() {
+    clearDraft();
+    setForm(emptyForm());
+    setFiles([]);
+    setErrors({});
+    setStep(1);
+    setReached(1);
+    setLookupPieces(null);
+    setLookupPricing(null);
+    setRestoredAtStep(null);
+  }
+
+  // ── Keep error messages honest: a message goes away as soon as its field is fixed ──
+  useEffect(() => {
+    setErrors((prev) => {
+      const fields = Object.keys(prev);
+      if (!fields.length) return prev;
+      const next = {};
+      for (const f of fields) {
+        const mode = prev[f] === 'photo_required' ? 'publish' : 'next';
+        const still = validateStep(FIELD_STEP[f], form, ctx, mode)[f];
+        if (still) next[f] = still;
+      }
+      // keep the same object when nothing changed (no re-render), but follow a message that changed its meaning
+      // (e.g. "enter a price" -> "enter a valid price")
+      const same = Object.keys(next).length === fields.length && fields.every((f) => next[f] === prev[f]);
+      return same ? prev : next;
+    });
+  }, [form, ctx]);
+
+  useEffect(() => {
+    if (errors.weightKg || errors.lengthCm || errors.widthCm || errors.heightCm) setDimsOpen(true);
+  }, [errors]);
+
+  // ── Focus: new step -> its heading; validation error -> the first invalid field ──
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    headingRef.current?.focus({ preventScroll: true });
+    wizardTopRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }, [step, reduceMotion]);
+
+  useEffect(() => {
+    if (!focusReq) return;
+    const el = document.getElementById(`sell-${focusReq.field}`);
+    if (el) {
+      const target = el.getAttribute('role') === 'radiogroup' || el.getAttribute('role') === 'group'
+        ? el.querySelector('[aria-checked="true"]') || el.querySelector('button, input')
+        : el;
+      target?.focus();
+    }
+    setFocusReq(null);
+  }, [focusReq]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const set = (name) => (e) => patch({ [name]: e.target.value });
+  const err = (field) => (errors[field] ? t(`sell.ui.err.${errors[field]}`) : undefined);
+
+  const handleSetFound = (setData) => {
+    const next = {};
+    if (setData.name) next.title = setData.name;
+    if (setData.set_num) next.setNumber = setData.set_num;
+    if (setData.year) next.year = String(setData.year);
+    patch(next);
+    if (setData.num_parts) setLookupPieces(setData.num_parts);
+    if (setData.pricing) setLookupPricing(setData.pricing);
+  };
+  const handleLookupClear = () => { setLookupPieces(null); setLookupPricing(null); };
+
+  function addPhotos(list) {
+    const r = mergePhotos(files, list, MAX_PHOTOS);
+    setFiles(r.files);
+    setPhotoNotices([r.overflow ? 'limit' : null, r.notImage ? 'not_image' : null].filter(Boolean));
+  }
+  function removePhoto(i) {
+    setFiles((f) => removePhotoAt(f, i));
+    setPhotoNotices([]);
+  }
+
+  const toggleCarrier = (id, selected) => patch({ shippingOptions: { ...form.shippingOptions, [id]: { ...form.shippingOptions[id], selected } } });
+
+  function goNext() {
+    const errs = validateStep(stepId, form, ctx, 'next');
+    setErrors((prev) => ({ ...removeStepErrors(prev, stepId), ...errs }));
+    if (Object.keys(errs).length) {
+      setFocusReq({ field: firstErrorField(stepId, errs) });
       return;
     }
-    if (step === 3) {
-      if (!price) {
-        setError(t('sell.error_price_required'));
-        return;
-      }
-      const selectedShippings = Object.values(shippingOptions).filter(o => o.selected);
-      if (selectedShippings.length === 0) {
-        setError(t('sell.error_shipping_required'));
-        return;
-      }
-    }
-    setStep(s => Math.min(s + 1, totalSteps));
-  };
-  
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+    const next = Math.min(step + 1, TOTAL_STEPS);
+    setStep(next);
+    setReached((r) => Math.max(r, next));
+  }
 
   async function submit(mode) {
-    setError('');
-    const p = parseFloat(String(price).replace(',', '.'));
-    
-    if (!editId && mode === 'publish' && files.length === 0) {
-      setError(t('sell.error_photo_required'));
+    setServerError('');
+    const { errors: errs, firstStep } = validateAll(form, ctx, mode);
+    if (firstStep) {
+      // Errors on the step the seller is looking at are shown right there; only when this step is fine do we
+      // take them back to the first earlier step that has something to fix.
+      const currentHasErrors = Object.keys(errs).some((f) => FIELD_STEP[f] === stepId);
+      const target = currentHasErrors ? stepId : firstStep;
+      const index = STEP_IDS.indexOf(target) + 1;
+      setErrors(errs);
+      setStep(index);
+      setReached((r) => Math.max(r, index));
+      setFocusReq({ field: firstErrorField(target, errs) });
       return;
     }
+    setErrors({});
 
     const fd = new FormData();
-    fd.append('title', title.trim());
-    fd.append('productType', productType);
-    if (productType === 'tcg' && game) fd.append('game', game);
-    if (isLego && setNumber) fd.append('setNumber', setNumber.trim());
-    fd.append('category', isLego ? mainCategory : 'sets');
-    if (category) fd.append('theme', category);
-    if (isLego && year) fd.append('year', year);
-
-    const conditionMap = { 'new': 'new', 'used': 'used', 'complete': 'complete', 'parts': 'parts' };
-    const mappedType = condition === 'new' ? 'sealed' : 'used';
-    fd.append('type', mappedType);
-    fd.append('condition', productType === 'tcg' ? condition : (conditionMap[condition] || 'used'));
-    if (isLego && boxCondition) fd.append('boxCondition', boxCondition);
-    if (isLego && instructions) fd.append('instructions', instructions);
-    if (isLego) fd.append('isComplete', String(isComplete));
-
-    if (description) fd.append('description', description.trim());
-    if (isPro && proNotes) fd.append('proNotes', proNotes.trim());
-    
-    const activeShipping = Object.entries(shippingOptions)
-      .filter(([_, o]) => o.selected)
-      .map(([id, o]) => ({ carrier: id }));
-    fd.append('shippingOptions', JSON.stringify(activeShipping));
-    
-    if (productType !== 'tcg') {
-      if (weightKg) fd.append('weightKg', weightKg);
-      if (lengthCm) fd.append('lengthCm', lengthCm);
-      if (widthCm) fd.append('widthCm', widthCm);
-      if (heightCm) fd.append('heightCm', heightCm);
-    }
-    fd.append('shippingCost', '0');
-    
-    if (!Number.isNaN(p) && p > 0) fd.append('price', String(p));
-    fd.append('status', mode === 'draft' ? 'draft' : 'active');
-
+    buildListingFields(form, mode, { isPro }).forEach(([name, value]) => fd.append(name, value));
     files.forEach((f) => fd.append('images', f));
 
     setBusy(true);
     try {
       if (editId) {
-        // Direct PATCH with FormData
         const token = localStorage.getItem('cardbrix_token');
         const res = await fetch(`${SERVER_URL}/api/listings/${editId}`, {
           method: 'PATCH',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: fd
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
         });
         if (!res.ok) {
           const d = await res.json();
@@ -298,9 +354,10 @@ export default function Sell() {
       } else {
         await apiPostForm(LISTING_ENDPOINTS.create, fd);
       }
+      clearDraft();
       navigate('/my-listings', { replace: true });
     } catch (e) {
-      setError(e.message || t('sell.error_generic_operation'));
+      setServerError(e.message || t('sell.error_generic_operation'));
     } finally {
       setBusy(false);
     }
@@ -308,550 +365,446 @@ export default function Sell() {
 
   if (loadingListing) {
     return (
-      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <Loader className="animate-spin" size={32} color="#c6ff3d" />
+      <div className="lx-page flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="animate-spin text-[#c6ff3d]" size={34} aria-label={t('sell.ui.eyebrow_edit')} />
       </div>
     );
   }
 
-  const renderStepIcon = (index, current, IconComponent) => {
-    const isActive = index === current;
-    const isPast = index < current;
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', opacity: isActive || isPast ? 1 : 0.4 }}>
-        <div style={{ 
-          width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: isPast ? '#059669' : isActive ? '#c6ff3d' : '#44403c',
-          color: isPast ? '#fff' : isActive ? '#10140a' : '#a8a29e',
-          border: isActive ? '2px solid #e4ff8f' : 'none'
-        }}>
-          {isPast ? <CheckCircle size={20} /> : <IconComponent size={20} />}
-        </div>
-        <span style={{ fontSize: '0.75rem', fontWeight: isActive ? 'bold' : 'normal', color: isActive ? '#eed690' : '#a8a29e' }}>
-          {[t('sell.step_label_info'), t('sell.step_label_condition'), t('sell.step_label_details'), t('sell.step_label_photos')][index - 1]}
-        </span>
-      </div>
-    );
-  };
+  const StepIcon = STEP_ICONS[stepId];
+  const tcgGameLabel = (g) => g.name;
+  const conditionOptions = form.productType === 'tcg' ? TCG_CONDITIONS : ['new', 'used', 'complete', 'parts'];
+  const conditionLabelOf = (c) => (form.productType === 'tcg' ? t(`sell.condition_grade_${c}`) : t(`sell.condition_option_${c}`));
 
   return (
-    <div className="page" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
-      
-      <div className="flex flex-wrap items-center justify-between gap-3" style={{ marginBottom: '2rem' }}>
-        <h1 className="text-2xl sm:text-3xl" style={{ fontWeight: '800', margin: 0, color: '#f8fafc' }}>
-          {editId ? t('sell.title_edit') : t('sell.title_new')}
-        </h1>
-        <Link to="/my-listings" style={{
-          padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #57534e', color: '#d6d3d1', textDecoration: 'none', fontSize: '0.9rem', transition: 'all 0.2s'
-        }}>
-          {t('sell.cancel')}
-        </Link>
-      </div>
+    <div className="lx-page min-h-[calc(100vh-4rem)]">
+      <div className="lx-bleed lx-grid pointer-events-none absolute inset-y-0 opacity-30" aria-hidden="true" />
+      <div className="pointer-events-none absolute left-1/2 top-16 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-[#c6ff3d]/10 blur-[130px]" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-24 top-80 h-[380px] w-[380px] rounded-full bg-[#8b5cf6]/12 blur-[120px]" aria-hidden="true" />
 
-      {/* Progress Bar Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginBottom: '3rem', padding: '0 1rem' }}>
-        <div style={{ position: 'absolute', top: '20px', left: '10%', right: '10%', height: '2px', backgroundColor: '#44403c', zIndex: 0 }}>
-          <div style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%`, height: '100%', backgroundColor: '#059669', transition: 'width 0.3s ease' }} />
-        </div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(1, step, Edit)}</div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(2, step, Package)}</div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(3, step, Edit)}</div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(4, step, Camera)}</div>
-      </div>
-
-      {/* ── Floating Price Pill ── visible on steps 2-4 when a set has been looked up */}
-      {lookupPricing && lookupPricing.marketValue != null && step > 1 && (() => {
-        const condKey = condition && ['new','used','complete','parts'].includes(condition) ? condition : 'used';
-        const condMultipliers = lookupPricing.conditionMultipliers || { new: 1, used: 0.65, complete: 0.55, parts: 0.30 };
-        const mult = condMultipliers[condKey] ?? 0.65;
-        const adjusted = Math.round(lookupPricing.marketValue * mult);
-        const condLabels = {
-          new: t('sell.pricing_cond_new'),
-          used: t('sell.pricing_cond_used'),
-          complete: t('sell.pricing_cond_complete'),
-          parts: t('sell.pricing_cond_parts'),
-        };
-        const appPct = lookupPricing.appreciationPct;
-        const TIcon = appPct >= 15 ? TrendingUp : appPct < 0 ? TrendingDown : Minus;
-        const tColor = appPct >= 50 ? '#10b981' : appPct >= 15 ? '#c6ff3d' : appPct < 0 ? '#f87171' : '#78716c';
-
-        return (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.75rem',
-            marginBottom: '1.25rem',
-            padding: '0.75rem 1.25rem',
-            backgroundColor: 'rgba(12, 10, 8,0.95)',
-            border: `1px solid ${lookupPricing.isTrending ? 'rgba(16,185,129,0.35)' : 'rgba(198,255,61,0.2)'}`,
-            borderRadius: '12px',
-            backdropFilter: 'blur(12px)',
-            boxShadow: lookupPricing.isTrending
-              ? '0 0 24px rgba(16,185,129,0.1), inset 0 1px 0 rgba(255,255,255,0.04)'
-              : '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)',
-            animation: 'fadeIn 0.4s ease',
-          }}>
-            {/* Zap icon */}
-            <div style={{
-              width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0,
-              backgroundColor: lookupPricing.isTrending ? 'rgba(16,185,129,0.12)' : 'rgba(198,255,61,0.08)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Zap size={16} color={lookupPricing.isTrending ? '#10b981' : '#c6ff3d'} />
-            </div>
-
-            {/* Label */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.08em', color: '#57534e', textTransform: 'uppercase', marginBottom: '0.1rem' }}>
-                {t('sell.market_value_estimated')}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#78716c' }}>
-                {setNumber || t('sell.set_fallback')} · <span style={{ color: '#a8a29e' }}>{condLabels[condKey]}</span>
-              </div>
-            </div>
-
-            {/* Trend */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
-              <TIcon size={13} color={tColor} />
-              <span style={{ fontSize: '0.7rem', color: tColor, fontWeight: '600' }}>
-                {appPct != null ? (appPct >= 0 ? `+${appPct}%` : `${appPct}%`) : ''}
-              </span>
-            </div>
-
-            {/* Price */}
-            <div style={{ flexShrink: 0, textAlign: 'right' }}>
-              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#f8fafc', letterSpacing: '-0.02em', lineHeight: 1 }}>
-                €{adjusted.toLocaleString('it-IT')}
-              </div>
-              <div style={{ fontSize: '0.6rem', color: '#57534e', marginTop: '0.1rem' }}>
-                €{Math.round(lookupPricing.low * mult).toLocaleString('it-IT')} – €{Math.round(lookupPricing.high * mult).toLocaleString('it-IT')}
-              </div>
-            </div>
+      <div className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-24 sm:px-6">
+        {/* ── Hero ── */}
+        <motion.header
+          className="mb-8"
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#c6ff3d]/30 bg-[#c6ff3d]/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-[#c6ff3d]">
+              <Sparkles size={13} aria-hidden="true" /> {editId ? t('sell.ui.eyebrow_edit') : t('sell.ui.eyebrow_new')}
+            </span>
+            <Link to="/my-listings" className="rounded-xl border border-white/15 px-3.5 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white">
+              {t('sell.cancel')}
+            </Link>
           </div>
-        );
-      })()}
+          <h1 className="mt-4 text-[clamp(2rem,6.5vw,3.6rem)] font-black leading-[1] tracking-[-0.045em] text-white [text-shadow:0_0_60px_rgba(198,255,61,0.22)]">
+            {editId ? t('sell.ui.hero_title_edit') : t('sell.ui.hero_title_new')}
+          </h1>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/60">
+            {editId ? t('sell.ui.hero_sub_edit') : t('sell.ui.hero_sub_new')}
+          </p>
+        </motion.header>
 
-      {error && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#450a0a', border: '1px solid #7f1d1d', borderRadius: '8px', color: '#fca5a5', fontWeight: '500' }}>
-          {error}
-        </div>
-      )}
-
-      {/* Form Wizard Container */}
-      <div style={{ backgroundColor: '#120f0a', padding: '2.5rem', borderRadius: '16px', border: '1px solid #292524', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-        
-        {/* STEP 1 */}
-        {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step1_heading')}</h2>
-
-            {/* ── Tipo Prodotto ── */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('sell.product_type_label')}</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
-                {PRODUCT_TYPE_OPTIONS.map(pt => (
-                  <button
-                    key={pt.id}
-                    type="button"
-                    onClick={() => { setProductType(pt.id); setCondition(''); if (pt.id !== 'tcg') setGame(''); if (pt.id !== 'lego') { setMainCategory(''); setSetNumber(''); setYear(''); } if (pt.id !== 'tcg') setCategory(''); }}
-                    style={{
-                      padding: '1rem 0.5rem',
-                      borderRadius: '12px',
-                      border: '2px solid',
-                      borderColor: productType === pt.id ? '#c6ff3d' : '#44403c',
-                      backgroundColor: productType === pt.id ? '#0c4a6e' : '#292524',
-                      color: productType === pt.id ? '#fff' : '#a8a29e',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.5rem' }}>{pt.icon}</span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{t(`sell.product_type_${pt.id}`)}</span>
-                  </button>
-                ))}
-              </div>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 space-y-5">
+            <div ref={wizardTopRef} className="scroll-mt-24 pb-1">
+              <Stepper steps={STEPS} current={step} reached={reached} onSelect={setStep} />
             </div>
 
-            {/* ── Selezione Gioco (solo Carte Collezionabili) ── */}
-            {productType === 'tcg' && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('sell.select_game_label')}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
-                  {ANNUNCI_CARD_GAMES.map(g => (
-                    <button
-                      key={g.slug}
-                      type="button"
-                      onClick={() => setGame(g.slug)}
-                      style={{
-                        padding: '0.75rem 0.4rem',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: game === g.slug ? '#c6ff3d' : '#44403c',
-                        backgroundColor: game === g.slug ? '#0c4a6e' : '#292524',
-                        color: game === g.slug ? '#fff' : '#a8a29e',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.3rem' }}>{g.emoji}</span>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', textAlign: 'center' }}>{g.name}</span>
-                    </button>
-                  ))}
+            <PreviewBar listing={previewListing} percent={meter.percent} hint={meter.hint} />
+
+            {lookupPricing && lookupPricing.marketValue != null && step > 1 ? (
+              <MarketValueHint pricing={lookupPricing} condition={form.condition} setNumber={form.setNumber} />
+            ) : null}
+
+            {restoredAtStep != null ? (
+              <div role="status" className="flex flex-col gap-2.5 rounded-2xl border border-[#c6ff3d]/25 bg-[#c6ff3d]/[0.06] px-4 py-3 text-sm sm:flex-row sm:items-center sm:gap-4">
+                <p className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 shrink-0 text-[#c6ff3d]" aria-hidden="true" />
+                  <span>
+                    <span className="font-semibold text-white">{t('sell.ui.draft.restored')}</span>{' '}
+                    <span className="text-white/55">{t('sell.ui.draft.photos_note')}</span>
+                  </span>
+                </p>
+                <button type="button" onClick={discardDraft} className="inline-flex items-center gap-1.5 self-end whitespace-nowrap text-xs font-bold text-[#c6ff3d] underline-offset-4 hover:underline sm:ml-auto sm:self-auto">
+                  <RotateCcw size={13} aria-hidden="true" /> {t('sell.ui.draft.discard')}
+                </button>
+              </div>
+            ) : null}
+
+            {serverError ? (
+              <div role="alert" className="rounded-2xl border border-red-500/40 bg-red-950/60 px-4 py-3 text-sm font-semibold text-red-200">
+                {serverError}
+              </div>
+            ) : null}
+
+            {/* ── Wizard card ── */}
+            <section className="rounded-[2rem] border border-white/10 bg-[#0d0c12]/90 p-5 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:p-8">
+              <div className="mb-6 flex items-start gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#c6ff3d]/12 text-[#c6ff3d]">
+                  <StepIcon size={22} aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-black tracking-tight text-white focus:outline-none">
+                    {t(`sell.ui.step_title.${stepId}`)}
+                  </h2>
+                  <p className="mt-1 text-sm text-white/55">{t(`sell.ui.step_sub.${stepId}`)}</p>
                 </div>
               </div>
-            )}
 
-            {/* ── Rebrickable Set Lookup (solo LEGO) ── */}
-            {!editId && isLego && (
-              <div style={{ padding: '1rem 1.25rem', backgroundColor: 'rgba(191,154,46,0.06)', border: '1px solid rgba(191,154,46,0.2)', borderRadius: '12px' }}>
-                <SetLookupInput
-                  onSetFound={handleSetFound}
-                  onClear={handleLookupClear}
-                  condition={condition}
-                />
-              </div>
-            )}
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{isLego ? t('sell.title_label_lego') : t('sell.title_label_other')}</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={isLego ? t('sell.title_placeholder_lego') : t('sell.title_placeholder_other')}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-            </div>
-
-            {isLego && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.set_number_label')}</label>
-                  <input type="text" value={setNumber} onChange={(e) => setSetNumber(e.target.value)} placeholder={t('sell.set_number_placeholder')}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-                </div>
-                <div>
-                  {lookupPieces != null && (
-                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '0.25rem' }}>{t('sell.pieces_total_label')}</span>
-                      <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#c6ff3d' }}>{lookupPieces.toLocaleString()}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {isLego && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('sell.main_category_label')}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', marginBottom: '1rem' }}>
-                  {MAIN_CATEGORY_OPTIONS.map(cat => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setMainCategory(cat.id)}
-                      style={{
-                        padding: '1rem 0.5rem',
-                        borderRadius: '12px',
-                        border: '2px solid',
-                        borderColor: mainCategory === cat.id ? '#c6ff3d' : '#44403c',
-                        backgroundColor: mainCategory === cat.id ? '#0c4a6e' : '#292524',
-                        color: mainCategory === cat.id ? '#fff' : '#a8a29e',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{t(`sell.category_${cat.id}`)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: isLego ? '1fr 1fr' : '1fr', gap: '1rem' }}>
-              {isLego ? (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.theme_label')}</label>
-                  <select value={category} onChange={(e) => setCategory(e.target.value)}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                    {localizedCategories.map((c) => <option key={c.value === '' ? '_none' : c.value} value={c.value}>{c.label}</option>)}
-                  </select>
-                </div>
-              ) : productType === 'funko' ? (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.series_franchise_label')}</label>
-                  <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder={t('sell.series_franchise_placeholder')}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-                </div>
-              ) : null}
-              {isLego && (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.year_label')}</label>
-                  <input type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder={t('sell.year_placeholder')}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step2_heading')}</h2>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.condition_label')}</label>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                <option value="">{t('sell.select_placeholder')}</option>
-                {productType === 'tcg' ? (
-                  TCG_CONDITIONS.map((c) => <option key={c} value={c}>{t(`sell.condition_grade_${c}`)}</option>)
-                ) : (
+              <motion.div
+                key={stepId}
+                className="space-y-6"
+                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* STEP 1 — what */}
+                {stepId === 'what' && (
                   <>
-                    <option value="new">{t('sell.condition_option_new')}</option>
-                    <option value="used">{t('sell.condition_option_used')}</option>
-                    <option value="complete">{t('sell.condition_option_complete')}</option>
-                    <option value="parts">{t('sell.condition_option_parts')}</option>
+                    <FieldGroup id="sell-productType" label={noStar(t('sell.product_type_label'))}>
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {PRODUCT_TYPE_OPTIONS.map((pt) => (
+                          <ChoiceTile
+                            key={pt.id}
+                            icon={pt.icon}
+                            label={t(`sell.product_type_${pt.id}`)}
+                            selected={form.productType === pt.id}
+                            onClick={() => setForm((f) => changeProductType(f, pt.id))}
+                          />
+                        ))}
+                      </div>
+                    </FieldGroup>
+
+                    {form.productType === 'tcg' && (
+                      <FieldGroup id="sell-game" label={noStar(t('sell.select_game_label'))} required error={err('game')}>
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                          {ANNUNCI_CARD_GAMES.map((g) => (
+                            <ChoiceTile
+                              key={g.slug}
+                              compact
+                              icon={g.emoji}
+                              label={tcgGameLabel(g)}
+                              selected={form.game === g.slug}
+                              onClick={() => setForm((f) => selectGame(f, g.slug, g.name))}
+                            />
+                          ))}
+                        </div>
+                      </FieldGroup>
+                    )}
+
+                    {!editId && isLego && (
+                      <div className="rounded-2xl border border-[#c6ff3d]/15 bg-[#c6ff3d]/[0.04] p-4">
+                        <SetLookupInput onSetFound={handleSetFound} onClear={handleLookupClear} condition={form.condition} />
+                      </div>
+                    )}
+
+                    <Field id="sell-title" label={noStar(isLego ? t('sell.title_label_lego') : t('sell.title_label_other'))} required error={err('title')} hint={t('sell.ui.title_hint')}>
+                      <input
+                        id="sell-title"
+                        type="text"
+                        value={form.title}
+                        onChange={set('title')}
+                        maxLength={300}
+                        autoComplete="off"
+                        aria-invalid={errors.title ? true : undefined}
+                        aria-describedby={errors.title ? 'sell-title-err' : 'sell-title-hint'}
+                        placeholder={isLego ? t('sell.title_placeholder_lego') : t('sell.title_placeholder_other')}
+                        className={inputCls(!!errors.title)}
+                      />
+                    </Field>
+
+                    {isLego && (
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field id="sell-setNumber" label={t('sell.set_number_label')} optional error={err('setNumber')}>
+                          <input
+                            id="sell-setNumber"
+                            type="text"
+                            value={form.setNumber}
+                            onChange={set('setNumber')}
+                            aria-invalid={errors.setNumber ? true : undefined}
+                            placeholder={t('sell.set_number_placeholder')}
+                            className={inputCls(!!errors.setNumber)}
+                          />
+                        </Field>
+                        {lookupPieces != null && (
+                          <div className="flex flex-col justify-end pb-1">
+                            <span className="text-xs text-white/45">{t('sell.pieces_total_label')}</span>
+                            <span className="text-2xl font-black text-[#c6ff3d]">{lookupPieces.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {isLego && (
+                      <FieldGroup id="sell-mainCategory" label={noStar(t('sell.main_category_label'))} required error={err('mainCategory')}>
+                        <div className="grid grid-cols-3 gap-2.5">
+                          {MAIN_CATEGORY_OPTIONS.map((cat) => (
+                            <ChoiceTile
+                              key={cat.id}
+                              icon={cat.icon}
+                              label={t(`sell.category_${cat.id}`)}
+                              selected={form.mainCategory === cat.id}
+                              onClick={() => patch({ mainCategory: cat.id })}
+                            />
+                          ))}
+                        </div>
+                      </FieldGroup>
+                    )}
+
+                    {(isLego || form.productType === 'funko') && (
+                      <div className={`grid grid-cols-1 gap-4 ${isLego ? 'sm:grid-cols-2' : ''}`}>
+                        {isLego ? (
+                          <Field id="sell-category" label={t('sell.theme_label').replace(/\s*\(.*\)\s*$/, '')} optional>
+                            <select id="sell-category" value={form.category} onChange={set('category')} className={inputCls()}>
+                              {localizedCategories.map((c) => <option key={c.value === '' ? '_none' : c.value} value={c.value}>{c.label}</option>)}
+                            </select>
+                          </Field>
+                        ) : (
+                          <Field id="sell-category" label={t('sell.series_franchise_label').replace(/\s*\(.*\)\s*$/, '')} optional>
+                            <input id="sell-category" type="text" value={form.category} onChange={set('category')} placeholder={t('sell.series_franchise_placeholder')} className={inputCls()} />
+                          </Field>
+                        )}
+                        {isLego && (
+                          <Field id="sell-year" label={t('sell.year_label')} optional error={err('year')}>
+                            <input
+                              id="sell-year"
+                              type="number"
+                              inputMode="numeric"
+                              value={form.year}
+                              onChange={set('year')}
+                              aria-invalid={errors.year ? true : undefined}
+                              placeholder={t('sell.year_placeholder')}
+                              className={inputCls(!!errors.year)}
+                            />
+                          </Field>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
-              </select>
-            </div>
 
-            {isLego && (
-              <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.box_condition_label')}</label>
-                    <select value={boxCondition} onChange={(e) => setBoxCondition(e.target.value)}
-                      style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                      <option value="">{t('sell.select_placeholder')}</option>
-                      <option value="Mint (Perfetta)">{t('sell.box_condition_mint')}</option>
-                      <option value="Damaged (Danneggiata)">{t('sell.box_condition_damaged')}</option>
-                      <option value="None (Assente)">{t('sell.box_condition_none')}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.instructions_label')}</label>
-                    <select value={instructions} onChange={(e) => setInstructions(e.target.value)}
-                      style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                      <option value="">{t('sell.select_placeholder')}</option>
-                      <option value="Yes (Presenti)">{t('sell.instructions_present')}</option>
-                      <option value="No (Assenti)">{t('sell.instructions_absent')}</option>
-                      <option value="Solo PDF">{t('sell.instructions_pdf_only')}</option>
-                    </select>
-                  </div>
-                </div>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginTop: '0.5rem', padding: '1rem', backgroundColor: '#292524', borderRadius: '8px', border: '1px solid #44403c', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={isComplete} onChange={(e) => setIsComplete(e.target.checked)} style={{ width: '1.2rem', height: '1.2rem', accentColor: '#c6ff3d' }} />
-                  <div>
-                    <span style={{ color: '#f8fafc', fontWeight: 'bold', display: 'block' }}>{t('sell.complete_set_label')}</span>
-                    <span style={{ color: '#a8a29e', fontSize: '0.8rem' }}>{t('sell.complete_set_desc')}</span>
-                  </div>
-                </label>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step3_heading')}</h2>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.price_label')}</label>
-                <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t('sell.price_placeholder')}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #c6ff3d', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }} />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.shipping_methods_label')}</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-                {CARRIERS.map(c => {
-                  const isActive = shippingOptions[c.id]?.selected;
-                  
-                  return (
-                    <div 
-                      key={c.id} 
-                      style={{ 
-                        border: isActive ? '2px solid #c6ff3d' : '1px solid #44403c', 
-                        borderRadius: '12px', 
-                        padding: '1rem', 
-                        backgroundColor: isActive ? 'rgba(212,175,55,0.05)' : '#292524',
-                        transition: 'all 0.2s',
-                        display: 'flex', flexDirection: 'column', gap: '0.8rem'
-                      }}
-                    >
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={!!isActive} 
-                          onChange={(e) => setShippingOptions(prev => ({ 
-                            ...prev, 
-                            [c.id]: { ...prev[c.id], selected: e.target.checked } 
-                          }))}
-                          style={{ width: '1.2rem', height: '1.2rem', accentColor: '#c6ff3d' }}
-                        />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <img src={c.icon} alt={c.name} style={{ height: '20px', width: 'auto', maxWidth: '40px', objectFit: 'contain', backgroundColor: '#fff', padding: '2px', borderRadius: '4px' }} />
-                          <span style={{ color: isActive ? '#fff' : '#a8a29e', fontWeight: 'bold', fontSize: '0.9rem' }}>{c.name}</span>
-                        </div>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
-              <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#78716c', fontStyle: 'italic' }}>
-                {t('sell.shipping_cost_note')}
-              </p>
-            </div>
-
-            {productType !== 'tcg' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.weight_kg_label')}</label>
-                  <input
-                    type="number" step="0.01" min="0" value={weightKg} onChange={(e) => setWeightKg(e.target.value)}
-                    placeholder={t('sell.weight_kg_placeholder')}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
+                {/* STEP 2 — photos */}
+                {stepId === 'photos' && (
+                  <PhotoDropzone
+                    previews={previews}
+                    existingImages={existingImages}
+                    editing={!!editId}
+                    error={err('photos')}
+                    notices={photoNotices}
+                    max={MAX_PHOTOS}
+                    onAdd={addPhotos}
+                    onRemove={removePhoto}
+                    resolveExisting={(img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`)}
                   />
+                )}
 
-                  <label style={{ display: 'block', margin: '1rem 0 0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.dimensions_cm_label')}</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-                    <input
-                      type="number" step="1" min="0" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)}
-                      placeholder={t('sell.length_placeholder')}
-                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
-                    />
-                    <input
-                      type="number" step="1" min="0" value={widthCm} onChange={(e) => setWidthCm(e.target.value)}
-                      placeholder={t('sell.width_placeholder')}
-                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
-                    />
-                    <input
-                      type="number" step="1" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
-                      placeholder={t('sell.height_placeholder')}
-                      style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}
-                    />
-                  </div>
-                  <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78716c' }}>
-                    {t('sell.dimensions_note')}
-                  </p>
-                </div>
-              </div>
-            )}
+                {/* STEP 3 — condition */}
+                {stepId === 'condition' && (
+                  <>
+                    <FieldGroup id="sell-condition" label={t('sell.ui.condition_label')} required error={err('condition')}>
+                      <div className={`grid grid-cols-2 gap-2.5 ${form.productType === 'tcg' ? 'sm:grid-cols-3' : 'sm:grid-cols-4'}`}>
+                        {conditionOptions.map((c) => (
+                          <ChoiceTile
+                            key={c}
+                            compact
+                            icon={CONDITION_ICONS[c]}
+                            label={conditionLabelOf(c)}
+                            selected={form.condition === c}
+                            onClick={() => patch({ condition: c })}
+                          />
+                        ))}
+                      </div>
+                    </FieldGroup>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('sell.description_label')}</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('sell.description_placeholder')} rows={4}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '0.95rem', resize: 'vertical' }} />
-            </div>
+                    {isLego && (
+                      <>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <Field id="sell-boxCondition" label={t('sell.box_condition_label')} optional>
+                            <select id="sell-boxCondition" value={form.boxCondition} onChange={set('boxCondition')} className={inputCls()}>
+                              <option value="">{t('sell.select_placeholder')}</option>
+                              <option value="Mint (Perfetta)">{t('sell.box_condition_mint')}</option>
+                              <option value="Damaged (Danneggiata)">{t('sell.box_condition_damaged')}</option>
+                              <option value="None (Assente)">{t('sell.box_condition_none')}</option>
+                            </select>
+                          </Field>
+                          <Field id="sell-instructions" label={t('sell.instructions_label')} optional>
+                            <select id="sell-instructions" value={form.instructions} onChange={set('instructions')} className={inputCls()}>
+                              <option value="">{t('sell.select_placeholder')}</option>
+                              <option value="Yes (Presenti)">{t('sell.instructions_present')}</option>
+                              <option value="No (Assenti)">{t('sell.instructions_absent')}</option>
+                              <option value="Solo PDF">{t('sell.instructions_pdf_only')}</option>
+                            </select>
+                          </Field>
+                        </div>
 
-            {isPro && (
-               <div style={{ padding: '1rem', backgroundColor: '#1e1b4b', border: '1px solid #4338ca', borderRadius: '8px' }}>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#a5b4fc', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                   <span style={{ backgroundColor: '#eab308', color: '#000', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem' }}>PRO</span>
-                   {t('sell.pro_notes_label')}
-                 </label>
-                 <textarea value={proNotes} onChange={(e) => setProNotes(e.target.value)} placeholder={t('sell.pro_notes_placeholder')} rows={2}
-                   style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#312e81', border: 'none', color: '#e0e7ff', fontSize: '0.9rem', resize: 'vertical' }} />
-               </div>
-            )}
+                        <label className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-colors ${form.isComplete ? 'border-[#c6ff3d]/50 bg-[#c6ff3d]/[0.07]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}>
+                          <input type="checkbox" checked={form.isComplete} onChange={(e) => patch({ isComplete: e.target.checked })} className="peer sr-only" />
+                          <span className="relative h-6 w-11 shrink-0 rounded-full bg-white/15 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[#c6ff3d] peer-checked:after:translate-x-5 peer-checked:after:bg-[#10140a] peer-focus-visible:ring-2 peer-focus-visible:ring-[#c6ff3d]/60 motion-reduce:after:transition-none" aria-hidden="true" />
+                          <span>
+                            <span className="block font-bold text-white">{t('sell.complete_set_label')}</span>
+                            <span className="text-[13px] text-white/55">{t('sell.complete_set_desc')}</span>
+                          </span>
+                        </label>
+                      </>
+                    )}
+                  </>
+                )}
 
-          </div>
-        )}
+                {/* STEP 4 — price, shipping, details */}
+                {stepId === 'price' && (
+                  <>
+                    <Field id="sell-price" label={t('sell.ui.price_label')} required error={err('price')}>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-[#c6ff3d]" aria-hidden="true">€</span>
+                        <input
+                          id="sell-price"
+                          type="text"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          value={form.price}
+                          onChange={(e) => patch({ price: e.target.value.replace(/[^\d.,]/g, '') })}
+                          aria-invalid={errors.price ? true : undefined}
+                          aria-describedby={errors.price ? 'sell-price-err' : undefined}
+                          placeholder={t('sell.price_placeholder')}
+                          className={`${inputCls(!!errors.price)} py-3.5 pl-11 text-2xl font-black`}
+                        />
+                      </div>
+                    </Field>
 
-        {/* STEP 4 */}
-        {step === 4 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#c6ff3d', fontSize: '1.4rem' }}>{t('sell.step4_heading')}</h2>
+                    <FieldGroup id="sell-shipping" role="group" label={t('sell.ui.shipping_label')} required error={err('shipping')} hint={t('sell.shipping_cost_note')}>
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {CARRIERS.map((c) => {
+                          const active = !!form.shippingOptions[c.id]?.selected;
+                          return (
+                            <label key={c.id} className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#c6ff3d]/50 ${active ? 'border-[#c6ff3d]/60 bg-[#c6ff3d]/[0.07]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}>
+                              <input type="checkbox" checked={active} onChange={(e) => toggleCarrier(c.id, e.target.checked)} className="peer sr-only" />
+                              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${active ? 'border-[#c6ff3d] bg-[#c6ff3d] text-[#10140a]' : 'border-white/25'}`} aria-hidden="true">
+                                {active ? <Check size={13} strokeWidth={3.5} /> : null}
+                              </span>
+                              <img src={c.icon} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-6 w-14 shrink-0 rounded bg-white object-contain p-0.5" />
+                              <span className={`text-sm font-bold ${active ? 'text-white' : 'text-white/65'}`}>{c.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </FieldGroup>
 
-            <div style={{ border: '2px dashed #57534e', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', backgroundColor: '#292524', position: 'relative' }}>
-              <Camera size={40} color="#a8a29e" style={{ margin: '0 auto 1rem auto' }} />
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#f8fafc', fontSize: '1.1rem', fontWeight: '600' }}>{t('sell.upload_dropzone_title')}</label>
-              <p style={{ color: '#a8a29e', fontSize: '0.85rem', marginBottom: '1.5rem' }}>{t('sell.upload_dropzone_desc')}</p>
+                    {form.productType !== 'tcg' && (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <button
+                          type="button"
+                          onClick={() => setDimsOpen((v) => !v)}
+                          aria-expanded={dimsOpen}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6ff3d]/50"
+                        >
+                          <span className="flex items-center gap-2 text-sm font-bold text-white/80">
+                            {t('sell.ui.dims_toggle')}
+                            <span className="text-[11px] font-medium text-white/35">{t('sell.ui.optional')}</span>
+                          </span>
+                          <ChevronDown size={18} className={`text-white/50 transition-transform duration-300 motion-reduce:transition-none ${dimsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                        </button>
+                        {dimsOpen && (
+                          <div className="space-y-4 px-4 pb-4">
+                            <Field id="sell-weightKg" label={t('sell.weight_kg_label')} error={err('weightKg')}>
+                              <input id="sell-weightKg" type="number" inputMode="decimal" step="0.01" min="0" value={form.weightKg} onChange={set('weightKg')} aria-invalid={errors.weightKg ? true : undefined} placeholder={t('sell.weight_kg_placeholder')} className={inputCls(!!errors.weightKg)} />
+                            </Field>
+                            <div>
+                              <p className="mb-1.5 text-[13px] font-bold text-white/80">{t('sell.dimensions_cm_label')}</p>
+                              <div className="grid grid-cols-3 gap-2.5">
+                                {[['lengthCm', 'length_placeholder'], ['widthCm', 'width_placeholder'], ['heightCm', 'height_placeholder']].map(([name, ph]) => (
+                                  <div key={name}>
+                                    <input id={`sell-${name}`} type="number" inputMode="numeric" step="1" min="0" value={form[name]} onChange={set(name)} aria-label={t(`sell.${ph}`)} aria-invalid={errors[name] ? true : undefined} placeholder={t(`sell.${ph}`)} className={inputCls(!!errors[name])} />
+                                    {errors[name] ? <p role="alert" className="mt-1 text-xs font-semibold text-red-300">{err(name)}</p> : null}
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="mt-2 text-xs text-white/45">{t('sell.dimensions_note')}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-              <input type="file" id="file-upload" accept="image/*" multiple onChange={onFilesChange} style={{ display: 'none' }} />
-              <button type="button" onClick={() => document.getElementById('file-upload').click()}
-                style={{ backgroundColor: '#a17e22', color: '#fff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', transition: 'background-color 0.2s' }}
-                onMouseOver={e => e.currentTarget.style.backgroundColor = '#0369a1'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#a17e22'}>
-                 {editId ? t('sell.upload_btn_new_photos') : t('sell.upload_btn_browse')}
+                    <Field id="sell-description" label={noStar(t('sell.description_label'))} optional error={err('description')}>
+                      <textarea
+                        id="sell-description"
+                        rows={4}
+                        value={form.description}
+                        onChange={set('description')}
+                        aria-invalid={errors.description ? true : undefined}
+                        placeholder={t('sell.ui.description_placeholder')}
+                        className={`${inputCls(!!errors.description)} resize-y`}
+                      />
+                    </Field>
+
+                    {isPro && (
+                      <div className="rounded-2xl border border-indigo-400/30 bg-indigo-950/40 p-4">
+                        <label htmlFor="sell-proNotes" className="mb-2 flex items-center gap-2 text-sm font-bold text-indigo-200">
+                          <span className="rounded bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black text-black">PRO</span>
+                          {t('sell.pro_notes_label')}
+                        </label>
+                        <textarea id="sell-proNotes" rows={2} value={form.proNotes} onChange={set('proNotes')} placeholder={t('sell.pro_notes_placeholder')} className={`${inputCls(!!errors.proNotes)} resize-y`} />
+                        {errors.proNotes ? <p role="alert" className="mt-1.5 text-xs font-semibold text-red-300">{err('proNotes')}</p> : null}
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            </section>
+
+            {/* ── Navigation ── */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={() => setStep((s) => Math.max(s - 1, 1))}
+                disabled={busy}
+                className={`order-last inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-5 py-3.5 text-sm font-bold text-white/80 transition-colors hover:border-white/30 hover:text-white sm:order-first ${step === 1 ? 'invisible' : ''}`}
+              >
+                <ChevronLeft size={18} aria-hidden="true" /> {t('sell.back_btn')}
               </button>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={() => submit('draft')}
+                  disabled={busy}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-5 py-3.5 text-sm font-bold text-white/85 transition-colors hover:border-white/30 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Save size={17} aria-hidden="true" /> {t('sell.save_draft_btn')}
+                </button>
+
+                {step < TOTAL_STEPS ? (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#c6ff3d] px-7 py-3.5 text-[15px] font-black text-[#10140a] shadow-[0_10px_30px_-10px_rgba(198,255,61,0.6)] transition-transform hover:-translate-y-0.5"
+                  >
+                    {t('sell.next_btn')} <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => submit('publish')}
+                    disabled={busy}
+                    className="lx-shine relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 px-7 py-3.5 text-[15px] font-black text-[#100d07] shadow-[0_10px_30px_-8px_rgba(212,175,55,0.55)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {busy ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : null}
+                    {busy ? (editId ? t('sell.updating') : t('sell.publishing')) : editId ? t('sell.update_listing_btn') : t('sell.publish_now_btn')}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {editId && existingImages.length > 0 && files.length === 0 && (
-              <div style={{ marginTop: '1rem' }}>
-                <p style={{ color: '#a8a29e', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('sell.existing_images_label')}</p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                   {existingImages.map((img, i) => (
-                     <div key={i} style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #44403c' }}>
-                       <img src={img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                     </div>
-                   ))}
-                </div>
-              </div>
-            )}
-
-            {previews.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4" style={{ marginTop: '1rem' }}>
-                {previews.map((p, i) => (
-                  <div key={p.url} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: i === 0 ? '3px solid #c6ff3d' : '1px solid #44403c' }}>
-                    {i === 0 && <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(212,175,55,0.9)', color: '#000', fontSize: '0.6rem', fontWeight: 'bold', textAlign: 'center', padding: '0.1rem 0' }}>{t('sell.cover_badge')}</span>}
-                    <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => removeFileAt(i)} style={{ position: 'absolute', right: '4px', top: '4px', backgroundColor: '#dc2626', color: '#fff', border: 'none', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', cursor: 'pointer' }}>×</button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <p aria-live="polite" className="flex h-5 items-center justify-end gap-1.5 text-xs font-medium text-white/40">
+              {savedFlash ? <><Check size={13} className="text-[#c6ff3d]" aria-hidden="true" /> {t('sell.ui.draft.saved')}</> : null}
+            </p>
           </div>
-        )}
 
-      </div>
-
-      {/* Navigation Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8">
-        <button type="button" onClick={prevStep} disabled={step === 1 || busy} className="w-full sm:w-auto justify-center" style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', borderRadius: '8px', backgroundColor: 'transparent', border: '1px solid #57534e', color: '#e7e5e4', cursor: step === 1 ? 'not-allowed' : 'pointer', opacity: step === 1 ? 0 : 1
-        }}>
-          <ChevronLeft size={18} /> {t('sell.back_btn')}
-        </button>
-
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          {step === totalSteps && (
-            <button type="button" onClick={() => submit('draft')} disabled={busy} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 1.5rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #78716c', color: '#d6d3d1', cursor: busy ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
-            }}>
-              <Save size={18} /> {t('sell.save_draft_btn')}
-            </button>
-          )}
-
-          {step < totalSteps ? (
-            <button type="button" onClick={nextStep} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#c6ff3d', border: 'none', color: '#10140a', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(198,255,61, 0.3)'
-            }}>
-              {t('sell.next_btn')} <ChevronRight size={18} />
-            </button>
-          ) : (
-            <button type="button" onClick={() => submit('publish')} disabled={busy} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#10b981', border: 'none', color: '#fff', fontWeight: 'bold', cursor: busy ? 'not-allowed' : 'pointer', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)', display: 'flex', alignItems: 'center'
-            }}>
-              {busy ? (editId ? t('sell.updating') : t('sell.publishing')) : (editId ? t('sell.update_listing_btn') : t('sell.publish_now_btn'))}
-            </button>
-          )}
+          <PreviewPanel listing={previewListing} percent={meter.percent} hint={meter.hint} />
         </div>
       </div>
-
     </div>
   );
 }

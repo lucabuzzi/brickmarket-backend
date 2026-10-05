@@ -867,7 +867,97 @@
     "cl_map_complete": "Complete",
     "cl_images_label": "Images",
     "cl_images_helper": "At least one file required to Publish (Cloudinary upload).",
-    "publish_btn": "Publish"
+    "publish_btn": "Publish",
+    "ui": {
+      "eyebrow_new": "New listing",
+      "eyebrow_edit": "Edit listing",
+      "hero_title_new": "Put your piece in the spotlight",
+      "hero_title_edit": "Give your listing a fresh shine",
+      "hero_sub_new": "A few steps and you watch your listing come to life in real time. Your draft saves itself.",
+      "hero_sub_edit": "Change whatever you like: the preview updates as you type.",
+      "required": "required",
+      "optional": "optional",
+      "step": {
+        "what": "What you sell",
+        "photos": "Photos",
+        "condition": "Condition",
+        "price": "Price"
+      },
+      "step_title": {
+        "what": "What are you showcasing?",
+        "photos": "Show it at its best",
+        "condition": "How is it doing?",
+        "price": "Price and shipping"
+      },
+      "step_sub": {
+        "what": "Pick the type and give your piece a name.",
+        "photos": "The first photo is the cover: it's buyers' first glance.",
+        "condition": "Describe its condition as it really is: honesty builds trust.",
+        "price": "Set the price and choose how to ship it."
+      },
+      "preview": {
+        "title": "This is how buyers will see it",
+        "hint": "It updates as you type.",
+        "toggle": "Preview",
+        "show": "Show",
+        "hide": "Hide",
+        "title_fallback": "Your listing title"
+      },
+      "meter": {
+        "label": "Listing completeness",
+        "complete": "Listing complete: ready for its debut!"
+      },
+      "hint": {
+        "title": "Give your piece a title",
+        "category": "Choose the category",
+        "game": "Choose the card game",
+        "condition": "Tell us the condition",
+        "price": "Set the price",
+        "shipping": "Choose how to ship",
+        "photos": "Add the first photo",
+        "photos_more": "Add more photos: they show more detail",
+        "description": "Add a description",
+        "description_more": "Flesh out the description"
+      },
+      "draft": {
+        "restored": "We recovered the draft you were writing.",
+        "photos_note": "Photos are not saved: add them again.",
+        "discard": "Start from scratch",
+        "saved": "Draft saved on this device"
+      },
+      "err": {
+        "title_required": "Give your piece a name.",
+        "title_short": "The title needs at least 5 characters.",
+        "title_long": "The title is too long (300 characters max).",
+        "main_category_required": "Choose a category.",
+        "game_required": "Choose the card game.",
+        "set_number_long": "The set number is too long (20 characters max).",
+        "year_invalid": "Enter a year between 1900 and 2100.",
+        "photo_required": "Upload at least one photo to publish. You can still save a draft.",
+        "photo_too_many": "You can upload up to 5 photos.",
+        "condition_required": "Tell us the condition.",
+        "price_required": "Enter a price.",
+        "price_invalid": "Enter a valid price greater than zero.",
+        "shipping_required": "Choose at least one shipping method.",
+        "dimension_invalid": "Enter a number greater than zero.",
+        "description_long": "The description is too long (10,000 characters max).",
+        "pro_notes_long": "The notes are too long (2,000 characters max)."
+      },
+      "photos": {
+        "drop_here": "Drop your photos here",
+        "add_more": "Add more photos",
+        "limit": "5 photos max: the others were not added.",
+        "not_image": "Some files are not images and were ignored.",
+        "remove": "Remove photo",
+        "count": "{{count}} of {{max}} photos"
+      },
+      "title_hint": "Include the name and the number: it helps buyers find it.",
+      "description_placeholder": "Tell us what makes it special: condition, flaws, what's included…",
+      "condition_label": "What condition is it in?",
+      "price_label": "Price (€)",
+      "shipping_label": "How do you want to ship?",
+      "dims_toggle": "Package weight and size"
+    }
   },
   "create_auction": {
     "error_title_condition_required": "Title and Condition are required.",

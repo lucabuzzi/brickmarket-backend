@@ -14,7 +14,24 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testTimeout": 30000
+    "testTimeout": 30000,
+    "transform": {
+      "client[\\\\/]src[\\\\/]lib[\\\\/].+\\.js$": [
+        "babel-jest",
+        {
+          "babelrc": false,
+          "configFile": false,
+          "plugins": [
+            "@babel/plugin-transform-modules-commonjs"
+          ]
+        }
+      ],
+      "^.+\\.[cm]?[jt]sx?$": "babel-jest"
+    },
+    "testPathIgnorePatterns": [
+      "[\\\\/]node_modules[\\\\/]",
+      "[\\\\/]\\.claude[\\\\/]worktrees[\\\\/]"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -45,6 +62,7 @@
     "ws": "^8.21.1"
   },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.29.7",
     "jest": "^30.5.2",
     "nodemon": "^3.1.0"
   }

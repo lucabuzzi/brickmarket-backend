@@ -22,7 +22,9 @@ export function normalizeImageUrl(url) {
   if (!url) return '';
   if (typeof url !== 'string') return '';
   if (url.startsWith('http')) return url;
-  
+  // Local previews (a photo just picked in the browser) are already complete URLs, not server paths
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+
   // 1. Uniform slashes and remove double slashes
   let path = url.replace(/\\/g, '/').replace(/\/+/g, '/');
   

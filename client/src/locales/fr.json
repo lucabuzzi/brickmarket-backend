@@ -867,7 +867,97 @@
     "cl_map_complete": "Complet",
     "cl_images_label": "Images",
     "cl_images_helper": "Au moins un fichier requis pour Publier (upload Cloudinary).",
-    "publish_btn": "Publier"
+    "publish_btn": "Publier",
+    "ui": {
+      "eyebrow_new": "Nouvelle annonce",
+      "eyebrow_edit": "Modifier l'annonce",
+      "hero_title_new": "Mettez votre pièce sous les projecteurs",
+      "hero_title_edit": "Redonnez de l'éclat à votre annonce",
+      "hero_sub_new": "Quelques étapes et vous voyez naître votre annonce en temps réel. Le brouillon s'enregistre tout seul.",
+      "hero_sub_edit": "Modifiez ce que vous voulez : l'aperçu se met à jour pendant que vous écrivez.",
+      "required": "obligatoire",
+      "optional": "facultatif",
+      "step": {
+        "what": "Ce que vous vendez",
+        "photos": "Photos",
+        "condition": "État",
+        "price": "Prix"
+      },
+      "step_title": {
+        "what": "Que mettez-vous en vitrine ?",
+        "photos": "Montrez-le sous son meilleur jour",
+        "condition": "Dans quel état est-il ?",
+        "price": "Prix et expédition"
+      },
+      "step_sub": {
+        "what": "Choisissez le type et donnez un nom à votre pièce.",
+        "photos": "La première photo sera la couverture : c'est le premier regard de l'acheteur.",
+        "condition": "Décrivez son état tel qu'il est vraiment : l'honnêteté inspire confiance.",
+        "price": "Fixez le prix et choisissez comment l'expédier."
+      },
+      "preview": {
+        "title": "Voici comment les acheteurs le verront",
+        "hint": "Mis à jour pendant que vous écrivez.",
+        "toggle": "Aperçu",
+        "show": "Afficher",
+        "hide": "Masquer",
+        "title_fallback": "Le titre de votre annonce"
+      },
+      "meter": {
+        "label": "Complétude de l'annonce",
+        "complete": "Annonce complète : prête pour ses débuts !"
+      },
+      "hint": {
+        "title": "Donnez un titre à votre pièce",
+        "category": "Choisissez la catégorie",
+        "game": "Choisissez le jeu de cartes",
+        "condition": "Indiquez l'état",
+        "price": "Fixez le prix",
+        "shipping": "Choisissez comment expédier",
+        "photos": "Ajoutez la première photo",
+        "photos_more": "Ajoutez d'autres photos : elles montrent plus de détails",
+        "description": "Ajoutez une description",
+        "description_more": "Enrichissez la description"
+      },
+      "draft": {
+        "restored": "Nous avons récupéré le brouillon que vous étiez en train d'écrire.",
+        "photos_note": "Les photos ne sont pas enregistrées : ajoutez-les de nouveau.",
+        "discard": "Repartir de zéro",
+        "saved": "Brouillon enregistré sur cet appareil"
+      },
+      "err": {
+        "title_required": "Donnez un nom à votre pièce.",
+        "title_short": "Le titre doit contenir au moins 5 caractères.",
+        "title_long": "Le titre est trop long (300 caractères maximum).",
+        "main_category_required": "Choisissez une catégorie.",
+        "game_required": "Choisissez le jeu de cartes.",
+        "set_number_long": "Le numéro de set est trop long (20 caractères maximum).",
+        "year_invalid": "Saisissez une année entre 1900 et 2100.",
+        "photo_required": "Ajoutez au moins une photo pour publier. Vous pouvez quand même enregistrer le brouillon.",
+        "photo_too_many": "Vous pouvez ajouter 5 photos au maximum.",
+        "condition_required": "Indiquez l'état.",
+        "price_required": "Saisissez un prix.",
+        "price_invalid": "Saisissez un prix valide, supérieur à zéro.",
+        "shipping_required": "Choisissez au moins un mode d'expédition.",
+        "dimension_invalid": "Saisissez un nombre supérieur à zéro.",
+        "description_long": "La description est trop longue (10 000 caractères maximum).",
+        "pro_notes_long": "Les notes sont trop longues (2 000 caractères maximum)."
+      },
+      "photos": {
+        "drop_here": "Déposez vos photos ici",
+        "add_more": "Ajouter d'autres photos",
+        "limit": "5 photos maximum : les autres n'ont pas été ajoutées.",
+        "not_image": "Certains fichiers ne sont pas des images et ont été ignorés.",
+        "remove": "Retirer la photo",
+        "count": "{{count}} sur {{max}} photos"
+      },
+      "title_hint": "Indiquez le nom et le numéro : cela aide les acheteurs à le trouver.",
+      "description_placeholder": "Dites-nous ce qui le rend spécial : état, défauts, contenu…",
+      "condition_label": "Dans quel état est-il ?",
+      "price_label": "Prix (€)",
+      "shipping_label": "Comment voulez-vous l'expédier ?",
+      "dims_toggle": "Poids et dimensions du colis"
+    }
   },
   "create_auction": {
     "error_title_condition_required": "Le titre et l'état sont obligatoires.",
