@@ -949,14 +949,129 @@
         "limit": "5 photos max: the others were not added.",
         "not_image": "Some files are not images and were ignored.",
         "remove": "Remove photo",
-        "count": "{{count}} of {{max}} photos"
+        "count": "{{count}} of {{max}} photos",
+        "camera": "Take a photo",
+        "gallery": "From gallery",
+        "move_left": "Move earlier",
+        "move_right": "Move later",
+        "quality_small_msg": "Photo {{n}} is small: it may look blurry on screen.",
+        "quality_blurry_msg": "Photo {{n}} looks a little blurry: retake it if you can. You can still publish.",
+        "slot_aria": "Add photo: {{shot}}",
+        "replace_note": "Uploading new photos replaces the current ones."
       },
       "title_hint": "Include the name and the number: it helps buyers find it.",
       "description_placeholder": "Tell us what makes it special: condition, flaws, what's included…",
       "condition_label": "What condition is it in?",
       "price_label": "Price (€)",
       "shipping_label": "How do you want to ship?",
-      "dims_toggle": "Package weight and size"
+      "dims_toggle": "Package weight and size",
+      "guide": {
+        "chip": "How to take the photo",
+        "title": "How to take the perfect photo",
+        "subtitle": "Sharp, complete photos give buyers confidence. All you need is your phone and some light.",
+        "shots_title": "The shots that matter",
+        "shots_sub": "Take them in order: the first one is the cover.",
+        "tips_title": "For every shot",
+        "tips": {
+          "light": {
+            "title": "Natural light",
+            "text": "Stand near a window in daylight. Avoid yellow lamps and harsh shadows."
+          },
+          "noflash": {
+            "title": "No flash, no filters",
+            "text": "Flash creates glare on boxes and cards; filters change the colours."
+          },
+          "background": {
+            "title": "Simple background",
+            "text": "A plain table or sheet of paper, light or dark, with nothing distracting."
+          },
+          "frame": {
+            "title": "Everything in frame",
+            "text": "Leave a little margin around the piece: the corners should be visible."
+          },
+          "parallel": {
+            "title": "Hold the phone straight",
+            "text": "Keep the phone parallel to the piece: no skewed perspective."
+          },
+          "focus": {
+            "title": "Focus",
+            "text": "Tap the screen on the piece and keep your hands steady. Wipe the lens with a cloth."
+          },
+          "honest": {
+            "title": "Show the flaws",
+            "text": "A photographed scratch builds more trust than a surprise on delivery."
+          }
+        },
+        "tech": "No need to resize your photos: up to 10 MB each, we optimise them for you.",
+        "done": "Got it, let me add photos",
+        "close": "Close"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Box front",
+          "tip": "The whole box, straight and well lit: this is the cover."
+        },
+        "box_back": {
+          "label": "Box back",
+          "tip": "Show the description and codes: it confirms it's the right set."
+        },
+        "box_corners": {
+          "label": "Corners and sides",
+          "tip": "A close-up of corners and edges, where dents show."
+        },
+        "contents": {
+          "label": "Contents",
+          "tip": "Bags, booklets and minifigures laid out on a surface."
+        },
+        "flaws": {
+          "label": "Flaws or details",
+          "tip": "Scratches, dents, marks: show them up close."
+        },
+        "overview": {
+          "label": "Overview",
+          "tip": "The whole piece, clearly visible: this is the cover."
+        },
+        "closeup": {
+          "label": "Close-up",
+          "tip": "A close-up of the nicest or most important parts."
+        },
+        "other_side": {
+          "label": "Other side",
+          "tip": "Turn it around and show the back or the other side."
+        },
+        "details": {
+          "label": "Details",
+          "tip": "Prints, rare parts, minifigures or accessories."
+        },
+        "scale": {
+          "label": "For scale",
+          "tip": "Put a coin next to it: the size is clear at a glance."
+        },
+        "box_side": {
+          "label": "Side and window",
+          "tip": "The box from the side, showing the clear window if it has one."
+        },
+        "card_front": {
+          "label": "Card front",
+          "tip": "The whole card, flat and straight: this is the cover."
+        },
+        "card_back": {
+          "label": "Card back",
+          "tip": "The back, to show the overall condition."
+        },
+        "card_corners": {
+          "label": "Corners",
+          "tip": "Close-ups of all four corners: they decide the card's condition."
+        },
+        "card_light": {
+          "label": "Surface in the light",
+          "tip": "Tilt it under a light: scratches and holographic parts show up."
+        },
+        "card_extra": {
+          "label": "Sleeve or slab",
+          "tip": "If it's in a sleeve or protective case, show it."
+        }
+      }
     }
   },
   "create_auction": {

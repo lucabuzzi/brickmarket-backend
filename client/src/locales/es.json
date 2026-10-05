@@ -949,14 +949,129 @@
         "limit": "Máximo 5 fotos: las demás no se han añadido.",
         "not_image": "Algunos archivos no son imágenes y se han ignorado.",
         "remove": "Quitar la foto",
-        "count": "{{count}} de {{max}} fotos"
+        "count": "{{count}} de {{max}} fotos",
+        "camera": "Hacer una foto",
+        "gallery": "Desde la galería",
+        "move_left": "Mover antes",
+        "move_right": "Mover después",
+        "quality_small_msg": "La foto {{n}} es pequeña: en pantalla podría verse poco nítida.",
+        "quality_blurry_msg": "La foto {{n}} parece algo movida: repítela si puedes. Aun así puedes publicar.",
+        "slot_aria": "Añadir foto: {{shot}}",
+        "replace_note": "Al subir fotos nuevas se sustituyen las actuales."
       },
       "title_hint": "Incluye el nombre y el número: ayuda a quien busca.",
       "description_placeholder": "Cuéntanos qué lo hace especial: estado, defectos, qué incluye…",
       "condition_label": "¿En qué estado está?",
       "price_label": "Precio (€)",
       "shipping_label": "¿Cómo quieres enviarlo?",
-      "dims_toggle": "Peso y tamaño del paquete"
+      "dims_toggle": "Peso y tamaño del paquete",
+      "guide": {
+        "chip": "Cómo hacer la foto",
+        "title": "Cómo hacer la foto perfecta",
+        "subtitle": "Las fotos nítidas y completas dan confianza a quien compra. Solo necesitas el móvil y algo de luz.",
+        "shots_title": "Las fotos que cuentan",
+        "shots_sub": "Hazlas en orden: la primera es la portada.",
+        "tips_title": "Para cada foto",
+        "tips": {
+          "light": {
+            "title": "Luz natural",
+            "text": "Colócate junto a una ventana, de día. Evita las luces amarillas y las sombras duras."
+          },
+          "noflash": {
+            "title": "Sin flash ni filtros",
+            "text": "El flash crea reflejos en cajas y cartas; los filtros cambian los colores."
+          },
+          "background": {
+            "title": "Fondo sencillo",
+            "text": "Una mesa o una hoja lisa, clara u oscura, sin distracciones."
+          },
+          "frame": {
+            "title": "Todo en el encuadre",
+            "text": "Deja un poco de margen alrededor de la pieza: se deben ver las esquinas."
+          },
+          "parallel": {
+            "title": "Móvil recto",
+            "text": "Mantén el móvil paralelo a la pieza: sin perspectivas torcidas."
+          },
+          "focus": {
+            "title": "Enfoca",
+            "text": "Toca la pantalla sobre la pieza y mantén las manos firmes. Limpia la lente con un paño."
+          },
+          "honest": {
+            "title": "Muestra los defectos",
+            "text": "Un arañazo fotografiado genera más confianza que una sorpresa al recibirlo."
+          }
+        },
+        "tech": "No hace falta redimensionar las fotos: hasta 10 MB cada una, las optimizamos nosotros.",
+        "done": "Entendido, subir fotos",
+        "close": "Cerrar"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Frente de la caja",
+          "tip": "Toda la caja, recta y bien iluminada: es la portada."
+        },
+        "box_back": {
+          "label": "Parte trasera de la caja",
+          "tip": "Muestra la descripción y los códigos: confirma que es el set correcto."
+        },
+        "box_corners": {
+          "label": "Esquinas y lados",
+          "tip": "Un primer plano de esquinas y bordes, donde se notan los golpes."
+        },
+        "contents": {
+          "label": "Contenido",
+          "tip": "Bolsas, manuales y minifiguras colocados sobre una superficie."
+        },
+        "flaws": {
+          "label": "Defectos o detalles",
+          "tip": "Arañazos, golpes, marcas: muéstralos de cerca."
+        },
+        "overview": {
+          "label": "Vista general",
+          "tip": "La pieza entera, bien visible: es la portada."
+        },
+        "closeup": {
+          "label": "Primer plano",
+          "tip": "Un primer plano de las partes más bonitas o importantes."
+        },
+        "other_side": {
+          "label": "Otro lado",
+          "tip": "Dale la vuelta y muestra la parte trasera o el otro lado."
+        },
+        "details": {
+          "label": "Detalles",
+          "tip": "Estampados, piezas raras, minifiguras o accesorios."
+        },
+        "scale": {
+          "label": "Para la escala",
+          "tip": "Pon una moneda al lado: el tamaño se entiende al instante."
+        },
+        "box_side": {
+          "label": "Lateral y ventana",
+          "tip": "La caja de lado, con la ventana transparente si la tiene."
+        },
+        "card_front": {
+          "label": "Frente de la carta",
+          "tip": "La carta entera, plana y recta: es la portada."
+        },
+        "card_back": {
+          "label": "Reverso de la carta",
+          "tip": "El reverso, para mostrar el estado general."
+        },
+        "card_corners": {
+          "label": "Esquinas",
+          "tip": "Primeros planos de las cuatro esquinas: determinan el estado de la carta."
+        },
+        "card_light": {
+          "label": "Superficie con luz",
+          "tip": "Inclínala bajo una luz: se ven los arañazos y las partes holográficas."
+        },
+        "card_extra": {
+          "label": "Funda o slab",
+          "tip": "Si está en una funda o en una caja protectora, muéstrala."
+        }
+      }
     }
   },
   "create_auction": {

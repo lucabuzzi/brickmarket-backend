@@ -949,14 +949,129 @@
         "limit": "5 photos maximum : les autres n'ont pas été ajoutées.",
         "not_image": "Certains fichiers ne sont pas des images et ont été ignorés.",
         "remove": "Retirer la photo",
-        "count": "{{count}} sur {{max}} photos"
+        "count": "{{count}} sur {{max}} photos",
+        "camera": "Prendre une photo",
+        "gallery": "Depuis la galerie",
+        "move_left": "Déplacer avant",
+        "move_right": "Déplacer après",
+        "quality_small_msg": "La photo {{n}} est petite : elle pourrait paraître floue à l'écran.",
+        "quality_blurry_msg": "La photo {{n}} semble un peu floue : refaites-la si vous le pouvez. Vous pouvez quand même publier.",
+        "slot_aria": "Ajouter une photo : {{shot}}",
+        "replace_note": "Ajouter de nouvelles photos remplace les photos actuelles."
       },
       "title_hint": "Indiquez le nom et le numéro : cela aide les acheteurs à le trouver.",
       "description_placeholder": "Dites-nous ce qui le rend spécial : état, défauts, contenu…",
       "condition_label": "Dans quel état est-il ?",
       "price_label": "Prix (€)",
       "shipping_label": "Comment voulez-vous l'expédier ?",
-      "dims_toggle": "Poids et dimensions du colis"
+      "dims_toggle": "Poids et dimensions du colis",
+      "guide": {
+        "chip": "Comment prendre la photo",
+        "title": "Comment prendre la photo parfaite",
+        "subtitle": "Des photos nettes et complètes rassurent les acheteurs. Il suffit de votre téléphone et d'un peu de lumière.",
+        "shots_title": "Les photos qui comptent",
+        "shots_sub": "Prenez-les dans l'ordre : la première est la couverture.",
+        "tips_title": "Pour chaque photo",
+        "tips": {
+          "light": {
+            "title": "Lumière naturelle",
+            "text": "Placez-vous près d'une fenêtre, en journée. Évitez les lampes jaunes et les ombres dures."
+          },
+          "noflash": {
+            "title": "Pas de flash ni de filtres",
+            "text": "Le flash crée des reflets sur les boîtes et les cartes ; les filtres changent les couleurs."
+          },
+          "background": {
+            "title": "Fond simple",
+            "text": "Une table ou une feuille unie, claire ou sombre, sans éléments distrayants."
+          },
+          "frame": {
+            "title": "Tout dans le cadre",
+            "text": "Laissez un peu de marge autour de la pièce : les coins doivent être visibles."
+          },
+          "parallel": {
+            "title": "Téléphone bien droit",
+            "text": "Gardez le téléphone parallèle à la pièce : pas de perspective déformée."
+          },
+          "focus": {
+            "title": "Mise au point",
+            "text": "Touchez l'écran sur la pièce et gardez les mains stables. Essuyez l'objectif avec un chiffon."
+          },
+          "honest": {
+            "title": "Montrez les défauts",
+            "text": "Une rayure photographiée inspire plus confiance qu'une surprise à la livraison."
+          }
+        },
+        "tech": "Inutile de redimensionner vos photos : jusqu'à 10 Mo chacune, nous les optimisons pour vous.",
+        "done": "Compris, j'ajoute mes photos",
+        "close": "Fermer"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Face avant de la boîte",
+          "tip": "Toute la boîte, bien droite et éclairée : c'est la couverture."
+        },
+        "box_back": {
+          "label": "Dos de la boîte",
+          "tip": "Montrez la description et les codes : cela confirme que c'est le bon set."
+        },
+        "box_corners": {
+          "label": "Coins et côtés",
+          "tip": "Un gros plan des coins et des bords, où l'on voit les chocs."
+        },
+        "contents": {
+          "label": "Contenu",
+          "tip": "Sachets, notices et minifigures disposés sur une surface."
+        },
+        "flaws": {
+          "label": "Défauts ou détails",
+          "tip": "Rayures, bosses, marques : montrez-les de près."
+        },
+        "overview": {
+          "label": "Vue d'ensemble",
+          "tip": "La pièce entière, bien visible : c'est la couverture."
+        },
+        "closeup": {
+          "label": "Gros plan",
+          "tip": "Un gros plan sur les plus belles parties ou les plus importantes."
+        },
+        "other_side": {
+          "label": "Autre côté",
+          "tip": "Retournez-la et montrez le dos ou l'autre côté."
+        },
+        "details": {
+          "label": "Détails",
+          "tip": "Impressions, pièces rares, minifigures ou accessoires."
+        },
+        "scale": {
+          "label": "Pour l'échelle",
+          "tip": "Posez une pièce de monnaie à côté : la taille se comprend d'un coup d'œil."
+        },
+        "box_side": {
+          "label": "Côté et fenêtre",
+          "tip": "La boîte de côté, avec la fenêtre transparente s'il y en a une."
+        },
+        "card_front": {
+          "label": "Face de la carte",
+          "tip": "La carte entière, à plat et droite : c'est la couverture."
+        },
+        "card_back": {
+          "label": "Dos de la carte",
+          "tip": "Le dos, pour montrer l'état général."
+        },
+        "card_corners": {
+          "label": "Coins",
+          "tip": "Gros plans des quatre coins : ils déterminent l'état de la carte."
+        },
+        "card_light": {
+          "label": "Surface sous la lumière",
+          "tip": "Inclinez-la sous une lumière : on voit les rayures et les parties holographiques."
+        },
+        "card_extra": {
+          "label": "Pochette ou slab",
+          "tip": "Si elle est dans une pochette ou un boîtier de protection, montrez-le."
+        }
+      }
     }
   },
   "create_auction": {

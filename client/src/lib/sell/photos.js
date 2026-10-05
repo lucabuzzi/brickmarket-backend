@@ -28,3 +28,12 @@ export function mergePhotos(current, incoming, max = MAX_PHOTOS) {
 }
 
 export const removePhotoAt = (files, index) => files.filter((_, i) => i !== index);
+
+/** Moves the photo at `from` to position `to` (the first position is the cover). Out-of-range moves change nothing. */
+export function movePhoto(files, from, to) {
+  if (from === to || from < 0 || to < 0 || from >= files.length || to >= files.length) return files;
+  const next = [...files];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}

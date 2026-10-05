@@ -949,14 +949,129 @@
         "limit": "Maximal 5 Fotos: die übrigen wurden nicht hinzugefügt.",
         "not_image": "Einige Dateien sind keine Bilder und wurden ignoriert.",
         "remove": "Foto entfernen",
-        "count": "{{count}} von {{max}} Fotos"
+        "count": "{{count}} von {{max}} Fotos",
+        "camera": "Foto aufnehmen",
+        "gallery": "Aus der Galerie",
+        "move_left": "Weiter nach vorn",
+        "move_right": "Weiter nach hinten",
+        "quality_small_msg": "Foto {{n}} ist klein: Es könnte auf dem Bildschirm unscharf wirken.",
+        "quality_blurry_msg": "Foto {{n}} wirkt etwas unscharf: Mach es wenn möglich noch einmal. Du kannst trotzdem veröffentlichen.",
+        "slot_aria": "Foto hinzufügen: {{shot}}",
+        "replace_note": "Neue Fotos ersetzen die aktuellen."
       },
       "title_hint": "Nenne Namen und Nummer: das hilft Käufern beim Finden.",
       "description_placeholder": "Erzähl, was es besonders macht: Zustand, Mängel, Lieferumfang…",
       "condition_label": "In welchem Zustand ist es?",
       "price_label": "Preis (€)",
       "shipping_label": "Wie möchtest du versenden?",
-      "dims_toggle": "Gewicht und Größe des Pakets"
+      "dims_toggle": "Gewicht und Größe des Pakets",
+      "guide": {
+        "chip": "So gelingt das Foto",
+        "title": "So gelingt das perfekte Foto",
+        "subtitle": "Scharfe, vollständige Fotos schaffen Vertrauen bei Käufern. Du brauchst nur dein Handy und etwas Licht.",
+        "shots_title": "Die Fotos, auf die es ankommt",
+        "shots_sub": "Mach sie der Reihe nach: das erste ist das Titelbild.",
+        "tips_title": "Für jedes Foto",
+        "tips": {
+          "light": {
+            "title": "Natürliches Licht",
+            "text": "Stell dich tagsüber ans Fenster. Vermeide gelbe Lampen und harte Schatten."
+          },
+          "noflash": {
+            "title": "Kein Blitz, keine Filter",
+            "text": "Blitz erzeugt Reflexe auf Verpackungen und Karten; Filter verfälschen die Farben."
+          },
+          "background": {
+            "title": "Einfacher Hintergrund",
+            "text": "Ein glatter Tisch oder ein Blatt Papier, hell oder dunkel, ohne Ablenkung."
+          },
+          "frame": {
+            "title": "Alles im Bild",
+            "text": "Lass etwas Rand um das Stück: die Ecken sollen sichtbar sein."
+          },
+          "parallel": {
+            "title": "Handy gerade halten",
+            "text": "Halte das Handy parallel zum Stück: keine schiefe Perspektive."
+          },
+          "focus": {
+            "title": "Scharfstellen",
+            "text": "Tippe auf dem Bildschirm auf das Stück und halte die Hände ruhig. Wisch die Linse mit einem Tuch ab."
+          },
+          "honest": {
+            "title": "Mängel zeigen",
+            "text": "Ein fotografierter Kratzer schafft mehr Vertrauen als eine Überraschung bei der Lieferung."
+          }
+        },
+        "tech": "Du musst die Fotos nicht verkleinern: bis zu 10 MB pro Foto, wir optimieren sie für dich.",
+        "done": "Verstanden, Fotos hinzufügen",
+        "close": "Schließen"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Vorderseite der Verpackung",
+          "tip": "Die ganze Verpackung, gerade und gut beleuchtet: das ist das Titelbild."
+        },
+        "box_back": {
+          "label": "Rückseite der Verpackung",
+          "tip": "Zeig Beschreibung und Codes: so ist klar, dass es das richtige Set ist."
+        },
+        "box_corners": {
+          "label": "Ecken und Seiten",
+          "tip": "Eine Nahaufnahme von Ecken und Kanten, wo Dellen sichtbar werden."
+        },
+        "contents": {
+          "label": "Inhalt",
+          "tip": "Beutel, Anleitungen und Minifiguren auf einer Fläche ausgelegt."
+        },
+        "flaws": {
+          "label": "Mängel oder Details",
+          "tip": "Kratzer, Dellen, Spuren: zeig sie aus der Nähe."
+        },
+        "overview": {
+          "label": "Gesamtansicht",
+          "tip": "Das ganze Stück, gut sichtbar: das ist das Titelbild."
+        },
+        "closeup": {
+          "label": "Nahaufnahme",
+          "tip": "Eine Nahaufnahme der schönsten oder wichtigsten Teile."
+        },
+        "other_side": {
+          "label": "Andere Seite",
+          "tip": "Dreh es um und zeig die Rückseite oder die andere Seite."
+        },
+        "details": {
+          "label": "Besonderheiten",
+          "tip": "Drucke, seltene Teile, Minifiguren oder Zubehör."
+        },
+        "scale": {
+          "label": "Für den Maßstab",
+          "tip": "Leg eine Münze daneben: die Größe ist sofort klar."
+        },
+        "box_side": {
+          "label": "Seite und Fenster",
+          "tip": "Die Verpackung von der Seite, mit dem Sichtfenster, falls vorhanden."
+        },
+        "card_front": {
+          "label": "Vorderseite der Karte",
+          "tip": "Die ganze Karte, flach und gerade: das ist das Titelbild."
+        },
+        "card_back": {
+          "label": "Rückseite der Karte",
+          "tip": "Die Rückseite, um den Gesamtzustand zu zeigen."
+        },
+        "card_corners": {
+          "label": "Ecken",
+          "tip": "Nahaufnahmen aller vier Ecken: sie bestimmen den Zustand der Karte."
+        },
+        "card_light": {
+          "label": "Oberfläche im Licht",
+          "tip": "Kipp sie unter einer Lichtquelle: Kratzer und holografische Stellen werden sichtbar."
+        },
+        "card_extra": {
+          "label": "Hülle oder Slab",
+          "tip": "Wenn sie in einer Hülle oder einem Schutzgehäuse steckt, zeig es."
+        }
+      }
     }
   },
   "create_auction": {

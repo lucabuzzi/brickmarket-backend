@@ -949,14 +949,129 @@
         "limit": "Massimo 5 foto: le altre non sono state aggiunte.",
         "not_image": "Alcuni file non sono immagini e sono stati ignorati.",
         "remove": "Rimuovi la foto",
-        "count": "{{count}} di {{max}} foto"
+        "count": "{{count}} di {{max}} foto",
+        "camera": "Scatta ora",
+        "gallery": "Dalla galleria",
+        "move_left": "Sposta prima",
+        "move_right": "Sposta dopo",
+        "quality_small_msg": "La foto {{n}} è piccola: sullo schermo potrebbe risultare poco nitida.",
+        "quality_blurry_msg": "La foto {{n}} sembra un po' mossa: se puoi, rifalla. Puoi comunque pubblicare.",
+        "slot_aria": "Aggiungi la foto: {{shot}}",
+        "replace_note": "Caricando nuove foto sostituirai quelle attuali."
       },
       "title_hint": "Indica nome e numero: aiuta chi cerca a trovarlo.",
       "description_placeholder": "Racconta cosa lo rende speciale: stato, difetti, cosa è incluso…",
       "condition_label": "In che condizioni è?",
       "price_label": "Prezzo (€)",
       "shipping_label": "Come vuoi spedire?",
-      "dims_toggle": "Peso e misure del pacco"
+      "dims_toggle": "Peso e misure del pacco",
+      "guide": {
+        "chip": "Come fare la foto",
+        "title": "Come fare la foto perfetta",
+        "subtitle": "Foto nitide e complete danno fiducia a chi compra. Bastano il telefono e un po' di luce.",
+        "shots_title": "Gli scatti che contano",
+        "shots_sub": "Falli in ordine: il primo è la copertina.",
+        "tips_title": "Per ogni scatto",
+        "tips": {
+          "light": {
+            "title": "Luce naturale",
+            "text": "Mettiti vicino a una finestra, di giorno. Evita le luci gialle e le ombre dure."
+          },
+          "noflash": {
+            "title": "Niente flash né filtri",
+            "text": "Il flash crea riflessi su scatole e carte; i filtri cambiano i colori."
+          },
+          "background": {
+            "title": "Sfondo semplice",
+            "text": "Un tavolo o un foglio liscio, chiaro o scuro, senza distrazioni."
+          },
+          "frame": {
+            "title": "Tutto in inquadratura",
+            "text": "Lascia un po' di margine intorno al pezzo: gli angoli devono vedersi."
+          },
+          "parallel": {
+            "title": "Telefono dritto",
+            "text": "Tieni il telefono parallelo al pezzo: niente prospettive storte."
+          },
+          "focus": {
+            "title": "Metti a fuoco",
+            "text": "Tocca lo schermo sul pezzo e tieni ferme le mani. Pulisci l'obiettivo con un panno."
+          },
+          "honest": {
+            "title": "Mostra i difetti",
+            "text": "Un graffio fotografato ispira più fiducia di una sorpresa all'arrivo."
+          }
+        },
+        "tech": "Non serve ridimensionare le foto: fino a 10 MB ciascuna, le ottimizziamo noi.",
+        "done": "Ho capito, carico le foto",
+        "close": "Chiudi"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Fronte della scatola",
+          "tip": "Tutta la scatola, dritta e ben illuminata: è la copertina."
+        },
+        "box_back": {
+          "label": "Retro della scatola",
+          "tip": "Mostra descrizione e codici: conferma che è il set giusto."
+        },
+        "box_corners": {
+          "label": "Angoli e lati",
+          "tip": "Un primo piano su angoli e bordi, dove si vedono le ammaccature."
+        },
+        "contents": {
+          "label": "Contenuto",
+          "tip": "Buste, libretti e minifigure disposti su un piano."
+        },
+        "flaws": {
+          "label": "Difetti o dettagli",
+          "tip": "Graffi, ammaccature, segni: mostrali da vicino."
+        },
+        "overview": {
+          "label": "Visione d'insieme",
+          "tip": "Il pezzo intero, ben visibile: è la copertina."
+        },
+        "closeup": {
+          "label": "Dettaglio ravvicinato",
+          "tip": "Un primo piano sulle parti più belle o più importanti."
+        },
+        "other_side": {
+          "label": "Altro lato",
+          "tip": "Giralo e mostra il retro o l'altro lato."
+        },
+        "details": {
+          "label": "Particolari",
+          "tip": "Stampe, pezzi rari, minifigure o accessori."
+        },
+        "scale": {
+          "label": "Per la scala",
+          "tip": "Mettici accanto una moneta: la misura si capisce subito."
+        },
+        "box_side": {
+          "label": "Lato e finestra",
+          "tip": "La scatola di lato, con la finestra trasparente se c'è."
+        },
+        "card_front": {
+          "label": "Fronte della carta",
+          "tip": "La carta intera, piatta e dritta: è la copertina."
+        },
+        "card_back": {
+          "label": "Retro della carta",
+          "tip": "Il retro, per mostrare lo stato generale."
+        },
+        "card_corners": {
+          "label": "Angoli",
+          "tip": "Primi piani dei quattro angoli: contano per lo stato della carta."
+        },
+        "card_light": {
+          "label": "Superficie con la luce",
+          "tip": "Inclinala sotto una luce: si vedono graffi e parti olografiche."
+        },
+        "card_extra": {
+          "label": "Bustina o slab",
+          "tip": "Se è in una bustina o in una custodia protettiva, mostrala."
+        }
+      }
     }
   },
   "create_auction": {

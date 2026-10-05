@@ -10,7 +10,9 @@ import Stepper from '../components/sell/Stepper';
 import Field, { FieldGroup } from '../components/sell/FormField';
 import { inputCls } from '../components/sell/inputClass';
 import ChoiceTile from '../components/sell/ChoiceTile';
-import PhotoDropzone from '../components/sell/PhotoDropzone';
+import PhotoSlots from '../components/sell/PhotoSlots';
+import PhotoGuide from '../components/sell/PhotoGuide';
+import usePhotoQuality from '../components/sell/analyzePhoto';
 import MarketValueHint from '../components/sell/MarketValueHint';
 import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
 import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
@@ -20,7 +22,8 @@ import { buildListingFields } from '../lib/sell/payload';
 import { completeness } from '../lib/sell/score';
 import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib/sell/draft';
 import { buildPreviewListing } from '../lib/sell/preview';
-import { mergePhotos, removePhotoAt } from '../lib/sell/photos';
+import { mergePhotos, movePhoto, removePhotoAt } from '../lib/sell/photos';
+import { shotListFor } from '../lib/sell/shots';
 
 const CATEGORIES = [
   { value: '', label: '— Seleziona categoria —' },
@@ -68,6 +71,8 @@ export const CARRIERS = [
 // Some older labels end with "*" to mark them required; the wizard marks required fields with a dot instead.
 const noStar = (s) => String(s).replace(/\s*\*\s*$/, '');
 
+const GUIDE_SEEN_KEY = 'cardbrix_sell_guide_seen';
+
 const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
 const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
 const safeStorage = (fn) => { try { return fn(); } catch { return null; } };
@@ -101,6 +106,8 @@ export default function Sell() {
   const [savedFlash, setSavedFlash] = useState(false);
   const [dimsOpen, setDimsOpen] = useState(false);
   const [focusReq, setFocusReq] = useState(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideSeen, setGuideSeen] = useState(() => safeStorage(() => window.localStorage.getItem(GUIDE_SEEN_KEY)) === '1');
 
   const draftReady = useRef(false);
   const lastSig = useRef('');
@@ -112,6 +119,9 @@ export default function Sell() {
   const stepId = STEP_IDS[step - 1];
   const photoCount = files.length || (editId ? existingImages.length : 0);
   const ctx = useMemo(() => ({ photoCount, editing: !!editId, isPro }), [photoCount, editId, isPro]);
+
+  const shots = useMemo(() => shotListFor({ productType: form.productType, mainCategory: form.mainCategory }), [form.productType, form.mainCategory]);
+  const photoQuality = usePhotoQuality(files);
 
   const previews = useMemo(() => files.map((f) => ({ file: f, url: URL.createObjectURL(f) })), [files]);
   useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
@@ -298,6 +308,17 @@ export default function Sell() {
     setFiles(r.files);
     setPhotoNotices([r.overflow ? 'limit' : null, r.notImage ? 'not_image' : null].filter(Boolean));
   }
+  function movePhotoTo(from, to) {
+    setFiles((f) => movePhoto(f, from, to));
+  }
+  const openGuide = () => {
+    setGuideOpen(true);
+    if (!guideSeen) {
+      setGuideSeen(true);
+      safeStorage(() => window.localStorage.setItem(GUIDE_SEEN_KEY, '1'));
+    }
+  };
+  const closeGuide = useCallback(() => setGuideOpen(false), []);
   function removePhoto(i) {
     setFiles((f) => removePhotoAt(f, i));
     setPhotoNotices([]);
@@ -587,15 +608,20 @@ export default function Sell() {
 
                 {/* STEP 2 — photos */}
                 {stepId === 'photos' && (
-                  <PhotoDropzone
+                  <PhotoSlots
                     previews={previews}
                     existingImages={existingImages}
                     editing={!!editId}
                     error={err('photos')}
                     notices={photoNotices}
                     max={MAX_PHOTOS}
+                    shots={shots}
+                    quality={photoQuality}
+                    guideSeen={guideSeen}
                     onAdd={addPhotos}
                     onRemove={removePhoto}
+                    onMove={movePhotoTo}
+                    onOpenGuide={openGuide}
                     resolveExisting={(img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`)}
                   />
                 )}
@@ -805,6 +831,8 @@ export default function Sell() {
           <PreviewPanel listing={previewListing} percent={meter.percent} hint={meter.hint} />
         </div>
       </div>
+
+      <PhotoGuide open={guideOpen} onClose={closeGuide} shots={shots} />
     </div>
   );
 }
