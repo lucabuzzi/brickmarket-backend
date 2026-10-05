@@ -3,52 +3,11 @@ const router = express.Router();
 const { query } = require('../db');
 const { resolveImageUrl } = require('../services/seoMeta');
 
-// /privacy and /cookie-policy join the sitemap only once their texts are final (see the file's _comment).
-const legalPages = require('../../client/src/config/legalPages.json');
+const { STATIC_PATHS } = require('../services/sitemapPaths');
+const { lastmodFor } = require('../services/sitemapLastmod');
+const { cached } = require('../services/seoContent/cache');
 
 const BASE_URL = 'https://cardbrix.com';
-
-/** Static, publicly indexable pages — kept in sync with the route table in client/src/App.jsx */
-const STATIC_PATHS = [
-  '/',
-  '/catalog',
-  '/catalog/lego',
-  '/catalog/magic',
-  '/catalog/yugioh',
-  '/catalog/lorcana',
-  '/catalog/pokemon',
-  '/catalog/onepiece',
-  '/catalog/dragonball',
-  '/catalog/funko',
-  '/annunci',
-  '/annunci/lego',
-  '/annunci/funko',
-  '/annunci/carte-collezionabili',
-  '/annunci/carte-collezionabili/pokemon',
-  '/annunci/carte-collezionabili/magic',
-  '/annunci/carte-collezionabili/lorcana',
-  '/annunci/carte-collezionabili/yugioh',
-  '/annunci/carte-collezionabili/onepiece',
-  '/annunci/carte-collezionabili/dragonball',
-  '/aste',
-  '/aste/lego',
-  '/aste/funko',
-  '/aste/carte-collezionabili',
-  '/aste/carte-collezionabili/pokemon',
-  '/aste/carte-collezionabili/magic',
-  '/aste/carte-collezionabili/lorcana',
-  '/aste/carte-collezionabili/yugioh',
-  '/aste/carte-collezionabili/onepiece',
-  '/aste/carte-collezionabili/dragonball',
-  '/come-funziona',
-  '/skill-zone',
-  '/faq',
-  '/help',
-  '/norme-legali',
-  '/ricerca-utente',
-  ...(legalPages.published ? ['/privacy', '/cookie-policy'] : []),
-  ...(legalPages.accessibilityPublished ? ['/accessibilita'] : []),
-];
 
 function xmlEscape(str) {
   return String(str)
@@ -63,7 +22,36 @@ function urlTag(loc, lastmod, images = []) {
   return `<url><loc>${xmlEscape(loc)}</loc>${lastmodTag}${imageTags}</url>`;
 }
 
+const LASTMOD_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * The newest rows that feed the live part of each static page: active listings per kind/category and the latest
+ * entry of each catalog. Any read that fails is simply left out (that page then keeps the date of its own text).
+ */
+async function loadLastmodData() {
+  const data = { groups: [], catalog: {} };
+  try {
+    const { rows } = await query(
+      `SELECT (COALESCE(type = 'auction', false) OR COALESCE(is_auction, false)) AS auction, product_type, game, MAX(updated_at) AS m
+       FROM listings WHERE status = 'active' GROUP BY 1, 2, 3`
+    );
+    data.groups = rows;
+  } catch (err) {
+    console.error('sitemap.xml: date degli annunci non disponibili:', err.message);
+  }
+  try {
+    const { rows } = await query('SELECT game, MAX(fetched_at) AS m FROM master_cards GROUP BY game');
+    rows.forEach((r) => { data.catalog[r.game] = r.m; });
+    const sets = await query('SELECT MAX(fetched_at) AS m FROM master_sets');
+    if (sets.rows[0] && sets.rows[0].m) data.catalog.lego = sets.rows[0].m;
+  } catch (err) {
+    console.error('sitemap.xml: date del catalogo non disponibili:', err.message);
+  }
+  return data;
+}
+
 router.get('/sitemap.xml', async (req, res) => {
+
   let listingUrls = [];
   try {
     const { rows } = await query(
@@ -78,7 +66,9 @@ router.get('/sitemap.xml', async (req, res) => {
     console.error('sitemap.xml: errore nel recupero degli annunci attivi:', err.message);
   }
 
-  const staticUrls = STATIC_PATHS.map((p) => urlTag(`${BASE_URL}${p}`, null));
+  const lastmodData = (await cached('sitemap:lastmod', LASTMOD_TTL_MS, loadLastmodData, { timeoutMs: 3000 })) || { groups: [], catalog: {} };
+
+  const staticUrls = STATIC_PATHS.map((p) => urlTag(`${BASE_URL}${p}`, lastmodFor(p, lastmodData)));
   const body = [...staticUrls, ...listingUrls].join('');
 
   res.set('Content-Type', 'application/xml; charset=UTF-8');

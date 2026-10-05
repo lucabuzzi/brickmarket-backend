@@ -9,12 +9,12 @@
 // Contract: these functions never throw. Anything that goes wrong degrades to a smaller page.
 const { renderShell } = require('./layout');
 const { pageFor } = require('./pages');
-const { listingsBlock, productPage } = require('./listings');
+const { listingsBlock, catalogBlock, productPage } = require('./listings');
 const { t } = require('./copy');
 
 async function build(def) {
-  const blocks = await Promise.all((def.listings || []).map((b) => listingsBlock(b)));
-  return { html: renderShell({ ...def, body: (def.body || '') + blocks.join('') }), jsonLd: def.jsonLd || null };
+  const blocks = await Promise.all([...(def.catalog || []).map((b) => catalogBlock(b)), ...(def.listings || []).map((b) => listingsBlock(b))]);
+  return { html: renderShell({ ...def, body: (def.body || '') + blocks.join('') + (def.tail || '') }), jsonLd: def.jsonLd || null };
 }
 
 /** Site-wide fallback for routes without their own content (private pages, catalog detail pages, …). */

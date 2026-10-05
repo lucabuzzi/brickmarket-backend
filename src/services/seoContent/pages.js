@@ -80,11 +80,12 @@ function faq() {
 }
 
 function help() {
+  const questions = numbered('faq.q', '_question').map((n) => t(`faq.q${n}_question`)).filter(Boolean);
   const card = (key, href) => `<h2>${esc(t(`help.${key}_card_title`))}</h2><p>${esc(t(`help.${key}_card_desc`))}</p>${href ? cta(href, t(`help.${key}_card_cta`)) : `<p>${esc(t(`help.${key}_card_cta`))}</p>`}`;
   return {
     h1: t('help.title'),
     lead: t('help.subtitle'),
-    body: card('faq', '/faq') + card('email', null) + card('legal', '/norme-legali'),
+    body: card('faq', '/faq') + section(t('how_it_works_page.page_title'), `<p>${esc(t('how_it_works_page.hero_subtitle'))}</p>${cta('/come-funziona', t('how_it_works_page.hero_cta_catalog') ? t('how_it_works_page.page_title') : '')}`) + (questions.length ? section(t('faq.title'), list(questions.map((q) => link('/faq', q)))) : '') + card('email', null) + card('legal', '/norme-legali'),
   };
 }
 
@@ -130,6 +131,10 @@ function crediti() {
   return { h1: t('wallet.hero_title'), lead: t('wallet.hero_subtitle'), body: cards + maturation + cta('/skill-zone', t('landing.pillars.arena.cta')) };
 }
 
+function userSearch() {
+  return { h1: t('user_search.title'), lead: t('user_search.subtitle'), body: section(t('how_it_works_page.why2_title'), `<p>${esc(t('how_it_works_page.why2_desc'))}</p>`) + `<p>${link('/annunci', t('nav.listings') || 'Annunci')} · ${link('/aste', t('nav.auctions') || 'Aste')}</p>` };
+}
+
 const STATIC = {
   '/': home,
   '/come-funziona': comeFunziona,
@@ -141,6 +146,7 @@ const STATIC = {
   '/accessibilita': () => policy('accessibility'),
   '/skill-zone': skillZone,
   '/crediti': crediti,
+  '/ricerca-utente': userSearch,
 };
 
 // ------------------------------------------------------------------ marketplace + catalog hubs
@@ -169,6 +175,21 @@ function gameLinks(mode) {
   return list(TCG_GAMES.map((g) => `${link(`/${mode}/carte-collezionabili/${g}`, NAMES[g])}: ${esc(t(`catalog_games.${g}`))}`));
 }
 
+/** Sentence for a category with no live listings, and where the visitor can go instead. */
+function emptyText(mode, name) {
+  const where = name ? `per ${name}` : 'in questa categoria';
+  return mode === 'aste'
+    ? `Non ci sono aste in corso ${where} in questo momento. Torna presto, oppure avvia tu la prima.`
+    : `Non ci sono annunci attivi ${where} in questo momento. Torna presto, oppure pubblica tu il primo.`;
+}
+
+const sellCta = (mode) => (mode === 'aste' ? cta('/create-auction', "Crea un'asta") : cta('/sell', 'Pubblica un annuncio'));
+
+/** Link from a marketplace category to the reference catalog of the same thing. */
+function catalogLink(slug, name) {
+  return section(`Catalogo ${name}`, `<p>${esc(t(`catalog_games.${slug}`))}</p>${cta(`/catalog/${slug}`, `Apri il catalogo ${name}`)}`);
+}
+
 function market(mode, rest) {
   const m = MODE[mode];
   const kindLabel = mode === 'annunci' ? 'Annunci' : 'Aste';
@@ -179,9 +200,9 @@ function market(mode, rest) {
     return {
       h1: heading(t(`${m.hub}.title_pre`), t(`${m.hub}.title_accent`)) || kindLabel,
       lead: t(`${m.hub}.subtitle`),
-      body: section(t(`${m.hub}.cta`) || 'Categorie', categoryLinks(mode)) + howTo(mode),
+      body: section(t(`${m.hub}.cta`) || 'Categorie', categoryLinks(mode)) + howTo(mode) + sellCta(mode),
       crumbs: [home, { name: kindLabel }],
-      listings: [{ heading: kindLabel, auction: m.auction, limit: 12 }],
+      listings: [{ heading: kindLabel, auction: m.auction, limit: 12, empty: emptyText(mode) }],
     };
   }
   const [cat, game] = rest;
@@ -190,18 +211,18 @@ function market(mode, rest) {
     return {
       h1: `${t(m.prefix)} ${name}`,
       lead: t(m.sub, { title: name }),
-      body: section(t('hubs.annunci.cta') || 'Categorie', categoryLinks(mode)) + howTo(mode),
+      body: section(t('hubs.annunci.cta') || 'Categorie', categoryLinks(mode)) + catalogLink(cat, name) + howTo(mode) + sellCta(mode),
       crumbs: [home, root, { name }],
-      listings: [{ heading: `${kindLabel} ${name}`, auction: m.auction, productType: cat, limit: 20 }],
+      listings: [{ heading: `${kindLabel} ${name}`, auction: m.auction, productType: cat, limit: 20, empty: emptyText(mode, name) }],
     };
   }
   if (cat === 'carte-collezionabili' && rest.length === 1) {
     return {
       h1: `${t(m.prefix)} ${t('hubs.categories.carte_name')}`, // "Annunci Carte Collezionabili" / "Aste …": unique per section
       lead: t(`${m.cards}.subtitle`),
-      body: section(t('hubs.categories.carte_name'), gameLinks(mode)) + howTo(mode),
+      body: section(t('hubs.categories.carte_name'), gameLinks(mode)) + howTo(mode) + sellCta(mode),
       crumbs: [home, root, { name: t('hubs.categories.carte_name') }],
-      listings: [{ heading: `${kindLabel} ${t('hubs.categories.carte_name')}`, auction: m.auction, productType: 'tcg', limit: 20 }],
+      listings: [{ heading: `${kindLabel} ${t('hubs.categories.carte_name')}`, auction: m.auction, productType: 'tcg', limit: 20, empty: emptyText(mode, t('hubs.categories.carte_name')) }],
     };
   }
   if (cat === 'carte-collezionabili' && rest.length === 2 && TCG_GAMES.includes(game)) {
@@ -209,9 +230,9 @@ function market(mode, rest) {
     return {
       h1: `${t(m.prefix)} ${name}`,
       lead: t(m.sub, { title: name }),
-      body: section(t('hubs.categories.carte_name'), gameLinks(mode)) + howTo(mode),
+      body: section(t('hubs.categories.carte_name'), gameLinks(mode)) + catalogLink(game, name) + howTo(mode) + sellCta(mode),
       crumbs: [home, root, { name: t('hubs.categories.carte_name'), href: `/${mode}/carte-collezionabili` }, { name }],
-      listings: [{ heading: `${kindLabel} ${name}`, auction: m.auction, productType: 'tcg', game, limit: 20 }],
+      listings: [{ heading: `${kindLabel} ${name}`, auction: m.auction, productType: 'tcg', game, limit: 20, empty: emptyText(mode, name) }],
     };
   }
   return null;
@@ -224,7 +245,9 @@ function catalog(rest) {
     return {
       h1: heading(t('hubs.catalog.title_pre'), t('hubs.catalog.title_accent')) || 'Catalogo',
       lead: t('hubs.catalog.subtitle'),
-      body: section(t('hubs.catalog.cta') || 'Catalogo', list(all.map(([slug, name]) => `${link(`/catalog/${slug}`, name)}: ${esc(t(`catalog_games.${slug}`))}`))),
+      body:
+        section(t('hubs.catalog.cta') || 'Catalogo', list(all.map(([slug, name]) => `${link(`/catalog/${slug}`, name)}: ${esc(t(`catalog_games.${slug}`))}`))) +
+        section(t('landing.trust.pricing_title'), `<p>${esc(t('landing.trust.pricing_desc'))}</p><p>${esc(t('how_it_works_page.why1_desc'))}</p>`),
       crumbs: [home, { name: 'Catalogo' }],
     };
   }
@@ -233,11 +256,17 @@ function catalog(rest) {
   if (rest.length === 1 && found) {
     const [, name] = found;
     const market = slug === 'lego' ? '/annunci/lego' : slug === 'funko' ? '/annunci/funko' : `/annunci/carte-collezionabili/${slug}`;
+    const productType = slug === 'lego' || slug === 'funko' ? slug : 'tcg';
     return {
       h1: `Catalogo ${name}`,
       lead: t(`catalog_games.${slug}`),
-      body: `<p>${esc(t('hubs.catalog.subtitle'))}</p>${cta(market, `${t('annunci.title_prefix')} ${name}`)}${cta('/catalog', 'Catalogo')}`,
+      body:
+        `<p>${esc(t('hubs.catalog.subtitle'))}</p>` +
+        section(t('landing.trust.pricing_title'), `<p>${esc(t('landing.trust.pricing_desc'))}</p><p>${esc(t('how_it_works_page.why1_desc'))}</p>`),
+      tail: `${cta(market, `${t('annunci.title_prefix')} ${name}`)}${cta('/catalog', 'Catalogo')}`,
       crumbs: [home, { name: 'Catalogo', href: '/catalog' }, { name }],
+      catalog: [{ slug, heading: `Aggiunti di recente al catalogo ${name}`, limit: 12 }],
+      listings: [{ heading: `Annunci ${name}`, auction: false, productType, ...(productType === 'tcg' ? { game: slug } : {}), limit: 8, empty: emptyText('annunci', name) }],
     };
   }
   return null;

@@ -43,12 +43,54 @@ function listingItems(rows) {
   );
 }
 
-/** One block of the page definition's `listings` array -> "<section><h2>…</h2><ul>…</ul></section>" or ''. */
+/**
+ * One block of the page definition's `listings` array -> "<section><h2>…</h2><ul>…</ul></section>".
+ * When the category is genuinely empty and the block has an `empty` text, say so (an honest sentence beats a
+ * missing section); when the read failed or timed out (null) nothing is invented: the section is left out.
+ */
 async function listingsBlock(block) {
   const key = `list:${block.auction ? 'a' : 'f'}:${block.productType || '*'}:${block.game || '*'}:${block.limit || 12}`;
   const rows = await cached(key, TTL_MS, () => fetchListings(block));
-  if (!rows || rows.length === 0) return '';
+  if (!rows) return '';
+  if (rows.length === 0) return block.empty ? section(block.heading, `<p>${esc(block.empty)}</p>`) : '';
   return section(block.heading, listingItems(rows));
+}
+
+// ------------------------------------------------------------------ catalog: latest reference entries
+/** The most recently indexed catalog entries of one game (or LEGO sets): what the catalog page shows first. */
+async function fetchCatalogRecent(slug, limit = 12) {
+  if (slug === 'lego') {
+    const { rows } = await query('SELECT set_num AS id, name, year AS extra FROM master_sets ORDER BY fetched_at DESC LIMIT $1', [limit]);
+    return rows;
+  }
+  const { rows } = await query('SELECT external_id AS id, name, set_name AS extra FROM master_cards WHERE game = $1 ORDER BY fetched_at DESC LIMIT $2', [slug, limit]);
+  return rows;
+}
+
+/** { slug, heading, limit? } -> "<section><h2>…</h2><ul>…</ul></section>" linking each entry's catalog page, or ''. */
+async function catalogBlock({ slug, heading, limit = 12 }) {
+  const rows = await cached(`catalog:${slug}:${limit}`, TTL_MS, () => fetchCatalogRecent(slug, limit));
+  if (!rows || rows.length === 0) return '';
+  const items = rows
+    .filter((r) => r.id && r.name)
+    .map((r) => `${link(`/catalog/${slug}/${encodeURIComponent(r.id)}`, r.name)}${r.extra ? ` – ${esc(r.extra)}` : ''}`);
+  return section(heading, list(items, 'seo-catalog'));
+}
+
+const CARRIER_NAMES = { DHL: 'DHL Express', BRT: 'BRT Corriere', UPS: 'UPS', SDA: 'SDA', POSTE: 'Poste Italiane' };
+
+/** "Spedizione" section from the listing's own shipping options (carrier + cost), or '' when it has none. */
+function shippingSection(listing) {
+  let options = listing.shipping_options;
+  if (typeof options === 'string') { try { options = JSON.parse(options); } catch { options = null; } }
+  if (!Array.isArray(options) || options.length === 0) return '';
+  const items = options
+    .filter((o) => o && CARRIER_NAMES[o.carrier])
+    .map((o) => {
+      const cost = Number(o.cost);
+      return `${esc(CARRIER_NAMES[o.carrier])}: ${Number.isFinite(cost) && cost > 0 ? esc(eur(cost)) : 'costo indicato al checkout'}`;
+    });
+  return items.length ? section('Spedizione', list(items)) : '';
 }
 
 // ------------------------------------------------------------------ single listing
@@ -110,10 +152,11 @@ async function productPage(listing, images = []) {
     image +
     (listing.description ? section('Descrizione', paragraphs(listing.description)) : '') +
     section('Dettagli', `<dl>${details.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`) +
+    shippingSection(listing) +
     (related.length ? section('Altri annunci simili', listingItems(related)) : '') +
     section('Come funziona', `<p>${esc(t('how_it_works_page.step2_long_desc'))}</p><p>${link('/come-funziona', t('how_it_works_page.page_title'))} · ${link('/faq', t('nav.faq') || 'FAQ')}</p>`);
 
   return { h1: listing.title, lead, body, crumbs: crumbsFor(listing) };
 }
 
-module.exports = { listingsBlock, productPage, fetchListings, conditionLabel };
+module.exports = { listingsBlock, catalogBlock, productPage, fetchListings, fetchCatalogRecent, shippingSection, conditionLabel };

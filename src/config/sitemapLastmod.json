@@ -1,0 +1,146 @@
+{
+  "/": {
+    "hash": "d2deafc5ea554b8c",
+    "date": "2026-10-05"
+  },
+  "/catalog": {
+    "hash": "e013c87dc824bb37",
+    "date": "2026-10-05"
+  },
+  "/catalog/lego": {
+    "hash": "9765377d60621bd4",
+    "date": "2026-10-05"
+  },
+  "/catalog/magic": {
+    "hash": "c3ea34cb53183b32",
+    "date": "2026-10-05"
+  },
+  "/catalog/yugioh": {
+    "hash": "1cbcd8c322b2a8dd",
+    "date": "2026-10-05"
+  },
+  "/catalog/lorcana": {
+    "hash": "2b88c99ef4ae4b5e",
+    "date": "2026-10-05"
+  },
+  "/catalog/pokemon": {
+    "hash": "33628af5b2f78c36",
+    "date": "2026-10-05"
+  },
+  "/catalog/onepiece": {
+    "hash": "f5cb8b6bedb3defe",
+    "date": "2026-10-05"
+  },
+  "/catalog/dragonball": {
+    "hash": "4cfd679eb7ffaf64",
+    "date": "2026-10-05"
+  },
+  "/catalog/funko": {
+    "hash": "f4f02a241e28b25d",
+    "date": "2026-10-05"
+  },
+  "/annunci": {
+    "hash": "9d61ce58334c4fdf",
+    "date": "2026-10-05"
+  },
+  "/annunci/lego": {
+    "hash": "673c263feee7fbd9",
+    "date": "2026-10-05"
+  },
+  "/annunci/funko": {
+    "hash": "7fac44b1b74cd8af",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili": {
+    "hash": "07a5595f8e1b3c24",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/pokemon": {
+    "hash": "95476076fe129484",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/magic": {
+    "hash": "4775ecdc0b8760ac",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/lorcana": {
+    "hash": "de635e5c1e5d8aa3",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/yugioh": {
+    "hash": "64ab5c43b055e000",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/onepiece": {
+    "hash": "3d48f7accac48016",
+    "date": "2026-10-05"
+  },
+  "/annunci/carte-collezionabili/dragonball": {
+    "hash": "8769a2ecd8496e99",
+    "date": "2026-10-05"
+  },
+  "/aste": {
+    "hash": "159f6a692f8eb1fc",
+    "date": "2026-10-05"
+  },
+  "/aste/lego": {
+    "hash": "5c6b8790343f6bf8",
+    "date": "2026-10-05"
+  },
+  "/aste/funko": {
+    "hash": "3afbd8bc8fe515ca",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili": {
+    "hash": "677e25278570c101",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/pokemon": {
+    "hash": "6a9abaae18aeb827",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/magic": {
+    "hash": "c74bb4e7a302e534",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/lorcana": {
+    "hash": "e3f046683a535007",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/yugioh": {
+    "hash": "1cfd29478e952a32",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/onepiece": {
+    "hash": "a4de42cb009827f6",
+    "date": "2026-10-05"
+  },
+  "/aste/carte-collezionabili/dragonball": {
+    "hash": "099baa9aab0c1459",
+    "date": "2026-10-05"
+  },
+  "/come-funziona": {
+    "hash": "43dcf4de79eed4ef",
+    "date": "2026-10-05"
+  },
+  "/skill-zone": {
+    "hash": "787782d4c3f6ea7a",
+    "date": "2026-10-05"
+  },
+  "/faq": {
+    "hash": "8ba1c9750fa8d76e",
+    "date": "2026-10-05"
+  },
+  "/help": {
+    "hash": "93bad004620aafa7",
+    "date": "2026-10-05"
+  },
+  "/norme-legali": {
+    "hash": "b6c63c3a0ec811bc",
+    "date": "2026-10-05"
+  },
+  "/ricerca-utente": {
+    "hash": "cac964fa00da8cee",
+    "date": "2026-10-05"
+  }
+}

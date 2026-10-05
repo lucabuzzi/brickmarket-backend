@@ -235,7 +235,8 @@ describe('seoMeta and sitemap integration', () => {
       expect(first).toContain('<image:loc>https://cardbrix.com/uploads/1.webp</image:loc>');
       const second = xml.match(/<url><loc>https:\/\/cardbrix\.com\/product\/2<\/loc>.*?<\/url>/)[0];
       expect(second).not.toContain('image:image');
-      expect(xml).toContain('<loc>https://cardbrix.com/annunci</loc></url>'); // static pages: no invented lastmod
+      // static pages carry the date their own text last changed (src/config/sitemapLastmod.json), never an invented one
+      expect(xml).toMatch(/<loc>https:\/\/cardbrix\.com\/annunci<\/loc><lastmod>\d{4}-\d{2}-\d{2}<\/lastmod><\/url>/);
     });
   });
 });

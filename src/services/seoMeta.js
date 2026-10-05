@@ -126,7 +126,7 @@ async function renderPage(reqPath, baseHtml) {
   try {
     const { rows } = await query(
       `SELECT id, title, description, price, current_bid, auction_start, auction_end, type, status, images,
-              condition, product_type, game, set_number, theme, year, pieces, box_condition
+              condition, product_type, game, set_number, theme, year, pieces, box_condition, shipping_options
        FROM listings WHERE id = $1`,
       [listingId]
     );
