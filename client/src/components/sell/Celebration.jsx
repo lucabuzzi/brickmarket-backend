@@ -91,7 +91,7 @@ export default function Celebration({ listing, path, onAnother }) {
         <motion.div {...rise(0.3)} className="mx-auto mt-9 max-w-[320px]">
           <div className="lx-float" inert aria-hidden="true">
             <div className="pointer-events-none select-none text-left">
-              <ListingCard l={listing} />
+              <ListingCard l={listing} hideMissingSetNumber />
             </div>
           </div>
         </motion.div>

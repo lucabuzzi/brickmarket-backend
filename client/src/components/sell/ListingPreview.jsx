@@ -9,7 +9,7 @@ import CompletenessMeter from './CompletenessMeter';
 function PreviewCard({ listing }) {
   return (
     <div inert aria-hidden="true" className="pointer-events-none select-none">
-      <ListingCard l={listing} />
+      <ListingCard l={listing} hideMissingSetNumber />
     </div>
   );
 }

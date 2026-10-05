@@ -33,7 +33,7 @@ function conditionLabel(c = '', t) {
   return t(`details.condition_${c.toLowerCase()}`, { defaultValue: c });
 }
 
-export default function ListingCard({ l, isFeatured = false, isCompact = false, isMini = false }) {
+export default function ListingCard({ l, isFeatured = false, isCompact = false, isMini = false, hideMissingSetNumber = false }) {
   const { t, i18n } = useTranslation();
   const setNumber = l.set_number || l.number || 'N/A';
   const condition = l.condition || 'used';
@@ -125,7 +125,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
           </Link>
         </h2>
 
-        {!isMini && (!l.product_type || l.product_type === 'lego') && (
+        {!isMini && (!l.product_type || l.product_type === 'lego') && !(hideMissingSetNumber && setNumber === 'N/A') && (
           <div className="text-[10px] text-stone-400 font-mono mb-1">
             {t('details.set_number_prefix')} {setNumber}
           </div>
