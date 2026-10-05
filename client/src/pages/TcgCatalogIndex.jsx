@@ -85,7 +85,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
       </Link>
 
       {/* SEARCH TERMINAL */}
-      <section className="relative mb-24 py-20 px-8 bg-[#050402] rounded-[48px] border border-white/5 shadow-2xl">
+      <section className="relative mb-16 md:mb-24 py-10 px-3 md:py-20 md:px-8 bg-[#050402] rounded-[48px] border border-white/5 shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.08),transparent_50%)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-pillar-catalog/50 to-transparent" />
 
@@ -120,11 +120,11 @@ export default function TcgCatalogIndex({ gameSlug }) {
             <form onSubmit={handleSearchSubmit} className="relative z-30 group">
               <div className="absolute -inset-1 bg-gradient-to-r from-pillar-catalog to-pillar-catalog rounded-[28px] blur opacity-20 group-focus-within:opacity-40 transition duration-500" />
               <div className="relative flex items-center bg-[#120f0a] border-2 border-white/5 rounded-[24px] overflow-hidden focus-within:border-pillar-catalog/50 transition-all shadow-2xl">
-                <div className="pl-8 flex items-center pointer-events-none">
+                <div className="pl-4 md:pl-8 flex items-center pointer-events-none shrink-0">
                   {isSearching ? (
-                    <Loader2 size={32} className="text-pillar-catalog animate-spin" />
+                    <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-pillar-catalog animate-spin" />
                   ) : (
-                    <Search className="text-stone-600 group-focus-within:text-pillar-catalog transition-colors" size={32} strokeWidth={2.5} />
+                    <Search className="w-6 h-6 md:w-8 md:h-8 text-stone-600 group-focus-within:text-pillar-catalog transition-colors" strokeWidth={2.5} />
                   )}
                 </div>
                 <input
@@ -132,14 +132,14 @@ export default function TcgCatalogIndex({ gameSlug }) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('tcg.search_placeholder', { name: game.name })}
-                  className="w-full h-20 md:h-24 pl-6 pr-40 bg-transparent text-white text-xl md:text-2xl font-bold outline-none placeholder:text-stone-700"
+                  className="w-full min-w-0 h-16 md:h-24 pl-3 md:pl-6 pr-16 md:pr-40 bg-transparent text-white text-base md:text-2xl font-bold outline-none placeholder:text-stone-700"
                 />
-                <div className="absolute right-4">
+                <div className="absolute right-2 md:right-4">
                   <button
-                    type="submit"
-                    className="h-12 md:h-16 px-8 md:px-12 bg-pillar-catalog hover:bg-pillar-catalog/85 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-pillar-catalog/40 active:scale-95 flex items-center gap-3"
+                    type="submit" aria-label={t('tcg.search_button')}
+                    className="h-12 md:h-16 w-12 md:w-auto justify-center px-0 md:px-12 bg-pillar-catalog hover:bg-pillar-catalog/85 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-pillar-catalog/40 active:scale-95 flex items-center gap-3"
                   >
-                    {t('tcg.search_button')} <Zap size={18} fill="currentColor" />
+                    <span className="hidden md:inline">{t('tcg.search_button')}</span> <Zap size={18} fill="currentColor" />
                   </button>
                 </div>
               </div>
