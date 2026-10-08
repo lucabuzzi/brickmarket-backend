@@ -147,7 +147,12 @@
     "outbid": "Surenchéri sur {{item}} !",
     "listingHidden": "Votre annonce \"{{item}}\" a été masquée par notre équipe. Motif : {{reason}}",
     "listingRemovedByAdmin": "Votre annonce \"{{item}}\" a été supprimée par notre équipe. Motif : {{reason}}",
-    "empty": "Aucune nouvelle notification."
+    "empty": "Aucune nouvelle notification.",
+    "pageTitle": "Notifications",
+    "viewAll": "Voir toutes les notifications →",
+    "markAllRead": "Marquer tout comme lu",
+    "loadMore": "Charger plus",
+    "load_error": "Erreur lors du chargement des notifications."
   },
   "profile": {
     "my_bids": "Mes Enchères",

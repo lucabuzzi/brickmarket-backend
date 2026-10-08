@@ -147,7 +147,12 @@
     "outbid": "¡Puja superada en {{item}}!",
     "listingHidden": "Tu anuncio \"{{item}}\" ha sido ocultado por nuestro equipo. Motivo: {{reason}}",
     "listingRemovedByAdmin": "Tu anuncio \"{{item}}\" ha sido eliminado por nuestro equipo. Motivo: {{reason}}",
-    "empty": "No hay notificaciones nuevas."
+    "empty": "No hay notificaciones nuevas.",
+    "pageTitle": "Notificaciones",
+    "viewAll": "Ver todas las notificaciones →",
+    "markAllRead": "Marcar todas como leídas",
+    "loadMore": "Cargar más",
+    "load_error": "Error al cargar las notificaciones."
   },
   "profile": {
     "my_bids": "Mis Pujas",

@@ -147,7 +147,12 @@
     "outbid": "Outbid on {{item}}!",
     "listingHidden": "Your listing \"{{item}}\" has been hidden by our team. Reason: {{reason}}",
     "listingRemovedByAdmin": "Your listing \"{{item}}\" has been removed by our team. Reason: {{reason}}",
-    "empty": "No new notifications."
+    "empty": "No new notifications.",
+    "pageTitle": "Notifications",
+    "viewAll": "View all notifications →",
+    "markAllRead": "Mark all as read",
+    "loadMore": "Load more",
+    "load_error": "Error loading notifications."
   },
   "profile": {
     "my_bids": "My Bids",

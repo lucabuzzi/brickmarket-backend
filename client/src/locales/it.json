@@ -147,7 +147,12 @@
     "outbid": "Offerta superata su {{item}}!",
     "listingHidden": "Il tuo annuncio \"{{item}}\" è stato oscurato dal nostro team. Motivo: {{reason}}",
     "listingRemovedByAdmin": "Il tuo annuncio \"{{item}}\" è stato rimosso dal nostro team. Motivo: {{reason}}",
-    "empty": "Nessuna nuova notifica."
+    "empty": "Nessuna nuova notifica.",
+    "pageTitle": "Notifiche",
+    "viewAll": "Vedi tutte le notifiche →",
+    "markAllRead": "Segna tutte come lette",
+    "loadMore": "Carica altre",
+    "load_error": "Errore nel caricamento delle notifiche."
   },
   "profile": {
     "my_bids": "Le Mie Offerte",

@@ -147,7 +147,12 @@
     "outbid": "Überboten bei {{item}}!",
     "listingHidden": "Dein Angebot \"{{item}}\" wurde von unserem Team ausgeblendet. Grund: {{reason}}",
     "listingRemovedByAdmin": "Dein Angebot \"{{item}}\" wurde von unserem Team entfernt. Grund: {{reason}}",
-    "empty": "Keine neuen Benachrichtigungen."
+    "empty": "Keine neuen Benachrichtigungen.",
+    "pageTitle": "Benachrichtigungen",
+    "viewAll": "Alle Benachrichtigungen anzeigen →",
+    "markAllRead": "Alle als gelesen markieren",
+    "loadMore": "Mehr laden",
+    "load_error": "Fehler beim Laden der Benachrichtigungen."
   },
   "profile": {
     "my_bids": "Meine Gebote",

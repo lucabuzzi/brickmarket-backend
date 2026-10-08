@@ -27,41 +27,47 @@ export default function NotificationBell({ onNewNotification }) {
     };
   }, [isOpen]);
 
-  const fetchNotifications = async () => {
+  const pollUnreadCount = async () => {
     if (!user) return;
     try {
-      const data = await apiFetch('/api/notifications/unread');
-      if (Array.isArray(data)) {
-        if (data.length > unreadCount && unreadCount !== 0) {
-          // Trigger toast passed down from Layout
-          const newNotif = data[0];
-          onNewNotification(newNotif);
-        } else if (data.length > 0 && unreadCount === 0 && onNewNotification && data.length === 1) {
-          // Edge case start up notification vs polling
-          // For now, only show toast strictly when the count increases or is fresh.
-          // We rely on polling delta for toasts.
-        }
-        setNotifications(data);
-        setUnreadCount(data.length);
+      const { count } = await apiFetch('/api/notifications/unread-count');
+      if (count > unreadCount && unreadCount !== 0) {
+        // New notification arrived since the last poll — fetch it for the toast.
+        try {
+          const recent = await apiFetch('/api/notifications?limit=1');
+          if (recent[0]) onNewNotification(recent[0]);
+        } catch { /* toast is best-effort, badge count already updated below */ }
       }
+      setUnreadCount(count);
     } catch (err) {
-      console.error('Error fetching notifications limit', err);
+      console.error('Error polling unread count', err);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
+    pollUnreadCount();
+    const interval = setInterval(pollUnreadCount, 10000);
     return () => clearInterval(interval);
   }, [user, unreadCount]); // Dependency on unreadCount to detect changes
 
   const toggleDropdown = async () => {
-    setIsOpen(!isOpen);
-    if (!isOpen && unreadCount > 0) {
-      // mark all as read when opening dropdown
+    const opening = !isOpen;
+    setIsOpen(opening);
+    if (!opening) return;
+
+    try {
+      const data = await apiFetch('/api/notifications?limit=8');
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching recent notifications', err);
+    }
+
+    if (unreadCount > 0) {
       try {
         await apiFetch('/api/notifications/all/read', { method: 'POST' });
         setUnreadCount(0);
+        // Keep the items visible, just drop their unread highlight — don't refetch.
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       } catch (e) {
         console.error('Failed to mark notifications as read', e);
       }
@@ -107,18 +113,34 @@ export default function NotificationBell({ onNewNotification }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {notifications.map(n => (
                 <Link to={`/product/${n.listing_id}`} key={n.id} style={{ display: 'block', textDecoration: 'none' }} onClick={() => setIsOpen(false)}>
-                  <div style={{ backgroundColor: '#120f0a', padding: '0.75rem', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
-                    <p style={{ margin: '0 0 0.25rem 0', color: '#fff', fontSize: '0.95rem' }}>
+                  <div style={{
+                    backgroundColor: n.is_read ? '#1c1917' : '#120f0a',
+                    padding: '0.75rem', borderRadius: '6px',
+                    borderLeft: `4px solid ${n.is_read ? '#44403c' : '#ef4444'}`,
+                    opacity: n.is_read ? 0.65 : 1,
+                  }}>
+                    <p style={{ margin: '0 0 0.25rem 0', color: n.is_read ? '#d6d3d1' : '#fff', fontSize: '0.95rem', fontWeight: n.is_read ? 400 : 600 }}>
                       {t(n.message_key, { item: n.listing_title, reason: n.reason })}
                     </p>
                     <span style={{ fontSize: '0.75rem', color: '#78716c' }}>
-                      {new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      {new Date(n.created_at).toLocaleDateString('it-IT')} · {new Date(n.created_at).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}
                     </span>
                   </div>
                 </Link>
               ))}
             </div>
           )}
+          <Link
+            to="/notifications"
+            onClick={() => setIsOpen(false)}
+            style={{
+              display: 'block', textAlign: 'center', marginTop: '1rem', paddingTop: '0.75rem',
+              borderTop: '1px solid #44403c', color: '#d4af37', fontSize: '0.8rem',
+              fontWeight: 'bold', textDecoration: 'none',
+            }}
+          >
+            {t('notifications.viewAll')}
+          </Link>
         </div>
       )}
       <style>{`
