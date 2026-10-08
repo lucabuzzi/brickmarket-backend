@@ -428,7 +428,7 @@ export default function Layout() {
             </button>
           </div>
           <p style={{ margin: 0, fontSize: '0.95rem' }}>
-            {t(toastNotif.message_key, { item: toastNotif.listing_title })}
+            {t(toastNotif.message_key, { item: toastNotif.listing_title, reason: toastNotif.reason })}
           </p>
           <Link to={`/product/${toastNotif.listing_id}`} style={{ display: 'inline-block', marginTop: '0.75rem', color: '#d4af37', fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'none' }} onClick={() => setToastNotif(null)}>
              {t('ui.go_to_auction')}

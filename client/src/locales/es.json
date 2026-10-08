@@ -145,6 +145,8 @@
   },
   "notifications": {
     "outbid": "¡Puja superada en {{item}}!",
+    "listingHidden": "Tu anuncio \"{{item}}\" ha sido ocultado por nuestro equipo. Motivo: {{reason}}",
+    "listingRemovedByAdmin": "Tu anuncio \"{{item}}\" ha sido eliminado por nuestro equipo. Motivo: {{reason}}",
     "empty": "No hay notificaciones nuevas."
   },
   "profile": {

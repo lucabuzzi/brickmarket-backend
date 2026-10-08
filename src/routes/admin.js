@@ -1050,12 +1050,15 @@ router.get('/analytics/behavior', adminAuth, async (req, res) => {
 });
 
 /**
- * GET /api/admin/listings?search=&featured=&limit=&offset=
- * Listing management table for the admin "Annunci" page: id, title, seller,
- * status, price, and the featured window.
+ * GET /api/admin/listings?search=&featured=&status=&type=&limit=&offset=
+ * Listing/auction management table for the admin "Gestione Annunci & Aste"
+ * page: id, title, seller, status, price, auction fields, moderation state,
+ * and the featured window.
+ *   status: all (default) | draft | active | sold | expired | removed | hidden
+ *   type:   all (default) | fixed | auction
  */
 router.get('/listings', adminAuth, async (req, res) => {
-  const { search, featured: featuredQ } = req.query;
+  const { search, featured: featuredQ, status: statusQ, type: typeQ } = req.query;
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
   const offset = parseInt(req.query.offset, 10) || 0;
 
@@ -1070,16 +1073,28 @@ router.get('/listings', adminAuth, async (req, res) => {
   } else if (featuredQ === 'false') {
     parts.push(`(l.is_featured = false OR l.is_featured IS NULL)`);
   }
+  if (statusQ && statusQ !== 'all') {
+    params.push(statusQ);
+    parts.push(`l.status = $${params.length}`);
+  }
+  if (typeQ === 'auction') {
+    parts.push(`(l.type = 'auction' OR l.is_auction = true)`);
+  } else if (typeQ === 'fixed') {
+    parts.push(`(l.type <> 'auction' AND (l.is_auction IS NULL OR l.is_auction = false))`);
+  }
   const where = parts.length ? `WHERE ${parts.join(' AND ')}` : '';
 
   try {
     params.push(limit, offset);
     const result = await query(
       `SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction,
+              l.auction_end, l.current_bid, l.bids_count,
               l.is_featured, l.featured_until, l.featured_source, l.created_at,
+              l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username,
               u.username AS seller_username, u.id AS seller_id
        FROM listings l
        JOIN users u ON u.id = l.seller_id
+       LEFT JOIN users hb ON hb.id = l.hidden_by
        ${where}
        ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC,
                 l.created_at DESC
@@ -1090,6 +1105,109 @@ router.get('/listings', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('ADMIN LISTINGS ERROR:', err.message);
     res.status(500).json({ error: 'Errore nel recupero degli annunci.' });
+  }
+});
+
+/**
+ * POST /api/admin/listings/:id/hide
+ * Moderation "oscura": hides a listing/auction from the public site without
+ * deleting it (distinct from the seller-initiated soft-delete which sets
+ * status='removed' — see DELETE /api/listings/:id). Requires a reason, which
+ * is both stored on the listing and sent to the seller as an in-app
+ * notification.
+ * Body: { reason: string }
+ */
+router.post('/listings/:id/hide', adminAuth, async (req, res) => {
+  const listingId = req.params.id;
+  const reason = (req.body?.reason || '').trim();
+  if (!reason) return res.status(400).json({ error: 'Specifica un motivo per oscurare l\'annuncio.' });
+
+  try {
+    const result = await query(
+      `UPDATE listings
+       SET status = 'hidden', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW()
+       WHERE id = $3 AND status NOT IN ('sold', 'removed')
+       RETURNING *`,
+      [reason, req.user.userId, listingId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Annuncio non trovato o non oscurabile nel suo stato attuale.' });
+    }
+    const listing = result.rows[0];
+
+    await query(
+      `INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)`,
+      [listing.seller_id, 'notifications.listingHidden', listingId, reason]
+    ).catch(err => console.error('Listing hidden notification error:', err.message));
+
+    const broadcast = req.app.get('broadcast');
+    if (broadcast) broadcast({ type: 'LISTING_HIDDEN', listingId });
+    res.json({ success: true, listing });
+  } catch (err) {
+    console.error('ADMIN HIDE LISTING ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nell\'oscuramento dell\'annuncio.' });
+  }
+});
+
+/**
+ * POST /api/admin/listings/:id/unhide
+ * Reverses /hide: brings a 'hidden' listing back to 'active'.
+ */
+router.post('/listings/:id/unhide', adminAuth, async (req, res) => {
+  const listingId = req.params.id;
+  try {
+    const result = await query(
+      `UPDATE listings
+       SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW()
+       WHERE id = $1 AND status = 'hidden'
+       RETURNING *`,
+      [listingId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Annuncio non trovato o non oscurato.' });
+    res.json({ success: true, listing: result.rows[0] });
+  } catch (err) {
+    console.error('ADMIN UNHIDE LISTING ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel ripristino dall\'oscuramento.' });
+  }
+});
+
+/**
+ * DELETE /api/admin/listings/:id
+ * Moderation cancellazione: admin-initiated soft delete (status='removed'),
+ * distinct from the seller's own DELETE /api/listings/:id only by who/why —
+ * hidden_by/hidden_reason/hidden_at double as the moderation audit trail here
+ * too. Sold listings are never deletable (financial record).
+ * Body: { reason: string }
+ */
+router.delete('/listings/:id', adminAuth, async (req, res) => {
+  const listingId = req.params.id;
+  const reason = (req.body?.reason || '').trim();
+  if (!reason) return res.status(400).json({ error: 'Specifica un motivo per cancellare l\'annuncio.' });
+
+  try {
+    const result = await query(
+      `UPDATE listings
+       SET status = 'removed', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW()
+       WHERE id = $3 AND status <> 'sold'
+       RETURNING *`,
+      [reason, req.user.userId, listingId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Annuncio non trovato o non cancellabile (es. già venduto).' });
+    }
+    const listing = result.rows[0];
+
+    await query(
+      `INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)`,
+      [listing.seller_id, 'notifications.listingRemovedByAdmin', listingId, reason]
+    ).catch(err => console.error('Listing removed notification error:', err.message));
+
+    const broadcast = req.app.get('broadcast');
+    if (broadcast) broadcast({ type: 'LISTING_REMOVED', listingId });
+    res.json({ success: true, listing });
+  } catch (err) {
+    console.error('ADMIN DELETE LISTING ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nella cancellazione dell\'annuncio.' });
   }
 });
 
@@ -1138,13 +1256,17 @@ router.post('/listings/:id/feature', adminAuth, async (req, res) => {
 
 /**
  * POST /api/admin/listings/:id/restore
- * Reactivates an accidentally expired or removed item.
+ * Reactivates an accidentally expired, removed or hidden item (the dedicated
+ * /unhide route is the normal way back from 'hidden', but this one also
+ * clears the moderation audit fields so it works as a general-purpose undo).
  */
 router.post('/listings/:id/restore', adminAuth, async (req, res) => {
   const listingId = req.params.id;
   try {
     const result = await query(
-      `UPDATE listings SET status = 'active', updated_at = NOW() WHERE id = $1 RETURNING *`,
+      `UPDATE listings
+       SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW()
+       WHERE id = $1 RETURNING *`,
       [listingId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Annuncio non trovato.' });

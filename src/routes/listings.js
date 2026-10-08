@@ -360,10 +360,16 @@ router.get('/', async (req, res) => {
       params.push('active');
       parts.push(`l.status = $${params.length}`);
     } else if (statusQ === 'all') {
-      // Se viene chiesto "all", mostriamo tutto TRANNE i draft
-      parts.push(`l.status <> 'draft'`);
+      // Se viene chiesto "all", mostriamo tutto TRANNE i draft e gli annunci
+      // oscurati dalla moderazione admin (altrimenti basterebbe questo query
+      // param per vedere pubblicamente ciò che /admin/listings/:id/hide nasconde)
+      parts.push(`l.status NOT IN ('draft', 'hidden')`);
     } else {
-      params.push(statusQ);
+      // Pubblico, senza auth: accettiamo solo stati non sensibili esplicitamente
+      // richiesti. Qualsiasi altro valore (incl. draft/removed/hidden) ricade
+      // sul default 'active' invece di esporre annunci non pubblici.
+      const publicSafeStatus = ['active', 'sold', 'expired'].includes(statusQ) ? statusQ : 'active';
+      params.push(publicSafeStatus);
       parts.push(`l.status = $${params.length}`);
     }
 

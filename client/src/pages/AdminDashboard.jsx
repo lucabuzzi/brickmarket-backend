@@ -509,9 +509,9 @@ export default function AdminDashboard() {
         <StitchCard glowColor="amber" onClick={() => navigate('/admin/listings')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(212, 175, 55, 0.1)', borderRadius: '12px' }}><Sparkles size={24} color="#d4af37" /></div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Annunci in Evidenza</h2>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Gestione Annunci &amp; Aste</h2>
           </div>
-          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Metti o togli manualmente gli annunci dalle sezioni &ldquo;in evidenza&rdquo; della home.</p>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Elenco di tutti gli annunci e le aste: evidenza, oscuramento, cancellazione e ripristino.</p>
           <div style={{ marginTop: 'auto' }}>
             <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>GESTISCI →</span>
           </div>

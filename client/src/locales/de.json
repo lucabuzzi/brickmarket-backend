@@ -145,6 +145,8 @@
   },
   "notifications": {
     "outbid": "Überboten bei {{item}}!",
+    "listingHidden": "Dein Angebot \"{{item}}\" wurde von unserem Team ausgeblendet. Grund: {{reason}}",
+    "listingRemovedByAdmin": "Dein Angebot \"{{item}}\" wurde von unserem Team entfernt. Grund: {{reason}}",
     "empty": "Keine neuen Benachrichtigungen."
   },
   "profile": {

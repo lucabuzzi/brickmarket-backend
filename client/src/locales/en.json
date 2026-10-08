@@ -145,6 +145,8 @@
   },
   "notifications": {
     "outbid": "Outbid on {{item}}!",
+    "listingHidden": "Your listing \"{{item}}\" has been hidden by our team. Reason: {{reason}}",
+    "listingRemovedByAdmin": "Your listing \"{{item}}\" has been removed by our team. Reason: {{reason}}",
     "empty": "No new notifications."
   },
   "profile": {

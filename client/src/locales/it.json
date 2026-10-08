@@ -145,6 +145,8 @@
   },
   "notifications": {
     "outbid": "Offerta superata su {{item}}!",
+    "listingHidden": "Il tuo annuncio \"{{item}}\" è stato oscurato dal nostro team. Motivo: {{reason}}",
+    "listingRemovedByAdmin": "Il tuo annuncio \"{{item}}\" è stato rimosso dal nostro team. Motivo: {{reason}}",
     "empty": "Nessuna nuova notifica."
   },
   "profile": {

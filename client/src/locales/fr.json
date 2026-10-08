@@ -145,6 +145,8 @@
   },
   "notifications": {
     "outbid": "Surenchéri sur {{item}} !",
+    "listingHidden": "Votre annonce \"{{item}}\" a été masquée par notre équipe. Motif : {{reason}}",
+    "listingRemovedByAdmin": "Votre annonce \"{{item}}\" a été supprimée par notre équipe. Motif : {{reason}}",
     "empty": "Aucune nouvelle notification."
   },
   "profile": {

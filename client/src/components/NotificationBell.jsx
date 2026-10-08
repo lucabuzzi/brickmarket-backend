@@ -109,7 +109,7 @@ export default function NotificationBell({ onNewNotification }) {
                 <Link to={`/product/${n.listing_id}`} key={n.id} style={{ display: 'block', textDecoration: 'none' }} onClick={() => setIsOpen(false)}>
                   <div style={{ backgroundColor: '#120f0a', padding: '0.75rem', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
                     <p style={{ margin: '0 0 0.25rem 0', color: '#fff', fontSize: '0.95rem' }}>
-                      {t(n.message_key, { item: n.listing_title })}
+                      {t(n.message_key, { item: n.listing_title, reason: n.reason })}
                     </p>
                     <span style={{ fontSize: '0.75rem', color: '#78716c' }}>
                       {new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
