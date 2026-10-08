@@ -7,7 +7,7 @@
 const KNOWN_ROUTES = [
   '', // the home
   'account', 'accessibilita', 'archive', 'cart', 'come-funziona', 'create-auction', 'crediti', 'crediti/acquista', 'crediti/converti',
-  'cookie-policy', 'faq', 'forgot-password', 'help', 'login', 'my-listings', 'my-shipments', 'norme-legali', 'privacy', 'profile', 'register',
+  'cookie-policy', 'faq', 'forgot-password', 'help', 'login', 'my-listings', 'my-shipments', 'norme-legali', 'notifications', 'privacy', 'profile', 'register',
   'reset-password', 'ricerca-utente', 'search-results', 'sell', 'seller/onboarding-complete', 'seller/onboarding-retry',
   'skill-zone', 'verifica-email',
   'product/:id', 'user/:username', 'category/:slug',
