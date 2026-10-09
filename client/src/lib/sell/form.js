@@ -35,6 +35,11 @@ export const INITIAL_FORM = Object.freeze({
   cardRarity: '',
   gradingCompany: '',
   cardGrade: '',
+  // Optional link to the Pokémon catalog (lib/sell/catalog.js): expansion id/name, collector number, card id.
+  cardSetId: '',
+  cardSetName: '',
+  cardNumber: '',
+  cardExternalId: '',
   imageOrientation: '', // '' = not chosen yet -> defaultImageOrientation(productType)
 });
 
@@ -75,13 +80,23 @@ export function changeProductType(form, next) {
     cardRarity: '',
     gradingCompany: '',
     cardGrade: '',
+    cardSetId: '',
+    cardSetName: '',
+    cardNumber: '',
+    cardExternalId: '',
     category: '', // the old theme/series no longer applies; picking a card game fills it again (selectGame)
   };
 }
 
 /** Picking a card game also fills the generic "theme" field with the game's display name. */
 export function selectGame(form, slug, gameName) {
-  return { ...form, game: slug, category: gameName || form.category };
+  const sameGame = form.game === slug;
+  return {
+    ...form,
+    game: slug,
+    category: gameName || form.category,
+    ...(sameGame ? {} : { cardSetId: '', cardSetName: '', cardNumber: '', cardExternalId: '' }),
+  };
 }
 
 /** Number of carriers the seller ticked. */

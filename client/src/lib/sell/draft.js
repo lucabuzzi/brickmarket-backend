@@ -19,6 +19,7 @@ const TEXT_FIELDS = {
   condition: SHORT, boxCondition: SHORT, instructions: SHORT, price: 16,
   weightKg: 16, lengthCm: 16, widthCm: 16, heightCm: 16, description: LONG, proNotes: 2000,
   cardLanguage: 8, cardRarity: 60, gradingCompany: 8, cardGrade: 10,
+  cardSetId: 60, cardSetName: 300, cardNumber: 20, cardExternalId: 60,
 };
 const CARRIER_ID = /^[A-Z0-9_]{2,16}$/;
 

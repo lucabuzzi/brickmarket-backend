@@ -1170,6 +1170,23 @@
         "guide_gallery": "Choisir dans la galerie",
         "guide_done": "Vous avez toutes les photos. Vous pouvez les réordonner ou continuer.",
         "guide_minimum": "Il faut au moins {{count}} photos : recto, verso et coins."
+      },
+      "catalog": {
+        "title": "Chercher dans le catalogue",
+        "hint": "Facultatif. Choisissez l'extension et la carte, nous remplissons titre, numéro et rareté.",
+        "unavailable": "Le catalogue est injoignable pour l'instant : remplissez les informations à la main ci-dessous.",
+        "set_label": "Extension",
+        "set_placeholder": "Cherchez une extension (ex. 30e anniversaire)",
+        "loading": "Chargement…",
+        "no_results": "Aucun résultat.",
+        "cards_count": "{{count}} cartes",
+        "change": "Changer",
+        "card_label": "Carte",
+        "card_placeholder": "Nom ou numéro de la carte",
+        "card_clear": "Retirer la carte choisie",
+        "reference_note": "Image de référence : ce n'est pas votre photo.",
+        "refine": "{{count}} résultats de plus : précisez votre recherche.",
+        "not_found_hint": "Vous ne trouvez pas la carte ? Passez cette étape et remplissez titre et détails à la main."
       }
     }
   },

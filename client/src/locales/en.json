@@ -1170,6 +1170,23 @@
         "guide_gallery": "Choose from gallery",
         "guide_done": "You have all the photos. You can reorder them or continue.",
         "guide_minimum": "At least {{count}} photos are needed: front, back and corners."
+      },
+      "catalog": {
+        "title": "Search the catalog",
+        "hint": "Optional. Pick the expansion and the card and we fill in title, number and rarity.",
+        "unavailable": "The catalog is not reachable right now: fill in the details by hand below.",
+        "set_label": "Expansion",
+        "set_placeholder": "Search an expansion (e.g. 30th Anniversary)",
+        "loading": "Loading…",
+        "no_results": "No results.",
+        "cards_count": "{{count}} cards",
+        "change": "Change",
+        "card_label": "Card",
+        "card_placeholder": "Card name or number",
+        "card_clear": "Remove the chosen card",
+        "reference_note": "Reference image: this is not your photo.",
+        "refine": "{{count}} more results: type more to narrow down.",
+        "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand."
       }
     }
   },

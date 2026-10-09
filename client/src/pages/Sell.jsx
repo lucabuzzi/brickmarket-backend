@@ -22,6 +22,7 @@ import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultIma
 import OrientationPicker from '../components/sell/OrientationPicker';
 import CropEditor from '../components/sell/CropEditor';
 import CardDetails from '../components/sell/CardDetails';
+import CardCatalogPicker from '../components/sell/CardCatalogPicker';
 import CardShotGuide from '../components/sell/CardShotGuide';
 import { cardSummaryParts, languageName } from '../lib/sell/cards';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
@@ -169,6 +170,7 @@ export default function Sell({ cardsMode = false }) {
       t(`sell.product_type_${form.productType}`),
       form.productType === 'lego' && form.mainCategory ? t(`sell.category_${form.mainCategory}`) : form.category,
       form.setNumber.trim() ? `#${form.setNumber.trim()}` : '',
+      form.productType === 'tcg' ? [form.cardSetName, form.cardNumber ? `#${form.cardNumber}` : ''].filter(Boolean).join(' ') : '',
       form.productType === 'lego' ? String(form.year || '').trim() : '',
     ].filter(Boolean);
     const cardExtras = isTcg
@@ -240,6 +242,10 @@ export default function Sell({ cardsMode = false }) {
           cardRarity: data.card_rarity || '',
           gradingCompany: data.card_grading_company || '',
           cardGrade: data.card_grade || '',
+          cardSetId: data.card_set_id || '',
+          cardSetName: '',
+          cardNumber: data.card_number || '',
+          cardExternalId: data.card_external_id || '',
         });
         setExistingImages(data.images || []);
       } catch {
@@ -619,6 +625,8 @@ export default function Sell({ cardsMode = false }) {
                         </div>
                       </FieldGroup>
                     )}
+
+                    {form.productType === 'tcg' && form.game === 'pokemon' && <CardCatalogPicker form={form} patch={patch} />}
 
                     {!editId && isLego && (
                       <div className="rounded-2xl border border-[#c6ff3d]/15 bg-[#c6ff3d]/[0.04] p-4">
