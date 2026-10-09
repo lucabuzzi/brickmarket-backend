@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
 import { useTranslation } from 'react-i18next';
 import { CROP_ASPECTS, CROP_ASPECT_IDS, initialCropAspect } from '../../lib/sell/crop';
 import { cropImageFile } from './cropImage';
 
 // Full-screen crop editor for one photo. Drag to move, pinch (or the slider) to zoom, pick the frame shape.
+// Rendered into document.body: the wizard sits inside animated (transformed) wrappers, and inside those a
+// `position: fixed` box is positioned against the wrapper instead of the screen, so the editor would not cover the page.
 // "Crop" hands back a new File, "Use whole photo" / Escape hands back null (keep the original untouched).
 export default function CropEditor({ file, imageOrientation, onDone }) {
   const { t } = useTranslation();
@@ -36,7 +39,7 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
     onDone(cropped); // null (could not crop) falls back to keeping the original
   }
 
-  return (
+  return createPortal(
     <div role="dialog" aria-modal="true" aria-label={t('sell.ui.crop.title')} className="fixed inset-0 z-[100] flex flex-col bg-[#07060b]">
       <div className="shrink-0 px-4 pb-2 pt-3">
         <p className="text-sm font-bold text-white">{t('sell.ui.crop.title')}</p>
@@ -97,6 +100,7 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
