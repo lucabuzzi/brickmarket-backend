@@ -9,10 +9,10 @@ const LEGO_CONDITION_MAP = { new: 'new', used: 'used', complete: 'complete', par
 /**
  * @param {object} form  wizard state (see form.js)
  * @param {'draft'|'publish'} mode
- * @param {{isPro?: boolean}} [opts]
+ * @param {{isPro?: boolean, editing?: boolean}} [opts]  editing: also send blank card details, so they can be cleared
  * @returns {Array<[string, string]>}
  */
-export function buildListingFields(form, mode, { isPro = false } = {}) {
+export function buildListingFields(form, mode, { isPro = false, editing = false } = {}) {
   const isLego = form.productType === 'lego';
   const isTcg = form.productType === 'tcg';
   const fields = [];
@@ -55,6 +55,15 @@ export function buildListingFields(form, mode, { isPro = false } = {}) {
   const p = parseFloat(String(form.price).replace(',', '.'));
   if (!Number.isNaN(p) && p > 0) add('price', String(p));
   if (form.imageOrientation) add('imageOrientation', form.imageOrientation);
+  if (isTcg) {
+    const card = [
+      ['cardLanguage', form.cardLanguage],
+      ['cardRarity', String(form.cardRarity || '').trim()],
+      ['cardGradingCompany', form.gradingCompany],
+      ['cardGrade', String(form.cardGrade || '').trim()],
+    ];
+    for (const [name, value] of card) if (value || editing) add(name, value || '');
+  }
   add('status', mode === 'draft' ? 'draft' : 'active');
   return fields;
 }

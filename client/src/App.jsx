@@ -184,6 +184,14 @@ export default function App() {
             }
           />
           <Route
+            path="sell/cards"
+            element={
+              <ProtectedRoute>
+                <Sell cardsMode />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="create-auction"
             element={
               <ProtectedRoute>

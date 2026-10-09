@@ -30,6 +30,11 @@ export const INITIAL_FORM = Object.freeze({
   heightCm: '',
   description: '',
   proNotes: '',
+  // Trading cards only (see lib/sell/cards.js). '' = not specified / not graded.
+  cardLanguage: '',
+  cardRarity: '',
+  gradingCompany: '',
+  cardGrade: '',
   imageOrientation: '', // '' = not chosen yet -> defaultImageOrientation(productType)
 });
 
@@ -66,6 +71,10 @@ export function changeProductType(form, next) {
     setNumber: next === 'lego' ? form.setNumber : '',
     year: next === 'lego' ? form.year : '',
     imageOrientation: '', // follows the new type's default again
+    cardLanguage: '',
+    cardRarity: '',
+    gradingCompany: '',
+    cardGrade: '',
     category: '', // the old theme/series no longer applies; picking a card game fills it again (selectGame)
   };
 }

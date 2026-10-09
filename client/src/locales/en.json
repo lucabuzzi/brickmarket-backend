@@ -952,7 +952,11 @@
         "shipping_required": "Choose at least one shipping method.",
         "dimension_invalid": "Enter a number greater than zero.",
         "description_long": "The description is too long (10,000 characters max).",
-        "pro_notes_long": "The notes are too long (2,000 characters max)."
+        "pro_notes_long": "The notes are too long (2,000 characters max).",
+        "card_photos_required": "Cards need at least front, back and corners (3 photos).",
+        "grading_incomplete": "Enter both the grading company and the grade.",
+        "grade_long": "The grade is too long (10 characters max).",
+        "rarity_long": "The rarity is too long (60 characters max)."
       },
       "photos": {
         "drop_here": "Drop your photos here",
@@ -1145,6 +1149,27 @@
         "use_full": "Use whole photo",
         "working": "Cropping…",
         "edit": "Crop photo"
+      },
+      "cards": {
+        "details_title": "Card details",
+        "language_label": "Language",
+        "language_none": "Not specified",
+        "rarity_label": "Rarity",
+        "rarity_placeholder": "E.g. Holo Rare",
+        "grading_label": "Professional grading",
+        "grading_none": "Ungraded",
+        "grading_other": "Other",
+        "grade_label": "Grade",
+        "grade_hint": "The grade given by the company, for example 10 or 9.5.",
+        "grade_placeholder": "E.g. 10",
+        "guide_progress": "Photo progress",
+        "guide_step": "Photo {{n}} of {{total}}",
+        "guide_required": "required",
+        "guide_optional": "optional",
+        "guide_take": "Take the photo",
+        "guide_gallery": "Choose from gallery",
+        "guide_done": "You have all the photos. You can reorder them or continue.",
+        "guide_minimum": "At least {{count}} photos are needed: front, back and corners."
       }
     }
   },

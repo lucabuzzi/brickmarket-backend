@@ -8,6 +8,7 @@
 //   'publish' like 'next', plus: a new listing needs at least one photo
 //   'draft'   only what the server needs to store a draft: a title, and a game for cards
 import { MAX_PHOTOS, isPositive, parseDecimal, selectedCarriers } from './form.js';
+import { CARD_GRADE_MAX, CARD_RARITY_MAX, CARD_REQUIRED_SHOTS, gradingError } from './cards.js';
 
 export const STEP_IDS = ['what', 'photos', 'condition', 'price', 'review']; // 'review' has no fields of its own: it summarises the others
 
@@ -19,6 +20,10 @@ export const FIELD_STEP = {
   year: 'what',
   photos: 'photos',
   condition: 'condition',
+  cardLanguage: 'condition',
+  cardRarity: 'condition',
+  gradingCompany: 'condition',
+  cardGrade: 'condition',
   price: 'price',
   shipping: 'price',
   weightKg: 'price',
@@ -54,15 +59,24 @@ function validateWhat(form, mode) {
 }
 
 function validatePhotos(ctx, mode) {
-  const { photoCount = 0, editing = false } = ctx;
+  const { photoCount = 0, editing = false, guidedCards = false } = ctx;
   if (mode === 'publish' && !editing && photoCount === 0) return { photos: 'photo_required' };
+  if (mode === 'publish' && !editing && guidedCards && photoCount < CARD_REQUIRED_SHOTS) return { photos: 'card_photos_required' };
   if (photoCount > MAX_PHOTOS) return { photos: 'photo_too_many' };
   return {};
 }
 
 function validateCondition(form, mode) {
-  if (mode === 'draft') return {};
-  return form.condition ? {} : { condition: 'condition_required' };
+  const errors = {};
+  if (form.productType === 'tcg') {
+    // the server rejects half a grading (company without grade or the other way round), drafts included
+    const g = gradingError(form);
+    if (g) errors[g.field] = g.code;
+    else if (String(form.cardGrade || '').trim().length > CARD_GRADE_MAX) errors.cardGrade = 'grade_long';
+    if (String(form.cardRarity || '').trim().length > CARD_RARITY_MAX) errors.cardRarity = 'rarity_long';
+  }
+  if (mode !== 'draft' && !form.condition) errors.condition = 'condition_required';
+  return errors;
 }
 
 function validatePrice(form, mode, { isPro = false } = {}) {

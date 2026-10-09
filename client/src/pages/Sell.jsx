@@ -21,6 +21,9 @@ import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
 import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, selectGame } from '../lib/sell/form';
 import OrientationPicker from '../components/sell/OrientationPicker';
 import CropEditor from '../components/sell/CropEditor';
+import CardDetails from '../components/sell/CardDetails';
+import CardShotGuide from '../components/sell/CardShotGuide';
+import { cardSummaryParts, languageName } from '../lib/sell/cards';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
 import { buildListingFields } from '../lib/sell/payload';
 import { completeness } from '../lib/sell/score';
@@ -83,11 +86,13 @@ const BOX_LABEL_KEYS = { 'Mint (Perfetta)': 'box_condition_mint', 'Damaged (Dann
 const INSTRUCTIONS_LABEL_KEYS = { 'Yes (Presenti)': 'instructions_present', 'No (Assenti)': 'instructions_absent', 'Solo PDF': 'instructions_pdf_only' };
 
 const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
+// /sell/cards starts as a trading-card listing; /sell lets the seller pick the kind of product.
+const newForm = (cards) => (cards ? { ...emptyForm(), productType: 'tcg' } : emptyForm());
 const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
 const safeStorage = (fn) => { try { return fn(); } catch { return null; } };
 
-export default function Sell() {
-  const { t } = useTranslation();
+export default function Sell({ cardsMode = false }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
@@ -98,7 +103,7 @@ export default function Sell() {
   const isPro = user?.role === 'professional' || user?.role_name === 'professional' || user?.is_pro || user?.seller_type === 'professional';
 
   // ── State ────────────────────────────────────────────────────────────────
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(() => newForm(cardsMode));
   const patch = useCallback((p) => setForm((f) => ({ ...f, ...p })), []);
   const [step, setStep] = useState(1);
   const [reached, setReached] = useState(1);
@@ -129,7 +134,8 @@ export default function Sell() {
   const isLego = form.productType === 'lego';
   const stepId = STEP_IDS[step - 1];
   const photoCount = files.length || (editId ? existingImages.length : 0);
-  const ctx = useMemo(() => ({ photoCount, editing: !!editId, isPro }), [photoCount, editId, isPro]);
+  const guidedCards = cardsMode && !editId; // step-by-step photo flow (front, back, corners are required)
+  const ctx = useMemo(() => ({ photoCount, editing: !!editId, isPro, guidedCards }), [photoCount, editId, isPro, guidedCards]);
 
   const shots = useMemo(() => shotListFor({ productType: form.productType, mainCategory: form.mainCategory }), [form.productType, form.mainCategory]);
   const photoQuality = usePhotoQuality(files);
@@ -165,7 +171,10 @@ export default function Sell() {
       form.setNumber.trim() ? `#${form.setNumber.trim()}` : '',
       form.productType === 'lego' ? String(form.year || '').trim() : '',
     ].filter(Boolean);
-    const conditionExtras = form.productType === 'lego' ? [
+    const cardExtras = isTcg
+      ? cardSummaryParts(form, { language: (code) => languageName(code, i18n.language), otherCompany: t('sell.ui.cards.grading_other') })
+      : [];
+    const conditionExtras = isTcg ? cardExtras : form.productType === 'lego' ? [
       BOX_LABEL_KEYS[form.boxCondition] ? `${noStar(t('sell.box_condition_label'))}: ${t(`sell.${BOX_LABEL_KEYS[form.boxCondition]}`)}` : '',
       INSTRUCTIONS_LABEL_KEYS[form.instructions] ? `${noStar(t('sell.instructions_label'))}: ${t(`sell.${INSTRUCTIONS_LABEL_KEYS[form.instructions]}`)}` : '',
       form.isComplete ? t('sell.complete_set_label') : '',
@@ -184,7 +193,7 @@ export default function Sell() {
       carriers: chosenCarrierIds(form.shippingOptions, carrierIds).map((id) => names[id]),
       description: form.description,
     };
-  }, [form, files, previews, existingImages, photoCount, carrierIds, t]);
+  }, [form, files, previews, existingImages, photoCount, carrierIds, t, i18n.language]);
 
   // ── Edit mode: load the listing ──────────────────────────────────────────
   useEffect(() => {
@@ -227,6 +236,10 @@ export default function Sell() {
           description: data.description || '',
           proNotes: data.pro_notes || '',
           imageOrientation: data.image_orientation || '',
+          cardLanguage: data.card_language || '',
+          cardRarity: data.card_rarity || '',
+          gradingCompany: data.card_grading_company || '',
+          cardGrade: data.card_grade || '',
         });
         setExistingImages(data.images || []);
       } catch {
@@ -242,15 +255,15 @@ export default function Sell() {
   useEffect(() => {
     if (editId || !userId) return;
     const saved = parseDraft(safeStorage(() => window.localStorage.getItem(draftKey(userId))));
-    if (saved) {
-      setForm({ ...emptyForm(), ...saved.form });
+    if (saved && (!cardsMode || saved.form.productType === 'tcg')) {
+      setForm({ ...newForm(cardsMode), ...saved.form });
       setStep(saved.step);
       setReached(saved.step);
       setRestoredAtStep(saved.step);
       lastSig.current = serializeDraft(saved.form, saved.step, 0);
     }
     draftReady.current = true;
-  }, [editId, userId]);
+  }, [editId, userId, cardsMode]);
 
   useEffect(() => {
     if (editId || !userId || published || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
@@ -281,7 +294,7 @@ export default function Sell() {
 
   function discardDraft() {
     clearDraft();
-    setForm(emptyForm());
+    setForm(newForm(cardsMode));
     setFiles([]);
     setErrors({});
     setStep(1);
@@ -423,7 +436,7 @@ export default function Sell() {
     setErrors({});
 
     const fd = new FormData();
-    buildListingFields(form, mode, { isPro }).forEach(([name, value]) => fd.append(name, value));
+    buildListingFields(form, mode, { isPro, editing: !!editId }).forEach(([name, value]) => fd.append(name, value));
     files.forEach((f) => fd.append('images', f));
 
     setBusy(true);
@@ -570,6 +583,7 @@ export default function Sell() {
                 {/* STEP 1 — what */}
                 {stepId === 'what' && (
                   <>
+                    {!cardsMode && (
                     <FieldGroup id="sell-productType" label={noStar(t('sell.product_type_label'))}>
                       <div className="grid grid-cols-3 gap-2.5">
                         {PRODUCT_TYPE_OPTIONS.map((pt) => (
@@ -578,11 +592,16 @@ export default function Sell() {
                             icon={pt.icon}
                             label={t(`sell.product_type_${pt.id}`)}
                             selected={form.productType === pt.id}
-                            onClick={() => setForm((f) => changeProductType(f, pt.id))}
+                            onClick={() => {
+                              // picking cards on a blank /sell form hands over to the dedicated card flow
+                              if (pt.id === 'tcg' && !editId && !form.title.trim()) { navigate('/sell/cards'); return; }
+                              setForm((f) => changeProductType(f, pt.id));
+                            }}
                           />
                         ))}
                       </div>
                     </FieldGroup>
+                    )}
 
                     {form.productType === 'tcg' && (
                       <FieldGroup id="sell-game" label={noStar(t('sell.select_game_label'))} required error={err('game')}>
@@ -707,6 +726,7 @@ export default function Sell() {
                     value={form.imageOrientation || defaultImageOrientation(form.productType)}
                     onChange={(imageOrientation) => patch({ imageOrientation })}
                   />
+                  {guidedCards && <CardShotGuide photoCount={files.length} shots={shots} onAdd={addPhotos} />}
                   <PhotoSlots
                     previews={previews}
                     existingImages={existingImages}
@@ -749,6 +769,8 @@ export default function Sell() {
                         ))}
                       </div>
                     </FieldGroup>
+
+                    {form.productType === 'tcg' && <CardDetails form={form} patch={patch} err={err} />}
 
                     {isLego && (
                       <>

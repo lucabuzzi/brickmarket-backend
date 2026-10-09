@@ -18,6 +18,7 @@ const TEXT_FIELDS = {
   game: SHORT, title: SHORT, setNumber: SHORT, mainCategory: SHORT, category: SHORT, year: 8,
   condition: SHORT, boxCondition: SHORT, instructions: SHORT, price: 16,
   weightKg: 16, lengthCm: 16, widthCm: 16, heightCm: 16, description: LONG, proNotes: 2000,
+  cardLanguage: 8, cardRarity: 60, gradingCompany: 8, cardGrade: 10,
 };
 const CARRIER_ID = /^[A-Z0-9_]{2,16}$/;
 

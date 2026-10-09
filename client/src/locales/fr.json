@@ -952,7 +952,11 @@
         "shipping_required": "Choisissez au moins un mode d'expédition.",
         "dimension_invalid": "Saisissez un nombre supérieur à zéro.",
         "description_long": "La description est trop longue (10 000 caractères maximum).",
-        "pro_notes_long": "Les notes sont trop longues (2 000 caractères maximum)."
+        "pro_notes_long": "Les notes sont trop longues (2 000 caractères maximum).",
+        "card_photos_required": "Les cartes demandent au moins recto, verso et coins (3 photos).",
+        "grading_incomplete": "Indiquez la société de gradation et la note.",
+        "grade_long": "La note est trop longue (10 caractères maximum).",
+        "rarity_long": "La rareté est trop longue (60 caractères maximum)."
       },
       "photos": {
         "drop_here": "Déposez vos photos ici",
@@ -1145,6 +1149,27 @@
         "use_full": "Utiliser la photo entière",
         "working": "Recadrage…",
         "edit": "Recadrer la photo"
+      },
+      "cards": {
+        "details_title": "Détails de la carte",
+        "language_label": "Langue",
+        "language_none": "Non précisée",
+        "rarity_label": "Rareté",
+        "rarity_placeholder": "Ex. Holo Rare",
+        "grading_label": "Gradation professionnelle",
+        "grading_none": "Non gradée",
+        "grading_other": "Autre",
+        "grade_label": "Note",
+        "grade_hint": "La note attribuée par la société, par exemple 10 ou 9.5.",
+        "grade_placeholder": "Ex. 10",
+        "guide_progress": "Progression des photos",
+        "guide_step": "Photo {{n}} sur {{total}}",
+        "guide_required": "obligatoire",
+        "guide_optional": "facultative",
+        "guide_take": "Prendre la photo",
+        "guide_gallery": "Choisir dans la galerie",
+        "guide_done": "Vous avez toutes les photos. Vous pouvez les réordonner ou continuer.",
+        "guide_minimum": "Il faut au moins {{count}} photos : recto, verso et coins."
       }
     }
   },
