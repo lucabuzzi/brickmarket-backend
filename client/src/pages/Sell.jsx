@@ -18,7 +18,8 @@ import ReviewStep from '../components/sell/ReviewStep';
 import Celebration from '../components/sell/Celebration';
 import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
 import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
-import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, selectGame } from '../lib/sell/form';
+import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, selectGame } from '../lib/sell/form';
+import OrientationPicker from '../components/sell/OrientationPicker';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
 import { buildListingFields } from '../lib/sell/payload';
 import { completeness } from '../lib/sell/score';
@@ -223,6 +224,7 @@ export default function Sell() {
           heightCm: data.height_cm != null ? String(data.height_cm) : '',
           description: data.description || '',
           proNotes: data.pro_notes || '',
+          imageOrientation: data.image_orientation || '',
         });
         setExistingImages(data.images || []);
       } catch {
@@ -681,6 +683,11 @@ export default function Sell() {
 
                 {/* STEP 2 — photos */}
                 {stepId === 'photos' && (
+                  <>
+                  <OrientationPicker
+                    value={form.imageOrientation || defaultImageOrientation(form.productType)}
+                    onChange={(imageOrientation) => patch({ imageOrientation })}
+                  />
                   <PhotoSlots
                     previews={previews}
                     existingImages={existingImages}
@@ -697,6 +704,7 @@ export default function Sell() {
                     onOpenGuide={openGuide}
                     resolveExisting={(img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`)}
                   />
+                  </>
                 )}
 
                 {/* STEP 5 — review */}

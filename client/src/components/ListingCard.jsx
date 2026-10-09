@@ -94,7 +94,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
           src={listingImage(l)}
           alt={altForListing(l, t)}
           loading="lazy"
-          className="w-full aspect-[4/3] md:aspect-[3/2] object-cover group-hover/card:scale-105 transition-transform duration-500"
+          className={`w-full ${l.image_orientation === 'portrait' ? 'aspect-[3/4]' : 'aspect-[4/3] md:aspect-[3/2]'} object-cover group-hover/card:scale-105 transition-transform duration-500`}
         />
       </Link>
 

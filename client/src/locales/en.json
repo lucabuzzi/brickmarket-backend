@@ -1126,6 +1126,12 @@
             "text": "An intact box, protection around the piece and no rush: it will arrive in better shape."
           }
         }
+      },
+      "orientation": {
+        "label": "Photo orientation",
+        "hint": "How your photos are shown in the listing. Cards are usually portrait.",
+        "portrait": "Portrait",
+        "landscape": "Landscape"
       }
     }
   },

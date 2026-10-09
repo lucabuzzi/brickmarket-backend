@@ -1126,6 +1126,12 @@
             "text": "Boîte intacte, protection autour de la pièce et pas de précipitation : elle arrivera mieux."
           }
         }
+      },
+      "orientation": {
+        "label": "Orientation des photos",
+        "hint": "Comment les photos sont affichées dans l'annonce. Les cartes sont généralement en portrait.",
+        "portrait": "Portrait",
+        "landscape": "Paysage"
       }
     }
   },

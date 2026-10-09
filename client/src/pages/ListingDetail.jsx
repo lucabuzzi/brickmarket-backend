@@ -123,7 +123,7 @@ function Lightbox({ images, index, title, onClose, onMove }) {
   );
 }
 
-function Gallery({ images, title, accent, badge }) {
+function Gallery({ images, title, accent, badge, portrait = false }) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [zoomed, setZoomed] = useState(false);
@@ -160,7 +160,7 @@ function Gallery({ images, title, accent, badge }) {
           ref={stageRef}
           onPointerMove={onPointerMove}
           onPointerLeave={onPointerLeave}
-          className="pd-stage group relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0d0c12] sm:aspect-[4/3] lg:aspect-[5/6]"
+          className={`pd-stage group relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0d0c12] ${portrait ? '' : 'sm:aspect-[4/3]'} lg:aspect-[5/6]`}
         >
           <img
             src={cldImage(images[index], 60)}
@@ -746,7 +746,7 @@ export default function ListingDetail() {
 
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           <motion.div initial={{ y: 24 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="min-w-0">
-            <Gallery images={imgs} title={listing.title} accent={accent} badge={badge} />
+            <Gallery images={imgs} title={listing.title} accent={accent} badge={badge} portrait={listing.image_orientation === 'portrait'} />
           </motion.div>
 
           <div className="min-w-0 lg:sticky lg:top-24">

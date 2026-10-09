@@ -54,6 +54,7 @@ export function buildListingFields(form, mode, { isPro = false } = {}) {
 
   const p = parseFloat(String(form.price).replace(',', '.'));
   if (!Number.isNaN(p) && p > 0) add('price', String(p));
+  if (form.imageOrientation) add('imageOrientation', form.imageOrientation);
   add('status', mode === 'draft' ? 'draft' : 'active');
   return fields;
 }

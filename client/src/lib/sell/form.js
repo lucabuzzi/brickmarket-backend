@@ -30,7 +30,13 @@ export const INITIAL_FORM = Object.freeze({
   heightCm: '',
   description: '',
   proNotes: '',
+  imageOrientation: '', // '' = not chosen yet -> defaultImageOrientation(productType)
 });
+
+export const IMAGE_ORIENTATIONS = ['portrait', 'landscape'];
+
+/** Cards are shot upright, everything else is usually wider than tall. The server applies the same default. */
+export const defaultImageOrientation = (productType) => (productType === 'tcg' ? 'portrait' : 'landscape');
 
 /** "12,5" / "12.5" -> 12.5 ; anything else (including '') -> NaN. */
 export function parseDecimal(value) {
@@ -59,6 +65,7 @@ export function changeProductType(form, next) {
     mainCategory: next === 'lego' ? form.mainCategory : '',
     setNumber: next === 'lego' ? form.setNumber : '',
     year: next === 'lego' ? form.year : '',
+    imageOrientation: '', // follows the new type's default again
     category: '', // the old theme/series no longer applies; picking a card game fills it again (selectGame)
   };
 }

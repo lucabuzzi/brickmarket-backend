@@ -8,7 +8,11 @@ const crypto = require('crypto');
  * Processes a buffer with sharp: resize max 1200px, webp format, 80% quality.
  */
 async function processImage(buffer) {
+  // rotate() with no args applies the EXIF orientation to the pixels. Phones store portrait shots as
+  // landscape pixels plus an orientation tag, and the webp output drops the tag, so without this
+  // every portrait photo comes out sideways.
   return await sharp(buffer)
+    .rotate()
     .resize(1200, 1200, {
       fit: 'inside',
       withoutEnlargement: true

@@ -1126,6 +1126,12 @@
             "text": "Scatola integra, protezioni attorno al pezzo e nessuna fretta: arriverà meglio."
           }
         }
+      },
+      "orientation": {
+        "label": "Orientamento delle foto",
+        "hint": "Come vengono mostrate le foto nell'annuncio. Le carte sono di solito verticali.",
+        "portrait": "Verticale",
+        "landscape": "Orizzontale"
       }
     }
   },

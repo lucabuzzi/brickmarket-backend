@@ -1126,6 +1126,12 @@
             "text": "Intakter Karton, Schutz rund um das Stück und keine Eile: So kommt es besser an."
           }
         }
+      },
+      "orientation": {
+        "label": "Fotoausrichtung",
+        "hint": "Wie die Fotos in der Anzeige dargestellt werden. Karten sind meist im Hochformat.",
+        "portrait": "Hochformat",
+        "landscape": "Querformat"
       }
     }
   },

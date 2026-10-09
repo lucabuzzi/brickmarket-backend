@@ -1126,6 +1126,12 @@
             "text": "Caja intacta, protección alrededor de la pieza y sin prisas: llegará mejor."
           }
         }
+      },
+      "orientation": {
+        "label": "Orientación de las fotos",
+        "hint": "Cómo se muestran las fotos en el anuncio. Las cartas suelen ser verticales.",
+        "portrait": "Vertical",
+        "landscape": "Horizontal"
       }
     }
   },
