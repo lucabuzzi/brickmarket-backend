@@ -31,7 +31,7 @@ describe('path and meta', () => {
     expect(parseSetPath('/aste/carte-collezionabili/pokemon/me05/')).toEqual({ mode: 'aste', game: 'pokemon', id: 'me05' });
     expect(parseSetPath('/annunci/carte-collezionabili/magic/blb')).toEqual({ mode: 'annunci', game: 'magic', id: 'blb' });
     expect(parseSetPath('/aste/carte-collezionabili/onepiece/OP-01')).toEqual({ mode: 'aste', game: 'onepiece', id: 'OP-01' });
-    for (const p of ['/annunci/carte-collezionabili/pokemon', '/annunci/carte-collezionabili/yugioh/30th', '/annunci/carte-collezionabili/pokemon/a/b', '/annunci/carte-collezionabili/pokemon/a b', '', undefined]) {
+    for (const p of ['/annunci/carte-collezionabili/pokemon', '/annunci/carte-collezionabili/dragonball/30th', '/annunci/carte-collezionabili/pokemon/a/b', '/annunci/carte-collezionabili/pokemon/a b', '', undefined]) {
       expect(parseSetPath(p)).toBeNull();
     }
   });

@@ -214,7 +214,7 @@ describe('routes', () => {
   });
 
   test('games without an expansion catalog keep their router as it was', () => {
-    const paths = require('../src/routes/catalogYugioh').stack.filter((l) => l.route).map((l) => l.route.path);
+    const paths = require('../src/routes/catalogDragonball').stack.filter((l) => l.route).map((l) => l.route.path);
     expect(paths).not.toContain('/sets');
   });
 });

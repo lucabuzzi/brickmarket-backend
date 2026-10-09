@@ -44,9 +44,9 @@ describe('cardDetailsForDb', () => {
   test('the catalog link (expansion, number, card) is kept for the games that have a catalog and dropped for any other', () => {
     const link = { cardSetId: ' 30th ', cardNumber: '029', cardExternalId: '30th-029' };
     expect(cardDetailsForDb({ ...link, game: 'pokemon' }, 'tcg')).toMatchObject({ cardSetId: '30th', cardNumber: '029', cardExternalId: '30th-029' });
-    expect(cardDetailsForDb({ ...link, game: 'yugioh' }, 'tcg')).toMatchObject(NO_SET);
-    expect(cardDetailsForDb({ ...link, cardLanguage: 'it', game: 'yugioh' }, 'tcg').cardLanguage).toBe('it'); // only the link goes
-    expect(cardDetailsForDb({ ...link, game: 'yugioh' }, 'tcg', { partial: true })).toEqual(NO_SET);
+    expect(cardDetailsForDb({ ...link, game: 'dragonball' }, 'tcg')).toMatchObject(NO_SET);
+    expect(cardDetailsForDb({ ...link, cardLanguage: 'it', game: 'dragonball' }, 'tcg').cardLanguage).toBe('it'); // only the link goes
+    expect(cardDetailsForDb({ ...link, game: 'dragonball' }, 'tcg', { partial: true })).toEqual(NO_SET);
     expect(cardDetailsForDb({ cardSetId: 'me05' }, undefined, { partial: true })).toEqual({ cardSetId: 'me05' }); // game not mentioned: untouched
   });
 
@@ -125,7 +125,7 @@ describe('listing routes', () => {
     expect((await create(link)).status).toBe(201);
     expect(insertParams().slice(-3)).toEqual(['30th', '029', '30th-029']);
     query.mockClear();
-    expect((await create({ ...link, game: 'yugioh' })).status).toBe(201);
+    expect((await create({ ...link, game: 'dragonball' })).status).toBe(201);
     expect(insertParams().slice(-3)).toEqual([null, null, null]);
   });
 

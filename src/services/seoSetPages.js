@@ -11,6 +11,8 @@ const GAMES = Object.freeze({
   pokemon: { label: 'Pokémon', provider: () => require('./tcgdex') },
   magic: { label: 'Magic', provider: () => require('./scryfall') },
   onepiece: { label: 'One Piece', provider: () => require('./onepieceApi') },
+  yugioh: { label: 'Yu-Gi-Oh!', provider: () => require('./ygoprodeck') },
+  lorcana: { label: 'Lorcana', provider: () => require('./lorcanaApi') },
 });
 const CATALOG_GAME_SLUGS = Object.keys(GAMES);
 

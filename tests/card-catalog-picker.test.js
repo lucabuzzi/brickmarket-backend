@@ -139,7 +139,7 @@ describe('payload', () => {
   });
 
   test('other games and other products never send it', () => {
-    for (const over of [{ game: 'yugioh' }, { productType: 'lego', mainCategory: 'sets', condition: 'new' }]) {
+    for (const over of [{ game: 'dragonball' }, { productType: 'lego', mainCategory: 'sets', condition: 'new' }]) {
       const f = buildListingFields({ ...linked, ...over }, 'publish', { editing: true });
       for (const k of ['cardSetId', 'cardNumber', 'cardExternalId']) expect(has(f, k)).toBe(false);
     }
@@ -162,7 +162,7 @@ describe('more than one game', () => {
   test('only the games with an expansion catalog are listed (same list as the server)', () => {
     expect(cat.CATALOG_GAMES).toEqual(['pokemon', 'magic', 'onepiece']);
     expect(cat.hasCatalog('magic')).toBe(true);
-    expect(cat.hasCatalog('yugioh')).toBe(false);
+    expect(cat.hasCatalog('dragonball')).toBe(false);
     expect(cat.hasCatalog(undefined)).toBe(false);
     const { SET_GAMES } = require('../src/services/cardDetails');
     expect([...SET_GAMES].sort()).toEqual([...cat.CATALOG_GAMES].sort());
@@ -216,7 +216,7 @@ describe('more than one game', () => {
       expect(field(f, 'cardSetId')).toBe('x1');
       expect(field(f, 'cardExternalId')).toBe('x1-5');
     }
-    expect(has(buildListingFields(F({ game: 'lorcana', cardSetId: 'x1' }), 'publish', { editing: true }), 'cardSetId')).toBe(false);
+    expect(has(buildListingFields(F({ game: 'dragonball', cardSetId: 'x1' }), 'publish', { editing: true }), 'cardSetId')).toBe(false);
   });
 
   test('switching game clears the previous game link', () => {

@@ -211,7 +211,8 @@ function createCardSetsService(provider) {
 
     const cards = (await query('SELECT * FROM master_cards WHERE game = $1 AND lower(set_code) = lower($2)', [game, set.id])).rows;
     cards.sort((a, b) => compareLocalId(String(a.details?.localId ?? ''), String(b.details?.localId ?? ''))
-      || String(a.details?.variant ?? '').localeCompare(String(b.details?.variant ?? ''), 'en', { numeric: true }));
+      || String(a.details?.variant ?? '').localeCompare(String(b.details?.variant ?? ''), 'en', { numeric: true })
+      || String(a.rarity ?? '').localeCompare(String(b.rarity ?? ''), 'en'));
     return { set, cards };
   }
 
