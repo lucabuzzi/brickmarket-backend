@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { AlertCircle, ArrowLeft, ArrowRight, Gavel, PackageOpen, Search, SearchX, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,9 @@ import {
   LEGO_SUBCATEGORIES, MARKET_CARD_GAMES, MARKET_CATEGORIES, MARKET_MODES, displayPrice, useMarketItems,
 } from '../components/market/marketConfig';
 import { listingImage } from '../components/landing/landingUtils';
+import ExpansionRail from '../components/market/ExpansionRail';
+import useCardSets from '../components/market/useCardSets';
+import { findSet, setDisplayName } from '../lib/sell/catalog';
 
 function Chip({ active, onClick, children, mode }) {
   return (
@@ -42,11 +45,16 @@ function SkeletonGrid() {
   );
 }
 
-export default function MarketCategory({ modeKey = 'listings', productType = 'lego', game = null }) {
+// `bySet`: the Pokémon expansion page (route param :espansione) — the same page, filtered to one expansion.
+export default function MarketCategory({ modeKey = 'listings', productType = 'lego', game = null, bySet = false }) {
   const mode = MARKET_MODES[modeKey];
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const reduceMotion = useReducedMotion();
-  const { items, loading, error, reload } = useMarketItems(mode, { productType, game });
+  const { espansione } = useParams();
+  const cardSet = bySet ? espansione : null;
+  const { items, loading, error, reload } = useMarketItems(mode, { productType, game, cardSet });
+  const { series, loaded: setsLoaded } = useCardSets(game === 'pokemon');
+  const setInfo = cardSet ? findSet(series, cardSet) : null;
 
   const [search, setSearch] = useState('');
   const [sub, setSub] = useState('');
@@ -55,8 +63,10 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
   const category = MARKET_CATEGORIES.find((c) => c.productType === productType);
   const gameInfo = productType === 'tcg' ? MARKET_CARD_GAMES.find((g) => g.slug === game) : null;
   const categoryName = category?.nameKey ? t(category.nameKey) : category?.name;
-  const title = gameInfo ? gameInfo.name : categoryName;
-  const back = gameInfo
+  const title = setInfo ? setDisplayName(setInfo, i18n.language) : gameInfo ? gameInfo.name : categoryName;
+  const back = bySet && gameInfo
+    ? { to: `${mode.base}/carte-collezionabili/pokemon`, label: gameInfo.name }
+    : gameInfo
     ? { to: `${mode.base}/carte-collezionabili`, label: t('hubs.categories.carte_name') }
     : { to: mode.base, label: t(`market.back_hub_${mode.key}`) };
 
@@ -79,6 +89,9 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
     };
     return result.sort(sorters[sort] || sorters.recent);
   }, [items, search, sub, sort]);
+
+  // an expansion id that does not exist (the server answers 404 for it too): back to the Pokémon page
+  if (bySet && setsLoaded && !setInfo) return <Navigate to={back.to} replace />;
 
   const hasFilters = Boolean(search || sub || sort !== mode.defaultSort);
   const resetFilters = () => {
@@ -112,7 +125,7 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
           <p className="mt-6 flex items-center gap-2 text-xs font-black uppercase tracking-[0.22em]" style={{ color: mode.accent }}>
             {mode.isAuction ? <Gavel size={14} /> : null}
             {t(`market.hub.${mode.key}.kicker`)}
-            {gameInfo ? <span className="text-white/40">· {categoryName}</span> : null}
+            {gameInfo ? <span className="text-white/40">· {bySet ? gameInfo.name : categoryName}</span> : null}
           </p>
           <motion.h1
             className="mt-3 max-w-4xl text-[clamp(2.8rem,10vw,7rem)] font-black leading-[0.86] tracking-[-0.055em] text-white"
@@ -139,6 +152,8 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
           </div>
         </div>
       </section>
+
+      {game === 'pokemon' && !bySet ? <ExpansionRail series={series} mode={mode} /> : null}
 
       {/* TOOLBAR */}
       <div className="lx-bleed sticky top-16 z-30 border-y border-white/10 bg-[#07060b]/85 backdrop-blur-xl">

@@ -54,7 +54,7 @@ export function displayPrice(item) {
  * Loads every active listing (or live auction) for a mode, optionally scoped to one
  * product type / card game, with an explicit reload for the error state's retry button.
  */
-export function useMarketItems(mode, { productType, game } = {}) {
+export function useMarketItems(mode, { productType, game, cardSet } = {}) {
   const [state, setState] = useState({ items: [], loading: true, error: '', loadedAt: 0 });
   const [attempt, setAttempt] = useState(0);
 
@@ -63,6 +63,7 @@ export function useMarketItems(mode, { productType, game } = {}) {
     let url = `/api/listings?is_auction=${mode.isAuction}`;
     if (productType) url += `&product_type=${productType}`;
     if (productType === 'tcg' && game) url += `&game=${game}`;
+    if (cardSet) url += `&card_set=${encodeURIComponent(cardSet)}`;
 
     apiFetch(url)
       .then((data) => {
@@ -76,7 +77,7 @@ export function useMarketItems(mode, { productType, game } = {}) {
       });
 
     return () => { cancelled = true; };
-  }, [mode.isAuction, productType, game, attempt]);
+  }, [mode.isAuction, productType, game, cardSet, attempt]);
 
   const reload = () => {
     setState((s) => ({ ...s, loading: true, error: '' }));

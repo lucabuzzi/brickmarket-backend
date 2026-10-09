@@ -4,6 +4,7 @@ const { getRouteMeta } = require('./pageMeta');
 const { isKnownRoute } = require('./knownRoutes');
 const { buildListingTitle, buildListingDescription } = require('./listingMeta');
 const { shellForRoute, shellForListing, shellForNotFound, injectShell } = require('./seoContent');
+const { parseSetPath, fetchSetPageMeta } = require('./seoSetPages');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -108,7 +109,18 @@ async function renderPage(reqPath, baseHtml) {
   const productMatch = reqPath.match(/^\/product\/([^/]+)$/);
   if (!productMatch) {
     // Every other route: its own title/description when we have them (see pageMeta.js), else the site default.
-    const routeMeta = getRouteMeta(reqPath);
+    let routeMeta = getRouteMeta(reqPath);
+    if (parseSetPath(reqPath)) {
+      // Pokémon expansion page: its own meta, and a real 404 for an id that is not an expansion. A database error
+      // says nothing about the id, so then the page is served with the default meta instead of claiming 404.
+      try {
+        const setMeta = await fetchSetPageMeta(reqPath);
+        if (!setMeta) return notFoundPage(baseHtml, canonical);
+        routeMeta = setMeta;
+      } catch (err) {
+        console.error('renderPage: errore nel recupero espansione per meta tag:', err.message);
+      }
+    }
     let html = applyMeta(baseHtml, {
       title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
       description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,

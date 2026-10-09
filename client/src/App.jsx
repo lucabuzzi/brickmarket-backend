@@ -88,6 +88,7 @@ export default function App() {
           <Route path="annunci/funko" element={<MarketCategory modeKey="listings" productType="funko" />} />
           <Route path="annunci/carte-collezionabili" element={<MarketCardsHub modeKey="listings" />} />
           <Route path="annunci/carte-collezionabili/pokemon" element={<MarketCategory modeKey="listings" productType="tcg" game="pokemon" />} />
+          <Route path="annunci/carte-collezionabili/pokemon/:espansione" element={<MarketCategory modeKey="listings" productType="tcg" game="pokemon" bySet />} />
           <Route path="annunci/carte-collezionabili/magic" element={<MarketCategory modeKey="listings" productType="tcg" game="magic" />} />
           <Route path="annunci/carte-collezionabili/lorcana" element={<MarketCategory modeKey="listings" productType="tcg" game="lorcana" />} />
           <Route path="annunci/carte-collezionabili/yugioh" element={<MarketCategory modeKey="listings" productType="tcg" game="yugioh" />} />
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="aste/funko" element={<MarketCategory modeKey="auctions" productType="funko" />} />
           <Route path="aste/carte-collezionabili" element={<MarketCardsHub modeKey="auctions" />} />
           <Route path="aste/carte-collezionabili/pokemon" element={<MarketCategory modeKey="auctions" productType="tcg" game="pokemon" />} />
+          <Route path="aste/carte-collezionabili/pokemon/:espansione" element={<MarketCategory modeKey="auctions" productType="tcg" game="pokemon" bySet />} />
           <Route path="aste/carte-collezionabili/magic" element={<MarketCategory modeKey="auctions" productType="tcg" game="magic" />} />
           <Route path="aste/carte-collezionabili/lorcana" element={<MarketCategory modeKey="auctions" productType="tcg" game="lorcana" />} />
           <Route path="aste/carte-collezionabili/yugioh" element={<MarketCategory modeKey="auctions" productType="tcg" game="yugioh" />} />

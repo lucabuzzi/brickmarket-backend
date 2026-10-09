@@ -1837,6 +1837,9 @@
       "empty_desc_auctions": "Launch the first one: in an empty room, every eye is on your lot.",
       "no_match_title": "Nothing matches these filters.",
       "no_match_desc": "Try a different search or clear the filters to see everything."
+    },
+    "expansions": {
+      "title": "Browse by expansion"
     }
   },
   "arena_page": {

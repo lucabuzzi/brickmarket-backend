@@ -46,6 +46,16 @@ describe('names and numbers', () => {
   });
 });
 
+describe('findSet', () => {
+  test('finds an expansion by id ignoring case, or null', () => {
+    expect(cat.findSet(SERIES, '30TH')).toBe(SERIES[0].sets[0]);
+    expect(cat.findSet(SERIES, 'sv01').name).toBe('Scarlatto e Violetto');
+    expect(cat.findSet(SERIES, 'nope')).toBeNull();
+    expect(cat.findSet(SERIES, undefined)).toBeNull();
+    expect(cat.findSet(null, '30th')).toBeNull();
+  });
+});
+
 describe('searching', () => {
   test('expansions match by name in either language or by id, ignoring case and accents; empty series disappear', () => {
     expect(cat.filterSeries(SERIES, '').length).toBe(2);

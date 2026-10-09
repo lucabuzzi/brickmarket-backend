@@ -6,6 +6,7 @@ const { resolveImageUrl } = require('../services/seoMeta');
 const { STATIC_PATHS } = require('../services/sitemapPaths');
 const { lastmodFor } = require('../services/sitemapLastmod');
 const { cached } = require('../services/seoContent/cache');
+const { listSetSitemapPaths } = require('../services/seoSetPages');
 
 const BASE_URL = 'https://cardbrix.com';
 
@@ -69,7 +70,14 @@ router.get('/sitemap.xml', async (req, res) => {
   const lastmodData = (await cached('sitemap:lastmod', LASTMOD_TTL_MS, loadLastmodData, { timeoutMs: 3000 })) || { groups: [], catalog: {} };
 
   const staticUrls = STATIC_PATHS.map((p) => urlTag(`${BASE_URL}${p}`, lastmodFor(p, lastmodData)));
-  const body = [...staticUrls, ...listingUrls].join('');
+  // Pokémon expansion pages that have something to show (an empty one would be a thin page)
+  let setUrls = [];
+  try {
+    setUrls = (await listSetSitemapPaths()).map((s) => urlTag(`${BASE_URL}${s.path}`, s.lastmod));
+  } catch (err) {
+    console.error('sitemap.xml: espansioni non disponibili:', err.message);
+  }
+  const body = [...staticUrls, ...setUrls, ...listingUrls].join('');
 
   res.set('Content-Type', 'application/xml; charset=UTF-8');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${body}</urlset>`);

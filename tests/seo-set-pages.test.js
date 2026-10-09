@@ -1,0 +1,120 @@
+// SEO for the Pokémon expansion pages (src/services/seoSetPages.js): own meta, real 404 for an unknown expansion,
+// sitemap entries only for pages that have something to show. The database module is mocked.
+jest.mock('../src/db', () => ({ query: jest.fn() }));
+
+const { query } = require('../src/db');
+const { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths } = require('../src/services/seoSetPages');
+const { renderPage } = require('../src/services/seoMeta');
+const { isKnownRoute } = require('../src/services/knownRoutes');
+
+const TEMPLATE = '<!doctype html><html lang="it"><head><title>x</title><link rel="canonical" href="https://cardbrix.com/"><meta name="description" content="d"><meta property="og:title" content="d"><meta name="twitter:title" content="d"></head><body><div id="root"></div></body></html>';
+const SET_ROW = { id: '30th', name: '30° Anniversario', name_en: '30th Anniversary', series_name: 'Megaevoluzione', series_name_en: 'Mega Evolution', card_count_total: 161 };
+
+beforeEach(() => {
+  query.mockReset();
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterEach(() => jest.restoreAllMocks());
+
+describe('path and meta', () => {
+  test('only the two expansion paths are recognised', () => {
+    expect(parseSetPath('/annunci/carte-collezionabili/pokemon/30th')).toEqual({ mode: 'annunci', id: '30th' });
+    expect(parseSetPath('/aste/carte-collezionabili/pokemon/me05/')).toEqual({ mode: 'aste', id: 'me05' });
+    for (const p of ['/annunci/carte-collezionabili/pokemon', '/annunci/carte-collezionabili/magic/30th', '/annunci/carte-collezionabili/pokemon/a/b', '/annunci/carte-collezionabili/pokemon/a b', '', undefined]) {
+      expect(parseSetPath(p)).toBeNull();
+    }
+  });
+
+  test('the router knows both pages', () => {
+    expect(isKnownRoute('/annunci/carte-collezionabili/pokemon/30th')).toBe(true);
+    expect(isKnownRoute('/aste/carte-collezionabili/pokemon/30th')).toBe(true);
+  });
+
+  test('titles and descriptions name the expansion, differ between listings and auctions, and stay short', () => {
+    const a = buildSetMeta(SET_ROW, 'annunci');
+    const b = buildSetMeta(SET_ROW, 'aste');
+    expect(a.title).toContain('30° Anniversario');
+    expect(b.title).toContain('30° Anniversario');
+    expect(a.title).not.toBe(b.title);
+    expect(a.description).toMatch(/161 carte/);
+    expect(a.description).toMatch(/Megaevoluzione/);
+    for (const m of [a, b]) {
+      expect(m.title.length).toBeLessThanOrEqual(70);
+      expect(m.description.length).toBeLessThanOrEqual(300);
+    }
+  });
+
+  test('missing names and counts do not break the text', () => {
+    const m = buildSetMeta({ id: 'x1' }, 'annunci');
+    expect(m.title).toContain('x1');
+    expect(m.description).not.toMatch(/undefined|null|NaN/);
+  });
+});
+
+describe('lookup', () => {
+  test('a known expansion gives meta (id matched case-insensitively), an unknown one gives null', async () => {
+    query.mockResolvedValueOnce({ rows: [SET_ROW] });
+    expect((await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30TH')).title).toContain('30° Anniversario');
+    expect(query.mock.calls[0][1]).toEqual(['30TH']); // bound parameter, never interpolated
+    query.mockResolvedValueOnce({ rows: [] });
+    expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/nope')).toBeNull();
+    expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon')).toBeNull();
+  });
+
+  test('a database error is not "unknown": it throws', async () => {
+    query.mockRejectedValueOnce(new Error('db down'));
+    await expect(fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30th')).rejects.toThrow('db down');
+  });
+});
+
+describe('renderPage', () => {
+  test('a known expansion page has its own title and canonical, status 200', async () => {
+    query.mockResolvedValue({ rows: [SET_ROW] });
+    const { status, html } = await renderPage('/annunci/carte-collezionabili/pokemon/30th', TEMPLATE);
+    expect(status).toBe(200);
+    expect(html).toContain('<title>Carte Pokémon 30° Anniversario in vendita | CardBrix</title>');
+    expect(html).toContain('href="https://cardbrix.com/annunci/carte-collezionabili/pokemon/30th"');
+    expect(html).not.toMatch(/name="robots" content="noindex"/);
+  });
+
+  test('an unknown expansion answers 404 with noindex, never a soft 404', async () => {
+    query.mockResolvedValue({ rows: [] });
+    const { status, html } = await renderPage('/annunci/carte-collezionabili/pokemon/inventata', TEMPLATE);
+    expect(status).toBe(404);
+    expect(html).toMatch(/name="robots" content="noindex"/);
+  });
+
+  test('with the database down the page is still served (with the default meta), not claimed missing', async () => {
+    query.mockRejectedValue(new Error('db down'));
+    const { status, html } = await renderPage('/aste/carte-collezionabili/pokemon/30th', TEMPLATE);
+    expect(status).toBe(200);
+    expect(html).toContain('CardBrix');
+    expect(html).not.toMatch(/name="robots" content="noindex"/);
+  });
+
+  test('other Pokémon pages are untouched and do not query the expansion table', async () => {
+    query.mockResolvedValue({ rows: [] });
+    const { status } = await renderPage('/annunci/carte-collezionabili/pokemon', TEMPLATE);
+    expect(status).toBe(200);
+    expect(query.mock.calls.some(([sql]) => /card_sets/.test(sql))).toBe(false);
+  });
+});
+
+describe('sitemap paths', () => {
+  test('one path per expansion that has active listings or auctions, id in lowercase', async () => {
+    query.mockResolvedValueOnce({ rows: [
+      { id: '30th', auction: false, lastmod: '2026-10-01T10:00:00Z' },
+      { id: 'ME05', auction: true, lastmod: '2026-10-02T10:00:00Z' },
+    ] });
+    expect(await listSetSitemapPaths()).toEqual([
+      { path: '/annunci/carte-collezionabili/pokemon/30th', lastmod: '2026-10-01T10:00:00Z' },
+      { path: '/aste/carte-collezionabili/pokemon/me05', lastmod: '2026-10-02T10:00:00Z' },
+    ]);
+    expect(query.mock.calls[0][0]).toMatch(/status = 'active'/);
+  });
+
+  test('every path it produces is a known route', async () => {
+    query.mockResolvedValueOnce({ rows: [{ id: '30th', auction: false, lastmod: null }, { id: 'sv3pt5', auction: true, lastmod: null }] });
+    for (const { path } of await listSetSitemapPaths()) expect(isKnownRoute(path)).toBe(true);
+  });
+});

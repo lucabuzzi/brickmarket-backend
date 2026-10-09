@@ -1837,6 +1837,9 @@
       "empty_desc_auctions": "Starte die erste: In einem leeren Saal schauen alle auf dein Los.",
       "no_match_title": "Keine Treffer mit diesen Filtern.",
       "no_match_desc": "Versuch eine andere Suche oder setz die Filter zurück, um alles zu sehen."
+    },
+    "expansions": {
+      "title": "Nach Erweiterung stöbern"
     }
   },
   "arena_page": {

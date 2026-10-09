@@ -1837,6 +1837,9 @@
       "empty_desc_auctions": "Lanza la primera: en una sala vacía, todas las miradas son para tu lote.",
       "no_match_title": "Nada coincide con estos filtros.",
       "no_match_desc": "Prueba otra búsqueda o quita los filtros para verlo todo."
+    },
+    "expansions": {
+      "title": "Explorar por expansión"
     }
   },
   "arena_page": {

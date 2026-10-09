@@ -1841,6 +1841,9 @@
       "empty_desc_auctions": "Lancez la première : dans une salle vide, tous les regards sont sur votre lot.",
       "no_match_title": "Aucun résultat avec ces filtres.",
       "no_match_desc": "Essayez une autre recherche ou effacez les filtres pour tout voir."
+    },
+    "expansions": {
+      "title": "Parcourir par extension"
     }
   },
   "arena_page": {

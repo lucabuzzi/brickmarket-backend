@@ -26,6 +26,13 @@ export function filterSeries(series, query) {
     .filter((s) => s.sets.length > 0);
 }
 
+/** The expansion with this id (case-insensitive) out of the grouped series, or null. */
+export function findSet(series, id) {
+  const wanted = String(id || '').toLowerCase();
+  for (const s of series || []) for (const x of s.sets) if (String(x.id).toLowerCase() === wanted) return x;
+  return null;
+}
+
 /** "029" -> "29": the collector number without padding zeros ("TG05" and the like stay as they are). */
 export const trimNumber = (localId) => (/^\d+$/.test(String(localId ?? '')) ? String(parseInt(localId, 10)) : String(localId ?? ''));
 
