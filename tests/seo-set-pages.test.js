@@ -1,8 +1,10 @@
 // SEO for the Pokémon expansion pages (src/services/seoSetPages.js): own meta, real 404 for an unknown expansion,
 // sitemap entries only for pages that have something to show. The database module is mocked.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
+jest.mock('../src/services/tcgdex', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
 
 const { query } = require('../src/db');
+const tcgdex = require('../src/services/tcgdex');
 const { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths } = require('../src/services/seoSetPages');
 const { renderPage } = require('../src/services/seoMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');
@@ -12,6 +14,7 @@ const SET_ROW = { id: '30th', name: '30° Anniversario', name_en: '30th Annivers
 
 beforeEach(() => {
   query.mockReset();
+  tcgdex.ensureSets.mockClear();
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
@@ -56,9 +59,28 @@ describe('lookup', () => {
     query.mockResolvedValueOnce({ rows: [SET_ROW] });
     expect((await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30TH')).title).toContain('30° Anniversario');
     expect(query.mock.calls[0][1]).toEqual(['30TH']); // bound parameter, never interpolated
-    query.mockResolvedValueOnce({ rows: [] });
+    query.mockResolvedValue({ rows: [] });
     expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/nope')).toBeNull();
     expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon')).toBeNull();
+  });
+
+  test('a known expansion is not 404 just because the table was still empty: it is filled, then looked up again', async () => {
+    query.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({ rows: [SET_ROW] });
+    const meta = await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30th');
+    expect(tcgdex.ensureSets).toHaveBeenCalledTimes(1);
+    expect(meta.title).toContain('30° Anniversario');
+  });
+
+  test('a known expansion found at once does not trigger a refresh', async () => {
+    query.mockResolvedValueOnce({ rows: [SET_ROW] });
+    await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30th');
+    expect(tcgdex.ensureSets).not.toHaveBeenCalled();
+  });
+
+  test('if filling the table fails the answer is still just "unknown", not a crash', async () => {
+    tcgdex.ensureSets.mockRejectedValueOnce(new Error('tcgdex down'));
+    query.mockResolvedValue({ rows: [] });
+    expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30th')).toBeNull();
   });
 
   test('a database error is not "unknown": it throws', async () => {

@@ -18,6 +18,8 @@ import MarketCard from '../components/market/MarketCard';
 import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
 import { GAME_NAMES, cldImage, formatEUR, pad2, useCountdown } from '../components/landing/landingUtils';
 import { languageName, listingGradeLabel } from '../lib/sell/cards';
+import { findSet, setDisplayName } from '../lib/sell/catalog';
+import useCardSets from '../components/market/useCardSets';
 
 function listingImages(l) {
   let rawItems = [];
@@ -594,6 +596,9 @@ export default function ListingDetail() {
     setMeta('meta[name="twitter:image"]', image);
   }, [listing]);
 
+  // Pokémon expansion of this listing (for the breadcrumb link); the hook must run before the early returns below
+  const cardSets = useCardSets(Boolean(listing?.card_set_id) && listing?.game === 'pokemon');
+
   if (loading) {
     return (
       <div className="lx-page min-h-[80vh]">
@@ -634,6 +639,7 @@ export default function ListingDetail() {
   const isLegoListing = productType === 'lego';
   const categorySlug = CATEGORY_SLUGS[productType];
   const game = productType === 'tcg' ? MARKET_CARD_GAMES.find((g) => g.slug === listing.game) : null;
+  const cardSet = game && game.slug === 'pokemon' && listing.card_set_id ? findSet(cardSets.series, listing.card_set_id) : null;
   const categoryName = productType === 'tcg' ? t('hubs.categories.carte_name') : productType === 'funko' ? 'Funko Pop!' : 'LEGO';
 
   const ended = isAuction && (listing.status === 'expired' || listing.status === 'sold' || (listing.auction_end && countdown.done));
@@ -745,6 +751,12 @@ export default function ListingDetail() {
             <>
               <ChevronRight className="h-3.5 w-3.5 text-white/25" />
               <Link to={`${mode.base}/${categorySlug}/${game.slug}`} className="inline-flex min-h-10 items-center transition hover:text-white">{GAME_NAMES[game.slug] || game.name}</Link>
+            </>
+          )}
+          {cardSet && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-white/25" />
+              <Link to={`${mode.base}/${categorySlug}/${game.slug}/${String(cardSet.id).toLowerCase()}`} className="inline-flex min-h-10 items-center transition hover:text-white">{setDisplayName(cardSet, i18n.language)}</Link>
             </>
           )}
         </nav>

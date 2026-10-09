@@ -2,6 +2,7 @@
 // auction twin /aste/... — their own title/description (crawlers and link previews do not run the client JS),
 // a real 404 for an expansion id that does not exist, and the pages worth listing in the sitemap.
 const { query } = require('../db');
+const tcgdex = require('./tcgdex');
 
 const BASE_URL = 'https://cardbrix.com';
 const PATH_RE = /^\/(annunci|aste)\/carte-collezionabili\/pokemon\/([A-Za-z0-9._-]{1,60})\/?$/;
@@ -36,11 +37,18 @@ function buildSetMeta(set, mode) {
 async function fetchSetPageMeta(reqPath) {
   const parsed = parseSetPath(reqPath);
   if (!parsed) return null;
-  const { rows } = await query(
+  const find = () => query(
     `SELECT id, name, name_en, series_name, series_name_en, card_count_total
      FROM card_sets WHERE game = 'pokemon' AND lower(id) = lower($1)`,
     [parsed.id]
   );
+  let { rows } = await find();
+  if (!rows[0]) {
+    // The table fills itself on first use: a crawler asking for an expansion page before anyone opened the Pokémon
+    // page would otherwise get a 404 for a real expansion. Make sure it is filled, then look once more.
+    await tcgdex.ensureSets().catch((err) => console.error('seoSetPages: ensureSets failed:', err.message));
+    ({ rows } = await find());
+  }
   return rows[0] ? buildSetMeta(rows[0], parsed.mode) : null;
 }
 
