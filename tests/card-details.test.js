@@ -41,12 +41,12 @@ describe('cardDetailsForDb', () => {
     expect(cardDetailsForDb({ cardLanguage: '', cardRarity: '  ' }, 'tcg')).toEqual(ALL_NULL);
   });
 
-  test('the catalog link (expansion, number, card) is kept for Pokémon and dropped for any other game', () => {
+  test('the catalog link (expansion, number, card) is kept for the games that have a catalog and dropped for any other', () => {
     const link = { cardSetId: ' 30th ', cardNumber: '029', cardExternalId: '30th-029' };
     expect(cardDetailsForDb({ ...link, game: 'pokemon' }, 'tcg')).toMatchObject({ cardSetId: '30th', cardNumber: '029', cardExternalId: '30th-029' });
-    expect(cardDetailsForDb({ ...link, game: 'magic' }, 'tcg')).toMatchObject(NO_SET);
-    expect(cardDetailsForDb({ ...link, cardLanguage: 'it', game: 'magic' }, 'tcg').cardLanguage).toBe('it'); // only the link goes
-    expect(cardDetailsForDb({ ...link, game: 'magic' }, 'tcg', { partial: true })).toEqual(NO_SET);
+    expect(cardDetailsForDb({ ...link, game: 'yugioh' }, 'tcg')).toMatchObject(NO_SET);
+    expect(cardDetailsForDb({ ...link, cardLanguage: 'it', game: 'yugioh' }, 'tcg').cardLanguage).toBe('it'); // only the link goes
+    expect(cardDetailsForDb({ ...link, game: 'yugioh' }, 'tcg', { partial: true })).toEqual(NO_SET);
     expect(cardDetailsForDb({ cardSetId: 'me05' }, undefined, { partial: true })).toEqual({ cardSetId: 'me05' }); // game not mentioned: untouched
   });
 
@@ -125,8 +125,19 @@ describe('listing routes', () => {
     expect((await create(link)).status).toBe(201);
     expect(insertParams().slice(-3)).toEqual(['30th', '029', '30th-029']);
     query.mockClear();
-    expect((await create({ ...link, game: 'magic' })).status).toBe(201);
+    expect((await create({ ...link, game: 'yugioh' })).status).toBe(201);
     expect(insertParams().slice(-3)).toEqual([null, null, null]);
+  });
+
+  test('create stores the catalog link for Magic and One Piece too', async () => {
+    for (const [game, link] of [
+      ['magic', { cardSetId: 'blb', cardNumber: '1', cardExternalId: '25a06f82-ebdb-4dd6-bfe8-958018ce557c' }],
+      ['onepiece', { cardSetId: 'OP-01', cardNumber: 'OP01-077', cardExternalId: 'OP01-077_p1' }],
+    ]) {
+      query.mockClear();
+      expect((await create({ ...link, game })).status).toBe(201);
+      expect(insertParams().slice(-3)).toEqual([link.cardSetId, link.cardNumber, link.cardExternalId]);
+    }
   });
 
   test('create rejects a malformed catalog id', async () => {

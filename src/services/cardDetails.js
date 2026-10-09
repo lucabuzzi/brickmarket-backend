@@ -19,8 +19,8 @@ const CARD_DETAIL_COLUMNS = Object.freeze({
   cardExternalId: 'card_external_id',
 });
 const CARD_SET_KEYS = ['cardSetId', 'cardNumber', 'cardExternalId'];
-/** Games whose expansions live in card_sets (TCGdex). Others never store the catalog link. */
-const SET_GAMES = ['pokemon'];
+/** Games whose expansions live in card_sets (see the providers in services/cardSets.js). Others never store the catalog link. */
+const SET_GAMES = ['pokemon', 'magic', 'onepiece'];
 const CARD_SET_ID_PATTERN = /^[A-Za-z0-9._-]{1,60}$/;
 const CARD_NUMBER_MAX = 20;
 const CARD_DETAIL_KEYS = Object.keys(CARD_DETAIL_COLUMNS);
