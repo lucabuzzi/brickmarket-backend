@@ -1924,7 +1924,11 @@
     "not_found_cta": "Back to listings",
     "seller_reviews_title": "Seller reviews",
     "seller_reviews_all": "See all reviews",
-    "trust_dispute": "You can open a dispute on the order"
+    "trust_dispute": "You can open a dispute on the order",
+    "spec_language": "Language",
+    "spec_rarity": "Rarity",
+    "spec_grading": "Grading",
+    "grading_other": "Other"
   },
   "seller_page": {
     "kicker_professional": "Shop",

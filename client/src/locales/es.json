@@ -1924,7 +1924,11 @@
     "not_found_cta": "Volver a los anuncios",
     "seller_reviews_title": "Reseñas del vendedor",
     "seller_reviews_all": "Ver todas las reseñas",
-    "trust_dispute": "Puedes abrir una reclamación sobre el pedido"
+    "trust_dispute": "Puedes abrir una reclamación sobre el pedido",
+    "spec_language": "Idioma",
+    "spec_rarity": "Rareza",
+    "spec_grading": "Graduación",
+    "grading_other": "Otra"
   },
   "seller_page": {
     "kicker_professional": "Tienda",

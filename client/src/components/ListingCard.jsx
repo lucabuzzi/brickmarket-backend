@@ -6,6 +6,7 @@ import { altForListing } from '../utils/altText';
 import { Star } from 'lucide-react';
 import AuctionTimer from './AuctionTimer';
 import SellerTypeBadge from './SellerTypeBadge';
+import { listingGradeLabel } from '../lib/sell/cards';
 
 function listingImage(l) {
   let url = '';
@@ -37,6 +38,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
   const { t, i18n } = useTranslation();
   const setNumber = l.set_number || l.number || 'N/A';
   const condition = l.condition || 'used';
+  const cardGrade = listingGradeLabel(l, t('product.grading_other'));
   const sellerName = l.seller_username || l.seller?.username || t('details.unknown_seller');
 
   // ── Seller badge data (from API or passed directly) ────────────────────────
@@ -124,6 +126,12 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
             {l.title}
           </Link>
         </h2>
+
+        {!isMini && l.product_type === 'tcg' && (cardGrade || l.card_language) && (
+          <div className="text-[10px] text-stone-400 font-mono mb-1">
+            {[cardGrade, l.card_language && l.card_language.toUpperCase()].filter(Boolean).join(' · ')}
+          </div>
+        )}
 
         {!isMini && (!l.product_type || l.product_type === 'lego') && !(hideMissingSetNumber && setNumber === 'N/A') && (
           <div className="text-[10px] text-stone-400 font-mono mb-1">

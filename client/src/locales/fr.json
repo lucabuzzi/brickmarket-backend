@@ -1930,7 +1930,11 @@
     "not_found_cta": "Retour aux annonces",
     "seller_reviews_title": "Avis sur le vendeur",
     "seller_reviews_all": "Voir tous les avis",
-    "trust_dispute": "Tu peux ouvrir un litige sur la commande"
+    "trust_dispute": "Tu peux ouvrir un litige sur la commande",
+    "spec_language": "Langue",
+    "spec_rarity": "Rareté",
+    "spec_grading": "Gradation",
+    "grading_other": "Autre"
   },
   "seller_page": {
     "kicker_professional": "Boutique",

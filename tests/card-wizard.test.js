@@ -100,6 +100,17 @@ describe('language, rarity and labels', () => {
   });
 });
 
+describe('listing display', () => {
+  test('listingGradeLabel shows company + grade for graded cards only', () => {
+    expect(cards.listingGradeLabel({ card_grading_company: 'psa', card_grade: '10' }, 'Altro')).toBe('PSA 10');
+    expect(cards.listingGradeLabel({ card_grading_company: 'other', card_grade: '8.5' }, 'Altro')).toBe('Altro 8.5');
+    expect(cards.listingGradeLabel({ card_grading_company: null, card_grade: null }, 'Altro')).toBeNull();
+    expect(cards.listingGradeLabel({ card_grading_company: 'psa', card_grade: ' ' }, 'Altro')).toBeNull();
+    expect(cards.listingGradeLabel(null, 'Altro')).toBeNull();
+    expect(cards.listingGradeLabel({}, 'Altro')).toBeNull();
+  });
+});
+
 describe('payload', () => {
   test('a new card sends only the details that are filled in', () => {
     const none = buildListingFields(F(), 'publish');

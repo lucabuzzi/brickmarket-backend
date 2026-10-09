@@ -17,6 +17,7 @@ import SellerTypeBadge from '../components/SellerTypeBadge';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
 import { GAME_NAMES, cldImage, formatEUR, pad2, useCountdown } from '../components/landing/landingUtils';
+import { languageName, listingGradeLabel } from '../lib/sell/cards';
 
 function listingImages(l) {
   let rawItems = [];
@@ -655,6 +656,7 @@ export default function ListingDetail() {
       ? `${t('details.set_number_prefix')} ${listing.set_number}${listing.theme ? ` · ${listing.theme}` : ''}`
       : listing.theme;
 
+  const gradeLabel = listingGradeLabel(listing, t('product.grading_other'));
   const dims = [listing.length_cm, listing.width_cm, listing.height_cm].map(toNumber);
   const weight = toNumber(listing.weight_kg);
   const specs = [
@@ -663,6 +665,9 @@ export default function ListingDetail() {
     listing.theme && productType !== 'tcg' && [t('product.spec_theme'), listing.theme],
     game && [t('product.spec_game'), GAME_NAMES[listing.game] || game.name],
     listing.year && [t('product.spec_year'), listing.year],
+    productType === 'tcg' && listing.card_language && [t('product.spec_language'), languageName(listing.card_language, i18n.language)],
+    productType === 'tcg' && listing.card_rarity && [t('product.spec_rarity'), listing.card_rarity],
+    productType === 'tcg' && gradeLabel && [t('product.spec_grading'), gradeLabel],
     toNumber(listing.pieces) && [t('product.spec_pieces'), new Intl.NumberFormat(i18n.language).format(toNumber(listing.pieces))],
     isLegoListing && [t('details.box'), listing.box_condition || t('details.not_specified')],
     isLegoListing && [t('details.instructions'), listing.instructions || t('details.not_specified')],

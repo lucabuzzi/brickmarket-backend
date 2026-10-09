@@ -52,6 +52,13 @@ export function cardSummaryParts(form, labels) {
   return parts;
 }
 
+/** "PSA 10" for a graded card listing row (API field names), null for a raw card or a non-card. */
+export function listingGradeLabel(listing, otherLabel) {
+  const company = listing && listing.card_grading_company;
+  const grade = String((listing && listing.card_grade) ?? '').trim();
+  return company && grade ? `${gradingCompanyLabel(company, otherLabel)} ${grade}` : null;
+}
+
 /**
  * Which shot the guided flow asks for next, given how many photos there are.
  * -> { index, required, done } ; `done` once every position (up to `total`) has a photo.

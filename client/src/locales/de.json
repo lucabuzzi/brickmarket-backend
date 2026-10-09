@@ -1924,7 +1924,11 @@
     "not_found_cta": "Zurück zu den Angeboten",
     "seller_reviews_title": "Bewertungen des Verkäufers",
     "seller_reviews_all": "Alle Bewertungen ansehen",
-    "trust_dispute": "Du kannst eine Beanstandung zur Bestellung eröffnen"
+    "trust_dispute": "Du kannst eine Beanstandung zur Bestellung eröffnen",
+    "spec_language": "Sprache",
+    "spec_rarity": "Seltenheit",
+    "spec_grading": "Bewertung",
+    "grading_other": "Andere"
   },
   "seller_page": {
     "kicker_professional": "Shop",
