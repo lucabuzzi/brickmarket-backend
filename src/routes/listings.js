@@ -12,7 +12,7 @@ const { notifyListingChanged } = require('../services/indexnow');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const {
-  CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_DETAIL_COLUMNS, checkCardDetails, cardDetailsForDb,
+  CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_SET_ID_PATTERN, CARD_NUMBER_MAX, CARD_DETAIL_COLUMNS, checkCardDetails, cardDetailsForDb,
 } = require('../services/cardDetails');
 const Stripe = require('stripe');
 
@@ -42,6 +42,9 @@ const CARD_DETAIL_FIELDS = {
   cardRarity: Joi.string().max(CARD_RARITY_MAX).allow('', null),
   cardGradingCompany: Joi.string().valid(...GRADING_COMPANIES).allow('', null),
   cardGrade: Joi.string().max(CARD_GRADE_MAX).allow('', null),
+  cardSetId: Joi.string().pattern(CARD_SET_ID_PATTERN).allow('', null),
+  cardNumber: Joi.string().max(CARD_NUMBER_MAX).allow('', null),
+  cardExternalId: Joi.string().pattern(CARD_SET_ID_PATTERN).allow('', null),
 };
 const TCG_GAMES = ['pokemon', 'magic', 'lorcana', 'yugioh', 'onepiece', 'dragonball'];
 /** Card-grade condition codes used only when product_type='tcg' */
@@ -311,9 +314,10 @@ router.post('/', auth, async (req, res) => {
         box_condition, instructions, pro_notes, is_complete,
         category, package_size, product_type, game,
         weight_kg, length_cm, width_cm, height_cm, image_orientation,
-        card_language, card_rarity, card_grading_company, card_grade
+        card_language, card_rarity, card_grading_company, card_grade,
+        card_set_id, card_number, card_external_id
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39
       ) RETURNING *`,
       [
         req.user.userId,
@@ -346,6 +350,7 @@ router.post('/', auth, async (req, res) => {
         dims.weightKg, dims.lengthCm, dims.widthCm, dims.heightCm,
         v.imageOrientation || defaultImageOrientation(v.productType),
         cardCols.cardLanguage, cardCols.cardRarity, cardCols.cardGradingCompany, cardCols.cardGrade,
+        cardCols.cardSetId, cardCols.cardNumber, cardCols.cardExternalId,
       ]
     );
 
@@ -376,7 +381,7 @@ router.get('/user/me', auth, async (req, res) => {
 
 // Lista pubblica (default: solo active; ?status=all per tutti gli stati, ESCLUSO draft)
 router.get('/', async (req, res) => {
-  const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category, product_type, game } = req.query;
+  const { status: statusQ, type, theme, is_auction, sort, limit, is_featured, category, product_type, game, card_set } = req.query;
   try {
     // Auto-Expire Logic: Check for expired auctions and mark them as expired
     await expireEndedAuctions();
@@ -440,6 +445,11 @@ router.get('/', async (req, res) => {
     if (game) {
       params.push(game);
       parts.push(`l.game = $${params.length}`);
+    }
+
+    if (card_set && CARD_SET_ID_PATTERN.test(String(card_set))) {
+      params.push(String(card_set));
+      parts.push(`l.card_set_id = $${params.length}`);
     }
 
     const where = parts.length ? `WHERE ${parts.join(' AND ')}` : '';

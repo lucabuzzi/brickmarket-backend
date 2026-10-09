@@ -13,7 +13,16 @@ const CARD_DETAIL_COLUMNS = Object.freeze({
   cardRarity: 'card_rarity',
   cardGradingCompany: 'card_grading_company',
   cardGrade: 'card_grade',
+  // link to the catalog (expansion + card), only for games that have one — see SET_GAMES
+  cardSetId: 'card_set_id',
+  cardNumber: 'card_number',
+  cardExternalId: 'card_external_id',
 });
+const CARD_SET_KEYS = ['cardSetId', 'cardNumber', 'cardExternalId'];
+/** Games whose expansions live in card_sets (TCGdex). Others never store the catalog link. */
+const SET_GAMES = ['pokemon'];
+const CARD_SET_ID_PATTERN = /^[A-Za-z0-9._-]{1,60}$/;
+const CARD_NUMBER_MAX = 20;
 const CARD_DETAIL_KEYS = Object.keys(CARD_DETAIL_COLUMNS);
 
 const isBlank = (v) => v === undefined || v === null || String(v).trim() === '';
@@ -35,13 +44,15 @@ function checkCardDetails(v) {
  * The card columns to write, keyed by API field name. Values are trimmed and blank becomes null.
  * Anything that is not a card (productType given and not 'tcg') clears all four.
  *  - create (partial=false): always returns all four keys
- *  - update (partial=true): only the keys the request sent (or all four when the type is not a card)
+ *  - update (partial=true): only the keys the request sent (or all of them when the type is not a card)
+ * The catalog link (expansion/number/card id) is cleared too when the request names a game without a catalog.
  */
 function cardDetailsForDb(v, productType, { partial = false } = {}) {
   const notCard = productType !== undefined && productType !== 'tcg';
+  const noCatalog = notCard || (v.game !== undefined && !SET_GAMES.includes(v.game));
   const out = {};
   for (const key of CARD_DETAIL_KEYS) {
-    if (notCard) { out[key] = null; continue; }
+    if (notCard || (noCatalog && CARD_SET_KEYS.includes(key))) { out[key] = null; continue; }
     if (partial && v[key] === undefined) continue;
     out[key] = isBlank(v[key]) ? null : String(v[key]).trim();
   }
@@ -49,6 +60,6 @@ function cardDetailsForDb(v, productType, { partial = false } = {}) {
 }
 
 module.exports = {
-  CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX,
+  CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_SET_ID_PATTERN, CARD_NUMBER_MAX, SET_GAMES,
   CARD_DETAIL_COLUMNS, CARD_DETAIL_KEYS, checkCardDetails, cardDetailsForDb,
 };

@@ -33,15 +33,27 @@ describe('checkCardDetails', () => {
 describe('cardDetailsForDb', () => {
   const full = { cardLanguage: ' it ', cardRarity: ' Holo Rare ', cardGradingCompany: 'psa', cardGrade: '9.5' };
 
-  test('create: trims, turns blanks into null, always returns all four', () => {
-    expect(cardDetailsForDb(full, 'tcg')).toEqual({ cardLanguage: 'it', cardRarity: 'Holo Rare', cardGradingCompany: 'psa', cardGrade: '9.5' });
-    expect(cardDetailsForDb({ cardLanguage: '', cardRarity: '  ' }, 'tcg')).toEqual({ cardLanguage: null, cardRarity: null, cardGradingCompany: null, cardGrade: null });
+  const NO_SET = { cardSetId: null, cardNumber: null, cardExternalId: null };
+  const ALL_NULL = { cardLanguage: null, cardRarity: null, cardGradingCompany: null, cardGrade: null, ...NO_SET };
+
+  test('create: trims, turns blanks into null, always returns every key', () => {
+    expect(cardDetailsForDb(full, 'tcg')).toEqual({ cardLanguage: 'it', cardRarity: 'Holo Rare', cardGradingCompany: 'psa', cardGrade: '9.5', ...NO_SET });
+    expect(cardDetailsForDb({ cardLanguage: '', cardRarity: '  ' }, 'tcg')).toEqual(ALL_NULL);
+  });
+
+  test('the catalog link (expansion, number, card) is kept for Pokémon and dropped for any other game', () => {
+    const link = { cardSetId: ' 30th ', cardNumber: '029', cardExternalId: '30th-029' };
+    expect(cardDetailsForDb({ ...link, game: 'pokemon' }, 'tcg')).toMatchObject({ cardSetId: '30th', cardNumber: '029', cardExternalId: '30th-029' });
+    expect(cardDetailsForDb({ ...link, game: 'magic' }, 'tcg')).toMatchObject(NO_SET);
+    expect(cardDetailsForDb({ ...link, cardLanguage: 'it', game: 'magic' }, 'tcg').cardLanguage).toBe('it'); // only the link goes
+    expect(cardDetailsForDb({ ...link, game: 'magic' }, 'tcg', { partial: true })).toEqual(NO_SET);
+    expect(cardDetailsForDb({ cardSetId: 'me05' }, undefined, { partial: true })).toEqual({ cardSetId: 'me05' }); // game not mentioned: untouched
   });
 
   test('anything that is not a card is cleared', () => {
     for (const type of ['lego', 'funko']) {
-      expect(cardDetailsForDb(full, type)).toEqual({ cardLanguage: null, cardRarity: null, cardGradingCompany: null, cardGrade: null });
-      expect(cardDetailsForDb({}, type, { partial: true })).toEqual({ cardLanguage: null, cardRarity: null, cardGradingCompany: null, cardGrade: null });
+      expect(cardDetailsForDb(full, type)).toEqual(ALL_NULL);
+      expect(cardDetailsForDb({}, type, { partial: true })).toEqual(ALL_NULL);
     }
   });
 
@@ -85,12 +97,12 @@ describe('listing routes', () => {
   test('create stores language, rarity and grading for a card', async () => {
     const res = await create({ cardLanguage: 'it', cardRarity: 'Holo Rare', cardGradingCompany: 'psa', cardGrade: '10' });
     expect(res.status).toBe(201);
-    expect(insertParams().slice(-4)).toEqual(['it', 'Holo Rare', 'psa', '10']);
+    expect(insertParams().slice(-7, -3)).toEqual(['it', 'Holo Rare', 'psa', '10']);
   });
 
   test('create without any card detail stores nulls', async () => {
     expect((await create({})).status).toBe(201);
-    expect(insertParams().slice(-4)).toEqual([null, null, null, null]);
+    expect(insertParams().slice(-7)).toEqual([null, null, null, null, null, null, null]);
   });
 
   test('create rejects a grading company without a grade, and unknown values', async () => {
@@ -105,7 +117,23 @@ describe('listing routes', () => {
   test('card details on a non-card listing are dropped, not stored', async () => {
     const res = await create({ productType: 'lego', game: '', cardLanguage: 'it', cardGradingCompany: 'psa', cardGrade: '10' });
     expect(res.status).toBe(201);
-    expect(insertParams().slice(-4)).toEqual([null, null, null, null]);
+    expect(insertParams().slice(-7)).toEqual([null, null, null, null, null, null, null]);
+  });
+
+  test('create stores the catalog link for a Pokémon card, and not for other games', async () => {
+    const link = { cardSetId: '30th', cardNumber: '029', cardExternalId: '30th-029' };
+    expect((await create(link)).status).toBe(201);
+    expect(insertParams().slice(-3)).toEqual(['30th', '029', '30th-029']);
+    query.mockClear();
+    expect((await create({ ...link, game: 'magic' })).status).toBe(201);
+    expect(insertParams().slice(-3)).toEqual([null, null, null]);
+  });
+
+  test('create rejects a malformed catalog id', async () => {
+    expect((await create({ cardSetId: 'a b/c' })).status).toBe(400);
+    expect((await create({ cardExternalId: '<x>' })).status).toBe(400);
+    expect((await create({ cardNumber: 'x'.repeat(21) })).status).toBe(400);
+    expect(query).not.toHaveBeenCalled();
   });
 
   const patch = (body) => fetch(`${base}/abc`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
