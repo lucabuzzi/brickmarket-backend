@@ -11,6 +11,9 @@ const featured = require('../services/featured');
 const { notifyListingChanged } = require('../services/indexnow');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+const {
+  CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_DETAIL_COLUMNS, checkCardDetails, cardDetailsForDb,
+} = require('../services/cardDetails');
 const Stripe = require('stripe');
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -33,6 +36,13 @@ const LISTING_TYPE_LEGACY_ALIASES = ['fixed'];
 const PRODUCT_TYPES = ['lego', 'funko', 'tcg'];
 /** How the seller wants the photos framed in cards and in the gallery */
 const IMAGE_ORIENTATIONS = ['portrait', 'landscape'];
+/** Trading-card details (language, rarity, grading); stored only for product_type='tcg', see services/cardDetails.js */
+const CARD_DETAIL_FIELDS = {
+  cardLanguage: Joi.string().valid(...CARD_LANGUAGES).allow('', null),
+  cardRarity: Joi.string().max(CARD_RARITY_MAX).allow('', null),
+  cardGradingCompany: Joi.string().valid(...GRADING_COMPANIES).allow('', null),
+  cardGrade: Joi.string().max(CARD_GRADE_MAX).allow('', null),
+};
 const TCG_GAMES = ['pokemon', 'magic', 'lorcana', 'yugioh', 'onepiece', 'dragonball'];
 /** Card-grade condition codes used only when product_type='tcg' */
 const TCG_CONDITION_GRADES = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
@@ -111,6 +121,7 @@ function validateDraftListing(body) {
     productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
     game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
     imageOrientation: Joi.string().valid(...IMAGE_ORIENTATIONS),
+  ...CARD_DETAIL_FIELDS,
     status: Joi.string().valid('draft').required(),
   });
 
@@ -151,6 +162,7 @@ function validatePublishListing(body) {
     productType: Joi.string().valid(...PRODUCT_TYPES).default('lego'),
     game: Joi.string().valid(...TCG_GAMES).when('productType', { is: 'tcg', then: Joi.required(), otherwise: Joi.optional().allow('', null) }),
     imageOrientation: Joi.string().valid(...IMAGE_ORIENTATIONS),
+  ...CARD_DETAIL_FIELDS,
     status: Joi.string().valid('active').required(),
   });
 
@@ -207,6 +219,7 @@ const patchSchema = Joi.object({
   productType: Joi.string().valid(...PRODUCT_TYPES),
   game: Joi.string().valid(...TCG_GAMES).allow('', null),
   imageOrientation: Joi.string().valid(...IMAGE_ORIENTATIONS),
+  ...CARD_DETAIL_FIELDS,
   status: Joi.string().valid('draft', 'active', 'removed'),
 });
 
@@ -239,6 +252,12 @@ router.post('/', auth, async (req, res) => {
   if (value.condition) {
     value.condition = coerceConditionForDb(value.condition);
   }
+
+  const cardError = checkCardDetails(value);
+  if (cardError) {
+    return res.status(400).json({ error: cardError });
+  }
+  const cardCols = cardDetailsForDb(value, value.productType);
 
   if (!isDraft && (!req.files || req.files.length === 0)) {
     return res.status(400).json({ error: 'Almeno un\'immagine è obbligatoria per pubblicare' });
@@ -291,9 +310,10 @@ router.post('/', auth, async (req, res) => {
         status, images, shipping_cost, shipping_method, shipping_options,
         box_condition, instructions, pro_notes, is_complete,
         category, package_size, product_type, game,
-        weight_kg, length_cm, width_cm, height_cm, image_orientation
+        weight_kg, length_cm, width_cm, height_cm, image_orientation,
+        card_language, card_rarity, card_grading_company, card_grade
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36
       ) RETURNING *`,
       [
         req.user.userId,
@@ -325,6 +345,7 @@ router.post('/', auth, async (req, res) => {
         v.productType === 'tcg' ? (v.game || null) : null,
         dims.weightKg, dims.lengthCm, dims.widthCm, dims.heightCm,
         v.imageOrientation || defaultImageOrientation(v.productType),
+        cardCols.cardLanguage, cardCols.cardRarity, cardCols.cardGradingCompany, cardCols.cardGrade,
       ]
     );
 
@@ -771,6 +792,11 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
+  const cardError = checkCardDetails(value);
+  if (cardError) {
+    return res.status(400).json({ error: cardError });
+  }
+  Object.assign(value, cardDetailsForDb(value, value.productType, { partial: true }));
 
   let newImages = null;
   if (req.files && req.files.length > 0) {
@@ -810,6 +836,7 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
     productType: 'product_type',
     game: 'game',
     imageOrientation: 'image_orientation',
+    ...CARD_DETAIL_COLUMNS,
   };
 
   const sets = [];
