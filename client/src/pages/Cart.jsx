@@ -21,6 +21,14 @@ const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : 
 
 const LIME = '#c6ff3d';
 
+// Mirror of src/controllers/paymentsController.js computeFees — display only;
+// the server computes (and actually charges) the authoritative total at
+// checkout. Keep this in sync with PLATFORM_FEE_RATE there.
+const PLATFORM_FEE_RATE = 0.05;
+function platformFeeFor(price) {
+  return Math.round(price * PLATFORM_FEE_RATE * 100) / 100;
+}
+
 const cardElementOptions = {
   style: {
     base: { color: '#ffffff', fontSize: '16px', iconColor: LIME, '::placeholder': { color: 'rgba(255,255,255,0.35)' } },
@@ -203,7 +211,7 @@ function AddressSection({ addresses, selectedAddressId, onSelect, onAddressCreat
 }
 
 function CheckoutSidebar({
-  groups, itemsSubtotal, resolveMethod, groupCost, hasUnavailableItems, hasAddress, selectedAddressId,
+  groups, itemsSubtotal, platformFeeTotal, resolveMethod, groupCost, hasUnavailableItems, hasAddress, selectedAddressId,
   formatPrice, itemCount, onSuccess, refreshPhysicalQuotes,
 }) {
   const { t } = useTranslation();
@@ -213,7 +221,7 @@ function CheckoutSidebar({
   const [error, setError] = useState('');
 
   const shippingTotal = groups.reduce((acc, g) => acc + groupCost(g), 0);
-  const total = itemsSubtotal + shippingTotal;
+  const total = itemsSubtotal + shippingTotal + platformFeeTotal;
 
   // Physical groups send the exact quote token the buyer was shown
   // (POST /api/shipping/quote); TCG keeps sending a tier id, unrelated to
@@ -276,6 +284,10 @@ function CheckoutSidebar({
           <div className="flex justify-between gap-4 text-white/70">
             <dt>{t('cart.items_count_label', { count: itemCount }).replace(/:$/, '')}</dt>
             <dd className="font-mono font-bold tabular-nums text-white">{formatPrice(itemsSubtotal)}</dd>
+          </div>
+          <div className="flex justify-between gap-4 text-white/70">
+            <dt>{t('cart.platform_fee_label')}</dt>
+            <dd className="font-mono font-bold tabular-nums text-white">{formatPrice(platformFeeTotal)}</dd>
           </div>
           {groups.map((g) => (
             <div key={g.key} className="flex justify-between gap-4 text-white/55">
@@ -592,6 +604,10 @@ export default function Cart() {
     const price = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price;
     return acc + (isNaN(price) ? 0 : price);
   }, 0);
+  const platformFeeTotal = activeItems.reduce((acc, curr) => {
+    const price = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price;
+    return acc + (isNaN(price) ? 0 : platformFeeFor(price));
+  }, 0);
 
   const handlePurchaseSuccess = () => {
     clearCart();
@@ -852,6 +868,7 @@ export default function Cart() {
                   <CheckoutSidebar
                     groups={groups}
                     itemsSubtotal={itemsSubtotal}
+                    platformFeeTotal={platformFeeTotal}
                     itemCount={activeItems.length}
                     resolveMethod={selectedMethod}
                     groupCost={groupCost}
@@ -879,7 +896,7 @@ export default function Cart() {
           <div className="mx-auto flex max-w-xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[11px] font-bold uppercase tracking-wider text-white/45">{t('cart.total_label').replace(/:$/, '')}</p>
-              <p className="truncate font-mono text-xl font-black tabular-nums" style={{ color: LIME }}>{formatPrice(itemsSubtotal + shippingTotal)}</p>
+              <p className="truncate font-mono text-xl font-black tabular-nums" style={{ color: LIME }}>{formatPrice(itemsSubtotal + shippingTotal + platformFeeTotal)}</p>
             </div>
             <button
               type="button"

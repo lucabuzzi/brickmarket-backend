@@ -728,6 +728,7 @@
     "free_shipping": "GRATIS",
     "order_summary": "Riepilogo Ordine",
     "items_count_label": "Articoli ({{count}}):",
+    "platform_fee_label": "Commissione CardBrix",
     "total_label": "Totale:",
     "remove_unavailable_notice": "Rimuovi gli articoli esauriti per poter procedere con l'acquisto.",
     "processing": "Elaborazione...",

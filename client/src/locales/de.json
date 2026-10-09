@@ -728,6 +728,7 @@
     "free_shipping": "KOSTENLOS",
     "order_summary": "Bestellübersicht",
     "items_count_label": "Artikel ({{count}}):",
+    "platform_fee_label": "CardBrix-Gebühr",
     "total_label": "Gesamt:",
     "remove_unavailable_notice": "Entferne die nicht verfügbaren Artikel, um mit dem Kauf fortzufahren.",
     "processing": "Wird verarbeitet...",

@@ -728,6 +728,7 @@
     "free_shipping": "FREE",
     "order_summary": "Order Summary",
     "items_count_label": "Items ({{count}}):",
+    "platform_fee_label": "CardBrix fee",
     "total_label": "Total:",
     "remove_unavailable_notice": "Remove the sold-out items to proceed with your purchase.",
     "processing": "Processing...",

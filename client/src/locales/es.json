@@ -728,6 +728,7 @@
     "free_shipping": "GRATIS",
     "order_summary": "Resumen del Pedido",
     "items_count_label": "Artículos ({{count}}):",
+    "platform_fee_label": "Comisión CardBrix",
     "total_label": "Total:",
     "remove_unavailable_notice": "Elimina los artículos agotados para poder continuar con la compra.",
     "processing": "Procesando...",
