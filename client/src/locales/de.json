@@ -1132,6 +1132,19 @@
         "hint": "Wie die Fotos in der Anzeige dargestellt werden. Karten sind meist im Hochformat.",
         "portrait": "Hochformat",
         "landscape": "Querformat"
+      },
+      "crop": {
+        "title": "Foto zuschneiden",
+        "hint": "Zum Verschieben ziehen, zum Zoomen spreizen. Nur der gewählte Ausschnitt wird behalten.",
+        "shape": "Rahmenform",
+        "aspect_portrait": "Hochformat",
+        "aspect_landscape": "Querformat",
+        "aspect_square": "Quadrat",
+        "zoom": "Zoom",
+        "apply": "Zuschneiden",
+        "use_full": "Ganzes Foto verwenden",
+        "working": "Zuschneiden…",
+        "edit": "Foto zuschneiden"
       }
     }
   },

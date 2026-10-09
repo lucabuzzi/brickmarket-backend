@@ -20,6 +20,7 @@ import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
 import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
 import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, selectGame } from '../lib/sell/form';
 import OrientationPicker from '../components/sell/OrientationPicker';
+import CropEditor from '../components/sell/CropEditor';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
 import { buildListingFields } from '../lib/sell/payload';
 import { completeness } from '../lib/sell/score';
@@ -104,6 +105,7 @@ export default function Sell() {
   const [files, setFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [photoNotices, setPhotoNotices] = useState([]);
+  const [cropQueue, setCropQueue] = useState([]); // photos waiting for the crop editor, the first one is open
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -350,6 +352,8 @@ export default function Sell() {
   function addPhotos(list) {
     const r = mergePhotos(files, list, MAX_PHOTOS);
     setFiles(r.files);
+    const added = r.files.filter((f) => !files.includes(f));
+    if (added.length) setCropQueue((q) => [...q, ...added]);
     setPhotoNotices([r.overflow ? 'limit' : null, r.notImage ? 'not_image' : null].filter(Boolean));
   }
   function movePhotoTo(from, to) {
@@ -363,7 +367,14 @@ export default function Sell() {
     }
   };
   const closeGuide = useCallback(() => setGuideOpen(false), []);
+  // Closes the editor on the first queued photo: `cropped` replaces it (same position), null keeps the original.
+  const finishCrop = useCallback((cropped) => {
+    const current = cropQueue[0];
+    if (cropped && current) setFiles((fs) => fs.map((f) => (f === current ? cropped : f)));
+    setCropQueue((q) => q.slice(1));
+  }, [cropQueue]);
   function removePhoto(i) {
+    setCropQueue((q) => q.filter((f) => f !== files[i]));
     setFiles((f) => removePhotoAt(f, i));
     setPhotoNotices([]);
   }
@@ -680,6 +691,14 @@ export default function Sell() {
                     )}
                   </>
                 )}
+                {cropQueue.length > 0 && (
+                  <CropEditor
+                    key={`${cropQueue[0].name}|${cropQueue[0].size}|${cropQueue[0].lastModified}`}
+                    file={cropQueue[0]}
+                    imageOrientation={form.imageOrientation || defaultImageOrientation(form.productType)}
+                    onDone={finishCrop}
+                  />
+                )}
 
                 {/* STEP 2 — photos */}
                 {stepId === 'photos' && (
@@ -701,6 +720,7 @@ export default function Sell() {
                     onAdd={addPhotos}
                     onRemove={removePhoto}
                     onMove={movePhotoTo}
+                    onCrop={(i) => setCropQueue([files[i]])}
                     onOpenGuide={openGuide}
                     resolveExisting={(img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`)}
                   />

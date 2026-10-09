@@ -1132,6 +1132,19 @@
         "hint": "Comment les photos sont affichées dans l'annonce. Les cartes sont généralement en portrait.",
         "portrait": "Portrait",
         "landscape": "Paysage"
+      },
+      "crop": {
+        "title": "Cadrez la photo",
+        "hint": "Faites glisser pour déplacer, pincez pour zoomer. Seule la partie cadrée est conservée.",
+        "shape": "Forme du cadre",
+        "aspect_portrait": "Portrait",
+        "aspect_landscape": "Paysage",
+        "aspect_square": "Carré",
+        "zoom": "Zoom",
+        "apply": "Recadrer",
+        "use_full": "Utiliser la photo entière",
+        "working": "Recadrage…",
+        "edit": "Recadrer la photo"
       }
     }
   },

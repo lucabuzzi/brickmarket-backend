@@ -1132,6 +1132,19 @@
         "hint": "How your photos are shown in the listing. Cards are usually portrait.",
         "portrait": "Portrait",
         "landscape": "Landscape"
+      },
+      "crop": {
+        "title": "Frame your photo",
+        "hint": "Drag to move, pinch to zoom. Only the framed part is kept.",
+        "shape": "Frame shape",
+        "aspect_portrait": "Portrait",
+        "aspect_landscape": "Landscape",
+        "aspect_square": "Square",
+        "zoom": "Zoom",
+        "apply": "Crop",
+        "use_full": "Use whole photo",
+        "working": "Cropping…",
+        "edit": "Crop photo"
       }
     }
   },

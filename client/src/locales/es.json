@@ -1132,6 +1132,19 @@
         "hint": "Cómo se muestran las fotos en el anuncio. Las cartas suelen ser verticales.",
         "portrait": "Vertical",
         "landscape": "Horizontal"
+      },
+      "crop": {
+        "title": "Encuadra la foto",
+        "hint": "Arrastra para mover y pellizca para ampliar. Solo se conserva la parte encuadrada.",
+        "shape": "Forma del recuadro",
+        "aspect_portrait": "Vertical",
+        "aspect_landscape": "Horizontal",
+        "aspect_square": "Cuadrado",
+        "zoom": "Zoom",
+        "apply": "Recortar",
+        "use_full": "Usar la foto completa",
+        "working": "Recortando…",
+        "edit": "Recortar la foto"
       }
     }
   },

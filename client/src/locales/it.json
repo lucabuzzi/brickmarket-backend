@@ -1132,6 +1132,19 @@
         "hint": "Come vengono mostrate le foto nell'annuncio. Le carte sono di solito verticali.",
         "portrait": "Verticale",
         "landscape": "Orizzontale"
+      },
+      "crop": {
+        "title": "Inquadra la foto",
+        "hint": "Trascina per spostare, pizzica per ingrandire. Viene tenuta solo la parte inquadrata.",
+        "shape": "Forma del riquadro",
+        "aspect_portrait": "Verticale",
+        "aspect_landscape": "Orizzontale",
+        "aspect_square": "Quadrato",
+        "zoom": "Zoom",
+        "apply": "Ritaglia",
+        "use_full": "Usa foto intera",
+        "working": "Ritaglio…",
+        "edit": "Ritaglia la foto"
       }
     }
   },

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { AlertCircle, AlertTriangle, ArrowLeft, ArrowRight, Camera, ImagePlus, Lightbulb, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowLeft, ArrowRight, Camera, Crop, ImagePlus, Lightbulb, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fileKey } from '../../lib/sell/photos';
 import ShotGlyph from './ShotGlyph';
@@ -10,7 +10,7 @@ import ShotGlyph from './ShotGlyph';
 // ADD photos; the soft quality hints never block anything. The long explanation lives in <PhotoGuide>.
 export default function PhotoSlots({
   previews, existingImages = [], editing = false, error, notices = [], max = 5, shots, quality = {},
-  guideSeen = true, onAdd, onRemove, onMove, onOpenGuide, resolveExisting,
+  guideSeen = true, onAdd, onRemove, onMove, onCrop, onOpenGuide, resolveExisting,
 }) {
   const { t } = useTranslation();
   const galleryRef = useRef(null);
@@ -59,12 +59,17 @@ export default function PhotoSlots({
           <img src={p ? p.url : resolveExisting ? resolveExisting(existing) : existing} alt={shotLabel(i)} className="h-full w-full object-cover" />
           {cover ? <span className="absolute inset-x-0 bottom-0 bg-[#c6ff3d] py-0.5 text-center text-[9px] font-black uppercase tracking-wider text-[#10140a]">{t('sell.cover_badge')}</span> : null}
           {q && (q.small || q.blurry) ? (
-            <span className="absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-[#1a1300]" aria-hidden="true">
+            <span className="absolute left-1.5 top-10 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-[#1a1300]" aria-hidden="true">
               <AlertTriangle size={13} />
             </span>
           ) : null}
           {p ? (
             <>
+              {onCrop ? (
+                <button type="button" onClick={() => onCrop(i)} aria-label={`${t('sell.ui.crop.edit')} (${i + 1})`} className="absolute left-1 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur transition-colors hover:bg-[#c6ff3d] hover:text-[#10140a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                  <Crop size={15} aria-hidden="true" />
+                </button>
+              ) : null}
               <button type="button" onClick={() => onRemove(i)} aria-label={`${t('sell.ui.photos.remove')} (${i + 1})`} className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur transition-colors hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 <X size={15} aria-hidden="true" />
               </button>
