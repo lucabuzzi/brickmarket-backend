@@ -1,8 +1,8 @@
 /**
- * Data backfill: links the Pokémon listings published before the expansion catalog to their expansion and card
+ * Data backfill: links the card listings published before the expansion catalogs to their expansion and card
  * (listings.card_set_id / card_number / card_external_id), using the checked list in data/cardSetLinks.js.
  *
- * Needs migrate_card_sets.js to have run. Only touches the listed ids, only Pokémon card listings, and only when
+ * Needs migrate_card_sets.js to have run. Only touches the listed ids, only card listings of the entry's game, and only when
  * they have no link yet, so it never overwrites something a seller chose: safe to run more than once.
  *
  * Reversible (always through the wrapper — src/db/index.js refuses direct runs):
@@ -20,8 +20,8 @@ async function up() {
     const r = await query(
       `UPDATE public.listings
           SET card_set_id = $2, card_number = $3, card_external_id = $4
-        WHERE id = $1 AND product_type = 'tcg' AND game = 'pokemon' AND card_set_id IS NULL`,
-      [l.id, l.cardSetId, l.cardNumber, l.cardExternalId]
+        WHERE id = $1 AND product_type = 'tcg' AND game = $5 AND card_set_id IS NULL`,
+      [l.id, l.cardSetId, l.cardNumber, l.cardExternalId, l.game || 'pokemon']
     );
     linked += r.rowCount;
     console.log(`${r.rowCount ? '✅ linked  ' : '⏭  skipped '} ${l.title}  ->  ${l.cardSetId} #${l.cardNumber}`);
