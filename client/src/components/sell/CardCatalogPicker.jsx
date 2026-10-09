@@ -3,12 +3,12 @@ import { Check, Loader2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../../api';
 import {
-  cardNumberLabel, clearCardPatch, filterCards, filterSeries, pickCardPatch, seriesDisplayName, setDisplayName,
+  SET_EXAMPLE, cardNumberLabel, clearCardPatch, filterCards, filterSeries, pickCardPatch, seriesDisplayName, setDisplayName, setLogoSrc,
 } from '../../lib/sell/catalog';
 
-// Optional shortcut of the sell wizard for Pokémon cards: pick the expansion, then the card, and the form is filled
+// Optional shortcut of the sell wizard for the games that have an expansion catalog (`game`): pick the expansion, then the card, and the form is filled
 // in (title, number, rarity, language). The picture shown is a catalog reference, never saved as the listing photo.
-export default function CardCatalogPicker({ form, patch }) {
+export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const [series, setSeries] = useState(null); // null = loading, [] = unavailable
@@ -21,22 +21,22 @@ export default function CardCatalogPicker({ form, patch }) {
 
   useEffect(() => {
     let cancelled = false;
-    apiFetch('/catalog/pokemon/sets')
+    apiFetch(`/catalog/${game}/sets`)
       .then((d) => { if (!cancelled) setSeries(Array.isArray(d?.series) ? d.series : []); })
       .catch(() => { if (!cancelled) setSeries([]); });
     return () => { cancelled = true; };
-  }, []);
+  }, [game]);
 
   // load the cards of the chosen expansion (also when editing a listing that already has one)
   useEffect(() => {
     const id = form.cardSetId;
     if (!id) return undefined;
     let cancelled = false;
-    apiFetch(`/catalog/pokemon/sets/${encodeURIComponent(id)}`)
+    apiFetch(`/catalog/${game}/sets/${encodeURIComponent(id)}`)
       .then((d) => { if (!cancelled) setLoadedSet(d); })
       .catch(() => { if (!cancelled) setFailedSetId(id); });
     return () => { cancelled = true; };
-  }, [form.cardSetId]);
+  }, [form.cardSetId, game]);
 
   // what is shown depends on the expansion chosen NOW: data of a previous one is ignored, never cleared by hand
   const setData = loadedSet && String(loadedSet.set?.id).toLowerCase() === String(form.cardSetId).toLowerCase() ? loadedSet : null;
@@ -65,8 +65,8 @@ export default function CardCatalogPicker({ form, patch }) {
   async function chooseCard(card) {
     setPicking(true);
     let full = card;
-    try { full = (await apiFetch(`/catalog/pokemon/${encodeURIComponent(card.external_id)}`)) || card; } catch { /* the list row is enough */ }
-    patch(pickCardPatch(full, setData?.set || chosenSet, form));
+    try { full = (await apiFetch(`/catalog/${game}/${encodeURIComponent(card.external_id)}`)) || card; } catch { /* the list row is enough */ }
+    patch(pickCardPatch(full, setData?.set || chosenSet, form, game));
     setPickedImage(full.img_url || card.img_url || '');
     setPicking(false);
   }
@@ -93,7 +93,7 @@ export default function CardCatalogPicker({ form, patch }) {
               type="search"
               value={setQuery}
               onChange={(e) => setSetQuery(e.target.value)}
-              placeholder={t('sell.ui.catalog.set_placeholder')}
+              placeholder={t('sell.ui.catalog.set_placeholder', { example: SET_EXAMPLE[game] })}
               autoComplete="off"
               className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-[15px] text-white placeholder:text-white/30 focus:border-[#c6ff3d]/60 focus:outline-none focus:ring-2 focus:ring-[#c6ff3d]/20"
             />
@@ -111,11 +111,11 @@ export default function CardCatalogPicker({ form, patch }) {
                     <li key={x.id}>
                       <button type="button" onClick={() => chooseSet(x)} className={rowCls}>
                         <span className="flex h-8 w-14 shrink-0 items-center justify-center">
-                          {x.logo ? <img src={`${x.logo}.webp`} alt="" loading="lazy" className="max-h-8 max-w-full object-contain" /> : null}
+                          {x.logo ? <img src={setLogoSrc(x.logo)} alt="" loading="lazy" className="max-h-8 max-w-full object-contain" /> : null}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-semibold text-white">{setDisplayName(x, lang)}</span>
-                          <span className="block text-[11px] text-white/40">{t('sell.ui.catalog.cards_count', { count: x.card_count_total || 0 })}</span>
+                          {x.card_count_total ? <span className="block text-[11px] text-white/40">{t('sell.ui.catalog.cards_count', { count: x.card_count_total })}</span> : null}
                         </span>
                       </button>
                     </li>
@@ -177,7 +177,8 @@ export default function CardCatalogPicker({ form, patch }) {
                         <button type="button" onClick={() => chooseCard(c)} className={rowCls}>
                           {c.img_url ? <img src={c.img_url} alt="" loading="lazy" className="h-12 w-9 shrink-0 rounded object-cover" /> : <span className="h-12 w-9 shrink-0 rounded bg-white/5" aria-hidden="true" />}
                           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{c.name}</span>
-                          <span className="shrink-0 font-mono text-xs text-white/45">{cardNumberLabel(c.details?.localId, chosenSet?.card_count_official)}</span>
+                          {c.details?.variant ? <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">{t('sell.ui.catalog.variant', { n: c.details.variant })}</span> : null}
+                          <span className="shrink-0 font-mono text-xs text-white/45">{cardNumberLabel(c.details?.localId, chosenSet?.card_count_official, game)}</span>
                         </button>
                       </li>
                     ))}

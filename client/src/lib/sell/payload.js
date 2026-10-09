@@ -3,6 +3,7 @@
 // always sent; tests/sell-logic.test.js compares it with a copy of the previous implementation so the API
 // contract cannot drift unnoticed.
 import { selectedCarriers } from './form.js';
+import { hasCatalog } from './catalog.js';
 
 const LEGO_CONDITION_MAP = { new: 'new', used: 'used', complete: 'complete', parts: 'parts' };
 
@@ -64,7 +65,7 @@ export function buildListingFields(form, mode, { isPro = false, editing = false 
     ];
     for (const [name, value] of card) if (value || editing) add(name, value || '');
   }
-  if (isTcg && form.game === 'pokemon') {
+  if (isTcg && hasCatalog(form.game)) {
     const link = [['cardSetId', form.cardSetId], ['cardNumber', String(form.cardNumber || '').trim()], ['cardExternalId', form.cardExternalId]];
     for (const [name, value] of link) if (value || editing) add(name, value || '');
   }

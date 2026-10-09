@@ -1176,7 +1176,7 @@
         "hint": "Facoltativo. Scegli l'espansione e la carta: compiliamo noi titolo, numero e rarità.",
         "unavailable": "Il catalogo non è raggiungibile ora: compila i dati a mano qui sotto.",
         "set_label": "Espansione",
-        "set_placeholder": "Cerca un'espansione (es. 30° Anniversario)",
+        "set_placeholder": "Cerca un'espansione (es. {{example}})",
         "loading": "Caricamento…",
         "no_results": "Nessun risultato.",
         "cards_count": "{{count}} carte",
@@ -1186,7 +1186,8 @@
         "card_clear": "Rimuovi la carta scelta",
         "reference_note": "Immagine di riferimento: non è la tua foto.",
         "refine": "Altri {{count}} risultati: scrivi di più per restringere.",
-        "not_found_hint": "Non trovi la carta? Salta questo passaggio e compila titolo e dettagli a mano."
+        "not_found_hint": "Non trovi la carta? Salta questo passaggio e compila titolo e dettagli a mano.",
+        "variant": "Variante {{n}}"
       }
     }
   },

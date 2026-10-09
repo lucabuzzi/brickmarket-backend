@@ -2,9 +2,13 @@
 // sitemap entries only for pages that have something to show. The database module is mocked.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 jest.mock('../src/services/tcgdex', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../src/services/scryfall', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../src/services/onepieceApi', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
 
 const { query } = require('../src/db');
 const tcgdex = require('../src/services/tcgdex');
+const scryfall = require('../src/services/scryfall');
+const onepieceApi = require('../src/services/onepieceApi');
 const { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths } = require('../src/services/seoSetPages');
 const { renderPage } = require('../src/services/seoMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');
@@ -15,15 +19,19 @@ const SET_ROW = { id: '30th', name: '30° Anniversario', name_en: '30th Annivers
 beforeEach(() => {
   query.mockReset();
   tcgdex.ensureSets.mockClear();
+  scryfall.ensureSets.mockClear();
+  onepieceApi.ensureSets.mockClear();
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
 
 describe('path and meta', () => {
   test('only the two expansion paths are recognised', () => {
-    expect(parseSetPath('/annunci/carte-collezionabili/pokemon/30th')).toEqual({ mode: 'annunci', id: '30th' });
-    expect(parseSetPath('/aste/carte-collezionabili/pokemon/me05/')).toEqual({ mode: 'aste', id: 'me05' });
-    for (const p of ['/annunci/carte-collezionabili/pokemon', '/annunci/carte-collezionabili/magic/30th', '/annunci/carte-collezionabili/pokemon/a/b', '/annunci/carte-collezionabili/pokemon/a b', '', undefined]) {
+    expect(parseSetPath('/annunci/carte-collezionabili/pokemon/30th')).toEqual({ mode: 'annunci', game: 'pokemon', id: '30th' });
+    expect(parseSetPath('/aste/carte-collezionabili/pokemon/me05/')).toEqual({ mode: 'aste', game: 'pokemon', id: 'me05' });
+    expect(parseSetPath('/annunci/carte-collezionabili/magic/blb')).toEqual({ mode: 'annunci', game: 'magic', id: 'blb' });
+    expect(parseSetPath('/aste/carte-collezionabili/onepiece/OP-01')).toEqual({ mode: 'aste', game: 'onepiece', id: 'OP-01' });
+    for (const p of ['/annunci/carte-collezionabili/pokemon', '/annunci/carte-collezionabili/yugioh/30th', '/annunci/carte-collezionabili/pokemon/a/b', '/annunci/carte-collezionabili/pokemon/a b', '', undefined]) {
       expect(parseSetPath(p)).toBeNull();
     }
   });
@@ -54,11 +62,39 @@ describe('path and meta', () => {
   });
 });
 
+describe('other games', () => {
+  test('titles name the game', () => {
+    expect(buildSetMeta({ id: 'blb', name: 'Bloomburrow', card_count_total: 397, series_name: 'Espansioni' }, 'annunci', 'magic').title).toBe('Carte Magic Bloomburrow in vendita | CardBrix');
+    expect(buildSetMeta({ id: 'OP-01', name: 'Romance Dawn' }, 'aste', 'onepiece').title).toBe('Aste carte One Piece Romance Dawn | CardBrix');
+    expect(buildSetMeta({ id: 'x', name: 'X' }, 'annunci').title).toContain('Pokémon'); // the default stays Pokémon
+  });
+
+  test('a cold table is filled by the provider of the game asked for, not another one', async () => {
+    query.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({ rows: [{ id: 'blb', name: 'Bloomburrow' }] });
+    const meta = await fetchSetPageMeta('/annunci/carte-collezionabili/magic/blb');
+    expect(meta.title).toContain('Bloomburrow');
+    expect(scryfall.ensureSets).toHaveBeenCalledTimes(1);
+    expect(tcgdex.ensureSets).not.toHaveBeenCalled();
+    expect(query.mock.calls[0][1]).toEqual(['blb', 'magic']);
+
+    query.mockReset();
+    query.mockResolvedValue({ rows: [] });
+    expect(await fetchSetPageMeta('/aste/carte-collezionabili/onepiece/nope')).toBeNull();
+    expect(onepieceApi.ensureSets).toHaveBeenCalledTimes(1);
+  });
+
+  test('the same id in another game is a different expansion', async () => {
+    query.mockResolvedValue({ rows: [] });
+    await fetchSetPageMeta('/annunci/carte-collezionabili/magic/30th');
+    expect(query.mock.calls.every(([, params]) => params[1] === 'magic')).toBe(true);
+  });
+});
+
 describe('lookup', () => {
   test('a known expansion gives meta (id matched case-insensitively), an unknown one gives null', async () => {
     query.mockResolvedValueOnce({ rows: [SET_ROW] });
     expect((await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/30TH')).title).toContain('30° Anniversario');
-    expect(query.mock.calls[0][1]).toEqual(['30TH']); // bound parameter, never interpolated
+    expect(query.mock.calls[0][1]).toEqual(['30TH', 'pokemon']); // bound parameters, never interpolated
     query.mockResolvedValue({ rows: [] });
     expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon/nope')).toBeNull();
     expect(await fetchSetPageMeta('/annunci/carte-collezionabili/pokemon')).toBeNull();
@@ -125,18 +161,22 @@ describe('renderPage', () => {
 describe('sitemap paths', () => {
   test('one path per expansion that has active listings or auctions, id in lowercase', async () => {
     query.mockResolvedValueOnce({ rows: [
-      { id: '30th', auction: false, lastmod: '2026-10-01T10:00:00Z' },
-      { id: 'ME05', auction: true, lastmod: '2026-10-02T10:00:00Z' },
+      { game: 'pokemon', id: '30th', auction: false, lastmod: '2026-10-01T10:00:00Z' },
+      { game: 'pokemon', id: 'ME05', auction: true, lastmod: '2026-10-02T10:00:00Z' },
+      { game: 'magic', id: 'blb', auction: false, lastmod: '2026-10-03T10:00:00Z' },
+      { game: 'onepiece', id: 'OP-01', auction: true, lastmod: '2026-10-04T10:00:00Z' },
     ] });
     expect(await listSetSitemapPaths()).toEqual([
       { path: '/annunci/carte-collezionabili/pokemon/30th', lastmod: '2026-10-01T10:00:00Z' },
       { path: '/aste/carte-collezionabili/pokemon/me05', lastmod: '2026-10-02T10:00:00Z' },
+      { path: '/annunci/carte-collezionabili/magic/blb', lastmod: '2026-10-03T10:00:00Z' },
+      { path: '/aste/carte-collezionabili/onepiece/op-01', lastmod: '2026-10-04T10:00:00Z' },
     ]);
     expect(query.mock.calls[0][0]).toMatch(/status = 'active'/);
   });
 
   test('every path it produces is a known route', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: '30th', auction: false, lastmod: null }, { id: 'sv3pt5', auction: true, lastmod: null }] });
+    query.mockResolvedValueOnce({ rows: [{ game: 'pokemon', id: '30th', auction: false, lastmod: null }, { game: 'pokemon', id: 'sv3pt5', auction: true, lastmod: null }, { game: 'magic', id: 'tblb', auction: false, lastmod: null }, { game: 'onepiece', id: 'ST-01', auction: false, lastmod: null }] });
     for (const { path } of await listSetSitemapPaths()) expect(isKnownRoute(path)).toBe(true);
   });
 });

@@ -1176,7 +1176,7 @@
         "hint": "Opcional. Elige la expansión y la carta y rellenamos título, número y rareza.",
         "unavailable": "El catálogo no está disponible ahora: rellena los datos a mano abajo.",
         "set_label": "Expansión",
-        "set_placeholder": "Busca una expansión (p. ej. 30.º Aniversario)",
+        "set_placeholder": "Busca una expansión (p. ej. {{example}})",
         "loading": "Cargando…",
         "no_results": "Sin resultados.",
         "cards_count": "{{count}} cartas",
@@ -1186,7 +1186,8 @@
         "card_clear": "Quitar la carta elegida",
         "reference_note": "Imagen de referencia: no es tu foto.",
         "refine": "{{count}} resultados más: escribe más para acotar.",
-        "not_found_hint": "¿No encuentras la carta? Sáltate esto y rellena título y detalles a mano."
+        "not_found_hint": "¿No encuentras la carta? Sáltate esto y rellena título y detalles a mano.",
+        "variant": "Variante {{n}}"
       }
     }
   },

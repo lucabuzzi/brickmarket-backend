@@ -1176,7 +1176,7 @@
         "hint": "Optional. Pick the expansion and the card and we fill in title, number and rarity.",
         "unavailable": "The catalog is not reachable right now: fill in the details by hand below.",
         "set_label": "Expansion",
-        "set_placeholder": "Search an expansion (e.g. 30th Anniversary)",
+        "set_placeholder": "Search an expansion (e.g. {{example}})",
         "loading": "Loading…",
         "no_results": "No results.",
         "cards_count": "{{count}} cards",
@@ -1186,7 +1186,8 @@
         "card_clear": "Remove the chosen card",
         "reference_note": "Reference image: this is not your photo.",
         "refine": "{{count}} more results: type more to narrow down.",
-        "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand."
+        "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand.",
+        "variant": "Variant {{n}}"
       }
     }
   },

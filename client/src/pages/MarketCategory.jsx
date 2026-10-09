@@ -10,7 +10,7 @@ import {
 import { listingImage } from '../components/landing/landingUtils';
 import ExpansionRail from '../components/market/ExpansionRail';
 import useCardSets from '../components/market/useCardSets';
-import { findSet, setDisplayName } from '../lib/sell/catalog';
+import { findSet, hasCatalog, setDisplayName } from '../lib/sell/catalog';
 
 function Chip({ active, onClick, children, mode }) {
   return (
@@ -53,7 +53,7 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
   const { espansione } = useParams();
   const cardSet = bySet ? espansione : null;
   const { items, loading, error, reload } = useMarketItems(mode, { productType, game, cardSet });
-  const { series, loaded: setsLoaded } = useCardSets(game === 'pokemon');
+  const { series, loaded: setsLoaded } = useCardSets(hasCatalog(game), game);
   const setInfo = cardSet ? findSet(series, cardSet) : null;
 
   const [search, setSearch] = useState('');
@@ -65,7 +65,7 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
   const categoryName = category?.nameKey ? t(category.nameKey) : category?.name;
   const title = setInfo ? setDisplayName(setInfo, i18n.language) : gameInfo ? gameInfo.name : categoryName;
   const back = bySet && gameInfo
-    ? { to: `${mode.base}/carte-collezionabili/pokemon`, label: gameInfo.name }
+    ? { to: `${mode.base}/carte-collezionabili/${game}`, label: gameInfo.name }
     : gameInfo
     ? { to: `${mode.base}/carte-collezionabili`, label: t('hubs.categories.carte_name') }
     : { to: mode.base, label: t(`market.back_hub_${mode.key}`) };
@@ -153,7 +153,7 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
         </div>
       </section>
 
-      {game === 'pokemon' && !bySet ? <ExpansionRail series={series} mode={mode} /> : null}
+      {hasCatalog(game) && !bySet ? <ExpansionRail series={series} mode={mode} game={game} /> : null}
 
       {/* TOOLBAR */}
       <div className="lx-bleed sticky top-16 z-30 border-y border-white/10 bg-[#07060b]/85 backdrop-blur-xl">

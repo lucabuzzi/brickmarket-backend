@@ -23,6 +23,7 @@ import OrientationPicker from '../components/sell/OrientationPicker';
 import CropEditor from '../components/sell/CropEditor';
 import CardDetails from '../components/sell/CardDetails';
 import CardCatalogPicker from '../components/sell/CardCatalogPicker';
+import { hasCatalog } from '../lib/sell/catalog';
 import CardShotGuide from '../components/sell/CardShotGuide';
 import { cardSummaryParts, languageName } from '../lib/sell/cards';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
@@ -626,7 +627,7 @@ export default function Sell({ cardsMode = false }) {
                       </FieldGroup>
                     )}
 
-                    {form.productType === 'tcg' && form.game === 'pokemon' && <CardCatalogPicker form={form} patch={patch} />}
+                    {form.productType === 'tcg' && hasCatalog(form.game) && <CardCatalogPicker key={form.game} form={form} patch={patch} game={form.game} />}
 
                     {!editId && isLego && (
                       <div className="rounded-2xl border border-[#c6ff3d]/15 bg-[#c6ff3d]/[0.04] p-4">

@@ -1176,7 +1176,7 @@
         "hint": "Optional. Wähle Erweiterung und Karte, wir füllen Titel, Nummer und Seltenheit aus.",
         "unavailable": "Der Katalog ist gerade nicht erreichbar: Trage die Angaben unten von Hand ein.",
         "set_label": "Erweiterung",
-        "set_placeholder": "Erweiterung suchen (z. B. 30. Jubiläum)",
+        "set_placeholder": "Erweiterung suchen (z. B. {{example}})",
         "loading": "Wird geladen…",
         "no_results": "Keine Ergebnisse.",
         "cards_count": "{{count}} Karten",
@@ -1186,7 +1186,8 @@
         "card_clear": "Gewählte Karte entfernen",
         "reference_note": "Referenzbild: Das ist nicht dein Foto.",
         "refine": "{{count}} weitere Ergebnisse: Gib mehr ein, um einzugrenzen.",
-        "not_found_hint": "Karte nicht gefunden? Überspringe das und trage Titel und Details von Hand ein."
+        "not_found_hint": "Karte nicht gefunden? Überspringe das und trage Titel und Details von Hand ein.",
+        "variant": "Variante {{n}}"
       }
     }
   },

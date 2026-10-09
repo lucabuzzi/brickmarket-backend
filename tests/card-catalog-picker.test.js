@@ -139,7 +139,7 @@ describe('payload', () => {
   });
 
   test('other games and other products never send it', () => {
-    for (const over of [{ game: 'magic' }, { productType: 'lego', mainCategory: 'sets', condition: 'new' }]) {
+    for (const over of [{ game: 'yugioh' }, { productType: 'lego', mainCategory: 'sets', condition: 'new' }]) {
       const f = buildListingFields({ ...linked, ...over }, 'publish', { editing: true });
       for (const k of ['cardSetId', 'cardNumber', 'cardExternalId']) expect(has(f, k)).toBe(false);
     }
@@ -152,5 +152,76 @@ describe('automatic draft', () => {
     const back = draft.parseDraft(saved).form;
     expect(back).toMatchObject({ cardSetId: '30th', cardNumber: '29/128', cardExternalId: '30th-029' });
     expect(back.cardSetName).toHaveLength(300);
+  });
+});
+
+describe('more than one game', () => {
+  const MAGIC_SET = { id: 'blb', name: 'Bloomburrow', name_en: 'Bloomburrow', card_count_official: 397 };
+  const OP_SET = { id: 'OP-01', name: 'Romance Dawn', name_en: 'Romance Dawn' };
+
+  test('only the games with an expansion catalog are listed (same list as the server)', () => {
+    expect(cat.CATALOG_GAMES).toEqual(['pokemon', 'magic', 'onepiece']);
+    expect(cat.hasCatalog('magic')).toBe(true);
+    expect(cat.hasCatalog('yugioh')).toBe(false);
+    expect(cat.hasCatalog(undefined)).toBe(false);
+    const { SET_GAMES } = require('../src/services/cardDetails');
+    expect([...SET_GAMES].sort()).toEqual([...cat.CATALOG_GAMES].sort());
+  });
+
+  test('every catalog game has an example for the search box', () => {
+    for (const g of cat.CATALOG_GAMES) expect(typeof cat.SET_EXAMPLE[g]).toBe('string');
+  });
+
+  test('the collector number reads like the game prints it', () => {
+    expect(cat.cardNumberLabel('029', 128)).toBe('29/128'); // Pokémon is the default
+    expect(cat.cardNumberLabel('029', 128, 'pokemon')).toBe('29/128');
+    expect(cat.cardNumberLabel('119', 397, 'magic')).toBe('119'); // no printed total in the Magic catalog
+    expect(cat.cardNumberLabel('OP01-077', null, 'onepiece')).toBe('OP01-077');
+    expect(cat.titleNumber('1', 'magic')).toBe('#1');
+    expect(cat.titleNumber('1', 'pokemon')).toBe('1');
+    expect(cat.titleNumber('OP01-077', 'onepiece')).toBe('OP01-077');
+    expect(cat.titleNumber('12a', 'magic')).toBe('12a');
+  });
+
+  test('picking a Magic card: "#" before the bare number, English, rarity from the listing', () => {
+    const card = { external_id: 'u-1', name: 'Banishing Light', rarity: 'Common', set_code: 'blb', details: { localId: '1' } };
+    expect(cat.pickCardPatch(card, MAGIC_SET, F({ game: 'magic' }), 'magic')).toEqual({
+      cardSetId: 'blb', cardSetName: 'Bloomburrow', cardExternalId: 'u-1', cardNumber: '1',
+      title: 'Banishing Light #1', cardRarity: 'Common', cardLanguage: 'en',
+    });
+  });
+
+  test('picking a One Piece card (a parallel print): the id is the number, English', () => {
+    const card = { external_id: 'OP01-077_p1', name: 'Perona (Box Topper)', rarity: 'Uncommon', set_code: 'OP-01', details: { localId: 'OP01-077', variant: '1' } };
+    const p = cat.pickCardPatch(card, OP_SET, F({ game: 'onepiece' }), 'onepiece');
+    expect(p).toMatchObject({ cardSetId: 'OP-01', cardNumber: 'OP01-077', cardExternalId: 'OP01-077_p1', title: 'Perona (Box Topper) OP01-077', cardLanguage: 'en' });
+  });
+
+  test('Pokémon behaves as before (Italian, number over total)', () => {
+    const card = { external_id: '30th-029', name: 'Pikachu', rarity: 'Rara', set_code: '30th', details: { localId: '029' } };
+    expect(cat.pickCardPatch(card, { id: '30th', name: '30° Anniversario', card_count_official: 128 }, F()))
+      .toMatchObject({ title: 'Pikachu 29/128', cardLanguage: 'it', cardNumber: '29/128' });
+  });
+
+  test('logos: TCGdex gets its file extension, complete URLs are left alone', () => {
+    expect(cat.setLogoSrc('https://assets.tcgdex.net/it/me/me03/logo')).toBe('https://assets.tcgdex.net/it/me/me03/logo.webp');
+    expect(cat.setLogoSrc('https://assets.tcgdex.net/it/me/me03/logo.png')).toBe('https://assets.tcgdex.net/it/me/me03/logo.png');
+    expect(cat.setLogoSrc('https://svgs.scryfall.io/sets/blb.svg?1791172800')).toBe('https://svgs.scryfall.io/sets/blb.svg?1791172800');
+    expect(cat.setLogoSrc(null)).toBe('');
+  });
+
+  test('the payload sends the link for Magic and One Piece too, never for a game without a catalog', () => {
+    for (const game of ['magic', 'onepiece']) {
+      const f = buildListingFields(F({ game, cardSetId: 'x1', cardNumber: '5', cardExternalId: 'x1-5' }), 'publish');
+      expect(field(f, 'cardSetId')).toBe('x1');
+      expect(field(f, 'cardExternalId')).toBe('x1-5');
+    }
+    expect(has(buildListingFields(F({ game: 'lorcana', cardSetId: 'x1' }), 'publish', { editing: true }), 'cardSetId')).toBe(false);
+  });
+
+  test('switching game clears the previous game link', () => {
+    const linked = F({ game: 'magic', cardSetId: 'blb', cardSetName: 'Bloomburrow', cardNumber: '1', cardExternalId: 'u-1' });
+    expect(selectGame(linked, 'onepiece', 'One Piece')).toMatchObject({ cardSetId: '', cardExternalId: '' });
+    expect(selectGame(linked, 'magic', 'Magic')).toMatchObject({ cardSetId: 'blb' });
   });
 });

@@ -18,7 +18,7 @@ import MarketCard from '../components/market/MarketCard';
 import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
 import { GAME_NAMES, cldImage, formatEUR, pad2, useCountdown } from '../components/landing/landingUtils';
 import { languageName, listingGradeLabel } from '../lib/sell/cards';
-import { findSet, setDisplayName } from '../lib/sell/catalog';
+import { findSet, hasCatalog, setDisplayName } from '../lib/sell/catalog';
 import useCardSets from '../components/market/useCardSets';
 
 function listingImages(l) {
@@ -597,7 +597,7 @@ export default function ListingDetail() {
   }, [listing]);
 
   // Pokémon expansion of this listing (for the breadcrumb link); the hook must run before the early returns below
-  const cardSets = useCardSets(Boolean(listing?.card_set_id) && listing?.game === 'pokemon');
+  const cardSets = useCardSets(Boolean(listing?.card_set_id) && hasCatalog(listing?.game), listing?.game);
 
   if (loading) {
     return (
@@ -639,7 +639,7 @@ export default function ListingDetail() {
   const isLegoListing = productType === 'lego';
   const categorySlug = CATEGORY_SLUGS[productType];
   const game = productType === 'tcg' ? MARKET_CARD_GAMES.find((g) => g.slug === listing.game) : null;
-  const cardSet = game && game.slug === 'pokemon' && listing.card_set_id ? findSet(cardSets.series, listing.card_set_id) : null;
+  const cardSet = game && hasCatalog(game.slug) && listing.card_set_id ? findSet(cardSets.series, listing.card_set_id) : null;
   const categoryName = productType === 'tcg' ? t('hubs.categories.carte_name') : productType === 'funko' ? 'Funko Pop!' : 'LEGO';
 
   const ended = isAuction && (listing.status === 'expired' || listing.status === 'sold' || (listing.auction_end && countdown.done));
