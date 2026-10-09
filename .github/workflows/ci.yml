@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests (DB-free)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Only the suites that need no database. The rest of tests/ go through
+      # tests/helpers/guardAgainstProduction.js, which refuses to run until a
+      # real, separate test DB is allowlisted in tests/config/allowedTestHosts.js.
+      # CI deliberately has no DATABASE_URL / secrets. Once a test DB exists,
+      # replace this with `npm test` and add its URL as a repository secret.
+      - run: npx jest --runInBand --forceExit tests/guard-against-production.test.js tests/clutchvault-db-production-guard.test.js
+
+  client:
+    name: Client build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      # Non-blocking for now: the codebase currently has existing lint errors.
+      # Remove `continue-on-error` once they are cleaned up.
+      - run: npm run lint
+        continue-on-error: true
+      - run: npm run build
