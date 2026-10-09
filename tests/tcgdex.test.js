@@ -121,6 +121,14 @@ describe('pure mappers', () => {
     expect(JSON.stringify(row)).not.toMatch(/pricing|cardmarket|trend|avg/);
   });
 
+  test('names TCGdex gets wrong are corrected as they are read', () => {
+    const typo = { id: 'me', name: 'Megaevoluzione', sets: [{ id: '30th-c', name: 'Collzione Classica del 30°', cardCount: { total: 30, official: 30 } }, { id: '30th', name: '30° Anniversario' }] };
+    const rows = tcgdex.mapSeriesSets(typo, null, 0);
+    expect(rows.map((r) => r.name)).toEqual(['Collezione Classica del 30°', '30° Anniversario']);
+    expect(tcgdex.applyNameFix({ id: 'x', name: 'Intatto' })).toEqual({ id: 'x', name: 'Intatto' });
+    expect(tcgdex.NAME_FIXES['30th-c'].name).toBe('Collezione Classica del 30°');
+  });
+
   test('a card from an expansion listing is flagged as not yet detailed', () => {
     expect(tcgdex.mapSetListCard(SET_30TH.cards[0], { id: '30th', name: 'X' })).toMatchObject({ external_id: '30th-010', rarity: null, details: { localId: '010', detailed: false } });
     expect(tcgdex.mapSetListCard(SET_30TH.cards[2], { id: '30th', name: 'X' }).img_url).toBeNull();
@@ -162,6 +170,20 @@ describe('expansions cache', () => {
     await tcgdex.refreshSets(); // let the background refresh finish
     expect(net.calls).toContain('/it/series');
     expect(db.upsertedSets.map((r) => r.id)).toContain('30th');
+  });
+
+  test('a fresh table that still holds a wrong name is repaired by a refresh, not left for 7 days', async () => {
+    const db = fakeDb({ sets: [{ id: '30th-c', series_id: 'me', name: 'Collzione Classica del 30°', sort_order: 1 }], last: new Date().toISOString() });
+    await tcgdex.listSets();
+    await tcgdex.refreshSets();
+    expect(net.calls).toContain('/it/series');
+    expect(db.upsertedSets.find((r) => r.id === '30th')).toBeDefined();
+  });
+
+  test('a fresh table with the right names is not refreshed', async () => {
+    fakeDb({ sets: [{ id: '30th-c', series_id: 'me', name: 'Collezione Classica del 30°', sort_order: 1 }], last: new Date().toISOString() });
+    await tcgdex.listSets();
+    expect(net.calls).toEqual([]);
   });
 
   test('with TCGdex down and nothing cached, the list is simply empty', async () => {

@@ -32,6 +32,15 @@ async function fetchJson(path) {
 
 // ── Pure mappers (exported for tests) ──────────────────────────────────────────────────────────────
 
+/**
+ * Names TCGdex gets wrong (its Italian catalog has typos). Applied whenever expansions are read from the API, and
+ * a stored row that still has the wrong name makes ensureSets() refresh, so a fix here reaches the database by itself.
+ */
+const NAME_FIXES = Object.freeze({
+  '30th-c': { name: 'Collezione Classica del 30°' }, // TCGdex: "Collzione Classica del 30°"
+});
+const applyNameFix = (row) => (NAME_FIXES[row.id] ? { ...row, ...NAME_FIXES[row.id] } : row);
+
 /** TCGdex gives an image base URL; the actual file is `<base>/high.webp`. */
 const imageUrl = (base) => (base ? `${base}/high.webp` : null);
 
@@ -60,7 +69,7 @@ function mapSeriesSets(seriesIt, seriesEn, startOrder) {
     card_count_total: s.cardCount?.total ?? null,
     card_count_official: s.cardCount?.official ?? null,
     sort_order: startOrder + i,
-  }));
+  })).map(applyNameFix);
 }
 
 /** A card as listed inside an expansion (no rarity there; it is read when the card itself is opened). */
@@ -183,11 +192,19 @@ async function doRefreshSets() {
   return rows.length;
 }
 
+/** True when a stored expansion still has a name that NAME_FIXES corrects (so the next refresh will repair it). */
+async function hasWrongNames() {
+  const ids = Object.keys(NAME_FIXES);
+  const r = await query('SELECT id, name FROM card_sets WHERE game = $1 AND id = ANY($2)', [GAME, ids]);
+  return r.rows.some((row) => NAME_FIXES[row.id] && row.name !== NAME_FIXES[row.id].name);
+}
+
 /** First use fills the table (waits); afterwards a stale table is refreshed in the background. */
 async function ensureSets() {
   const r = await query('SELECT COUNT(*)::int AS n, MAX(fetched_at) AS last FROM card_sets WHERE game = $1', [GAME]);
   const { n, last } = r.rows[0];
-  const stale = !last || Date.now() - new Date(last).getTime() > SETS_TTL_DAYS * DAY_MS;
+  let stale = !last || Date.now() - new Date(last).getTime() > SETS_TTL_DAYS * DAY_MS;
+  if (n > 0 && !stale) stale = await hasWrongNames();
   if (n === 0) {
     await refreshSets().catch((err) => console.error('[TCGdex] refresh failed:', err.message));
   } else if (stale) {
@@ -305,6 +322,6 @@ async function searchCardsExternal(q, limit = 10) {
 module.exports = {
   lookupCard, searchCardsExternal, listSets, getSet, refreshSets, ensureSets,
   // exported for tests
-  imageUrl, setIdOfCard, mapSeriesSets, mapSetListCard, mapCardDetail, groupBySeries, compareLocalId,
+  imageUrl, setIdOfCard, NAME_FIXES, applyNameFix, mapSeriesSets, mapSetListCard, mapCardDetail, groupBySeries, compareLocalId,
   SETS_TTL_DAYS, CARDS_TTL_DAYS,
 };
