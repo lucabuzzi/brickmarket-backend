@@ -82,7 +82,7 @@ function fakeDb(init = {}) {
       for (const r of JSON.parse(params[1])) if (!st.cards.some((c) => c.external_id === r.external_id)) st.cards.push({ game: 'pokemon', rarity: null, ...r });
       return { rows: [] };
     }
-    if (/SELECT \* FROM master_cards WHERE game = \$1 AND set_code/.test(sql)) return { rows: st.cards.filter((c) => c.set_code === params[1]) };
+    if (/SELECT \* FROM master_cards WHERE game = \$1 AND lower\(set_code\)/.test(sql)) return { rows: st.cards.filter((c) => String(c.set_code).toLowerCase() === String(params[1]).toLowerCase()) };
     if (/SELECT \* FROM master_cards WHERE game = \$1 AND external_id = ANY/.test(sql)) return { rows: st.cards.filter((c) => params[1].includes(c.external_id)) };
     if (/SELECT \* FROM master_cards\s+WHERE game = \$1 AND external_id = \$2/.test(sql)) return { rows: st.cards.filter((c) => c.external_id === params[1]) };
     if (/INSERT INTO master_cards \(game, external_id, name, set_code, set_name, rarity, img_url, details, fetched_at\)\s+VALUES/.test(sql)) {

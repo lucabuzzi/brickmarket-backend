@@ -11,12 +11,12 @@
  */
 const { query } = require('../db');
 const cardCatalog = require('./cardCatalog');
+const { createCardSetsService, groupBySeries, compareLocalId, mapLimit } = require('./cardSets');
 
 const BASE = 'https://api.tcgdex.net/v2';
 const GAME = 'pokemon';
 const SETS_TTL_DAYS = 7;
 const CARDS_TTL_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SERIES_CONCURRENCY = 5;
 
 async function fetchJson(path) {
@@ -105,79 +105,12 @@ function mapCardDetail(card) {
   };
 }
 
-/** Flat rows (newest first) -> [{ id, name, name_en, sets: [...] }] keeping that order. */
-function groupBySeries(rows) {
-  const groups = [];
-  const byId = new Map();
-  for (const r of rows) {
-    const key = r.series_id || '_';
-    if (!byId.has(key)) {
-      const g = { id: key, name: r.series_name || r.series_name_en || '', name_en: r.series_name_en || r.series_name || '', sets: [] };
-      byId.set(key, g);
-      groups.push(g);
-    }
-    byId.get(key).sets.push(r);
-  }
-  return groups;
-}
+// ── Expansions (card_sets): the provider the shared engine (cardSets.js) runs on ─────────────────────
 
-/** "001", "12", "TG05", "SWSH062": numbers first in numeric order, then the rest alphabetically. */
-function compareLocalId(a, b) {
-  const na = /^\d+$/.test(a) ? parseInt(a, 10) : null;
-  const nb = /^\d+$/.test(b) ? parseInt(b, 10) : null;
-  if (na !== null && nb !== null) return na - nb;
-  if (na !== null) return -1;
-  if (nb !== null) return 1;
-  return String(a).localeCompare(String(b), 'en', { numeric: true });
-}
-
-// ── Expansions (card_sets) ─────────────────────────────────────────────────────────────────────────
-
-async function mapLimit(items, limit, fn) {
-  const out = new Array(items.length);
-  let next = 0;
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const i = next++;
-      out[i] = await fn(items[i]);
-    }
-  }));
-  return out;
-}
-
-async function upsertSets(rows) {
-  if (!rows.length) return;
-  await query(
-    `INSERT INTO card_sets (game, id, series_id, series_name, series_name_en, name, name_en, logo,
-                            card_count_total, card_count_official, sort_order, fetched_at)
-     SELECT x.game, x.id, x.series_id, x.series_name, x.series_name_en, x.name, x.name_en, x.logo,
-            x.card_count_total, x.card_count_official, x.sort_order, NOW()
-     FROM jsonb_to_recordset($1::jsonb) AS x(game text, id text, series_id text, series_name text, series_name_en text,
-            name text, name_en text, logo text, card_count_total int, card_count_official int, sort_order int)
-     ON CONFLICT (game, id) DO UPDATE SET
-       series_id = EXCLUDED.series_id, series_name = EXCLUDED.series_name, series_name_en = EXCLUDED.series_name_en,
-       name = EXCLUDED.name, name_en = COALESCE(EXCLUDED.name_en, card_sets.name_en),
-       logo = COALESCE(EXCLUDED.logo, card_sets.logo),
-       card_count_total = COALESCE(EXCLUDED.card_count_total, card_sets.card_count_total),
-       card_count_official = COALESCE(EXCLUDED.card_count_official, card_sets.card_count_official),
-       sort_order = EXCLUDED.sort_order, fetched_at = NOW()`,
-    [JSON.stringify(rows)]
-  );
-}
-
-let refreshing = null;
-
-/** Reads every series and expansion from TCGdex into card_sets. One refresh at a time. Resolves to the row count. */
-function refreshSets() {
-  if (!refreshing) {
-    refreshing = doRefreshSets().finally(() => { refreshing = null; });
-  }
-  return refreshing;
-}
-
-async function doRefreshSets() {
+/** Every series and expansion, Italian + English, oldest first (the order of the source is chronological). */
+async function fetchSetRows() {
   const list = await fetchJson('/it/series');
-  if (!Array.isArray(list) || !list.length) return 0;
+  if (!Array.isArray(list) || !list.length) return [];
 
   const details = await mapLimit(list, SERIES_CONCURRENCY, async (s) => ({
     it: await fetchJson(`/it/series/${encodeURIComponent(s.id)}`),
@@ -188,103 +121,25 @@ async function doRefreshSets() {
   for (const d of details) {
     if (d.it) rows.push(...mapSeriesSets(d.it, d.en, rows.length));
   }
-  await upsertSets(rows);
-  return rows.length;
+  return rows;
 }
 
-/** True when a stored expansion still has a name that NAME_FIXES corrects (so the next refresh will repair it). */
-async function hasWrongNames() {
-  const ids = Object.keys(NAME_FIXES);
-  const r = await query('SELECT id, name FROM card_sets WHERE game = $1 AND id = ANY($2)', [GAME, ids]);
-  return r.rows.some((row) => NAME_FIXES[row.id] && row.name !== NAME_FIXES[row.id].name);
+/** The cards of one expansion (and its release date, which the series listing does not carry). */
+async function fetchSetCards(set) {
+  const data = await fetchJson(`/it/sets/${encodeURIComponent(set.id)}`);
+  if (!data || !Array.isArray(data.cards)) return null;
+  return {
+    cards: data.cards.map((c) => mapSetListCard(c, set)),
+    patch: { release_date: data.releaseDate || null, card_count_total: data.cardCount?.total ?? null, card_count_official: data.cardCount?.official ?? null },
+  };
 }
 
-/** First use fills the table (waits); afterwards a stale table is refreshed in the background. */
-async function ensureSets() {
-  const r = await query('SELECT COUNT(*)::int AS n, MAX(fetched_at) AS last FROM card_sets WHERE game = $1', [GAME]);
-  const { n, last } = r.rows[0];
-  let stale = !last || Date.now() - new Date(last).getTime() > SETS_TTL_DAYS * DAY_MS;
-  if (n > 0 && !stale) stale = await hasWrongNames();
-  if (n === 0) {
-    await refreshSets().catch((err) => console.error('[TCGdex] refresh failed:', err.message));
-  } else if (stale) {
-    refreshSets().catch((err) => console.error('[TCGdex] background refresh failed:', err.message));
-  }
-}
-
-/**
- * Every expansion, newest first, grouped by series, with how many active listings / auctions each one has.
- * -> [{ id, name, name_en, sets: [{ id, name, name_en, logo, release_date, card_count_*, listings_count, auctions_count }] }]
- */
-async function listSets() {
-  await ensureSets();
-  const r = await query(
-    `SELECT s.id, s.series_id, s.series_name, s.series_name_en, s.name, s.name_en, s.logo, s.release_date,
-            s.card_count_total, s.card_count_official,
-            COALESCE(c.listings_count, 0)::int AS listings_count, COALESCE(c.auctions_count, 0)::int AS auctions_count
-     FROM card_sets s
-     LEFT JOIN (
-       SELECT card_set_id,
-              COUNT(*) FILTER (WHERE NOT (type = 'auction' OR is_auction = true)) AS listings_count,
-              COUNT(*) FILTER (WHERE type = 'auction' OR is_auction = true) AS auctions_count
-       FROM listings
-       WHERE status = 'active' AND game = $1 AND card_set_id IS NOT NULL
-       GROUP BY card_set_id
-     ) c ON c.card_set_id = s.id
-     WHERE s.game = $1
-     ORDER BY s.sort_order DESC`,
-    [GAME]
-  );
-  return groupBySeries(r.rows);
-}
-
-/** Inserts cards that came from a listing (expansion or search). Never wipes rarity/details a full lookup already stored. */
-async function upsertListRows(rows) {
-  if (!rows.length) return;
-  await query(
-    `INSERT INTO master_cards (game, external_id, name, set_code, set_name, rarity, img_url, details, fetched_at)
-     SELECT $1, x.external_id, x.name, x.set_code, x.set_name, NULL, x.img_url, x.details, NOW()
-     FROM jsonb_to_recordset($2::jsonb) AS x(external_id text, name text, set_code text, set_name text, img_url text, details jsonb)
-     ON CONFLICT (game, external_id) DO UPDATE SET
-       name = EXCLUDED.name, set_code = EXCLUDED.set_code, set_name = COALESCE(EXCLUDED.set_name, master_cards.set_name),
-       img_url = COALESCE(EXCLUDED.img_url, master_cards.img_url),
-       details = master_cards.details || jsonb_build_object('localId', EXCLUDED.details->'localId')`,
-    [GAME, JSON.stringify(rows)]
-  );
-}
-
-const upsertSetCards = (set, cards) => upsertListRows(cards.map((c) => mapSetListCard(c, set)));
-
-/**
- * One expansion with its cards (in collector-number order), or null if the id is unknown.
- * The cards are fetched from TCGdex the first time, then every CARDS_TTL_DAYS.
- */
-async function getSet(id) {
-  await ensureSets();
-  const found = await query('SELECT * FROM card_sets WHERE game = $1 AND lower(id) = lower($2)', [GAME, String(id)]);
-  let set = found.rows[0];
-  if (!set) return null;
-
-  const age = set.cards_fetched_at ? Date.now() - new Date(set.cards_fetched_at).getTime() : Infinity;
-  if (age > CARDS_TTL_DAYS * DAY_MS || !set.release_date) {
-    const data = await fetchJson(`/it/sets/${encodeURIComponent(set.id)}`);
-    if (data && Array.isArray(data.cards)) {
-      await upsertSetCards(set, data.cards);
-      const updated = await query(
-        `UPDATE card_sets SET release_date = COALESCE($3::date, release_date),
-                card_count_total = COALESCE($4, card_count_total), card_count_official = COALESCE($5, card_count_official),
-                cards_fetched_at = NOW()
-         WHERE game = $1 AND id = $2 RETURNING *`,
-        [GAME, set.id, data.releaseDate || null, data.cardCount?.total ?? null, data.cardCount?.official ?? null]
-      );
-      set = updated.rows[0] || set;
-    }
-  }
-
-  const cards = (await query('SELECT * FROM master_cards WHERE game = $1 AND set_code = $2', [GAME, set.id])).rows;
-  cards.sort((a, b) => compareLocalId(String(a.details?.localId ?? ''), String(b.details?.localId ?? '')));
-  return { set, cards };
-}
+const sets = createCardSetsService({
+  game: GAME, tag: 'TCGdex', setsTtlDays: SETS_TTL_DAYS, cardsTtlDays: CARDS_TTL_DAYS,
+  nameFixes: NAME_FIXES, refetchWhenNoDate: true, cardsComplete: false,
+  fetchSetRows, fetchSetCards,
+});
+const { listSets, getSet, refreshSets, ensureSets, upsertListRows } = sets;
 
 // ── Card adapter (interface of routes/cardCatalogRouter.js) ──────────────────────────────────────────
 
@@ -321,6 +176,8 @@ async function searchCardsExternal(q, limit = 10) {
 
 module.exports = {
   lookupCard, searchCardsExternal, listSets, getSet, refreshSets, ensureSets,
+  // for the routes/sitemap/tests
+  sets,
   // exported for tests
   imageUrl, setIdOfCard, NAME_FIXES, applyNameFix, mapSeriesSets, mapSetListCard, mapCardDetail, groupBySeries, compareLocalId,
   SETS_TTL_DAYS, CARDS_TTL_DAYS,

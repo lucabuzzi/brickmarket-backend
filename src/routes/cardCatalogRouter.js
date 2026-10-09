@@ -12,6 +12,32 @@ const cardCatalog = require('../services/cardCatalog');
 function createCardCatalogRouter(game, service) {
   const router = express.Router();
 
+  // Games with an expansion catalog (service.listSets / getSet, see services/cardSets.js) also get the two routes below.
+  // They are declared before the generic /:id, which would otherwise swallow "/sets".
+  if (typeof service.listSets === 'function' && typeof service.getSet === 'function') {
+    // GET /sets — every expansion, newest first, grouped by series, with active listing / auction counts
+    router.get('/sets', async (req, res) => {
+      try {
+        res.json({ series: await service.listSets() });
+      } catch (err) {
+        console.error(`CATALOG ${game} SETS ERROR:`, err.message);
+        res.status(500).json({ error: 'Errore nel recupero delle espansioni.' });
+      }
+    });
+
+    // GET /sets/:id — one expansion and its cards
+    router.get('/sets/:id', async (req, res) => {
+      try {
+        const data = await service.getSet(req.params.id);
+        if (!data) return res.status(404).json({ error: 'Espansione non trovata.' });
+        res.json(data);
+      } catch (err) {
+        console.error(`CATALOG ${game} SET ERROR:`, err.message);
+        res.status(500).json({ error: "Errore nel caricamento dell'espansione." });
+      }
+    });
+  }
+
   // GET /recent
   router.get('/recent', async (req, res) => {
     try {
