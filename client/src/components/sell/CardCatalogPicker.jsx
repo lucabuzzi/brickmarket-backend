@@ -3,7 +3,7 @@ import { Check, Loader2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../../api';
 import {
-  SET_EXAMPLE, cardNumberLabel, clearCardPatch, filterCards, filterSeries, pickCardPatch, seriesDisplayName, setDisplayName, setLogoSrc,
+  SET_EXAMPLE, cardNumberLabel, clearCardPatch, filterCards, filterSeries, isPrintGame, pickCardPatch, seriesDisplayName, setDisplayName, setLogoSrc, showThumbnails,
 } from '../../lib/sell/catalog';
 
 // Optional shortcut of the sell wizard for the games that have an expansion catalog (`game`): pick the expansion, then the card, and the form is filled
@@ -175,8 +175,11 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
                     {found.cards.map((c) => (
                       <li key={c.external_id}>
                         <button type="button" onClick={() => chooseCard(c)} className={rowCls}>
-                          {c.img_url ? <img src={c.img_url} alt="" loading="lazy" className="h-12 w-9 shrink-0 rounded object-cover" /> : <span className="h-12 w-9 shrink-0 rounded bg-white/5" aria-hidden="true" />}
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{c.name}</span>
+                          {showThumbnails(game) ? (c.img_url ? <img src={c.img_url} alt="" loading="lazy" className="h-12 w-9 shrink-0 rounded object-cover" /> : <span className="h-12 w-9 shrink-0 rounded bg-white/5" aria-hidden="true" />) : null}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-white">{c.name}</span>
+                            {isPrintGame(game) && c.rarity ? <span className="block truncate text-[11px] text-white/45">{c.rarity}</span> : null}
+                          </span>
                           {c.details?.variant ? <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">{t('sell.ui.catalog.variant', { n: c.details.variant })}</span> : null}
                           <span className="shrink-0 font-mono text-xs text-white/45">{cardNumberLabel(c.details?.localId, chosenSet?.card_count_official, game)}</span>
                         </button>

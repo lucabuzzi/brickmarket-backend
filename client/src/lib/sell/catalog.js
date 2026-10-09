@@ -2,14 +2,23 @@
 // Data shapes are the ones of GET /api/catalog/<game>/sets and /sets/:id (see services/cardSets.js).
 
 /** Games that have an expansion catalog (must match SET_GAMES in src/services/cardDetails.js). */
-export const CATALOG_GAMES = ['pokemon', 'magic', 'onepiece'];
+export const CATALOG_GAMES = ['pokemon', 'magic', 'onepiece', 'yugioh', 'lorcana'];
 export const hasCatalog = (game) => CATALOG_GAMES.includes(game);
 
 /** Language a card picked from a game's catalog is printed in (TCGdex is read in Italian, the others in English). */
-const CATALOG_LANGUAGE = { pokemon: 'it', magic: 'en', onepiece: 'en' };
+const CATALOG_LANGUAGE = { pokemon: 'it', magic: 'en', onepiece: 'en', yugioh: 'en', lorcana: 'en' };
+
+/**
+ * Yu-Gi-Oh! (YGOPRODeck) asks not to link its images directly, so its card list shows no thumbnails (the one reference
+ * picture after choosing a card stays). Every other catalog shows them.
+ */
+export const showThumbnails = (game) => game !== 'yugioh';
+
+/** Games where one card has several prints that differ by code and rarity: the rarity is shown in the list. */
+export const isPrintGame = (game) => game === 'yugioh';
 
 /** An example expansion for the search box of each game. */
-export const SET_EXAMPLE = { pokemon: '30° Anniversario', magic: 'Bloomburrow', onepiece: 'Romance Dawn' };
+export const SET_EXAMPLE = { pokemon: '30° Anniversario', magic: 'Bloomburrow', onepiece: 'Romance Dawn', yugioh: 'Legend of Blue Eyes', lorcana: 'The First Chapter' };
 
 /**
  * Logo URL of an expansion. TCGdex gives it without a file extension (the image is `<url>.webp`); the other sources
@@ -94,7 +103,8 @@ export function pickCardPatch(card, set, form, game = 'pokemon') {
     cardNumber: number,
     title: `${card.name}${inTitle ? ` ${inTitle}` : ''}`,
     ...(form.cardRarity || !card.rarity ? {} : { cardRarity: card.rarity }),
-    ...(form.cardLanguage ? {} : { cardLanguage: CATALOG_LANGUAGE[game] || 'it' }),
+    // a print carries its own language (Yu-Gi-Oh! reads it from the print code), else the game's default
+    ...(form.cardLanguage ? {} : { cardLanguage: card.details?.language || CATALOG_LANGUAGE[game] || 'it' }),
   };
 }
 

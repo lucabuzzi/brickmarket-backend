@@ -160,12 +160,35 @@ describe('more than one game', () => {
   const OP_SET = { id: 'OP-01', name: 'Romance Dawn', name_en: 'Romance Dawn' };
 
   test('only the games with an expansion catalog are listed (same list as the server)', () => {
-    expect(cat.CATALOG_GAMES).toEqual(['pokemon', 'magic', 'onepiece']);
+    expect(cat.CATALOG_GAMES).toEqual(['pokemon', 'magic', 'onepiece', 'yugioh', 'lorcana']);
     expect(cat.hasCatalog('magic')).toBe(true);
     expect(cat.hasCatalog('dragonball')).toBe(false);
     expect(cat.hasCatalog(undefined)).toBe(false);
     const { SET_GAMES } = require('../src/services/cardDetails');
     expect([...SET_GAMES].sort()).toEqual([...cat.CATALOG_GAMES].sort());
+  });
+
+  test('Yu-Gi-Oh! shows no thumbnails in the list (its images must not be linked directly), every other game does', () => {
+    expect(cat.showThumbnails('yugioh')).toBe(false);
+    for (const g of ['pokemon', 'magic', 'onepiece', 'lorcana']) expect(cat.showThumbnails(g)).toBe(true);
+    expect(cat.isPrintGame('yugioh')).toBe(true);
+    expect(cat.isPrintGame('magic')).toBe(false);
+  });
+
+  test('a Yu-Gi-Oh! print gives the code as the number, its own language and its rarity', () => {
+    const print = { external_id: '89631139_LOB-I001_UR', name: 'Blue-Eyes White Dragon', rarity: 'Ultra Rare', set_code: 'legend-of-blue-eyes-white-dragon', details: { localId: 'LOB-I001', language: 'it' } };
+    expect(cat.pickCardPatch(print, { id: 'legend-of-blue-eyes-white-dragon', name: 'Legend of Blue Eyes White Dragon' }, F({ game: 'yugioh' }), 'yugioh')).toMatchObject({
+      cardSetId: 'legend-of-blue-eyes-white-dragon', cardNumber: 'LOB-I001', cardExternalId: '89631139_LOB-I001_UR', title: 'Blue-Eyes White Dragon LOB-I001', cardRarity: 'Ultra Rare', cardLanguage: 'it',
+    });
+    const noLang = { ...print, details: { localId: 'LOB-001' } };
+    expect(cat.pickCardPatch(noLang, { id: 's' }, F({ game: 'yugioh' }), 'yugioh').cardLanguage).toBe('en');
+    expect(cat.pickCardPatch(print, { id: 's' }, F({ game: 'yugioh', cardLanguage: 'ja' }), 'yugioh')).not.toHaveProperty('cardLanguage');
+  });
+
+  test('a Lorcana card: its id is the number', () => {
+    const card = { external_id: 'TFC-001', name: 'Ariel - On Human Legs', rarity: 'Uncommon', set_code: 'TFC', details: { localId: 'TFC-001' } };
+    expect(cat.pickCardPatch(card, { id: 'TFC', name: 'The First Chapter' }, F({ game: 'lorcana' }), 'lorcana'))
+      .toMatchObject({ cardSetId: 'TFC', cardNumber: 'TFC-001', title: 'Ariel - On Human Legs TFC-001', cardLanguage: 'en' });
   });
 
   test('every catalog game has an example for the search box', () => {
