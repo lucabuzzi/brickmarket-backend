@@ -6,9 +6,15 @@ import { useTranslation } from 'react-i18next';
 const CONDITION_KEYS = ['new', 'used', 'complete', 'parts'];
 const DEFAULT_MULTIPLIERS = { new: 1, used: 0.65, complete: 0.55, parts: 0.3 };
 
-export default function MarketValueHint({ pricing, condition, setNumber }) {
+const ACCENT = {
+  lime: { border: 'border-[#c6ff3d]/20', soft: 'bg-[#c6ff3d]/10 text-[#c6ff3d]', text: 'text-[#c6ff3d]' },
+  orange: { border: 'border-pillar-auctions/20', soft: 'bg-pillar-auctions/10 text-pillar-auctions', text: 'text-pillar-auctions' },
+};
+
+export default function MarketValueHint({ pricing, condition, setNumber, accent = 'lime', ns = 'sell' }) {
   const { t } = useTranslation();
   if (!pricing || pricing.marketValue == null) return null;
+  const a = ACCENT[accent] || ACCENT.lime;
 
   const condKey = condition && CONDITION_KEYS.includes(condition) ? condition : 'used';
   const multipliers = pricing.conditionMultipliers || DEFAULT_MULTIPLIERS;
@@ -16,19 +22,19 @@ export default function MarketValueHint({ pricing, condition, setNumber }) {
   const adjusted = Math.round(pricing.marketValue * mult);
   const appPct = pricing.appreciationPct;
   const TrendIcon = appPct >= 15 ? TrendingUp : appPct < 0 ? TrendingDown : Minus;
-  const trendColor = appPct >= 50 ? 'text-emerald-400' : appPct >= 15 ? 'text-[#c6ff3d]' : appPct < 0 ? 'text-red-400' : 'text-stone-500';
-  const condLabels = { new: t('sell.pricing_cond_new'), used: t('sell.pricing_cond_used'), complete: t('sell.pricing_cond_complete'), parts: t('sell.pricing_cond_parts') };
+  const trendColor = appPct >= 50 ? 'text-emerald-400' : appPct >= 15 ? a.text : appPct < 0 ? 'text-red-400' : 'text-stone-500';
+  const condLabels = { new: t(`${ns}.pricing_cond_new`), used: t(`${ns}.pricing_cond_used`), complete: t(`${ns}.pricing_cond_complete`), parts: t(`${ns}.pricing_cond_parts`) };
   const eur = (n) => `€${Math.round(n).toLocaleString('it-IT')}`;
 
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border bg-[#0d0c12]/90 px-4 py-3 backdrop-blur-xl ${pricing.isTrending ? 'border-emerald-400/35 shadow-[0_0_24px_rgba(16,185,129,0.12)]' : 'border-[#c6ff3d]/20'}`}>
-      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${pricing.isTrending ? 'bg-emerald-400/10 text-emerald-400' : 'bg-[#c6ff3d]/10 text-[#c6ff3d]'}`}>
+    <div className={`flex items-center gap-3 rounded-2xl border bg-[#0d0c12]/90 px-4 py-3 backdrop-blur-xl ${pricing.isTrending ? 'border-emerald-400/35 shadow-[0_0_24px_rgba(16,185,129,0.12)]' : a.border}`}>
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${pricing.isTrending ? 'bg-emerald-400/10 text-emerald-400' : a.soft}`}>
         <Zap size={17} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">{t('sell.market_value_estimated')}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">{t(`${ns}.market_value_estimated`)}</p>
         <p className="truncate text-xs text-white/55">
-          {setNumber || t('sell.set_fallback')} · <span className="text-white/70">{condLabels[condKey]}</span>
+          {setNumber || t(`${ns}.set_fallback`)} · <span className="text-white/70">{condLabels[condKey]}</span>
         </p>
       </div>
       {appPct != null ? (

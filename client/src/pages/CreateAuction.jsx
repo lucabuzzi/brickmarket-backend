@@ -1,11 +1,44 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LISTING_ENDPOINTS, apiPostForm, SERVER_URL } from '../api';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Calendar, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Gavel, Loader2, Package, RotateCcw, Save, ShieldCheck } from 'lucide-react';
+import { LISTING_ENDPOINTS, apiPostForm } from '../api';
 import { useAuth } from '../auth/useAuth';
-import { Camera, CheckCircle, Edit, ChevronRight, ChevronLeft, Save, Gavel, Clock } from 'lucide-react';
 import SetLookupInput from '../components/SetLookupInput';
-import { ANNUNCI_CARD_GAMES, getAnnunciCardGame } from '../config/annunciCategories';
+import Stepper from '../components/sell/Stepper';
+import Field, { FieldGroup } from '../components/sell/FormField';
+import { inputCls } from '../components/sell/inputClass';
+import ChoiceTile from '../components/sell/ChoiceTile';
+import PhotoSlots from '../components/sell/PhotoSlots';
+import PhotoGuide from '../components/sell/PhotoGuide';
+import usePhotoQuality from '../components/sell/analyzePhoto';
+import MarketValueHint from '../components/sell/MarketValueHint';
+import ReviewStep from '../components/sell/ReviewStep';
+import Celebration from '../components/sell/Celebration';
+import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
+import OrientationPicker from '../components/sell/OrientationPicker';
+import CropEditor from '../components/sell/CropEditor';
+import CardDetails from '../components/sell/CardDetails';
+import CardCatalogPicker from '../components/sell/CardCatalogPicker';
+import CardShotGuide from '../components/sell/CardShotGuide';
+import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
+import { CARRIERS } from './Sell';
+import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, selectGame } from '../lib/auction/form';
+import { hasCatalog } from '../lib/sell/catalog';
+import { cardSummaryParts, languageName } from '../lib/sell/cards';
+import { mergePhotos, movePhoto, removePhotoAt } from '../lib/sell/photos';
+import { shotListFor } from '../lib/sell/shots';
+import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/auction/validate';
+import { buildAuctionFields } from '../lib/auction/payload';
+import { completeness } from '../lib/auction/score';
+import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib/auction/draft';
+import { buildPreviewListing } from '../lib/auction/preview';
+import { chosenCarrierIds, publishBlockers, publishedPath } from '../lib/auction/review';
+
+const ACCENT = 'orange';
+const NS = 'create_auction';
+const ID_PREFIX = 'auction';
 
 const CATEGORIES = [
   { value: '', label: '— Seleziona categoria —' },
@@ -27,576 +60,895 @@ const PRODUCT_TYPE_OPTIONS = [
   { id: 'funko', icon: '🧸' },
 ];
 
-// Condition codes for trading cards (product_type === 'tcg'); LEGO/Funko keep new/used/complete/parts
-const TCG_CONDITIONS = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
-
 const MAIN_CATEGORY_OPTIONS = [
   { id: 'sets', icon: '🧱' },
   { id: 'mocs', icon: '🏗️' },
   { id: 'minifigures', icon: '👤' },
 ];
 
+const CONDITION_ICONS = {
+  new: '✨', used: '🧱', complete: '📦', parts: '🔩',
+  near_mint: '💎', slightly_played: '👍', moderately_played: '👌', heavy_played: '😬', poor_damaged: '🩹',
+};
+
+const STEP_ICONS = { what: Package, photos: Camera, condition: ShieldCheck, price: Gavel, review: ClipboardCheck };
+const STEPS = STEP_IDS.map((id) => ({ id, Icon: STEP_ICONS[id] }));
+const TOTAL_STEPS = STEPS.length;
+
+const noStar = (s) => String(s).replace(/\s*\*\s*$/, '');
+
+const BOX_LABEL_KEYS = { 'Mint (Perfetta)': 'box_condition_mint', 'Damaged (Danneggiata)': 'box_condition_damaged', 'None (Assente)': 'box_condition_none' };
+const INSTRUCTIONS_LABEL_KEYS = { 'Yes (Presenti)': 'instructions_present', 'No (Assenti)': 'instructions_absent', 'Solo PDF': 'instructions_pdf_only' };
+
+const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
+const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
+const safeStorage = (fn) => { try { return fn(); } catch { return null; } };
+
 export default function CreateAuction() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userId = user?.id;
+  const reduceMotion = useReducedMotion();
+
   const isPro = user?.role === 'professional' || user?.role_name === 'professional' || user?.is_pro || user?.seller_type === 'professional';
 
-  // Wizard State
+  // ── State ────────────────────────────────────────────────────────────────
+  const [form, setForm] = useState(emptyForm);
+  const patch = useCallback((p) => setForm((f) => ({ ...f, ...p })), []);
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
-
-  // Form State - Info
-  const [productType, setProductType] = useState('lego'); // lego | funko | tcg
-  const [game, setGame] = useState(''); // only when productType === 'tcg'
-  const [title, setTitle] = useState('');
-  const [setNumber, setSetNumber] = useState('');
-  const [mainCategory, setMainCategory] = useState('');
-  const [category, setCategory] = useState('');
-  const [year, setYear] = useState('');
-  const [condition, setCondition] = useState('');
-
-  const isLego = productType === 'lego';
-
-  // TCG: auto-fill the generic "theme" field with the selected game's display name
-  useEffect(() => {
-    if (productType === 'tcg' && game) {
-      const g = getAnnunciCardGame(game);
-      if (g) setCategory(g.name);
-    }
-  }, [productType, game]);
-
-  // Lookup state (from SetLookupInput)
-  const [lookupPieces, setLookupPieces] = useState(null);
-
-  const handleSetFound = (setData) => {
-    if (setData.name) setTitle(setData.name);
-    if (setData.set_num) setSetNumber(setData.set_num);
-    if (setData.year) setYear(String(setData.year));
-    if (setData.num_parts) setLookupPieces(setData.num_parts);
-  };
-
-  const handleLookupClear = () => {
-    setLookupPieces(null);
-  };
-
-  // Form State - Auction Details
-  const [startingBid, setStartingBid] = useState('');
-  const [description, setDescription] = useState('');
-  const [durationMode, setDurationMode] = useState('standard'); // 'standard' | 'custom'
-  const [customEndDate, setCustomEndDate] = useState('');
-  
-  // Photos
+  const [reached, setReached] = useState(1);
   const [files, setFiles] = useState([]);
-  
-  // UI States
+  const [photoNotices, setPhotoNotices] = useState([]);
+  const [cropQueue, setCropQueue] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [lookupPieces, setLookupPieces] = useState(null);
+  const [lookupPricing, setLookupPricing] = useState(null);
+  const [restoredAtStep, setRestoredAtStep] = useState(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [dimsOpen, setDimsOpen] = useState(false);
+  const [focusReq, setFocusReq] = useState(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [published, setPublished] = useState(null);
+  const [guideSeen, setGuideSeen] = useState(() => safeStorage(() => window.localStorage.getItem('cardbrix_auction_guide_seen')) === '1');
 
-  const previews = useMemo(
-    () => files.map((f) => ({ file: f, url: URL.createObjectURL(f) })),
-    [files]
-  );
+  const draftReady = useRef(false);
+  const lastSig = useRef('');
+  const headingRef = useRef(null);
+  const wizardTopRef = useRef(null);
+  const firstRender = useRef(true);
+
+  const isLego = form.productType === 'lego';
+  const stepId = STEP_IDS[step - 1];
+  const photoCount = files.length;
+  const guidedCards = form.productType === 'tcg';
+  const ctx = useMemo(() => ({ photoCount, editing: false, guidedCards, isPro }), [photoCount, guidedCards, isPro]);
+
+  const shots = useMemo(() => shotListFor({ productType: form.productType, mainCategory: form.mainCategory }), [form.productType, form.mainCategory]);
+  const photoQuality = usePhotoQuality(files);
+
+  const previews = useMemo(() => files.map((f) => ({ file: f, url: URL.createObjectURL(f) })), [files]);
+  useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
 
   const localizedCategories = useMemo(
     () => CATEGORIES.map((c) => ({
       ...c,
-      label: c.value === '' ? t('create_auction.category_placeholder') : c.value === 'Altro' ? t('create_auction.category_other') : c.label,
+      label: c.value === '' ? t(`${NS}.category_placeholder`) : c.value === 'Altro' ? t(`${NS}.category_other`) : c.label,
     })),
     [t]
   );
 
-  useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.url));
+  const meter = useMemo(() => completeness(form, { photoCount }), [form, photoCount]);
+  const previewListing = useMemo(
+    () => ({
+      ...buildPreviewListing(form, { sellerName: user?.username || '', image: previews[0]?.url || '' }),
+      title: form.title.trim() || t(`${NS}.ui.preview.title_fallback`),
+    }),
+    [form, user?.username, previews, t]
+  );
+
+  const carrierIds = useMemo(() => CARRIERS.map((c) => c.id), []);
+  const blockers = useMemo(() => (stepId === 'review' ? publishBlockers(form, ctx) : []), [stepId, form, ctx]);
+
+  const standardEndDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d;
+  }, []);
+  const standardDateFormatted = useMemo(
+    () => standardEndDate.toLocaleString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }),
+    [standardEndDate, i18n.language]
+  );
+  const customDateFormatted = useMemo(() => {
+    if (form.durationMode !== 'custom' || !form.customEndDate) return '';
+    const d = new Date(form.customEndDate);
+    return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  }, [form.durationMode, form.customEndDate, i18n.language]);
+
+  const summary = useMemo(() => {
+    const isTcg = form.productType === 'tcg';
+    const conditionOf = (c) => (c ? (isTcg ? t(`${NS}.condition_grade_${c}`) : t(`${NS}.condition_option_${c}`)) : '');
+    const what = [
+      t(`${NS}.product_type_${form.productType}`),
+      form.productType === 'lego' && form.mainCategory ? t(`${NS}.category_${form.mainCategory}`) : form.category,
+      form.setNumber.trim() ? `#${form.setNumber.trim()}` : '',
+      form.productType === 'tcg' ? [form.cardSetName, form.cardNumber ? `#${form.cardNumber}` : ''].filter(Boolean).join(' ') : '',
+      form.productType === 'lego' ? String(form.year || '').trim() : '',
+    ].filter(Boolean);
+    const cardExtras = isTcg
+      ? cardSummaryParts(form, { language: (code) => languageName(code, i18n.language), otherCompany: t(`${NS}.ui.cards.grading_other`) })
+      : [];
+    const conditionExtras = isTcg ? cardExtras : form.productType === 'lego' ? [
+      BOX_LABEL_KEYS[form.boxCondition] ? `${noStar(t(`${NS}.box_condition_label`))}: ${t(`${NS}.${BOX_LABEL_KEYS[form.boxCondition]}`)}` : '',
+      INSTRUCTIONS_LABEL_KEYS[form.instructions] ? `${noStar(t(`${NS}.instructions_label`))}: ${t(`${NS}.${INSTRUCTIONS_LABEL_KEYS[form.instructions]}`)}` : '',
+      form.isComplete ? t(`${NS}.complete_set_label`) : '',
+    ].filter(Boolean) : [];
+    const photos = previews.map((p) => p.url);
+    const names = Object.fromEntries(CARRIERS.map((c) => [c.id, c.name]));
+    const priceNote = form.durationMode === 'custom'
+      ? (customDateFormatted ? t(`${NS}.auction_note_custom`, { date: customDateFormatted }) : '')
+      : t(`${NS}.auction_note_standard`, { date: standardDateFormatted });
+    return {
+      title: form.title.trim(),
+      what,
+      photos,
+      photoCount,
+      maxPhotos: MAX_PHOTOS,
+      condition: conditionOf(form.condition),
+      conditionExtras,
+      price: form.startingBid,
+      priceNote,
+      carriers: chosenCarrierIds(form.shippingOptions, carrierIds).map((id) => names[id]),
+      description: form.description,
     };
-  }, [previews]);
+  }, [form, previews, photoCount, carrierIds, t, i18n.language, customDateFormatted, standardDateFormatted]);
 
-  const standardDateObj = new Date();
-  standardDateObj.setDate(standardDateObj.getDate() + 7);
-  const standardDateFormatted = standardDateObj.toLocaleString(i18n.language, {
-    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
-  });
+  // ── Automatic draft: restore once, then save while typing ────────────────
+  useEffect(() => {
+    if (!userId) return;
+    const saved = parseDraft(safeStorage(() => window.localStorage.getItem(draftKey(userId))));
+    if (saved) {
+      setForm({ ...emptyForm(), ...saved.form });
+      setStep(saved.step);
+      setReached(saved.step);
+      setRestoredAtStep(saved.step);
+      lastSig.current = serializeDraft(saved.form, saved.step, 0);
+    }
+    draftReady.current = true;
+  }, [userId]);
 
-  function onFilesChange(e) {
-    const list = e.target.files ? Array.from(e.target.files) : [];
-    setFiles(list.slice(0, 5));
+  useEffect(() => {
+    if (!userId || published || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
+    const sig = serializeDraft(form, step, 0);
+    if (sig === lastSig.current) return undefined;
+    const id = setTimeout(() => {
+      const ok = safeStorage(() => { window.localStorage.setItem(draftKey(userId), serializeDraft(form, step)); return true; });
+      if (ok) { lastSig.current = sig; setSavedFlash(true); }
+    }, 700);
+    return () => clearTimeout(id);
+  }, [form, step, userId, published]);
+
+  useEffect(() => {
+    if (!savedFlash) return undefined;
+    const id = setTimeout(() => setSavedFlash(false), 2500);
+    return () => clearTimeout(id);
+  }, [savedFlash]);
+
+  useEffect(() => {
+    if (restoredAtStep != null && step !== restoredAtStep) setRestoredAtStep(null);
+  }, [step, restoredAtStep]);
+
+  const clearDraft = useCallback(() => {
+    lastSig.current = '';
+    if (userId) safeStorage(() => window.localStorage.removeItem(draftKey(userId)));
+  }, [userId]);
+
+  function discardDraft() {
+    clearDraft();
+    setForm(emptyForm());
+    setFiles([]);
+    setErrors({});
+    setStep(1);
+    setReached(1);
+    setLookupPieces(null);
+    setLookupPricing(null);
+    setRestoredAtStep(null);
+    setPhotoNotices([]);
+    setPublished(null);
   }
 
-  function removeFileAt(i) {
-    setFiles((prev) => prev.filter((_, idx) => idx !== i));
-  }
+  // ── Keep error messages honest ────────────────────────────────────────────
+  useEffect(() => {
+    setErrors((prev) => {
+      const fields = Object.keys(prev);
+      if (!fields.length) return prev;
+      const next = {};
+      for (const f of fields) {
+        const mode = prev[f] === 'photo_required' ? 'publish' : 'next';
+        const still = validateStep(FIELD_STEP[f], form, ctx, mode)[f];
+        if (still) next[f] = still;
+      }
+      const same = Object.keys(next).length === fields.length && fields.every((f) => next[f] === prev[f]);
+      return same ? prev : next;
+    });
+  }, [form, ctx]);
 
-  const nextStep = () => {
-    setError('');
-    if (step === 1) {
-      if (!title || !condition) {
-        setError(t('create_auction.error_title_condition_required'));
-        return;
-      }
-      if (isLego && !mainCategory) {
-        setError(t('create_auction.error_title_category_condition_required'));
-        return;
-      }
-      if (productType === 'tcg' && !game) {
-        setError(t('create_auction.error_select_game'));
-        return;
-      }
+  useEffect(() => {
+    if (errors.weightKg || errors.lengthCm || errors.widthCm || errors.heightCm) setDimsOpen(true);
+  }, [errors]);
+
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    headingRef.current?.focus({ preventScroll: true });
+    wizardTopRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }, [step, reduceMotion]);
+
+  useEffect(() => {
+    if (!focusReq) return;
+    const el = document.getElementById(`${ID_PREFIX}-${focusReq.field}`);
+    if (el) {
+      const target = el.getAttribute('role') === 'radiogroup' || el.getAttribute('role') === 'group'
+        ? el.querySelector('[aria-checked="true"]') || el.querySelector('button, input')
+        : el;
+      target?.focus();
     }
-    if (step === 2) {
-      if (!startingBid) {
-        setError(t('create_auction.error_starting_bid_required'));
-        return;
-      }
-      if (durationMode === 'custom' && !customEndDate) {
-        setError(t('create_auction.error_custom_end_date_required'));
-        return;
-      }
-    }
-    setStep(s => Math.min(s + 1, totalSteps));
+    setFocusReq(null);
+  }, [focusReq]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const set = (name) => (e) => patch({ [name]: e.target.value });
+  const err = (field) => (errors[field] ? t(`${NS}.ui.err.${errors[field]}`) : undefined);
+
+  const handleSetFound = (setData) => {
+    const next = {};
+    if (setData.name) next.title = setData.name;
+    if (setData.set_num) next.setNumber = setData.set_num;
+    if (setData.year) next.year = String(setData.year);
+    patch(next);
+    if (setData.num_parts) setLookupPieces(setData.num_parts);
+    if (setData.pricing) setLookupPricing(setData.pricing);
   };
-  
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+  const handleLookupClear = () => { setLookupPieces(null); setLookupPricing(null); };
 
-  async function submit(mode) {
-    setError('');
-    
-
-    if (durationMode === 'custom') {
-      /* Next step: block if tokens < 1 */
+  function addPhotos(list) {
+    const r = mergePhotos(files, list, MAX_PHOTOS);
+    setFiles(r.files);
+    const added = r.files.filter((f) => !files.includes(f));
+    if (added.length) setCropQueue((q) => [...q, ...added]);
+    setPhotoNotices([r.overflow ? 'limit' : null, r.notImage ? 'not_image' : null].filter(Boolean));
+  }
+  function movePhotoTo(from, to) {
+    setFiles((f) => movePhoto(f, from, to));
+  }
+  const openGuide = () => {
+    setGuideOpen(true);
+    if (!guideSeen) {
+      setGuideSeen(true);
+      safeStorage(() => window.localStorage.setItem('cardbrix_auction_guide_seen', '1'));
     }
+  };
+  const closeGuide = useCallback(() => setGuideOpen(false), []);
+  const finishCrop = useCallback((cropped) => {
+    const current = cropQueue[0];
+    if (cropped && current) setFiles((fs) => fs.map((f) => (f === current ? cropped : f)));
+    setCropQueue((q) => q.slice(1));
+  }, [cropQueue]);
+  function removePhoto(i) {
+    setCropQueue((q) => q.filter((f) => f !== files[i]));
+    setFiles((f) => removePhotoAt(f, i));
+    setPhotoNotices([]);
+  }
 
-    const p = parseFloat(String(startingBid).replace(',', '.'));
-    
-    if (mode === 'publish' && files.length === 0) {
-      setError(t('create_auction.error_photo_required'));
+  const jumpTo = (id) => {
+    const index = STEP_IDS.indexOf(id) + 1;
+    if (index < 1) return;
+    setStep(index);
+    setReached((r) => Math.max(r, index));
+  };
+  function fixBlocker(b) {
+    setErrors(validateAll(form, ctx, 'publish').errors);
+    jumpTo(b.step);
+    setFocusReq({ field: b.field });
+  }
+
+  const toggleCarrier = (id, selected) => patch({ shippingOptions: { ...form.shippingOptions, [id]: { ...form.shippingOptions[id], selected } } });
+
+  function goNext() {
+    const errs = validateStep(stepId, form, ctx, 'next');
+    setErrors((prev) => ({ ...removeStepErrors(prev, stepId), ...errs }));
+    if (Object.keys(errs).length) {
+      setFocusReq({ field: firstErrorField(stepId, errs) });
       return;
     }
+    const next = Math.min(step + 1, TOTAL_STEPS);
+    setStep(next);
+    setReached((r) => Math.max(r, next));
+  }
+
+  async function submit(mode) {
+    setServerError('');
+    const { errors: errs, firstStep } = validateAll(form, ctx, mode);
+    if (firstStep) {
+      const currentHasErrors = Object.keys(errs).some((f) => FIELD_STEP[f] === stepId);
+      const target = currentHasErrors ? stepId : firstStep;
+      const index = STEP_IDS.indexOf(target) + 1;
+      setErrors(errs);
+      setStep(index);
+      setReached((r) => Math.max(r, index));
+      setFocusReq({ field: firstErrorField(target, errs) });
+      return;
+    }
+    setErrors({});
 
     const fd = new FormData();
-    fd.append('title', title.trim());
-    fd.append('productType', productType);
-    if (productType === 'tcg' && game) fd.append('game', game);
-    if (isLego && setNumber) fd.append('setNumber', setNumber.trim());
-    fd.append('category', isLego ? mainCategory : 'sets');
-    if (category) fd.append('theme', category);
-    if (isLego && year) fd.append('year', year);
-
-    const conditionMap = { 'new': 'new', 'used': 'used', 'complete': 'complete', 'parts': 'parts' };
-    fd.append('type', 'auction'); // Auction specific
-    fd.append('is_auction', 'true'); // Flag for backend compatibility
-    fd.append('condition', productType === 'tcg' ? condition : (conditionMap[condition] || 'used'));
-
-    if (description) fd.append('description', description.trim());
-    
-    // Auction-specific fields — must match backend Joi schema keys exactly
-    if (!Number.isNaN(p) && p > 0) fd.append('auctionStart', String(p)); // starting bid
-    fd.append('status', mode === 'draft' ? 'draft' : 'active');
-
-    // No weight/dimensions UI here yet — the backend falls back to a
-    // per-category default (see src/services/productDimensions.js) when
-    // they're omitted, same as it used to hardcode packageSize='medium'.
-
-    // Handle end date — key must be 'auctionEnd' to match Joi schema
-    let auctionEndDate;
-    if (durationMode === 'standard') {
-      auctionEndDate = standardDateObj.toISOString();
-    } else {
-      auctionEndDate = new Date(customEndDate).toISOString();
-    }
-    fd.append('auctionEnd', auctionEndDate);
-
+    buildAuctionFields(form, mode, { isPro }).forEach(([name, value]) => fd.append(name, value));
     files.forEach((f) => fd.append('images', f));
 
     setBusy(true);
     try {
-      await apiPostForm(LISTING_ENDPOINTS.create, fd);
-      navigate('/my-listings', { replace: true });
+      const created = await apiPostForm(LISTING_ENDPOINTS.create, fd);
+      clearDraft();
+      if (mode === 'publish') {
+        const path = publishedPath(created);
+        setPublished({ path, listing: created?.id != null ? { ...previewListing, id: created.id } : previewListing });
+      } else {
+        navigate('/my-listings', { replace: true });
+      }
     } catch (e) {
-      setError(e.message || t('create_auction.error_generic'));
+      setServerError(e.message || t(`${NS}.error_generic`));
     } finally {
       setBusy(false);
     }
   }
 
-  const renderStepIcon = (index, current, IconComponent) => {
-    const isActive = index === current;
-    const isPast = index < current;
+  const StepIcon = STEP_ICONS[stepId];
+  const tcgGameLabel = (g) => g.name;
+  const conditionOptions = form.productType === 'tcg' ? TCG_CONDITIONS : ['new', 'used', 'complete', 'parts'];
+  const conditionLabelOf = (c) => (form.productType === 'tcg' ? t(`${NS}.condition_grade_${c}`) : t(`${NS}.condition_option_${c}`));
+
+  if (published) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', opacity: isActive || isPast ? 1 : 0.4 }}>
-        <div style={{ 
-          width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: isPast ? '#059669' : isActive ? '#bf9a2e' : '#44403c',
-          color: isActive || isPast ? '#fff' : '#a8a29e',
-          border: isActive ? '2px solid #fde68a' : 'none'
-        }}>
-          {isPast ? <CheckCircle size={20} /> : <IconComponent size={20} />}
+      <div className="lx-page min-h-[calc(100vh-4rem)]">
+        <div className="lx-bleed lx-grid pointer-events-none absolute inset-y-0 opacity-30" aria-hidden="true" />
+        <div className="pointer-events-none absolute left-1/2 top-16 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-pillar-auctions/15 blur-[130px]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-28 sm:px-6">
+          <Celebration listing={published.listing} path={published.path} onAnother={discardDraft} accent={ACCENT} ns={NS} />
         </div>
-        <span style={{ fontSize: '0.75rem', fontWeight: isActive ? 'bold' : 'normal', color: isActive ? '#fcd34d' : '#a8a29e' }}>
-          {[t('create_auction.step_label_info'), t('create_auction.step_label_auction_details'), t('create_auction.step_label_photos')][index - 1]}
-        </span>
       </div>
     );
-  };
+  }
 
   return (
-    <div className="page" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem', paddingTop: '6rem' }}>
-      
-      <div className="flex flex-wrap items-center justify-between gap-3" style={{ marginBottom: '2rem' }}>
-        <h1 className="text-2xl sm:text-3xl" style={{ fontWeight: '900', margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Gavel className="text-pillar-auctions" size={32} /> {t('create_auction.page_title')}
-        </h1>
-        <Link to="/my-listings" style={{
-          padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #57534e', color: '#d6d3d1', textDecoration: 'none', fontSize: '0.9rem', transition: 'all 0.2s'
-        }}>
-          {t('create_auction.cancel')}
-        </Link>
-      </div>
+    <div className="lx-page min-h-[calc(100vh-4rem)]">
+      <div className="lx-bleed lx-grid pointer-events-none absolute inset-y-0 opacity-30" aria-hidden="true" />
+      <div className="pointer-events-none absolute left-1/2 top-16 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-pillar-auctions/10 blur-[130px]" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-24 top-80 h-[380px] w-[380px] rounded-full bg-[#8b5cf6]/12 blur-[120px]" aria-hidden="true" />
 
-      {/* Progress Bar Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginBottom: '3rem', padding: '0 2rem' }}>
-        <div style={{ position: 'absolute', top: '20px', left: '15%', right: '15%', height: '2px', backgroundColor: '#44403c', zIndex: 0 }}>
-          <div style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%`, height: '100%', backgroundColor: '#059669', transition: 'width 0.3s ease' }} />
-        </div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(1, step, Edit)}</div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(2, step, Gavel)}</div>
-        <div style={{ zIndex: 1, position: 'relative' }}>{renderStepIcon(3, step, Camera)}</div>
-      </div>
+      <div className="relative mx-auto max-w-[1100px] px-4 pb-24 pt-24 sm:px-6">
+        {/* ── Hero ── */}
+        <motion.header
+          className="mb-8"
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-pillar-auctions/30 bg-pillar-auctions/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-pillar-auctions">
+              <Gavel size={13} aria-hidden="true" /> {t(`${NS}.ui.eyebrow_new`)}
+            </span>
+            <Link to="/my-listings" className="rounded-xl border border-white/15 px-3.5 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white">
+              {t(`${NS}.cancel`)}
+            </Link>
+          </div>
+          <h1 className="mt-4 text-[clamp(2rem,6.5vw,3.6rem)] font-black leading-[1] tracking-[-0.045em] text-white [text-shadow:0_0_60px_rgba(255,90,54,0.22)]">
+            {t(`${NS}.ui.hero_title_new`)}
+          </h1>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/60">
+            {t(`${NS}.ui.hero_sub_new`)}
+          </p>
+        </motion.header>
 
-      {error && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#450a0a', border: '1px solid #7f1d1d', borderRadius: '8px', color: '#fca5a5', fontWeight: '500' }}>
-          {error}
-        </div>
-      )}
-
-      {/* Form Wizard Container */}
-      <div style={{ backgroundColor: '#120f0a', padding: '2.5rem', borderRadius: '16px', border: '1px solid #292524', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-        
-        {/* STEP 1 */}
-        {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#bf9a2e', fontSize: '1.4rem' }}>{t('create_auction.step1_heading')}</h2>
-
-            {/* ── Tipo Prodotto ── */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('create_auction.product_type_label')}</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
-                {PRODUCT_TYPE_OPTIONS.map(pt => (
-                  <button
-                    key={pt.id}
-                    type="button"
-                    onClick={() => { setProductType(pt.id); setCondition(''); if (pt.id !== 'tcg') setGame(''); if (pt.id !== 'lego') { setMainCategory(''); setSetNumber(''); setYear(''); } if (pt.id !== 'tcg') setCategory(''); }}
-                    style={{
-                      padding: '1rem 0.5rem',
-                      borderRadius: '12px',
-                      border: '2px solid',
-                      borderColor: productType === pt.id ? '#bf9a2e' : '#44403c',
-                      backgroundColor: productType === pt.id ? '#78350f' : '#292524',
-                      color: productType === pt.id ? '#fff' : '#a8a29e',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.5rem' }}>{pt.icon}</span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{t(`create_auction.product_type_${pt.id}`)}</span>
-                  </button>
-                ))}
-              </div>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 space-y-5">
+            <div ref={wizardTopRef} className="scroll-mt-24 pb-1">
+              <Stepper steps={STEPS} current={step} reached={reached} onSelect={setStep} accent={ACCENT} ns={NS} />
             </div>
 
-            {/* ── Selezione Gioco (solo Carte Collezionabili) ── */}
-            {productType === 'tcg' && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('create_auction.select_game_label')}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
-                  {ANNUNCI_CARD_GAMES.map(g => (
-                    <button
-                      key={g.slug}
-                      type="button"
-                      onClick={() => setGame(g.slug)}
-                      style={{
-                        padding: '0.75rem 0.4rem',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: game === g.slug ? '#bf9a2e' : '#44403c',
-                        backgroundColor: game === g.slug ? '#78350f' : '#292524',
-                        color: game === g.slug ? '#fff' : '#a8a29e',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.3rem' }}>{g.emoji}</span>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', textAlign: 'center' }}>{g.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {stepId !== 'review' ? <PreviewBar listing={previewListing} percent={meter.percent} hint={meter.hint} accent={ACCENT} ns={NS} /> : null}
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{isLego ? t('create_auction.title_label_lego') : t('create_auction.title_label_other')}</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={isLego ? t('create_auction.title_placeholder_lego') : t('create_auction.title_placeholder_other')}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-            </div>
+            {lookupPricing && lookupPricing.marketValue != null && step > 1 ? (
+              <MarketValueHint pricing={lookupPricing} condition={form.condition} setNumber={form.setNumber} accent={ACCENT} ns={NS} />
+            ) : null}
 
-            {/* ── Rebrickable Set Lookup (solo LEGO) ── */}
-            {isLego && (
-              <div style={{ padding: '1rem 1.25rem', backgroundColor: 'rgba(255,90,54,0.06)', border: '1px solid rgba(255,90,54,0.2)', borderRadius: '12px' }}>
-                <SetLookupInput
-                  onSetFound={handleSetFound}
-                  onClear={handleLookupClear}
-                  condition={condition}
-                  pillar="auctions"
-                />
-              </div>
-            )}
-
-            {isLego && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.set_number_label')}</label>
-                  <input type="text" value={setNumber} onChange={(e) => setSetNumber(e.target.value)} placeholder={t('create_auction.set_number_placeholder')}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
-                </div>
-                <div>
-                  {lookupPieces != null && (
-                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '0.25rem' }}>{t('create_auction.pieces_total_label')}</span>
-                      <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#bf9a2e' }}>{lookupPieces.toLocaleString()}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.condition_label')}</label>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                <option value="">{t('create_auction.select_placeholder')}</option>
-                {productType === 'tcg' ? (
-                  TCG_CONDITIONS.map((c) => <option key={c} value={c}>{t(`create_auction.condition_grade_${c}`)}</option>)
-                ) : (
-                  <>
-                    <option value="new">{t('create_auction.condition_option_new')}</option>
-                    <option value="used">{t('create_auction.condition_option_used')}</option>
-                    <option value="complete">{t('create_auction.condition_option_complete')}</option>
-                    <option value="parts">{t('create_auction.condition_option_parts')}</option>
-                  </>
-                )}
-              </select>
-            </div>
-
-            {isLego && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem', fontWeight: 'bold' }}>{t('create_auction.main_category_label')}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', marginBottom: '1rem' }}>
-                  {MAIN_CATEGORY_OPTIONS.map(cat => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setMainCategory(cat.id)}
-                      style={{
-                        padding: '1rem 0.5rem',
-                        borderRadius: '12px',
-                        border: '2px solid',
-                        borderColor: mainCategory === cat.id ? '#bf9a2e' : '#44403c',
-                        backgroundColor: mainCategory === cat.id ? '#78350f' : '#292524',
-                        color: mainCategory === cat.id ? '#fff' : '#a8a29e',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{t(`create_auction.category_${cat.id}`)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {isLego ? (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.theme_label')}</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }}>
-                  {localizedCategories.map((c) => <option key={c.value === '' ? '_none' : c.value} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-            ) : productType === 'funko' ? (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.series_franchise_label')}</label>
-                <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder={t('create_auction.series_franchise_placeholder')}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '1rem' }} />
+            {restoredAtStep != null ? (
+              <div role="status" className="flex flex-col gap-2.5 rounded-2xl border border-pillar-auctions/25 bg-pillar-auctions/[0.06] px-4 py-3 text-sm sm:flex-row sm:items-center sm:gap-4">
+                <p className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 shrink-0 text-pillar-auctions" aria-hidden="true" />
+                  <span>
+                    <span className="font-semibold text-white">{t(`${NS}.ui.draft.restored`)}</span>{' '}
+                    <span className="text-white/55">{t(`${NS}.ui.draft.photos_note`)}</span>
+                  </span>
+                </p>
+                <button type="button" onClick={discardDraft} className="inline-flex items-center gap-1.5 self-end whitespace-nowrap text-xs font-bold text-pillar-auctions underline-offset-4 hover:underline sm:ml-auto sm:self-auto">
+                  <RotateCcw size={13} aria-hidden="true" /> {t(`${NS}.ui.draft.discard`)}
+                </button>
               </div>
             ) : null}
-          </div>
-        )}
 
-        {/* STEP 2 */}
-        {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#bf9a2e', fontSize: '1.4rem' }}>{t('create_auction.step2_heading')}</h2>
+            {serverError ? (
+              <div role="alert" className="rounded-2xl border border-red-500/40 bg-red-950/60 px-4 py-3 text-sm font-semibold text-red-200">
+                {serverError}
+              </div>
+            ) : null}
 
-            {/* Durata Asta */}
-            <div className="bg-stone-800/50 p-4 rounded-xl border border-stone-700">
-              <label style={{ display: 'block', marginBottom: '1rem', color: '#fff', fontSize: '1rem', fontWeight: 'bold' }}>{t('create_auction.duration_label')}</label>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Standard Mode */}
-                <div
-                  onClick={() => setDurationMode('standard')}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${durationMode === 'standard' ? 'border-emerald-500 bg-emerald-900/20' : 'border-stone-700 bg-stone-800'}`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-bold text-white flex items-center gap-2">
-                      <Clock size={16} className={durationMode === 'standard' ? 'text-emerald-400' : 'text-stone-400'} />
-                      {t('create_auction.duration_standard_title')}
-                    </div>
-                    <div className="w-4 h-4 rounded-full border-2 border-stone-500 flex items-center justify-center">
-                      {durationMode === 'standard' && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
-                    </div>
-                  </div>
-                  <p className="text-xs text-stone-400 mb-3 leading-relaxed">
-                    {t('create_auction.duration_standard_desc')}<br/>
-                    <strong className="text-stone-300">{standardDateFormatted}</strong>
-                  </p>
-                  <div className="inline-block bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">
-                    {t('create_auction.promo_badge')}
-                  </div>
+            {/* ── Wizard card ── */}
+            <section className="rounded-[2rem] border border-white/10 bg-[#0d0c12]/90 p-5 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:p-8">
+              <div className="mb-6 flex items-start gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pillar-auctions/12 text-pillar-auctions">
+                  <StepIcon size={22} aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-black tracking-tight text-white focus:outline-none">
+                    {t(`${NS}.ui.step_title.${stepId}`)}
+                  </h2>
+                  <p className="mt-1 text-sm text-white/55">{t(`${NS}.ui.step_sub.${stepId}`)}</p>
                 </div>
+              </div>
 
-                {/* Custom Mode */}
-                <div
-                  onClick={() => setDurationMode('custom')}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${durationMode === 'custom' ? 'border-pillar-auctions bg-pillar-auctions/10' : 'border-stone-700 bg-stone-800'}`}
-                >
-                   <div className="flex justify-between items-start mb-2">
-                    <div className="font-bold text-white flex items-center gap-2">
-                      <Edit size={16} className={durationMode === 'custom' ? 'text-pillar-auctions' : 'text-stone-400'} />
-                      {t('create_auction.duration_custom_title')}
-                    </div>
-                    <div className="w-4 h-4 rounded-full border-2 border-stone-500 flex items-center justify-center">
-                      {durationMode === 'custom' && <div className="w-2 h-2 rounded-full bg-pillar-auctions" />}
-                    </div>
-                  </div>
-                  <p className="text-xs text-stone-400 mb-3 leading-relaxed">
-                    {t('create_auction.duration_custom_desc')}
-                  </p>
-                  <div className="inline-block bg-pillar-auctions/20 text-pillar-auctions text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider mb-3 border border-pillar-auctions/30">
-                    {t('create_auction.cost_token_badge')}
-                  </div>
+              <motion.div
+                key={stepId}
+                className="space-y-6"
+                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* STEP 1 — what */}
+                {stepId === 'what' && (
+                  <>
+                    <FieldGroup id={`${ID_PREFIX}-productType`} label={noStar(t(`${NS}.product_type_label`))} accent={ACCENT} ns={NS}>
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {PRODUCT_TYPE_OPTIONS.map((pt) => (
+                          <ChoiceTile
+                            key={pt.id}
+                            accent={ACCENT}
+                            icon={pt.icon}
+                            label={t(`${NS}.product_type_${pt.id}`)}
+                            selected={form.productType === pt.id}
+                            onClick={() => setForm((f) => changeProductType(f, pt.id))}
+                          />
+                        ))}
+                      </div>
+                    </FieldGroup>
 
-                  {durationMode === 'custom' && (
-                    <div className="mt-2">
+                    {form.productType === 'tcg' && (
+                      <FieldGroup id={`${ID_PREFIX}-game`} label={noStar(t(`${NS}.select_game_label`))} required error={err('game')} accent={ACCENT} ns={NS}>
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                          {ANNUNCI_CARD_GAMES.map((g) => (
+                            <ChoiceTile
+                              key={g.slug}
+                              compact
+                              accent={ACCENT}
+                              icon={g.emoji}
+                              label={tcgGameLabel(g)}
+                              selected={form.game === g.slug}
+                              onClick={() => setForm((f) => selectGame(f, g.slug, g.name))}
+                            />
+                          ))}
+                        </div>
+                      </FieldGroup>
+                    )}
+
+                    {form.productType === 'tcg' && hasCatalog(form.game) && (
+                      <CardCatalogPicker key={form.game} form={form} patch={patch} game={form.game} accent={ACCENT} ns={NS} idPrefix={ID_PREFIX} />
+                    )}
+
+                    {isLego && (
+                      <div className="rounded-2xl border border-pillar-auctions/15 bg-pillar-auctions/[0.04] p-4">
+                        <SetLookupInput onSetFound={handleSetFound} onClear={handleLookupClear} condition={form.condition} pillar="auctions" />
+                      </div>
+                    )}
+
+                    <Field id={`${ID_PREFIX}-title`} label={noStar(isLego ? t(`${NS}.title_label_lego`) : t(`${NS}.title_label_other`))} required error={err('title')} hint={t(`${NS}.ui.title_hint`)} accent={ACCENT} ns={NS}>
                       <input
-                        type="datetime-local"
-                        value={customEndDate}
-                        onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full bg-stone-900 border border-pillar-auctions/50 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-pillar-auctions"
-                        min={new Date().toISOString().slice(0, 16)}
+                        id={`${ID_PREFIX}-title`}
+                        type="text"
+                        value={form.title}
+                        onChange={set('title')}
+                        maxLength={300}
+                        autoComplete="off"
+                        aria-invalid={errors.title ? true : undefined}
+                        aria-describedby={errors.title ? `${ID_PREFIX}-title-err` : `${ID_PREFIX}-title-hint`}
+                        placeholder={isLego ? t(`${NS}.title_placeholder_lego`) : t(`${NS}.title_placeholder_other`)}
+                        className={inputCls(!!errors.title, ACCENT)}
                       />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                    </Field>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.starting_bid_label')}</label>
-              <input type="number" step="0.01" value={startingBid} onChange={(e) => setStartingBid(e.target.value)} placeholder={t('create_auction.starting_bid_placeholder')}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #bf9a2e', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }} />
-              <p className="text-xs text-stone-400 mt-1">{t('create_auction.starting_bid_note')}</p>
-            </div>
+                    {isLego && (
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field id={`${ID_PREFIX}-setNumber`} label={t(`${NS}.set_number_label`)} optional error={err('setNumber')} accent={ACCENT} ns={NS}>
+                          <input
+                            id={`${ID_PREFIX}-setNumber`}
+                            type="text"
+                            value={form.setNumber}
+                            onChange={set('setNumber')}
+                            aria-invalid={errors.setNumber ? true : undefined}
+                            placeholder={t(`${NS}.set_number_placeholder`)}
+                            className={inputCls(!!errors.setNumber, ACCENT)}
+                          />
+                        </Field>
+                        {lookupPieces != null && (
+                          <div className="flex flex-col justify-end pb-1">
+                            <span className="text-xs text-white/45">{t(`${NS}.pieces_total_label`)}</span>
+                            <span className="text-2xl font-black text-pillar-auctions">{lookupPieces.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#d6d3d1', fontSize: '0.9rem' }}>{t('create_auction.description_label')}</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('create_auction.description_placeholder')} rows={4}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #44403c', color: '#fff', fontSize: '0.95rem', resize: 'vertical' }} />
-            </div>
+                    {isLego && (
+                      <FieldGroup id={`${ID_PREFIX}-mainCategory`} label={noStar(t(`${NS}.main_category_label`))} required error={err('mainCategory')} accent={ACCENT} ns={NS}>
+                        <div className="grid grid-cols-3 gap-2.5">
+                          {MAIN_CATEGORY_OPTIONS.map((cat) => (
+                            <ChoiceTile
+                              key={cat.id}
+                              accent={ACCENT}
+                              icon={cat.icon}
+                              label={t(`${NS}.category_${cat.id}`)}
+                              selected={form.mainCategory === cat.id}
+                              onClick={() => patch({ mainCategory: cat.id })}
+                            />
+                          ))}
+                        </div>
+                      </FieldGroup>
+                    )}
 
-          </div>
-        )}
+                    {(isLego || form.productType === 'funko') && (
+                      <div className={`grid grid-cols-1 gap-4 ${isLego ? 'sm:grid-cols-2' : ''}`}>
+                        {isLego ? (
+                          <Field id={`${ID_PREFIX}-category`} label={t(`${NS}.theme_label`).replace(/\s*\(.*\)\s*$/, '')} optional accent={ACCENT} ns={NS}>
+                            <select id={`${ID_PREFIX}-category`} value={form.category} onChange={set('category')} className={inputCls(false, ACCENT)}>
+                              {localizedCategories.map((c) => <option key={c.value === '' ? '_none' : c.value} value={c.value}>{c.label}</option>)}
+                            </select>
+                          </Field>
+                        ) : (
+                          <Field id={`${ID_PREFIX}-category`} label={t(`${NS}.series_franchise_label`).replace(/\s*\(.*\)\s*$/, '')} optional accent={ACCENT} ns={NS}>
+                            <input id={`${ID_PREFIX}-category`} type="text" value={form.category} onChange={set('category')} placeholder={t(`${NS}.series_franchise_placeholder`)} className={inputCls(false, ACCENT)} />
+                          </Field>
+                        )}
+                        {isLego && (
+                          <Field id={`${ID_PREFIX}-year`} label={t(`${NS}.year_label`)} optional error={err('year')} accent={ACCENT} ns={NS}>
+                            <input
+                              id={`${ID_PREFIX}-year`}
+                              type="number"
+                              inputMode="numeric"
+                              value={form.year}
+                              onChange={set('year')}
+                              aria-invalid={errors.year ? true : undefined}
+                              placeholder={t(`${NS}.year_placeholder`)}
+                              className={inputCls(!!errors.year, ACCENT)}
+                            />
+                          </Field>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+                {cropQueue.length > 0 && (
+                  <CropEditor
+                    key={`${cropQueue[0].name}|${cropQueue[0].size}|${cropQueue[0].lastModified}`}
+                    file={cropQueue[0]}
+                    imageOrientation={form.imageOrientation || defaultImageOrientation(form.productType)}
+                    onDone={finishCrop}
+                    accent={ACCENT}
+                    ns={NS}
+                  />
+                )}
 
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-            <h2 style={{ margin: '0 0 0.5rem 0', color: '#bf9a2e', fontSize: '1.4rem' }}>{t('create_auction.step3_heading')}</h2>
+                {/* STEP 2 — photos */}
+                {stepId === 'photos' && (
+                  <>
+                  <OrientationPicker
+                    value={form.imageOrientation || defaultImageOrientation(form.productType)}
+                    onChange={(imageOrientation) => patch({ imageOrientation })}
+                    accent={ACCENT}
+                    ns={NS}
+                  />
+                  {guidedCards && <CardShotGuide photoCount={files.length} shots={shots} onAdd={addPhotos} accent={ACCENT} ns={NS} />}
+                  <PhotoSlots
+                    previews={previews}
+                    existingImages={[]}
+                    editing={false}
+                    error={err('photos')}
+                    notices={photoNotices}
+                    max={MAX_PHOTOS}
+                    shots={shots}
+                    quality={photoQuality}
+                    guideSeen={guideSeen}
+                    onAdd={addPhotos}
+                    onRemove={removePhoto}
+                    onMove={movePhotoTo}
+                    onCrop={(i) => setCropQueue([files[i]])}
+                    onOpenGuide={openGuide}
+                    accent={ACCENT}
+                    ns={NS}
+                    idPrefix={ID_PREFIX}
+                  />
+                  </>
+                )}
 
-            <div style={{ border: '2px dashed #57534e', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', backgroundColor: '#292524', position: 'relative' }}>
-              <Camera size={40} color="#a8a29e" style={{ margin: '0 auto 1rem auto' }} />
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#f8fafc', fontSize: '1.1rem', fontWeight: '600' }}>{t('create_auction.upload_dropzone_title')}</label>
-              <p style={{ color: '#a8a29e', fontSize: '0.85rem', marginBottom: '1.5rem' }}>{t('create_auction.upload_dropzone_desc')}</p>
+                {/* STEP 5 — review */}
+                {stepId === 'review' && (
+                  <ReviewStep summary={summary} blockers={blockers} hint={meter.hint} onEdit={jumpTo} onFix={fixBlocker} accent={ACCENT} ns={NS} />
+                )}
 
-              <input type="file" id="file-upload" accept="image/*" multiple onChange={onFilesChange} style={{ display: 'none' }} />
-              <button type="button" onClick={() => document.getElementById('file-upload').click()}
-                style={{ backgroundColor: '#d97706', color: '#fff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', transition: 'background-color 0.2s' }}
-                onMouseOver={e => e.currentTarget.style.backgroundColor = '#b45309'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#d97706'}>
-                 {t('create_auction.upload_btn_browse')}
+                {/* STEP 3 — condition */}
+                {stepId === 'condition' && (
+                  <>
+                    <FieldGroup id={`${ID_PREFIX}-condition`} label={t(`${NS}.ui.condition_label`)} required error={err('condition')} accent={ACCENT} ns={NS}>
+                      <div className={`grid grid-cols-2 gap-2.5 ${form.productType === 'tcg' ? 'sm:grid-cols-3' : 'sm:grid-cols-4'}`}>
+                        {conditionOptions.map((c) => (
+                          <ChoiceTile
+                            key={c}
+                            compact
+                            accent={ACCENT}
+                            icon={CONDITION_ICONS[c]}
+                            label={conditionLabelOf(c)}
+                            selected={form.condition === c}
+                            onClick={() => patch({ condition: c })}
+                          />
+                        ))}
+                      </div>
+                    </FieldGroup>
+
+                    {form.productType === 'tcg' && <CardDetails form={form} patch={patch} err={err} accent={ACCENT} ns={NS} idPrefix={ID_PREFIX} />}
+
+                    {isLego && (
+                      <>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <Field id={`${ID_PREFIX}-boxCondition`} label={t(`${NS}.box_condition_label`)} optional accent={ACCENT} ns={NS}>
+                            <select id={`${ID_PREFIX}-boxCondition`} value={form.boxCondition} onChange={set('boxCondition')} className={inputCls(false, ACCENT)}>
+                              <option value="">{t(`${NS}.select_placeholder`)}</option>
+                              <option value="Mint (Perfetta)">{t(`${NS}.box_condition_mint`)}</option>
+                              <option value="Damaged (Danneggiata)">{t(`${NS}.box_condition_damaged`)}</option>
+                              <option value="None (Assente)">{t(`${NS}.box_condition_none`)}</option>
+                            </select>
+                          </Field>
+                          <Field id={`${ID_PREFIX}-instructions`} label={t(`${NS}.instructions_label`)} optional accent={ACCENT} ns={NS}>
+                            <select id={`${ID_PREFIX}-instructions`} value={form.instructions} onChange={set('instructions')} className={inputCls(false, ACCENT)}>
+                              <option value="">{t(`${NS}.select_placeholder`)}</option>
+                              <option value="Yes (Presenti)">{t(`${NS}.instructions_present`)}</option>
+                              <option value="No (Assenti)">{t(`${NS}.instructions_absent`)}</option>
+                              <option value="Solo PDF">{t(`${NS}.instructions_pdf_only`)}</option>
+                            </select>
+                          </Field>
+                        </div>
+
+                        <label className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-colors ${form.isComplete ? 'border-pillar-auctions/50 bg-pillar-auctions/[0.07]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}>
+                          <input type="checkbox" checked={form.isComplete} onChange={(e) => patch({ isComplete: e.target.checked })} className="peer sr-only" />
+                          <span className="relative h-6 w-11 shrink-0 rounded-full bg-white/15 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-pillar-auctions peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-pillar-auctions/60 motion-reduce:after:transition-none" aria-hidden="true" />
+                          <span>
+                            <span className="block font-bold text-white">{t(`${NS}.complete_set_label`)}</span>
+                            <span className="text-[13px] text-white/55">{t(`${NS}.complete_set_desc`)}</span>
+                          </span>
+                        </label>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* STEP 4 — starting bid, duration, shipping, details */}
+                {stepId === 'price' && (
+                  <>
+                    <Field id={`${ID_PREFIX}-startingBid`} label={noStar(t(`${NS}.starting_bid_label`))} required error={err('startingBid')} hint={t(`${NS}.starting_bid_note`)} accent={ACCENT} ns={NS}>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-pillar-auctions" aria-hidden="true">€</span>
+                        <input
+                          id={`${ID_PREFIX}-startingBid`}
+                          type="text"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          value={form.startingBid}
+                          onChange={(e) => patch({ startingBid: e.target.value.replace(/[^\d.,]/g, '') })}
+                          aria-invalid={errors.startingBid ? true : undefined}
+                          aria-describedby={errors.startingBid ? `${ID_PREFIX}-startingBid-err` : `${ID_PREFIX}-startingBid-hint`}
+                          placeholder={t(`${NS}.starting_bid_placeholder`)}
+                          className={`${inputCls(!!errors.startingBid, ACCENT)} py-3.5 pl-11 text-2xl font-black`}
+                        />
+                      </div>
+                    </Field>
+
+                    <FieldGroup id={`${ID_PREFIX}-durationMode`} label={t(`${NS}.duration_label`)} required error={err('customEndDate')} accent={ACCENT} ns={NS}>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={form.durationMode === 'standard'}
+                          onClick={() => patch({ durationMode: 'standard' })}
+                          className={`rounded-2xl border p-4 text-left transition-all duration-200 ${form.durationMode === 'standard' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-sm font-bold text-white">
+                              <Clock size={16} className={form.durationMode === 'standard' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_standard_title`)}
+                            </span>
+                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'standard' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
+                              {form.durationMode === 'standard' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
+                            </span>
+                          </div>
+                          <p className="text-[13px] leading-relaxed text-white/55">
+                            {t(`${NS}.duration_standard_desc`)}<br /><strong className="text-white/80">{standardDateFormatted}</strong>
+                          </p>
+                          <span className="mt-3 inline-block rounded bg-pillar-auctions/15 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-pillar-auctions">{t(`${NS}.promo_badge`)}</span>
+                        </button>
+
+                        <div
+                          role="radio"
+                          aria-checked={form.durationMode === 'custom'}
+                          tabIndex={0}
+                          onClick={() => patch({ durationMode: 'custom' })}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); patch({ durationMode: 'custom' }); } }}
+                          className={`cursor-pointer rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pillar-auctions/50 ${form.durationMode === 'custom' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-sm font-bold text-white">
+                              <Calendar size={16} className={form.durationMode === 'custom' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_custom_title`)}
+                            </span>
+                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'custom' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
+                              {form.durationMode === 'custom' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
+                            </span>
+                          </div>
+                          <p className="text-[13px] leading-relaxed text-white/55">{t(`${NS}.duration_custom_desc`)}</p>
+                          {form.durationMode === 'custom' ? (
+                            <input
+                              id={`${ID_PREFIX}-customEndDate`}
+                              type="datetime-local"
+                              value={form.customEndDate}
+                              onChange={(e) => patch({ customEndDate: e.target.value })}
+                              onClick={(e) => e.stopPropagation()}
+                              min={new Date().toISOString().slice(0, 16)}
+                              aria-invalid={errors.customEndDate ? true : undefined}
+                              className={`${inputCls(!!errors.customEndDate, ACCENT)} mt-3`}
+                            />
+                          ) : null}
+                        </div>
+                      </div>
+                    </FieldGroup>
+
+                    <FieldGroup id={`${ID_PREFIX}-shipping`} role="group" label={t(`${NS}.ui.shipping_label`)} required error={err('shipping')} hint={t(`${NS}.shipping_cost_note`)} accent={ACCENT} ns={NS}>
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {CARRIERS.map((c) => {
+                          const active = !!form.shippingOptions[c.id]?.selected;
+                          return (
+                            <label key={c.id} className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all duration-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pillar-auctions/50 ${active ? 'border-pillar-auctions/60 bg-pillar-auctions/[0.07]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}>
+                              <input type="checkbox" checked={active} onChange={(e) => toggleCarrier(c.id, e.target.checked)} className="peer sr-only" />
+                              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${active ? 'border-pillar-auctions bg-pillar-auctions text-white' : 'border-white/25'}`} aria-hidden="true">
+                                {active ? <Check size={13} strokeWidth={3.5} /> : null}
+                              </span>
+                              <img src={c.icon} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-6 w-14 shrink-0 rounded bg-white object-contain p-0.5" />
+                              <span className={`text-sm font-bold ${active ? 'text-white' : 'text-white/65'}`}>{c.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </FieldGroup>
+
+                    {form.productType !== 'tcg' && (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <button
+                          type="button"
+                          onClick={() => setDimsOpen((v) => !v)}
+                          aria-expanded={dimsOpen}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pillar-auctions/50"
+                        >
+                          <span className="flex items-center gap-2 text-sm font-bold text-white/80">
+                            {t(`${NS}.ui.dims_toggle`)}
+                            <span className="text-[11px] font-medium text-white/35">{t(`${NS}.ui.optional`)}</span>
+                          </span>
+                          <ChevronDown size={18} className={`text-white/50 transition-transform duration-300 motion-reduce:transition-none ${dimsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                        </button>
+                        {dimsOpen && (
+                          <div className="space-y-4 px-4 pb-4">
+                            <Field id={`${ID_PREFIX}-weightKg`} label={t(`${NS}.weight_kg_label`)} error={err('weightKg')} accent={ACCENT} ns={NS}>
+                              <input id={`${ID_PREFIX}-weightKg`} type="number" inputMode="decimal" step="0.01" min="0" value={form.weightKg} onChange={set('weightKg')} aria-invalid={errors.weightKg ? true : undefined} placeholder={t(`${NS}.weight_kg_placeholder`)} className={inputCls(!!errors.weightKg, ACCENT)} />
+                            </Field>
+                            <div>
+                              <p className="mb-1.5 text-[13px] font-bold text-white/80">{t(`${NS}.dimensions_cm_label`)}</p>
+                              <div className="grid grid-cols-3 gap-2.5">
+                                {[['lengthCm', 'length_placeholder'], ['widthCm', 'width_placeholder'], ['heightCm', 'height_placeholder']].map(([name, ph]) => (
+                                  <div key={name}>
+                                    <input id={`${ID_PREFIX}-${name}`} type="number" inputMode="numeric" step="1" min="0" value={form[name]} onChange={set(name)} aria-label={t(`${NS}.${ph}`)} aria-invalid={errors[name] ? true : undefined} placeholder={t(`${NS}.${ph}`)} className={inputCls(!!errors[name], ACCENT)} />
+                                    {errors[name] ? <p role="alert" className="mt-1 text-xs font-semibold text-red-300">{err(name)}</p> : null}
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="mt-2 text-xs text-white/45">{t(`${NS}.dimensions_note`)}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <Field id={`${ID_PREFIX}-description`} label={noStar(t(`${NS}.description_label`))} optional error={err('description')} accent={ACCENT} ns={NS}>
+                      <textarea
+                        id={`${ID_PREFIX}-description`}
+                        rows={4}
+                        value={form.description}
+                        onChange={set('description')}
+                        aria-invalid={errors.description ? true : undefined}
+                        placeholder={t(`${NS}.description_placeholder`)}
+                        className={`${inputCls(!!errors.description, ACCENT)} resize-y`}
+                      />
+                    </Field>
+
+                    {isPro && (
+                      <div className="rounded-2xl border border-indigo-400/30 bg-indigo-950/40 p-4">
+                        <label htmlFor={`${ID_PREFIX}-proNotes`} className="mb-2 flex items-center gap-2 text-sm font-bold text-indigo-200">
+                          <span className="rounded bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black text-black">PRO</span>
+                          {t(`${NS}.pro_notes_label`)}
+                        </label>
+                        <textarea id={`${ID_PREFIX}-proNotes`} rows={2} value={form.proNotes} onChange={set('proNotes')} placeholder={t(`${NS}.pro_notes_placeholder`)} className={`${inputCls(!!errors.proNotes, ACCENT)} resize-y`} />
+                        {errors.proNotes ? <p role="alert" className="mt-1.5 text-xs font-semibold text-red-300">{err('proNotes')}</p> : null}
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            </section>
+
+            {/* ── Navigation ── */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={() => setStep((s) => Math.max(s - 1, 1))}
+                disabled={busy}
+                className={`order-last inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-5 py-3.5 text-sm font-bold text-white/80 transition-colors hover:border-white/30 hover:text-white sm:order-first ${step === 1 ? 'invisible' : ''}`}
+              >
+                <ChevronLeft size={18} aria-hidden="true" /> {t(`${NS}.back_btn`)}
               </button>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={() => submit('draft')}
+                  disabled={busy}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-5 py-3.5 text-sm font-bold text-white/85 transition-colors hover:border-white/30 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Save size={17} aria-hidden="true" /> {t(`${NS}.save_draft_btn`)}
+                </button>
+
+                {step < TOTAL_STEPS ? (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-pillar-auctions px-7 py-3.5 text-[15px] font-black text-white shadow-[0_10px_30px_-10px_rgba(255,90,54,0.6)] transition-transform hover:-translate-y-0.5"
+                  >
+                    {step === TOTAL_STEPS - 1 ? t(`${NS}.ui.review_btn`) : t(`${NS}.next_btn`)} <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => submit('publish')}
+                    disabled={busy}
+                    className="lx-shine relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 px-7 py-3.5 text-[15px] font-black text-[#100d07] shadow-[0_10px_30px_-8px_rgba(212,175,55,0.55)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {busy ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : null}
+                    {busy ? t(`${NS}.publishing`) : t(`${NS}.create_auction_btn`)}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {previews.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4" style={{ marginTop: '1rem' }}>
-                {previews.map((p, i) => (
-                  <div key={p.url} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: i === 0 ? '3px solid #bf9a2e' : '1px solid #44403c' }}>
-                    {i === 0 && <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(191,154,46,0.9)', color: '#000', fontSize: '0.6rem', fontWeight: 'bold', textAlign: 'center', padding: '0.1rem 0' }}>{t('create_auction.cover_badge')}</span>}
-                    <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => removeFileAt(i)} style={{ position: 'absolute', right: '4px', top: '4px', backgroundColor: '#dc2626', color: '#fff', border: 'none', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', cursor: 'pointer' }}>×</button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <p aria-live="polite" className="flex h-5 items-center justify-end gap-1.5 text-xs font-medium text-white/40">
+              {savedFlash ? <><Check size={13} className="text-pillar-auctions" aria-hidden="true" /> {t(`${NS}.ui.draft.saved`)}</> : null}
+            </p>
           </div>
-        )}
 
-      </div>
-
-      {/* Navigation Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8">
-        <button type="button" onClick={prevStep} disabled={step === 1 || busy} className="w-full sm:w-auto justify-center" style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', borderRadius: '8px', backgroundColor: 'transparent', border: '1px solid #57534e', color: '#e7e5e4', cursor: step === 1 ? 'not-allowed' : 'pointer', opacity: step === 1 ? 0 : 1
-        }}>
-          <ChevronLeft size={18} /> {t('create_auction.back_btn')}
-        </button>
-
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          {step === totalSteps && (
-            <button type="button" onClick={() => submit('draft')} disabled={busy} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 1.5rem', borderRadius: '8px', backgroundColor: '#292524', border: '1px solid #78716c', color: '#d6d3d1', cursor: busy ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
-            }}>
-              <Save size={18} /> {t('create_auction.save_draft_btn')}
-            </button>
-          )}
-
-          {step < totalSteps ? (
-            <button type="button" onClick={nextStep} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#bf9a2e', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(191,154,46, 0.3)'
-            }}>
-              {t('create_auction.next_btn')} <ChevronRight size={18} />
-            </button>
-          ) : (
-            <button type="button" onClick={() => submit('publish')} disabled={busy} className="w-full sm:w-auto justify-center" style={{
-              padding: '0.8rem 2rem', borderRadius: '8px', backgroundColor: '#10b981', border: 'none', color: '#fff', fontWeight: 'bold', cursor: busy ? 'not-allowed' : 'pointer', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)', display: 'flex', alignItems: 'center'
-            }}>
-              {busy ? t('create_auction.publishing') : t('create_auction.create_auction_btn')}
-            </button>
-          )}
+          <PreviewPanel listing={previewListing} percent={meter.percent} hint={meter.hint} accent={ACCENT} ns={NS} />
         </div>
       </div>
 
+      <PhotoGuide open={guideOpen} onClose={closeGuide} shots={shots} accent={ACCENT} ns={NS} idPrefix={ID_PREFIX} />
     </div>
   );
 }

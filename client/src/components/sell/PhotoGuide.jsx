@@ -10,13 +10,19 @@ const TIP_ICONS = { light: Sun, noflash: ZapOff, background: Square, frame: Fram
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+const ACCENT = {
+  lime: { soft: 'bg-[#c6ff3d]/12 text-[#c6ff3d]', text: 'text-[#c6ff3d]', ring: 'focus-visible:ring-[#c6ff3d]/60', soft2: 'bg-[#c6ff3d]/10 text-[#c6ff3d]', badge: 'bg-[#c6ff3d] text-[#10140a]', cta: 'bg-[#c6ff3d] text-[#10140a] shadow-[0_10px_30px_-10px_rgba(198,255,61,0.6)]' },
+  orange: { soft: 'bg-pillar-auctions/12 text-pillar-auctions', text: 'text-pillar-auctions', ring: 'focus-visible:ring-pillar-auctions/60', soft2: 'bg-pillar-auctions/10 text-pillar-auctions', badge: 'bg-pillar-auctions text-white', cta: 'bg-pillar-auctions text-white shadow-[0_10px_30px_-10px_rgba(255,90,54,0.6)]' },
+};
+
 /**
  * "Come fare la foto": a bottom sheet on phones, a centred card on larger screens. Explains the shots for
  * the current category (the same ones the photo tiles suggest) and seven rules that make any photo better.
  * Closes with Escape, the backdrop, the X or the final button; focus goes in and comes back to the chip.
  */
-export default function PhotoGuide({ open, onClose, shots }) {
+export default function PhotoGuide({ open, onClose, shots, accent = 'lime', ns = 'sell', idPrefix = 'sell' }) {
   const { t } = useTranslation();
+  const a = ACCENT[accent] || ACCENT.lime;
   const reduceMotion = useReducedMotion();
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
@@ -63,12 +69,12 @@ export default function PhotoGuide({ open, onClose, shots }) {
           exit={{ opacity: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.2 }}
         >
-          <button type="button" tabIndex={-1} aria-label={t('sell.ui.guide.close')} onClick={onClose} className="absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm" />
+          <button type="button" tabIndex={-1} aria-label={t(`${ns}.ui.guide.close`)} onClick={onClose} className="absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm" />
           <motion.div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="sell-guide-title"
+            aria-labelledby={`${idPrefix}-guide-title`}
             className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[2rem] border border-white/10 bg-[#0d0c12] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.95)] md:rounded-[2rem]"
             initial={{ y: reduceMotion ? 0 : '100%' }}
             animate={{ y: 0 }}
@@ -76,71 +82,71 @@ export default function PhotoGuide({ open, onClose, shots }) {
             transition={slide}
           >
             <header className="flex items-start gap-4 border-b border-white/10 px-5 pb-4 pt-5 sm:px-7">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#c6ff3d]/12 text-[#c6ff3d]">
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${a.soft}`}>
                 <Camera size={22} aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 id="sell-guide-title" className="text-xl font-black tracking-tight text-white sm:text-2xl">{t('sell.ui.guide.title')}</h2>
-                <p className="mt-1 text-[13px] leading-relaxed text-white/60">{t('sell.ui.guide.subtitle')}</p>
+                <h2 id={`${idPrefix}-guide-title`} className="text-xl font-black tracking-tight text-white sm:text-2xl">{t(`${ns}.ui.guide.title`)}</h2>
+                <p className="mt-1 text-[13px] leading-relaxed text-white/60">{t(`${ns}.ui.guide.subtitle`)}</p>
               </div>
               <button
                 ref={closeRef}
                 type="button"
                 onClick={onClose}
-                aria-label={t('sell.ui.guide.close')}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6ff3d]/60"
+                aria-label={t(`${ns}.ui.guide.close`)}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 ${a.ring}`}
               >
                 <X size={18} aria-hidden="true" />
               </button>
             </header>
 
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7">
-              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-[#c6ff3d]">{t('sell.ui.guide.shots_title')}</h3>
-              <p className="mb-3 mt-1 text-[13px] text-white/50">{t('sell.ui.guide.shots_sub')}</p>
+              <h3 className={`text-sm font-black uppercase tracking-[0.14em] ${a.text}`}>{t(`${ns}.ui.guide.shots_title`)}</h3>
+              <p className="mb-3 mt-1 text-[13px] text-white/50">{t(`${ns}.ui.guide.shots_sub`)}</p>
               <ol className="space-y-2.5">
                 {shots.map((id, i) => (
                   <li key={id} className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#c6ff3d]/10 text-[#c6ff3d]">
+                    <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${a.soft2}`}>
                       <ShotGlyph id={id} size={36} />
                     </span>
                     <div className="min-w-0">
                       <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-white">
                         <span className="font-mono text-xs text-white/40">{i + 1}</span>
-                        {t(`sell.ui.shots.${id}.label`)}
-                        {i === 0 ? <span className="rounded bg-[#c6ff3d] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#10140a]">{t('sell.cover_badge')}</span> : null}
+                        {t(`${ns}.ui.shots.${id}.label`)}
+                        {i === 0 ? <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${a.badge}`}>{t(`${ns}.cover_badge`)}</span> : null}
                       </p>
-                      <p className="mt-0.5 text-[13px] leading-snug text-white/55">{t(`sell.ui.shots.${id}.tip`)}</p>
+                      <p className="mt-0.5 text-[13px] leading-snug text-white/55">{t(`${ns}.ui.shots.${id}.tip`)}</p>
                     </div>
                   </li>
                 ))}
               </ol>
 
-              <h3 className="mt-7 text-sm font-black uppercase tracking-[0.14em] text-[#c6ff3d]">{t('sell.ui.guide.tips_title')}</h3>
+              <h3 className={`mt-7 text-sm font-black uppercase tracking-[0.14em] ${a.text}`}>{t(`${ns}.ui.guide.tips_title`)}</h3>
               <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {GUIDE_TIP_IDS.map((id) => {
                   const Icon = TIP_ICONS[id];
                   return (
                   <li key={id} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
-                    <Icon size={20} className="mt-0.5 shrink-0 text-[#c6ff3d]" aria-hidden="true" />
+                    <Icon size={20} className={`mt-0.5 shrink-0 ${a.text}`} aria-hidden="true" />
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-white">{t(`sell.ui.guide.tips.${id}.title`)}</p>
-                      <p className="mt-0.5 text-[13px] leading-snug text-white/55">{t(`sell.ui.guide.tips.${id}.text`)}</p>
+                      <p className="text-sm font-bold text-white">{t(`${ns}.ui.guide.tips.${id}.title`)}</p>
+                      <p className="mt-0.5 text-[13px] leading-snug text-white/55">{t(`${ns}.ui.guide.tips.${id}.text`)}</p>
                     </div>
                   </li>
                   );
                 })}
               </ul>
 
-              <p className="mt-5 text-xs text-white/40">{t('sell.ui.guide.tech')}</p>
+              <p className="mt-5 text-xs text-white/40">{t(`${ns}.ui.guide.tech`)}</p>
             </div>
 
             <footer className="border-t border-white/10 px-5 py-4 sm:px-7">
               <button
                 type="button"
                 onClick={onClose}
-                className="lx-shine relative w-full overflow-hidden rounded-2xl bg-[#c6ff3d] px-6 py-3.5 text-[15px] font-black text-[#10140a] shadow-[0_10px_30px_-10px_rgba(198,255,61,0.6)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className={`lx-shine relative w-full overflow-hidden rounded-2xl px-6 py-3.5 text-[15px] font-black transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${a.cta}`}
               >
-                {t('sell.ui.guide.done')}
+                {t(`${ns}.ui.guide.done`)}
               </button>
             </footer>
           </motion.div>

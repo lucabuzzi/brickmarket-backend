@@ -12,6 +12,11 @@ const NEXT = [
   { id: 'pack', Icon: PackageCheck },
 ];
 
+const ACCENT = {
+  lime: { badge: 'bg-[#c6ff3d] text-[#10140a] shadow-[0_0_80px_rgba(198,255,61,0.55)]', glow: '[text-shadow:0_0_60px_rgba(198,255,61,0.3)]', chip: 'border-[#c6ff3d]/40 bg-[#c6ff3d]/10 text-[#c6ff3d] hover:bg-[#c6ff3d]/20 focus-visible:ring-[#c6ff3d]/60', ring: 'focus-visible:ring-[#c6ff3d]/60', text: 'text-[#c6ff3d]' },
+  orange: { badge: 'bg-pillar-auctions text-white shadow-[0_0_80px_rgba(255,90,54,0.55)]', glow: '[text-shadow:0_0_60px_rgba(255,90,54,0.3)]', chip: 'border-pillar-auctions/40 bg-pillar-auctions/10 text-pillar-auctions hover:bg-pillar-auctions/20 focus-visible:ring-pillar-auctions/60', ring: 'focus-visible:ring-pillar-auctions/60', text: 'text-pillar-auctions' },
+};
+
 function Confetti() {
   const pieces = useMemo(() => confettiPieces(38, 11), []);
   return (
@@ -34,8 +39,9 @@ function Confetti() {
  * Shown instead of the wizard once a new listing has been published: the real card, what to do next, and
  * ways out (see it, my listings, publish another). It promises nothing about sales or credits.
  */
-export default function Celebration({ listing, path, onAnother }) {
+export default function Celebration({ listing, path, onAnother, accent = 'lime', ns = 'sell' }) {
   const { t } = useTranslation();
+  const a = ACCENT[accent] || ACCENT.lime;
   const reduceMotion = useReducedMotion();
   const headingRef = useRef(null);
   const [copied, setCopied] = useState(false);
@@ -69,7 +75,7 @@ export default function Celebration({ listing, path, onAnother }) {
 
       <div className="relative mx-auto max-w-[720px] text-center">
         <motion.div
-          className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#c6ff3d] text-[#10140a] shadow-[0_0_80px_rgba(198,255,61,0.55)]"
+          className={`mx-auto flex h-24 w-24 items-center justify-center rounded-full ${a.badge}`}
           initial={reduceMotion ? false : { scale: 0.3, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 16 }}
@@ -81,11 +87,11 @@ export default function Celebration({ listing, path, onAnother }) {
           <h1
             ref={headingRef}
             tabIndex={-1}
-            className="mt-7 text-[clamp(2rem,7vw,3.4rem)] font-black leading-[1] tracking-[-0.045em] text-white [text-shadow:0_0_60px_rgba(198,255,61,0.3)] focus:outline-none"
+            className={`mt-7 text-[clamp(2rem,7vw,3.4rem)] font-black leading-[1] tracking-[-0.045em] text-white focus:outline-none ${a.glow}`}
           >
-            {t('sell.ui.celebrate.title')}
+            {t(`${ns}.ui.celebrate.title`)}
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-white/60">{t('sell.ui.celebrate.sub')}</p>
+          <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-white/60">{t(`${ns}.ui.celebrate.sub`)}</p>
         </motion.div>
 
         <motion.div {...rise(0.3)} className="mx-auto mt-9 max-w-[320px]">
@@ -102,42 +108,42 @@ export default function Celebration({ listing, path, onAnother }) {
               to={path}
               className="lx-shine relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 px-7 py-4 text-[15px] font-black text-[#100d07] shadow-[0_10px_30px_-8px_rgba(212,175,55,0.55)] transition-transform hover:-translate-y-0.5"
             >
-              {t('sell.ui.celebrate.view')}
+              {t(`${ns}.ui.celebrate.view`)}
             </Link>
           ) : null}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={onAnother}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#c6ff3d]/40 bg-[#c6ff3d]/10 px-5 py-3.5 text-sm font-bold text-[#c6ff3d] transition-colors hover:bg-[#c6ff3d]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6ff3d]/60"
+              className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 ${a.chip}`}
             >
-              <Plus size={17} aria-hidden="true" /> {t('sell.ui.celebrate.another')}
+              <Plus size={17} aria-hidden="true" /> {t(`${ns}.ui.celebrate.another`)}
             </button>
             {path ? (
               <button
                 type="button"
                 onClick={copyLink}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-5 py-3.5 text-sm font-bold text-white/85 transition-colors hover:border-white/30 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6ff3d]/60"
+                className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-5 py-3.5 text-sm font-bold text-white/85 transition-colors hover:border-white/30 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 ${a.ring}`}
               >
-                {copied ? <Check size={17} className="text-[#c6ff3d]" aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}
-                {copied ? t('sell.ui.celebrate.copied') : t('sell.ui.celebrate.copy')}
+                {copied ? <Check size={17} className={a.text} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}
+                {copied ? t(`${ns}.ui.celebrate.copied`) : t(`${ns}.ui.celebrate.copy`)}
               </button>
             ) : null}
           </div>
           <Link to="/my-listings" className="text-sm font-semibold text-white/55 underline-offset-4 transition-colors hover:text-white hover:underline">
-            {t('sell.ui.celebrate.mine')}
+            {t(`${ns}.ui.celebrate.mine`)}
           </Link>
-          <p aria-live="polite" className="sr-only">{copied ? t('sell.ui.celebrate.copied') : ''}</p>
+          <p aria-live="polite" className="sr-only">{copied ? t(`${ns}.ui.celebrate.copied`) : ''}</p>
         </motion.div>
 
         <motion.section {...rise(0.55)} className="mx-auto mt-12 text-left" aria-labelledby="sell-next-title">
-          <h2 id="sell-next-title" className="mb-3 text-center text-sm font-black uppercase tracking-[0.14em] text-[#c6ff3d]">{t('sell.ui.celebrate.next_title')}</h2>
+          <h2 id="sell-next-title" className={`mb-3 text-center text-sm font-black uppercase tracking-[0.14em] ${a.text}`}>{t(`${ns}.ui.celebrate.next_title`)}</h2>
           <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
             {NEXT.map(({ id, Icon }) => (
               <li key={id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <Icon size={20} className="text-[#c6ff3d]" aria-hidden="true" />
-                <p className="mt-2.5 text-sm font-bold text-white">{t(`sell.ui.celebrate.next.${id}.title`)}</p>
-                <p className="mt-1 text-[13px] leading-snug text-white/55">{t(`sell.ui.celebrate.next.${id}.text`)}</p>
+                <Icon size={20} className={a.text} aria-hidden="true" />
+                <p className="mt-2.5 text-sm font-bold text-white">{t(`${ns}.ui.celebrate.next.${id}.title`)}</p>
+                <p className="mt-1 text-[13px] leading-snug text-white/55">{t(`${ns}.ui.celebrate.next.${id}.text`)}</p>
               </li>
             ))}
           </ul>

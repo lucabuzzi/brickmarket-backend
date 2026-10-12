@@ -1,18 +1,20 @@
 import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-function Label({ htmlFor, id, as: Tag = 'label', label, required, optional }) {
+const DOT = { lime: 'bg-[#c6ff3d]', orange: 'bg-pillar-auctions' };
+
+function Label({ htmlFor, id, as: Tag = 'label', label, required, optional, accent = 'lime', ns = 'sell' }) {
   const { t } = useTranslation();
   return (
     <Tag id={id} htmlFor={Tag === 'label' ? htmlFor : undefined} className="mb-1.5 flex items-center gap-2 text-[13px] font-bold text-white/80">
       {label}
       {required ? (
         <>
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#c6ff3d]" />
-          <span className="sr-only">{t('sell.ui.required')}</span>
+          <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${DOT[accent] || DOT.lime}`} />
+          <span className="sr-only">{t(`${ns}.ui.required`)}</span>
         </>
       ) : optional ? (
-        <span className="text-[11px] font-medium text-white/35">{t('sell.ui.optional')}</span>
+        <span className="text-[11px] font-medium text-white/35">{t(`${ns}.ui.optional`)}</span>
       ) : null}
     </Tag>
   );
@@ -31,10 +33,10 @@ function Message({ id, error, hint }) {
 }
 
 /** Label + control + hint/error for a single input. `id` must be the id of the control inside. */
-export default function Field({ id, label, required = false, optional = false, error, hint, className = '', children }) {
+export default function Field({ id, label, required = false, optional = false, error, hint, className = '', accent = 'lime', ns = 'sell', children }) {
   return (
     <div className={className}>
-      <Label htmlFor={id} label={label} required={required} optional={optional} />
+      <Label htmlFor={id} label={label} required={required} optional={optional} accent={accent} ns={ns} />
       {children}
       <Message id={id} error={error} hint={hint} />
     </div>
@@ -42,10 +44,10 @@ export default function Field({ id, label, required = false, optional = false, e
 }
 
 /** Same, for a group of choices (tiles, switches): the label names the group instead of one input. */
-export function FieldGroup({ id, label, required = false, optional = false, error, hint, className = '', role = 'radiogroup', children }) {
+export function FieldGroup({ id, label, required = false, optional = false, error, hint, className = '', role = 'radiogroup', accent = 'lime', ns = 'sell', children }) {
   return (
     <div className={className}>
-      <Label id={`${id}-label`} as="span" label={label} required={required} optional={optional} />
+      <Label id={`${id}-label`} as="span" label={label} required={required} optional={optional} accent={accent} ns={ns} />
       <div id={id} role={role} aria-labelledby={`${id}-label`} aria-describedby={error ? `${id}-err` : undefined} aria-invalid={error ? true : undefined}>
         {children}
       </div>

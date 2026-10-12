@@ -38,7 +38,7 @@ export const LIMITS = { titleMin: 5, titleMax: 300, setNumberMax: 20, descriptio
 
 const DIMENSION_FIELDS = ['weightKg', 'lengthCm', 'widthCm', 'heightCm'];
 
-function validateWhat(form, mode) {
+export function validateWhat(form, mode) {
   const errors = {};
   const title = String(form.title || '').trim();
   if (!title) errors.title = 'title_required';
@@ -58,7 +58,7 @@ function validateWhat(form, mode) {
   return errors;
 }
 
-function validatePhotos(ctx, mode) {
+export function validatePhotos(ctx, mode) {
   const { photoCount = 0, editing = false, guidedCards = false } = ctx;
   if (mode === 'publish' && !editing && photoCount === 0) return { photos: 'photo_required' };
   if (mode === 'publish' && !editing && guidedCards && photoCount < CARD_REQUIRED_SHOTS) return { photos: 'card_photos_required' };
@@ -66,7 +66,7 @@ function validatePhotos(ctx, mode) {
   return {};
 }
 
-function validateCondition(form, mode) {
+export function validateCondition(form, mode) {
   const errors = {};
   if (form.productType === 'tcg') {
     // the server rejects half a grading (company without grade or the other way round), drafts included

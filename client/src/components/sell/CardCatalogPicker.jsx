@@ -6,10 +6,17 @@ import {
   SET_EXAMPLE, cardNumberLabel, clearCardPatch, filterCards, filterSeries, isPrintGame, pickCardPatch, seriesDisplayName, setDisplayName, setLogoSrc, showThumbnails,
 } from '../../lib/sell/catalog';
 
+const ACCENT = {
+  lime: { ring: 'focus:border-[#c6ff3d]/60 focus:ring-[#c6ff3d]/20', chosen: 'border-[#c6ff3d]/40 bg-[#c6ff3d]/[0.06]', text: 'text-[#c6ff3d]' },
+  orange: { ring: 'focus:border-pillar-auctions/60 focus:ring-pillar-auctions/20', chosen: 'border-pillar-auctions/40 bg-pillar-auctions/[0.06]', text: 'text-pillar-auctions' },
+};
+
 // Optional shortcut of the sell wizard for the games that have an expansion catalog (`game`): pick the expansion, then the card, and the form is filled
 // in (title, number, rarity, language). The picture shown is a catalog reference, never saved as the listing photo.
-export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
+export default function CardCatalogPicker({ form, patch, game = 'pokemon', accent = 'lime', ns = 'sell', idPrefix = 'sell' }) {
   const { t, i18n } = useTranslation();
+  const a = ACCENT[accent] || ACCENT.lime;
+  const id = (name) => `${idPrefix}-${name}`;
   const lang = i18n.language;
   const [series, setSeries] = useState(null); // null = loading, [] = unavailable
   const [setQuery, setSetQuery] = useState('');
@@ -75,34 +82,34 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
   const rowCls = 'flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/[0.06] focus-visible:bg-white/[0.08] focus-visible:outline-none';
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5" aria-labelledby="sell-catalog-title">
+    <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5" aria-labelledby={id('catalog-title')}>
       <div>
-        <h3 id="sell-catalog-title" className="text-sm font-black uppercase tracking-[0.14em] text-white/55">{t('sell.ui.catalog.title')}</h3>
-        <p className="mt-1 text-[13px] text-white/50">{t('sell.ui.catalog.hint')}</p>
+        <h3 id={id('catalog-title')} className="text-sm font-black uppercase tracking-[0.14em] text-white/55">{t(`${ns}.ui.catalog.title`)}</h3>
+        <p className="mt-1 text-[13px] text-white/50">{t(`${ns}.ui.catalog.hint`)}</p>
       </div>
 
-      {unavailable ? <p className="text-sm text-white/55">{t('sell.ui.catalog.unavailable')}</p> : null}
+      {unavailable ? <p className="text-sm text-white/55">{t(`${ns}.ui.catalog.unavailable`)}</p> : null}
 
       {!form.cardSetId && !unavailable ? (
         <div>
-          <label htmlFor="sell-catalog-set" className="mb-1.5 block text-[13px] font-bold text-white/80">{t('sell.ui.catalog.set_label')}</label>
+          <label htmlFor={id('catalog-set')} className="mb-1.5 block text-[13px] font-bold text-white/80">{t(`${ns}.ui.catalog.set_label`)}</label>
           <div className="relative">
             <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35" aria-hidden="true" />
             <input
-              id="sell-catalog-set"
+              id={id('catalog-set')}
               type="search"
               value={setQuery}
               onChange={(e) => setSetQuery(e.target.value)}
-              placeholder={t('sell.ui.catalog.set_placeholder', { example: SET_EXAMPLE[game] })}
+              placeholder={t(`${ns}.ui.catalog.set_placeholder`, { example: SET_EXAMPLE[game] })}
               autoComplete="off"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-[15px] text-white placeholder:text-white/30 focus:border-[#c6ff3d]/60 focus:outline-none focus:ring-2 focus:ring-[#c6ff3d]/20"
+              className={`w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 ${a.ring}`}
             />
           </div>
           <div className="mt-2 max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/20">
             {series === null ? (
-              <p className="flex items-center gap-2 px-3 py-4 text-sm text-white/50"><Loader2 size={16} className="animate-spin" aria-hidden="true" /> {t('sell.ui.catalog.loading')}</p>
+              <p className="flex items-center gap-2 px-3 py-4 text-sm text-white/50"><Loader2 size={16} className="animate-spin" aria-hidden="true" /> {t(`${ns}.ui.catalog.loading`)}</p>
             ) : filteredSeries.length === 0 ? (
-              <p className="px-3 py-4 text-sm text-white/50">{t('sell.ui.catalog.no_results')}</p>
+              <p className="px-3 py-4 text-sm text-white/50">{t(`${ns}.ui.catalog.no_results`)}</p>
             ) : filteredSeries.map((s) => (
               <div key={s.id}>
                 <p className="sticky top-0 z-[1] bg-[#15131c] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-white/40">{seriesDisplayName(s, lang)}</p>
@@ -115,7 +122,7 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-semibold text-white">{setDisplayName(x, lang)}</span>
-                          {x.card_count_total ? <span className="block text-[11px] text-white/40">{t('sell.ui.catalog.cards_count', { count: x.card_count_total })}</span> : null}
+                          {x.card_count_total ? <span className="block text-[11px] text-white/40">{t(`${ns}.ui.catalog.cards_count`, { count: x.card_count_total })}</span> : null}
                         </span>
                       </button>
                     </li>
@@ -129,13 +136,13 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
 
       {form.cardSetId ? (
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-xl border border-[#c6ff3d]/40 bg-[#c6ff3d]/[0.06] px-3 py-2.5">
-            <Check size={16} className="shrink-0 text-[#c6ff3d]" aria-hidden="true" />
+          <div className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${a.chosen}`}>
+            <Check size={16} className={`shrink-0 ${a.text}`} aria-hidden="true" />
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/45">{t('sell.ui.catalog.set_label')}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/45">{t(`${ns}.ui.catalog.set_label`)}</p>
               <p className="truncate text-sm font-bold text-white">{chosenSet ? setDisplayName(chosenSet, lang) : form.cardSetName || form.cardSetId}</p>
             </div>
-            <button type="button" onClick={clearSet} className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/80 hover:border-white/30">{t('sell.ui.catalog.change')}</button>
+            <button type="button" onClick={clearSet} className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/80 hover:border-white/30">{t(`${ns}.ui.catalog.change`)}</button>
           </div>
 
           {form.cardExternalId ? (
@@ -144,32 +151,32 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-white">{form.title}</p>
                 <p className="text-xs text-white/50">{form.cardNumber ? `#${form.cardNumber}` : ''}{form.cardRarity ? ` · ${form.cardRarity}` : ''}</p>
-                {pickedImage ? <p className="mt-1 text-[11px] text-white/35">{t('sell.ui.catalog.reference_note')}</p> : null}
+                {pickedImage ? <p className="mt-1 text-[11px] text-white/35">{t(`${ns}.ui.catalog.reference_note`)}</p> : null}
               </div>
-              <button type="button" onClick={() => { patch(clearCardPatch()); setPickedImage(''); }} aria-label={t('sell.ui.catalog.card_clear')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/40 text-white/70 hover:bg-red-600 hover:text-white">
+              <button type="button" onClick={() => { patch(clearCardPatch()); setPickedImage(''); }} aria-label={t(`${ns}.ui.catalog.card_clear`)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/40 text-white/70 hover:bg-red-600 hover:text-white">
                 <X size={16} aria-hidden="true" />
               </button>
             </div>
           ) : (
             <div>
-              <label htmlFor="sell-catalog-card" className="mb-1.5 block text-[13px] font-bold text-white/80">{t('sell.ui.catalog.card_label')}</label>
+              <label htmlFor={id('catalog-card')} className="mb-1.5 block text-[13px] font-bold text-white/80">{t(`${ns}.ui.catalog.card_label`)}</label>
               <div className="relative">
                 <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35" aria-hidden="true" />
                 <input
-                  id="sell-catalog-card"
+                  id={id('catalog-card')}
                   type="search"
                   value={cardQuery}
                   onChange={(e) => setCardQuery(e.target.value)}
-                  placeholder={t('sell.ui.catalog.card_placeholder')}
+                  placeholder={t(`${ns}.ui.catalog.card_placeholder`)}
                   autoComplete="off"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-[15px] text-white placeholder:text-white/30 focus:border-[#c6ff3d]/60 focus:outline-none focus:ring-2 focus:ring-[#c6ff3d]/20"
+                  className={`w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 ${a.ring}`}
                 />
               </div>
               <div className="mt-2 max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/20">
                 {loadingSet || picking ? (
-                  <p className="flex items-center gap-2 px-3 py-4 text-sm text-white/50"><Loader2 size={16} className="animate-spin" aria-hidden="true" /> {t('sell.ui.catalog.loading')}</p>
+                  <p className="flex items-center gap-2 px-3 py-4 text-sm text-white/50"><Loader2 size={16} className="animate-spin" aria-hidden="true" /> {t(`${ns}.ui.catalog.loading`)}</p>
                 ) : found.cards.length === 0 ? (
-                  <p className="px-3 py-4 text-sm text-white/50">{t('sell.ui.catalog.no_results')}</p>
+                  <p className="px-3 py-4 text-sm text-white/50">{t(`${ns}.ui.catalog.no_results`)}</p>
                 ) : (
                   <ul>
                     {found.cards.map((c) => (
@@ -180,18 +187,18 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon' }) {
                             <span className="block truncate text-sm font-semibold text-white">{c.name}</span>
                             {isPrintGame(game) && c.rarity ? <span className="block truncate text-[11px] text-white/45">{c.rarity}</span> : null}
                           </span>
-                          {c.details?.variant ? <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">{t('sell.ui.catalog.variant', { n: c.details.variant })}</span> : null}
+                          {c.details?.variant ? <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/60">{t(`${ns}.ui.catalog.variant`, { n: c.details.variant })}</span> : null}
                           <span className="shrink-0 font-mono text-xs text-white/45">{cardNumberLabel(c.details?.localId, chosenSet?.card_count_official, game)}</span>
                         </button>
                       </li>
                     ))}
                     {found.total > found.cards.length ? (
-                      <li className="px-3 py-2 text-center text-xs text-white/40">{t('sell.ui.catalog.refine', { count: found.total - found.cards.length })}</li>
+                      <li className="px-3 py-2 text-center text-xs text-white/40">{t(`${ns}.ui.catalog.refine`, { count: found.total - found.cards.length })}</li>
                     ) : null}
                   </ul>
                 )}
               </div>
-              <p className="mt-2 text-xs text-white/40">{t('sell.ui.catalog.not_found_hint')}</p>
+              <p className="mt-2 text-xs text-white/40">{t(`${ns}.ui.catalog.not_found_hint`)}</p>
             </div>
           )}
         </div>

@@ -9,8 +9,14 @@ import { cropImageFile } from './cropImage';
 // Rendered into document.body: the wizard sits inside animated (transformed) wrappers, and inside those a
 // `position: fixed` box is positioned against the wrapper instead of the screen, so the editor would not cover the page.
 // "Crop" hands back a new File, "Use whole photo" / Escape hands back null (keep the original untouched).
-export default function CropEditor({ file, imageOrientation, onDone }) {
+const ACCENT = {
+  lime: { active: 'border-[#c6ff3d] bg-[#c6ff3d]/10 text-white', range: 'accent-[#c6ff3d]', cta: 'bg-[#c6ff3d] text-[#10140a]' },
+  orange: { active: 'border-pillar-auctions bg-pillar-auctions/10 text-white', range: 'accent-pillar-auctions', cta: 'bg-pillar-auctions text-white' },
+};
+
+export default function CropEditor({ file, imageOrientation, onDone, accent = 'lime', ns = 'sell' }) {
   const { t } = useTranslation();
+  const a = ACCENT[accent] || ACCENT.lime;
   const url = useMemo(() => URL.createObjectURL(file), [file]);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -40,10 +46,10 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
   }
 
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label={t('sell.ui.crop.title')} className="fixed inset-0 z-[100] flex flex-col bg-[#07060b]">
+    <div role="dialog" aria-modal="true" aria-label={t(`${ns}.ui.crop.title`)} className="fixed inset-0 z-[100] flex flex-col bg-[#07060b]">
       <div className="shrink-0 px-4 pb-2 pt-3">
-        <p className="text-sm font-bold text-white">{t('sell.ui.crop.title')}</p>
-        <p className="text-xs text-white/55">{t('sell.ui.crop.hint')}</p>
+        <p className="text-sm font-bold text-white">{t(`${ns}.ui.crop.title`)}</p>
+        <p className="text-xs text-white/55">{t(`${ns}.ui.crop.hint`)}</p>
       </div>
 
       <div className="relative min-h-0 flex-1">
@@ -60,7 +66,7 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
       </div>
 
       <div className="shrink-0 space-y-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-        <div role="radiogroup" aria-label={t('sell.ui.crop.shape')} className="grid grid-cols-3 gap-2">
+        <div role="radiogroup" aria-label={t(`${ns}.ui.crop.shape`)} className="grid grid-cols-3 gap-2">
           {CROP_ASPECT_IDS.map((id) => {
             const active = aspectId === id;
             return (
@@ -70,16 +76,16 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
                 role="radio"
                 aria-checked={active}
                 onClick={() => setAspectId(id)}
-                className={`rounded-xl border px-2 py-2 text-xs font-semibold transition ${active ? 'border-[#c6ff3d] bg-[#c6ff3d]/10 text-white' : 'border-white/10 text-white/70'}`}
+                className={`rounded-xl border px-2 py-2 text-xs font-semibold transition ${active ? a.active : 'border-white/10 text-white/70'}`}
               >
-                {t(`sell.ui.crop.aspect_${id}`)}
+                {t(`${ns}.ui.crop.aspect_${id}`)}
               </button>
             );
           })}
         </div>
 
         <label className="flex items-center gap-3 text-xs font-semibold text-white/60">
-          {t('sell.ui.crop.zoom')}
+          {t(`${ns}.ui.crop.zoom`)}
           <input
             type="range"
             min={1}
@@ -87,16 +93,16 @@ export default function CropEditor({ file, imageOrientation, onDone }) {
             step={0.01}
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="h-6 flex-1 accent-[#c6ff3d]"
+            className={`h-6 flex-1 ${a.range}`}
           />
         </label>
 
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => onDone(null)} disabled={busy} className="rounded-xl border border-white/15 px-3 py-3 text-sm font-semibold text-white/80 disabled:opacity-50">
-            {t('sell.ui.crop.use_full')}
+            {t(`${ns}.ui.crop.use_full`)}
           </button>
-          <button type="button" onClick={apply} disabled={busy || !area} className="rounded-xl bg-[#c6ff3d] px-3 py-3 text-sm font-black text-[#10140a] disabled:opacity-50">
-            {busy ? t('sell.ui.crop.working') : t('sell.ui.crop.apply')}
+          <button type="button" onClick={apply} disabled={busy || !area} className={`rounded-xl px-3 py-3 text-sm font-black disabled:opacity-50 ${a.cta}`}>
+            {busy ? t(`${ns}.ui.crop.working`) : t(`${ns}.ui.crop.apply`)}
           </button>
         </div>
       </div>

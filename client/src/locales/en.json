@@ -1244,7 +1244,6 @@
     "promo_badge": "PROMO: Free for your first 10 auctions",
     "duration_custom_title": "Custom",
     "duration_custom_desc": "Choose the exact end date and time to maximize visibility.",
-    "cost_token_badge": "COST: 1 Token",
     "starting_bid_label": "Starting Bid (EUR) *",
     "starting_bid_placeholder": "e.g. 1.00",
     "starting_bid_note": "The minimum amount from which bids will start.",
@@ -1259,7 +1258,356 @@
     "save_draft_btn": "Save Draft",
     "next_btn": "Next",
     "publishing": "Publishing...",
-    "create_auction_btn": "Create Auction NOW"
+    "create_auction_btn": "Create Auction NOW",
+    "ui": {
+      "eyebrow_new": "New auction",
+      "eyebrow_edit": "Edit auction",
+      "hero_title_new": "Put your piece up for auction",
+      "hero_title_edit": "Give your auction a refresh",
+      "hero_sub_new": "A few steps and you watch your auction come to life in real time. Your draft saves itself.",
+      "hero_sub_edit": "Change whatever you like: the preview updates as you type.",
+      "required": "required",
+      "optional": "optional",
+      "step": {
+        "what": "What you sell",
+        "photos": "Photos",
+        "condition": "Condition",
+        "price": "Auction",
+        "review": "Review"
+      },
+      "step_title": {
+        "what": "What are you showcasing?",
+        "photos": "Show it at its best",
+        "condition": "How is it doing?",
+        "price": "Starting bid and duration",
+        "review": "One last look"
+      },
+      "step_sub": {
+        "what": "Pick the type and give your piece a name.",
+        "photos": "The first photo is the cover: it's buyers' first glance.",
+        "condition": "Describe its condition as it really is: honesty builds trust.",
+        "price": "Set the starting bid, how long it runs, and how you'll ship it.",
+        "review": "Check the summary: you can fix anything before publishing."
+      },
+      "preview": {
+        "title": "This is how buyers will see it",
+        "hint": "It updates as you type.",
+        "toggle": "Preview",
+        "show": "Show",
+        "hide": "Hide",
+        "title_fallback": "Your auction title"
+      },
+      "meter": {
+        "label": "Auction completeness",
+        "complete": "Auction ready for its debut!"
+      },
+      "hint": {
+        "title": "Give your piece a title",
+        "category": "Choose the category",
+        "game": "Choose the card game",
+        "condition": "Tell us the condition",
+        "price": "Set the starting bid",
+        "shipping": "Choose how to ship",
+        "photos": "Add the first photo",
+        "photos_more": "Add more photos: they show more detail",
+        "description": "Add a description",
+        "description_more": "Flesh out the description"
+      },
+      "draft": {
+        "restored": "We recovered the draft you were writing.",
+        "photos_note": "Photos are not saved: add them again.",
+        "discard": "Start from scratch",
+        "saved": "Draft saved on this device"
+      },
+      "err": {
+        "title_required": "Give your piece a name.",
+        "title_short": "The title needs at least 5 characters.",
+        "title_long": "The title is too long (300 characters max).",
+        "main_category_required": "Choose a category.",
+        "game_required": "Choose the card game.",
+        "set_number_long": "The set number is too long (20 characters max).",
+        "year_invalid": "Enter a year between 1900 and 2100.",
+        "photo_required": "Upload at least one photo to publish. You can still save a draft.",
+        "photo_too_many": "You can upload up to 5 photos.",
+        "condition_required": "Tell us the condition.",
+        "price_required": "Enter a price.",
+        "price_invalid": "Enter a valid price greater than zero.",
+        "shipping_required": "Choose at least one shipping method.",
+        "dimension_invalid": "Enter a number greater than zero.",
+        "description_long": "The description is too long (10,000 characters max).",
+        "pro_notes_long": "The notes are too long (2,000 characters max).",
+        "card_photos_required": "Cards need at least front, back and corners (3 photos).",
+        "grading_incomplete": "Enter both the grading company and the grade.",
+        "grade_long": "The grade is too long (10 characters max).",
+        "rarity_long": "The rarity is too long (60 characters max).",
+        "starting_bid_required": "Enter a starting bid.",
+        "starting_bid_invalid": "Enter a valid starting bid greater than zero.",
+        "end_date_required": "Choose the auction's end date and time.",
+        "end_date_invalid": "That end date isn't valid.",
+        "end_date_past": "The end date must be in the future."
+      },
+      "photos": {
+        "drop_here": "Drop your photos here",
+        "add_more": "Add more photos",
+        "limit": "5 photos max: the others were not added.",
+        "not_image": "Some files are not images and were ignored.",
+        "remove": "Remove photo",
+        "count": "{{count}} of {{max}} photos",
+        "camera": "Take a photo",
+        "gallery": "From gallery",
+        "move_left": "Move earlier",
+        "move_right": "Move later",
+        "quality_small_msg": "Photo {{n}} is small: it may look blurry on screen.",
+        "quality_blurry_msg": "Photo {{n}} looks a little blurry: retake it if you can. You can still publish.",
+        "slot_aria": "Add photo: {{shot}}",
+        "replace_note": "Uploading new photos replaces the current ones."
+      },
+      "title_hint": "Include the name and the number: it helps buyers find it.",
+      "description_placeholder": "Tell us what makes it special: condition, flaws, what's included…",
+      "condition_label": "What condition is it in?",
+      "price_label": "Price (€)",
+      "shipping_label": "How do you want to ship?",
+      "dims_toggle": "Package weight and size",
+      "guide": {
+        "chip": "How to take the photo",
+        "title": "How to take the perfect photo",
+        "subtitle": "Sharp, complete photos give buyers confidence. All you need is your phone and some light.",
+        "shots_title": "The shots that matter",
+        "shots_sub": "Take them in order: the first one is the cover.",
+        "tips_title": "For every shot",
+        "tips": {
+          "light": {
+            "title": "Natural light",
+            "text": "Stand near a window in daylight. Avoid yellow lamps and harsh shadows."
+          },
+          "noflash": {
+            "title": "No flash, no filters",
+            "text": "Flash creates glare on boxes and cards; filters change the colours."
+          },
+          "background": {
+            "title": "Simple background",
+            "text": "A plain table or sheet of paper, light or dark, with nothing distracting."
+          },
+          "frame": {
+            "title": "Everything in frame",
+            "text": "Leave a little margin around the piece: the corners should be visible."
+          },
+          "parallel": {
+            "title": "Hold the phone straight",
+            "text": "Keep the phone parallel to the piece: no skewed perspective."
+          },
+          "focus": {
+            "title": "Focus",
+            "text": "Tap the screen on the piece and keep your hands steady. Wipe the lens with a cloth."
+          },
+          "honest": {
+            "title": "Show the flaws",
+            "text": "A photographed scratch builds more trust than a surprise on delivery."
+          }
+        },
+        "tech": "No need to resize your photos: up to 10 MB each, we optimise them for you.",
+        "done": "Got it, let me add photos",
+        "close": "Close"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Box front",
+          "tip": "The whole box, straight and well lit: this is the cover."
+        },
+        "box_back": {
+          "label": "Box back",
+          "tip": "Show the description and codes: it confirms it's the right set."
+        },
+        "box_corners": {
+          "label": "Corners and sides",
+          "tip": "A close-up of corners and edges, where dents show."
+        },
+        "contents": {
+          "label": "Contents",
+          "tip": "Bags, booklets and minifigures laid out on a surface."
+        },
+        "flaws": {
+          "label": "Flaws or details",
+          "tip": "Scratches, dents, marks: show them up close."
+        },
+        "overview": {
+          "label": "Overview",
+          "tip": "The whole piece, clearly visible: this is the cover."
+        },
+        "closeup": {
+          "label": "Close-up",
+          "tip": "A close-up of the nicest or most important parts."
+        },
+        "other_side": {
+          "label": "Other side",
+          "tip": "Turn it around and show the back or the other side."
+        },
+        "details": {
+          "label": "Details",
+          "tip": "Prints, rare parts, minifigures or accessories."
+        },
+        "scale": {
+          "label": "For scale",
+          "tip": "Put a coin next to it: the size is clear at a glance."
+        },
+        "box_side": {
+          "label": "Side and window",
+          "tip": "The box from the side, showing the clear window if it has one."
+        },
+        "card_front": {
+          "label": "Card front",
+          "tip": "The whole card, flat and straight: this is the cover."
+        },
+        "card_back": {
+          "label": "Card back",
+          "tip": "The back, to show the overall condition."
+        },
+        "card_corners": {
+          "label": "Corners",
+          "tip": "Close-ups of all four corners: they decide the card's condition."
+        },
+        "card_light": {
+          "label": "Surface in the light",
+          "tip": "Tilt it under a light: scratches and holographic parts show up."
+        },
+        "card_extra": {
+          "label": "Sleeve or slab",
+          "tip": "If it's in a sleeve or protective case, show it."
+        }
+      },
+      "review_btn": "Review your auction",
+      "review": {
+        "edit": "Edit",
+        "ready_title": "Ready for the shop window",
+        "ready_sub": "When you hit publish, your auction is visible to everyone.",
+        "blockers_title": "Almost there",
+        "blockers_sub": "To publish you still need:",
+        "fix": "Fix",
+        "tips_title": "To make it shine even more",
+        "photos_value": "{{n}} of {{max}}",
+        "no_description": "No description yet: you can add one now.",
+        "rows": {
+          "what": "What you sell",
+          "photos": "Photos",
+          "condition": "Condition",
+          "price": "Starting bid",
+          "shipping": "Shipping",
+          "description": "Description"
+        }
+      },
+      "celebrate": {
+        "title": "Your auction is live!",
+        "sub": "Anyone on CardBrix can find it and bid now. Here is what is worth doing next.",
+        "view": "See your auction",
+        "mine": "My listings",
+        "another": "List another one",
+        "copy": "Copy the link",
+        "copied": "Link copied",
+        "next_title": "After publishing",
+        "next": {
+          "reply": {
+            "title": "Reply quickly",
+            "text": "Buyers appreciate a fast answer: keep an eye on your notifications."
+          },
+          "share": {
+            "title": "Share the link",
+            "text": "Every auction has its own page: send it to people who might be interested."
+          },
+          "pack": {
+            "title": "Get the packaging ready",
+            "text": "An intact box, protection around the piece and no rush: it will arrive in better shape."
+          }
+        }
+      },
+      "orientation": {
+        "label": "Photo orientation",
+        "hint": "How your photos are shown in the auction. Cards are usually portrait.",
+        "portrait": "Portrait",
+        "landscape": "Landscape"
+      },
+      "crop": {
+        "title": "Frame your photo",
+        "hint": "Drag to move, pinch to zoom. Only the framed part is kept.",
+        "shape": "Frame shape",
+        "aspect_portrait": "Portrait",
+        "aspect_landscape": "Landscape",
+        "aspect_square": "Square",
+        "zoom": "Zoom",
+        "apply": "Crop",
+        "use_full": "Use whole photo",
+        "working": "Cropping…",
+        "edit": "Crop photo"
+      },
+      "cards": {
+        "details_title": "Card details",
+        "language_label": "Language",
+        "language_none": "Not specified",
+        "rarity_label": "Rarity",
+        "rarity_placeholder": "E.g. Holo Rare",
+        "grading_label": "Professional grading",
+        "grading_none": "Ungraded",
+        "grading_other": "Other",
+        "grade_label": "Grade",
+        "grade_hint": "The grade given by the company, for example 10 or 9.5.",
+        "grade_placeholder": "E.g. 10",
+        "guide_progress": "Photo progress",
+        "guide_step": "Photo {{n}} of {{total}}",
+        "guide_required": "required",
+        "guide_optional": "optional",
+        "guide_take": "Take the photo",
+        "guide_gallery": "Choose from gallery",
+        "guide_done": "You have all the photos. You can reorder them or continue.",
+        "guide_minimum": "At least {{count}} photos are needed: front, back and corners."
+      },
+      "catalog": {
+        "title": "Search the catalog",
+        "hint": "Optional. Pick the expansion and the card and we fill in title, number and rarity.",
+        "unavailable": "The catalog is not reachable right now: fill in the details by hand below.",
+        "set_label": "Expansion",
+        "set_placeholder": "Search an expansion (e.g. {{example}})",
+        "loading": "Loading…",
+        "no_results": "No results.",
+        "cards_count": "{{count}} cards",
+        "change": "Change",
+        "card_label": "Card",
+        "card_placeholder": "Card name or number",
+        "card_clear": "Remove the chosen card",
+        "reference_note": "Reference image: this is not your photo.",
+        "refine": "{{count}} more results: type more to narrow down.",
+        "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand.",
+        "variant": "Variant {{n}}"
+      }
+    },
+    "pricing_cond_new": "Sealed",
+    "pricing_cond_used": "Used",
+    "pricing_cond_complete": "Complete",
+    "pricing_cond_parts": "Parts",
+    "market_value_estimated": "Estimated Market Value",
+    "set_fallback": "Set",
+    "auction_note_standard": "Standard 7-day auction, ends {{date}}",
+    "auction_note_custom": "Ends {{date}}",
+    "shipping_cost_note": "Shipping costs will be automatically calculated for the buyer based on their location.",
+    "weight_kg_label": "Weight (kg)",
+    "weight_kg_placeholder": "E.g. 1.2",
+    "dimensions_cm_label": "Package dimensions (cm)",
+    "length_placeholder": "Length",
+    "width_placeholder": "Width",
+    "height_placeholder": "Height",
+    "dimensions_note": "If left blank, a category default is used to calculate shipping.",
+    "box_condition_label": "Box Condition",
+    "box_condition_mint": "Mint (Perfect)",
+    "box_condition_damaged": "Damaged",
+    "box_condition_none": "Missing",
+    "instructions_label": "Instructions",
+    "instructions_present": "Included",
+    "instructions_absent": "Missing",
+    "instructions_pdf_only": "PDF Only",
+    "complete_set_label": "100% Complete Set",
+    "complete_set_desc": "I confirm no pieces, minifigures or accessories are missing.",
+    "pro_notes_label": "Internal Company Notes",
+    "pro_notes_placeholder": "Warehouse shelf, stock notes...",
+    "year_label": "Release Year",
+    "year_placeholder": "e.g. 2017"
   },
   "catalog": {
     "accessing_archives": "Accessing Global Archives...",

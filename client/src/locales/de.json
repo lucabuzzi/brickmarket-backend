@@ -1244,7 +1244,6 @@
     "promo_badge": "PROMO: Kostenlos für deine ersten 10 Auktionen",
     "duration_custom_title": "Benutzerdefiniert",
     "duration_custom_desc": "Wähle das genaue Enddatum und die Uhrzeit, um die Sichtbarkeit zu maximieren.",
-    "cost_token_badge": "KOSTEN: 1 Token",
     "starting_bid_label": "Startgebot (EUR) *",
     "starting_bid_placeholder": "z. B. 1.00",
     "starting_bid_note": "Der Mindestbetrag, ab dem die Gebote beginnen.",
@@ -1259,7 +1258,356 @@
     "save_draft_btn": "Entwurf speichern",
     "next_btn": "Weiter",
     "publishing": "Veröffentlichung...",
-    "create_auction_btn": "Auktion JETZT erstellen"
+    "create_auction_btn": "Auktion JETZT erstellen",
+    "ui": {
+      "eyebrow_new": "Neue Auktion",
+      "eyebrow_edit": "Auktion bearbeiten",
+      "hero_title_new": "Stelle dein Stück zur Auktion",
+      "hero_title_edit": "Aktualisiere deine Auktion",
+      "hero_sub_new": "Ein paar Schritte und deine Auktion entsteht in Echtzeit. Der Entwurf speichert sich selbst.",
+      "hero_sub_edit": "Ändere, was du möchtest: die Vorschau aktualisiert sich beim Tippen.",
+      "required": "Pflichtfeld",
+      "optional": "optional",
+      "step": {
+        "what": "Was du verkaufst",
+        "photos": "Fotos",
+        "condition": "Zustand",
+        "price": "Auktion",
+        "review": "Prüfen"
+      },
+      "step_title": {
+        "what": "Was stellst du aus?",
+        "photos": "Zeig es von seiner besten Seite",
+        "condition": "In welchem Zustand ist es?",
+        "price": "Startgebot und Laufzeit",
+        "review": "Ein letzter Blick"
+      },
+      "step_sub": {
+        "what": "Wähle die Art und gib deinem Stück einen Namen.",
+        "photos": "Das erste Foto ist das Titelbild: der erste Blick der Käufer.",
+        "condition": "Beschreibe den Zustand, wie er wirklich ist: Ehrlichkeit schafft Vertrauen.",
+        "price": "Lege das Startgebot, die Laufzeit und den Versand fest.",
+        "review": "Sieh dir die Zusammenfassung an: Du kannst vor dem Veröffentlichen alles ändern."
+      },
+      "preview": {
+        "title": "So sehen Käufer deine Auktion",
+        "hint": "Aktualisiert sich beim Tippen.",
+        "toggle": "Vorschau",
+        "show": "Anzeigen",
+        "hide": "Ausblenden",
+        "title_fallback": "Der Titel deiner Auktion"
+      },
+      "meter": {
+        "label": "Vollständigkeit der Auktion",
+        "complete": "Auktion bereit für ihren Auftritt!"
+      },
+      "hint": {
+        "title": "Gib deinem Stück einen Titel",
+        "category": "Wähle die Kategorie",
+        "game": "Wähle das Kartenspiel",
+        "condition": "Gib den Zustand an",
+        "price": "Lege das Startgebot fest",
+        "shipping": "Wähle den Versand",
+        "photos": "Füge das erste Foto hinzu",
+        "photos_more": "Füge weitere Fotos hinzu: sie zeigen mehr Details",
+        "description": "Füge eine Beschreibung hinzu",
+        "description_more": "Ergänze die Beschreibung"
+      },
+      "draft": {
+        "restored": "Wir haben den Entwurf wiederhergestellt, an dem du gearbeitet hast.",
+        "photos_note": "Fotos werden nicht gespeichert: füge sie erneut hinzu.",
+        "discard": "Von vorn beginnen",
+        "saved": "Entwurf auf diesem Gerät gespeichert"
+      },
+      "err": {
+        "title_required": "Gib deinem Stück einen Namen.",
+        "title_short": "Der Titel braucht mindestens 5 Zeichen.",
+        "title_long": "Der Titel ist zu lang (maximal 300 Zeichen).",
+        "main_category_required": "Wähle eine Kategorie.",
+        "game_required": "Wähle das Kartenspiel.",
+        "set_number_long": "Die Set-Nummer ist zu lang (maximal 20 Zeichen).",
+        "year_invalid": "Gib ein Jahr zwischen 1900 und 2100 ein.",
+        "photo_required": "Lade mindestens ein Foto hoch, um zu veröffentlichen. Den Entwurf kannst du trotzdem speichern.",
+        "photo_too_many": "Du kannst höchstens 5 Fotos hochladen.",
+        "condition_required": "Gib den Zustand an.",
+        "price_required": "Gib einen Preis ein.",
+        "price_invalid": "Gib einen gültigen Preis größer als null ein.",
+        "shipping_required": "Wähle mindestens eine Versandart.",
+        "dimension_invalid": "Gib eine Zahl größer als null ein.",
+        "description_long": "Die Beschreibung ist zu lang (maximal 10.000 Zeichen).",
+        "pro_notes_long": "Die Notizen sind zu lang (maximal 2.000 Zeichen).",
+        "card_photos_required": "Karten brauchen mindestens Vorderseite, Rückseite und Ecken (3 Fotos).",
+        "grading_incomplete": "Gib sowohl das Bewertungsunternehmen als auch die Note an.",
+        "grade_long": "Die Note ist zu lang (maximal 10 Zeichen).",
+        "rarity_long": "Die Seltenheit ist zu lang (maximal 60 Zeichen).",
+        "starting_bid_required": "Gib ein Startgebot ein.",
+        "starting_bid_invalid": "Gib ein gültiges Startgebot über null ein.",
+        "end_date_required": "Wähle Datum und Uhrzeit des Auktionsendes.",
+        "end_date_invalid": "Dieses Enddatum ist ungültig.",
+        "end_date_past": "Das Enddatum muss in der Zukunft liegen."
+      },
+      "photos": {
+        "drop_here": "Fotos hier ablegen",
+        "add_more": "Weitere Fotos hinzufügen",
+        "limit": "Maximal 5 Fotos: die übrigen wurden nicht hinzugefügt.",
+        "not_image": "Einige Dateien sind keine Bilder und wurden ignoriert.",
+        "remove": "Foto entfernen",
+        "count": "{{count}} von {{max}} Fotos",
+        "camera": "Foto aufnehmen",
+        "gallery": "Aus der Galerie",
+        "move_left": "Weiter nach vorn",
+        "move_right": "Weiter nach hinten",
+        "quality_small_msg": "Foto {{n}} ist klein: Es könnte auf dem Bildschirm unscharf wirken.",
+        "quality_blurry_msg": "Foto {{n}} wirkt etwas unscharf: Mach es wenn möglich noch einmal. Du kannst trotzdem veröffentlichen.",
+        "slot_aria": "Foto hinzufügen: {{shot}}",
+        "replace_note": "Neue Fotos ersetzen die aktuellen."
+      },
+      "title_hint": "Nenne Namen und Nummer: das hilft Käufern beim Finden.",
+      "description_placeholder": "Erzähl, was es besonders macht: Zustand, Mängel, Lieferumfang…",
+      "condition_label": "In welchem Zustand ist es?",
+      "price_label": "Preis (€)",
+      "shipping_label": "Wie möchtest du versenden?",
+      "dims_toggle": "Gewicht und Größe des Pakets",
+      "guide": {
+        "chip": "So gelingt das Foto",
+        "title": "So gelingt das perfekte Foto",
+        "subtitle": "Scharfe, vollständige Fotos schaffen Vertrauen bei Käufern. Du brauchst nur dein Handy und etwas Licht.",
+        "shots_title": "Die Fotos, auf die es ankommt",
+        "shots_sub": "Mach sie der Reihe nach: das erste ist das Titelbild.",
+        "tips_title": "Für jedes Foto",
+        "tips": {
+          "light": {
+            "title": "Natürliches Licht",
+            "text": "Stell dich tagsüber ans Fenster. Vermeide gelbe Lampen und harte Schatten."
+          },
+          "noflash": {
+            "title": "Kein Blitz, keine Filter",
+            "text": "Blitz erzeugt Reflexe auf Verpackungen und Karten; Filter verfälschen die Farben."
+          },
+          "background": {
+            "title": "Einfacher Hintergrund",
+            "text": "Ein glatter Tisch oder ein Blatt Papier, hell oder dunkel, ohne Ablenkung."
+          },
+          "frame": {
+            "title": "Alles im Bild",
+            "text": "Lass etwas Rand um das Stück: die Ecken sollen sichtbar sein."
+          },
+          "parallel": {
+            "title": "Handy gerade halten",
+            "text": "Halte das Handy parallel zum Stück: keine schiefe Perspektive."
+          },
+          "focus": {
+            "title": "Scharfstellen",
+            "text": "Tippe auf dem Bildschirm auf das Stück und halte die Hände ruhig. Wisch die Linse mit einem Tuch ab."
+          },
+          "honest": {
+            "title": "Mängel zeigen",
+            "text": "Ein fotografierter Kratzer schafft mehr Vertrauen als eine Überraschung bei der Lieferung."
+          }
+        },
+        "tech": "Du musst die Fotos nicht verkleinern: bis zu 10 MB pro Foto, wir optimieren sie für dich.",
+        "done": "Verstanden, Fotos hinzufügen",
+        "close": "Schließen"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Vorderseite der Verpackung",
+          "tip": "Die ganze Verpackung, gerade und gut beleuchtet: das ist das Titelbild."
+        },
+        "box_back": {
+          "label": "Rückseite der Verpackung",
+          "tip": "Zeig Beschreibung und Codes: so ist klar, dass es das richtige Set ist."
+        },
+        "box_corners": {
+          "label": "Ecken und Seiten",
+          "tip": "Eine Nahaufnahme von Ecken und Kanten, wo Dellen sichtbar werden."
+        },
+        "contents": {
+          "label": "Inhalt",
+          "tip": "Beutel, Anleitungen und Minifiguren auf einer Fläche ausgelegt."
+        },
+        "flaws": {
+          "label": "Mängel oder Details",
+          "tip": "Kratzer, Dellen, Spuren: zeig sie aus der Nähe."
+        },
+        "overview": {
+          "label": "Gesamtansicht",
+          "tip": "Das ganze Stück, gut sichtbar: das ist das Titelbild."
+        },
+        "closeup": {
+          "label": "Nahaufnahme",
+          "tip": "Eine Nahaufnahme der schönsten oder wichtigsten Teile."
+        },
+        "other_side": {
+          "label": "Andere Seite",
+          "tip": "Dreh es um und zeig die Rückseite oder die andere Seite."
+        },
+        "details": {
+          "label": "Besonderheiten",
+          "tip": "Drucke, seltene Teile, Minifiguren oder Zubehör."
+        },
+        "scale": {
+          "label": "Für den Maßstab",
+          "tip": "Leg eine Münze daneben: die Größe ist sofort klar."
+        },
+        "box_side": {
+          "label": "Seite und Fenster",
+          "tip": "Die Verpackung von der Seite, mit dem Sichtfenster, falls vorhanden."
+        },
+        "card_front": {
+          "label": "Vorderseite der Karte",
+          "tip": "Die ganze Karte, flach und gerade: das ist das Titelbild."
+        },
+        "card_back": {
+          "label": "Rückseite der Karte",
+          "tip": "Die Rückseite, um den Gesamtzustand zu zeigen."
+        },
+        "card_corners": {
+          "label": "Ecken",
+          "tip": "Nahaufnahmen aller vier Ecken: sie bestimmen den Zustand der Karte."
+        },
+        "card_light": {
+          "label": "Oberfläche im Licht",
+          "tip": "Kipp sie unter einer Lichtquelle: Kratzer und holografische Stellen werden sichtbar."
+        },
+        "card_extra": {
+          "label": "Hülle oder Slab",
+          "tip": "Wenn sie in einer Hülle oder einem Schutzgehäuse steckt, zeig es."
+        }
+      },
+      "review_btn": "Auktion prüfen",
+      "review": {
+        "edit": "Ändern",
+        "ready_title": "Bereit fürs Schaufenster",
+        "ready_sub": "Sobald du veröffentlichst, ist deine Auktion für alle sichtbar.",
+        "blockers_title": "Fast geschafft",
+        "blockers_sub": "Zum Veröffentlichen fehlt noch:",
+        "fix": "Beheben",
+        "tips_title": "Damit sie noch mehr glänzt",
+        "photos_value": "{{n}} von {{max}}",
+        "no_description": "Noch keine Beschreibung: Du kannst jetzt eine hinzufügen.",
+        "rows": {
+          "what": "Was du verkaufst",
+          "photos": "Fotos",
+          "condition": "Zustand",
+          "price": "Startgebot",
+          "shipping": "Versand",
+          "description": "Beschreibung"
+        }
+      },
+      "celebrate": {
+        "title": "Deine Auktion ist live!",
+        "sub": "Jeder auf CardBrix kann sie jetzt finden und mitbieten. Das lohnt sich jetzt zu tun.",
+        "view": "Deine Auktion ansehen",
+        "mine": "Meine Anzeigen",
+        "another": "Noch eine einstellen",
+        "copy": "Link kopieren",
+        "copied": "Link kopiert",
+        "next_title": "Nach dem Veröffentlichen",
+        "next": {
+          "reply": {
+            "title": "Antworte schnell",
+            "text": "Käufer schätzen eine schnelle Antwort: Behalte deine Benachrichtigungen im Blick."
+          },
+          "share": {
+            "title": "Teile den Link",
+            "text": "Jede Auktion hat ihre eigene Seite: Schick sie an alle, die interessiert sein könnten."
+          },
+          "pack": {
+            "title": "Bereite die Verpackung vor",
+            "text": "Intakter Karton, Schutz rund um das Stück und keine Eile: So kommt es besser an."
+          }
+        }
+      },
+      "orientation": {
+        "label": "Fotoausrichtung",
+        "hint": "Wie die Fotos in der Auktion dargestellt werden. Karten sind meist im Hochformat.",
+        "portrait": "Hochformat",
+        "landscape": "Querformat"
+      },
+      "crop": {
+        "title": "Foto zuschneiden",
+        "hint": "Zum Verschieben ziehen, zum Zoomen spreizen. Nur der gewählte Ausschnitt wird behalten.",
+        "shape": "Rahmenform",
+        "aspect_portrait": "Hochformat",
+        "aspect_landscape": "Querformat",
+        "aspect_square": "Quadrat",
+        "zoom": "Zoom",
+        "apply": "Zuschneiden",
+        "use_full": "Ganzes Foto verwenden",
+        "working": "Zuschneiden…",
+        "edit": "Foto zuschneiden"
+      },
+      "cards": {
+        "details_title": "Kartendetails",
+        "language_label": "Sprache",
+        "language_none": "Nicht angegeben",
+        "rarity_label": "Seltenheit",
+        "rarity_placeholder": "Z. B. Holo Rare",
+        "grading_label": "Professionelle Bewertung",
+        "grading_none": "Nicht bewertet",
+        "grading_other": "Andere",
+        "grade_label": "Note",
+        "grade_hint": "Die vom Unternehmen vergebene Note, zum Beispiel 10 oder 9.5.",
+        "grade_placeholder": "Z. B. 10",
+        "guide_progress": "Fortschritt der Fotos",
+        "guide_step": "Foto {{n}} von {{total}}",
+        "guide_required": "erforderlich",
+        "guide_optional": "optional",
+        "guide_take": "Foto aufnehmen",
+        "guide_gallery": "Aus der Galerie wählen",
+        "guide_done": "Du hast alle Fotos. Du kannst sie neu ordnen oder fortfahren.",
+        "guide_minimum": "Mindestens {{count}} Fotos sind nötig: Vorderseite, Rückseite und Ecken."
+      },
+      "catalog": {
+        "title": "Im Katalog suchen",
+        "hint": "Optional. Wähle Erweiterung und Karte, wir füllen Titel, Nummer und Seltenheit aus.",
+        "unavailable": "Der Katalog ist gerade nicht erreichbar: Trage die Angaben unten von Hand ein.",
+        "set_label": "Erweiterung",
+        "set_placeholder": "Erweiterung suchen (z. B. {{example}})",
+        "loading": "Wird geladen…",
+        "no_results": "Keine Ergebnisse.",
+        "cards_count": "{{count}} Karten",
+        "change": "Ändern",
+        "card_label": "Karte",
+        "card_placeholder": "Name oder Nummer der Karte",
+        "card_clear": "Gewählte Karte entfernen",
+        "reference_note": "Referenzbild: Das ist nicht dein Foto.",
+        "refine": "{{count}} weitere Ergebnisse: Gib mehr ein, um einzugrenzen.",
+        "not_found_hint": "Karte nicht gefunden? Überspringe das und trage Titel und Details von Hand ein.",
+        "variant": "Variante {{n}}"
+      }
+    },
+    "pricing_cond_new": "Versiegelt",
+    "pricing_cond_used": "Gebraucht",
+    "pricing_cond_complete": "Vollständig",
+    "pricing_cond_parts": "Teile",
+    "market_value_estimated": "Geschätzter Marktwert",
+    "set_fallback": "Set",
+    "auction_note_standard": "Standard-Auktion über 7 Tage, endet am {{date}}",
+    "auction_note_custom": "Endet am {{date}}",
+    "shipping_cost_note": "Die Versandkosten werden automatisch anhand des Standorts des Käufers berechnet.",
+    "weight_kg_label": "Gewicht (kg)",
+    "weight_kg_placeholder": "Z. B. 1.2",
+    "dimensions_cm_label": "Paketmaße (cm)",
+    "length_placeholder": "Länge",
+    "width_placeholder": "Breite",
+    "height_placeholder": "Höhe",
+    "dimensions_note": "Wenn leer gelassen, wird für die Versandberechnung ein kategoriebasierter Standardwert verwendet.",
+    "box_condition_label": "Zustand der Box",
+    "box_condition_mint": "Mint (Perfekt)",
+    "box_condition_damaged": "Beschädigt",
+    "box_condition_none": "Fehlt",
+    "instructions_label": "Bauanleitung",
+    "instructions_present": "Vorhanden",
+    "instructions_absent": "Fehlend",
+    "instructions_pdf_only": "Nur PDF",
+    "complete_set_label": "100% vollständiges Set",
+    "complete_set_desc": "Ich bestätige, dass keine Teile, Minifiguren oder Zubehörteile fehlen.",
+    "pro_notes_label": "Interne Unternehmensnotizen",
+    "pro_notes_placeholder": "Lagerregal, Bestandsnotizen...",
+    "year_label": "Erscheinungsjahr",
+    "year_placeholder": "z. B. 2017"
   },
   "catalog": {
     "accessing_archives": "Zugriff auf globale Archive...",

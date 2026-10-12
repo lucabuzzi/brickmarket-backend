@@ -1244,7 +1244,6 @@
     "promo_badge": "PROMO: Gratis per le tue prime 10 aste",
     "duration_custom_title": "Personalizzata",
     "duration_custom_desc": "Scegli la data e l'ora esatta di fine asta per massimizzare la visibilità.",
-    "cost_token_badge": "COSTO: 1 Token",
     "starting_bid_label": "Base d'Asta (EUR) *",
     "starting_bid_placeholder": "es. 1.00",
     "starting_bid_note": "L'importo minimo da cui partiranno le offerte.",
@@ -1259,7 +1258,356 @@
     "save_draft_btn": "Salva Bozza",
     "next_btn": "Avanti",
     "publishing": "Pubblicazione...",
-    "create_auction_btn": "Crea Asta ORA"
+    "create_auction_btn": "Crea Asta ORA",
+    "ui": {
+      "eyebrow_new": "Nuova asta",
+      "eyebrow_edit": "Modifica asta",
+      "hero_title_new": "Metti il tuo pezzo all’asta",
+      "hero_title_edit": "Aggiorna la tua asta",
+      "hero_sub_new": "Pochi passaggi e la tua asta prende vita in tempo reale. La bozza si salva da sola.",
+      "hero_sub_edit": "Cambia quello che vuoi: l'anteprima si aggiorna mentre scrivi.",
+      "required": "obbligatorio",
+      "optional": "opzionale",
+      "step": {
+        "what": "Cosa vendi",
+        "photos": "Foto",
+        "condition": "Condizioni",
+        "price": "Asta",
+        "review": "Rivedi"
+      },
+      "step_title": {
+        "what": "Cosa metti in vetrina?",
+        "photos": "Mostralo al meglio",
+        "condition": "Com'è messo?",
+        "price": "Base d'asta e durata",
+        "review": "Un ultimo sguardo"
+      },
+      "step_sub": {
+        "what": "Scegli il tipo e dai un nome al tuo pezzo.",
+        "photos": "La prima foto sarà la copertina: è il primo sguardo di chi compra.",
+        "condition": "Descrivi lo stato com'è davvero: l'onestà costruisce fiducia.",
+        "price": "Imposta la base di partenza, la durata e come spedirai l'oggetto.",
+        "review": "Controlla il riepilogo: puoi correggere tutto prima di pubblicare."
+      },
+      "preview": {
+        "title": "Così lo vedranno i compratori",
+        "hint": "Si aggiorna mentre scrivi.",
+        "toggle": "Anteprima",
+        "show": "Mostra",
+        "hide": "Nascondi",
+        "title_fallback": "Il titolo della tua asta"
+      },
+      "meter": {
+        "label": "Completezza dell'asta",
+        "complete": "Asta pronta per il debutto!"
+      },
+      "hint": {
+        "title": "Dai un titolo al tuo pezzo",
+        "category": "Scegli la categoria",
+        "game": "Scegli il gioco di carte",
+        "condition": "Indica le condizioni",
+        "price": "Imposta la base d'asta",
+        "shipping": "Scegli come spedire",
+        "photos": "Aggiungi la prima foto",
+        "photos_more": "Aggiungi altre foto: mostrano più dettagli",
+        "description": "Aggiungi una descrizione",
+        "description_more": "Arricchisci la descrizione"
+      },
+      "draft": {
+        "restored": "Abbiamo recuperato la bozza che stavi scrivendo.",
+        "photos_note": "Le foto non vengono salvate: aggiungile di nuovo.",
+        "discard": "Ricomincia da zero",
+        "saved": "Bozza salvata su questo dispositivo"
+      },
+      "err": {
+        "title_required": "Dai un nome al tuo pezzo.",
+        "title_short": "Il titolo deve avere almeno 5 caratteri.",
+        "title_long": "Il titolo è troppo lungo (massimo 300 caratteri).",
+        "main_category_required": "Scegli una categoria.",
+        "game_required": "Scegli il gioco di carte.",
+        "set_number_long": "Il numero set è troppo lungo (massimo 20 caratteri).",
+        "year_invalid": "Inserisci un anno tra 1900 e 2100.",
+        "photo_required": "Carica almeno una foto per pubblicare. Puoi comunque salvare la bozza.",
+        "photo_too_many": "Puoi caricare al massimo 5 foto.",
+        "condition_required": "Indica le condizioni.",
+        "price_required": "Inserisci un prezzo.",
+        "price_invalid": "Inserisci un prezzo valido, maggiore di zero.",
+        "shipping_required": "Scegli almeno un metodo di spedizione.",
+        "dimension_invalid": "Inserisci un numero maggiore di zero.",
+        "description_long": "La descrizione è troppo lunga (massimo 10.000 caratteri).",
+        "pro_notes_long": "Le note sono troppo lunghe (massimo 2.000 caratteri).",
+        "card_photos_required": "Per le carte servono almeno fronte, retro e angoli (3 foto).",
+        "grading_incomplete": "Indica sia la società di gradazione sia il voto.",
+        "grade_long": "Il voto è troppo lungo (massimo 10 caratteri).",
+        "rarity_long": "La rarità è troppo lunga (massimo 60 caratteri).",
+        "starting_bid_required": "Inserisci una base d'asta.",
+        "starting_bid_invalid": "Inserisci una base d'asta valida, maggiore di zero.",
+        "end_date_required": "Scegli la data e l’ora di fine asta.",
+        "end_date_invalid": "Data di fine asta non valida.",
+        "end_date_past": "La data di fine asta deve essere nel futuro."
+      },
+      "photos": {
+        "drop_here": "Rilascia qui le foto",
+        "add_more": "Aggiungi altre foto",
+        "limit": "Massimo 5 foto: le altre non sono state aggiunte.",
+        "not_image": "Alcuni file non sono immagini e sono stati ignorati.",
+        "remove": "Rimuovi la foto",
+        "count": "{{count}} di {{max}} foto",
+        "camera": "Scatta ora",
+        "gallery": "Dalla galleria",
+        "move_left": "Sposta prima",
+        "move_right": "Sposta dopo",
+        "quality_small_msg": "La foto {{n}} è piccola: sullo schermo potrebbe risultare poco nitida.",
+        "quality_blurry_msg": "La foto {{n}} sembra un po' mossa: se puoi, rifalla. Puoi comunque pubblicare.",
+        "slot_aria": "Aggiungi la foto: {{shot}}",
+        "replace_note": "Caricando nuove foto sostituirai quelle attuali."
+      },
+      "title_hint": "Indica nome e numero: aiuta chi cerca a trovarlo.",
+      "description_placeholder": "Racconta cosa lo rende speciale: stato, difetti, cosa è incluso…",
+      "condition_label": "In che condizioni è?",
+      "price_label": "Prezzo (€)",
+      "shipping_label": "Come vuoi spedire?",
+      "dims_toggle": "Peso e misure del pacco",
+      "guide": {
+        "chip": "Come fare la foto",
+        "title": "Come fare la foto perfetta",
+        "subtitle": "Foto nitide e complete danno fiducia a chi compra. Bastano il telefono e un po' di luce.",
+        "shots_title": "Gli scatti che contano",
+        "shots_sub": "Falli in ordine: il primo è la copertina.",
+        "tips_title": "Per ogni scatto",
+        "tips": {
+          "light": {
+            "title": "Luce naturale",
+            "text": "Mettiti vicino a una finestra, di giorno. Evita le luci gialle e le ombre dure."
+          },
+          "noflash": {
+            "title": "Niente flash né filtri",
+            "text": "Il flash crea riflessi su scatole e carte; i filtri cambiano i colori."
+          },
+          "background": {
+            "title": "Sfondo semplice",
+            "text": "Un tavolo o un foglio liscio, chiaro o scuro, senza distrazioni."
+          },
+          "frame": {
+            "title": "Tutto in inquadratura",
+            "text": "Lascia un po' di margine intorno al pezzo: gli angoli devono vedersi."
+          },
+          "parallel": {
+            "title": "Telefono dritto",
+            "text": "Tieni il telefono parallelo al pezzo: niente prospettive storte."
+          },
+          "focus": {
+            "title": "Metti a fuoco",
+            "text": "Tocca lo schermo sul pezzo e tieni ferme le mani. Pulisci l'obiettivo con un panno."
+          },
+          "honest": {
+            "title": "Mostra i difetti",
+            "text": "Un graffio fotografato ispira più fiducia di una sorpresa all'arrivo."
+          }
+        },
+        "tech": "Non serve ridimensionare le foto: fino a 10 MB ciascuna, le ottimizziamo noi.",
+        "done": "Ho capito, carico le foto",
+        "close": "Chiudi"
+      },
+      "shots": {
+        "box_front": {
+          "label": "Fronte della scatola",
+          "tip": "Tutta la scatola, dritta e ben illuminata: è la copertina."
+        },
+        "box_back": {
+          "label": "Retro della scatola",
+          "tip": "Mostra descrizione e codici: conferma che è il set giusto."
+        },
+        "box_corners": {
+          "label": "Angoli e lati",
+          "tip": "Un primo piano su angoli e bordi, dove si vedono le ammaccature."
+        },
+        "contents": {
+          "label": "Contenuto",
+          "tip": "Buste, libretti e minifigure disposti su un piano."
+        },
+        "flaws": {
+          "label": "Difetti o dettagli",
+          "tip": "Graffi, ammaccature, segni: mostrali da vicino."
+        },
+        "overview": {
+          "label": "Visione d'insieme",
+          "tip": "Il pezzo intero, ben visibile: è la copertina."
+        },
+        "closeup": {
+          "label": "Dettaglio ravvicinato",
+          "tip": "Un primo piano sulle parti più belle o più importanti."
+        },
+        "other_side": {
+          "label": "Altro lato",
+          "tip": "Giralo e mostra il retro o l'altro lato."
+        },
+        "details": {
+          "label": "Particolari",
+          "tip": "Stampe, pezzi rari, minifigure o accessori."
+        },
+        "scale": {
+          "label": "Per la scala",
+          "tip": "Mettici accanto una moneta: la misura si capisce subito."
+        },
+        "box_side": {
+          "label": "Lato e finestra",
+          "tip": "La scatola di lato, con la finestra trasparente se c'è."
+        },
+        "card_front": {
+          "label": "Fronte della carta",
+          "tip": "La carta intera, piatta e dritta: è la copertina."
+        },
+        "card_back": {
+          "label": "Retro della carta",
+          "tip": "Il retro, per mostrare lo stato generale."
+        },
+        "card_corners": {
+          "label": "Angoli",
+          "tip": "Primi piani dei quattro angoli: contano per lo stato della carta."
+        },
+        "card_light": {
+          "label": "Superficie con la luce",
+          "tip": "Inclinala sotto una luce: si vedono graffi e parti olografiche."
+        },
+        "card_extra": {
+          "label": "Bustina o slab",
+          "tip": "Se è in una bustina o in una custodia protettiva, mostrala."
+        }
+      },
+      "review_btn": "Rivedi la tua asta",
+      "review": {
+        "edit": "Modifica",
+        "ready_title": "Tutto pronto per la vetrina",
+        "ready_sub": "Quando premi pubblica, la tua asta è visibile a tutti.",
+        "blockers_title": "Ancora un attimo",
+        "blockers_sub": "Per pubblicare manca ancora:",
+        "fix": "Sistema",
+        "tips_title": "Per farlo brillare di più",
+        "photos_value": "{{n}} di {{max}}",
+        "no_description": "Nessuna descrizione: puoi aggiungerla ora.",
+        "rows": {
+          "what": "Cosa vendi",
+          "photos": "Foto",
+          "condition": "Condizioni",
+          "price": "Base d'asta",
+          "shipping": "Spedizione",
+          "description": "Descrizione"
+        }
+      },
+      "celebrate": {
+        "title": "La tua asta è live!",
+        "sub": "Chiunque su CardBrix può trovarla e fare un’offerta da ora. Ecco cosa conviene fare adesso.",
+        "view": "Vedi la tua asta",
+        "mine": "I miei annunci",
+        "another": "Pubblicane un altro",
+        "copy": "Copia il link",
+        "copied": "Link copiato",
+        "next_title": "Dopo la pubblicazione",
+        "next": {
+          "reply": {
+            "title": "Rispondi in fretta",
+            "text": "Chi compra apprezza una risposta rapida: tieni d'occhio le notifiche."
+          },
+          "share": {
+            "title": "Condividi il link",
+            "text": "Ogni asta ha la sua pagina: mandala a chi potrebbe essere interessato."
+          },
+          "pack": {
+            "title": "Prepara l'imballaggio",
+            "text": "Scatola integra, protezioni attorno al pezzo e nessuna fretta: arriverà meglio."
+          }
+        }
+      },
+      "orientation": {
+        "label": "Orientamento delle foto",
+        "hint": "Come vengono mostrate le foto nell'asta. Le carte sono di solito verticali.",
+        "portrait": "Verticale",
+        "landscape": "Orizzontale"
+      },
+      "crop": {
+        "title": "Inquadra la foto",
+        "hint": "Trascina per spostare, pizzica per ingrandire. Viene tenuta solo la parte inquadrata.",
+        "shape": "Forma del riquadro",
+        "aspect_portrait": "Verticale",
+        "aspect_landscape": "Orizzontale",
+        "aspect_square": "Quadrato",
+        "zoom": "Zoom",
+        "apply": "Ritaglia",
+        "use_full": "Usa foto intera",
+        "working": "Ritaglio…",
+        "edit": "Ritaglia la foto"
+      },
+      "cards": {
+        "details_title": "Dettagli carta",
+        "language_label": "Lingua",
+        "language_none": "Non specificata",
+        "rarity_label": "Rarità",
+        "rarity_placeholder": "Es. Holo Rare",
+        "grading_label": "Gradazione professionale",
+        "grading_none": "Non gradata",
+        "grading_other": "Altro",
+        "grade_label": "Voto",
+        "grade_hint": "Il voto assegnato dalla società, ad esempio 10 oppure 9.5.",
+        "grade_placeholder": "Es. 10",
+        "guide_progress": "Avanzamento foto",
+        "guide_step": "Foto {{n}} di {{total}}",
+        "guide_required": "obbligatoria",
+        "guide_optional": "facoltativa",
+        "guide_take": "Scatta la foto",
+        "guide_gallery": "Scegli dalla galleria",
+        "guide_done": "Hai tutte le foto. Puoi riordinarle o proseguire.",
+        "guide_minimum": "Servono almeno {{count}} foto: fronte, retro e angoli."
+      },
+      "catalog": {
+        "title": "Cerca nel catalogo",
+        "hint": "Facoltativo. Scegli l'espansione e la carta: compiliamo noi titolo, numero e rarità.",
+        "unavailable": "Il catalogo non è raggiungibile ora: compila i dati a mano qui sotto.",
+        "set_label": "Espansione",
+        "set_placeholder": "Cerca un'espansione (es. {{example}})",
+        "loading": "Caricamento…",
+        "no_results": "Nessun risultato.",
+        "cards_count": "{{count}} carte",
+        "change": "Cambia",
+        "card_label": "Carta",
+        "card_placeholder": "Nome o numero della carta",
+        "card_clear": "Rimuovi la carta scelta",
+        "reference_note": "Immagine di riferimento: non è la tua foto.",
+        "refine": "Altri {{count}} risultati: scrivi di più per restringere.",
+        "not_found_hint": "Non trovi la carta? Salta questo passaggio e compila titolo e dettagli a mano.",
+        "variant": "Variante {{n}}"
+      }
+    },
+    "pricing_cond_new": "Sigillato",
+    "pricing_cond_used": "Usato",
+    "pricing_cond_complete": "Completo",
+    "pricing_cond_parts": "Pezzi",
+    "market_value_estimated": "Valore di Mercato Stimato",
+    "set_fallback": "Set",
+    "auction_note_standard": "Asta standard di 7 giorni, termina il {{date}}",
+    "auction_note_custom": "Termina il {{date}}",
+    "shipping_cost_note": "I costi di spedizione verranno calcolati automaticamente per l'acquirente in base alla sua posizione.",
+    "weight_kg_label": "Peso (kg)",
+    "weight_kg_placeholder": "Es. 1.2",
+    "dimensions_cm_label": "Dimensioni pacco (cm)",
+    "length_placeholder": "Lunghezza",
+    "width_placeholder": "Larghezza",
+    "height_placeholder": "Altezza",
+    "dimensions_note": "Se lasci vuoto, verrà usato un valore predefinito in base alla categoria per calcolare la spedizione.",
+    "box_condition_label": "Condizione Scatola",
+    "box_condition_mint": "Mint (Perfetta)",
+    "box_condition_damaged": "Danneggiata",
+    "box_condition_none": "Assente",
+    "instructions_label": "Istruzioni",
+    "instructions_present": "Presenti",
+    "instructions_absent": "Assenti",
+    "instructions_pdf_only": "Solo PDF",
+    "complete_set_label": "Set Completo 100%",
+    "complete_set_desc": "Dichiaro che non manca nessun pezzo, minifigure o accessorio.",
+    "pro_notes_label": "Note Interne Aziendali",
+    "pro_notes_placeholder": "Scaffale magazzino, note di stock...",
+    "year_label": "Anno Rilascio",
+    "year_placeholder": "es. 2017"
   },
   "catalog": {
     "accessing_archives": "Accesso agli Archivi Globali...",
