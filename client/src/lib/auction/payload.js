@@ -9,10 +9,11 @@ const LEGO_CONDITION_MAP = { new: 'new', used: 'used', complete: 'complete', par
 /**
  * @param {object} form  wizard state (see form.js)
  * @param {'draft'|'publish'} mode
- * @param {{isPro?: boolean, editing?: boolean}} [opts]
+ * @param {{isPro?: boolean, editing?: boolean, bidLocked?: boolean}} [opts]  bidLocked: the auction is
+ *   already published — the server ignores auctionStart/auctionEnd once that's true, so they're not sent.
  * @returns {Array<[string, string]>}
  */
-export function buildAuctionFields(form, mode, { isPro = false, editing = false } = {}) {
+export function buildAuctionFields(form, mode, { isPro = false, editing = false, bidLocked = false } = {}) {
   const isLego = form.productType === 'lego';
   const isTcg = form.productType === 'tcg';
   const fields = [];
@@ -51,10 +52,12 @@ export function buildAuctionFields(form, mode, { isPro = false, editing = false 
   }
   add('shippingCost', '0');
 
-  const bid = parseFloat(String(form.startingBid).replace(',', '.'));
-  if (!Number.isNaN(bid) && bid > 0) add('auctionStart', String(bid));
-  const end = auctionEndDate(form);
-  if (end) add('auctionEnd', end.toISOString());
+  if (!bidLocked) {
+    const bid = parseFloat(String(form.startingBid).replace(',', '.'));
+    if (!Number.isNaN(bid) && bid > 0) add('auctionStart', String(bid));
+    const end = auctionEndDate(form);
+    if (end) add('auctionEnd', end.toISOString());
+  }
 
   if (form.imageOrientation) add('imageOrientation', form.imageOrientation);
   if (isTcg) {

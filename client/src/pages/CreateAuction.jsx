@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Calendar, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Gavel, Loader2, Package, RotateCcw, Save, ShieldCheck } from 'lucide-react';
-import { LISTING_ENDPOINTS, apiPostForm } from '../api';
+import { Calendar, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Gavel, Loader2, Lock, Package, RotateCcw, Save, ShieldCheck } from 'lucide-react';
+import { LISTING_ENDPOINTS, apiPostForm, apiFetch, SERVER_URL } from '../api';
 import { useAuth } from '../auth/useAuth';
 import SetLookupInput from '../components/SetLookupInput';
 import Stepper from '../components/sell/Stepper';
@@ -34,7 +34,7 @@ import { buildAuctionFields } from '../lib/auction/payload';
 import { completeness } from '../lib/auction/score';
 import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib/auction/draft';
 import { buildPreviewListing } from '../lib/auction/preview';
-import { chosenCarrierIds, publishBlockers, publishedPath } from '../lib/auction/review';
+import { chosenCarrierIds, formatPrice, publishBlockers, publishedPath } from '../lib/auction/review';
 
 const ACCENT = 'orange';
 const NS = 'create_auction';
@@ -84,9 +84,19 @@ const emptyForm = () => ({ ...INITIAL_FORM, shippingOptions: {} });
 const removeStepErrors = (errors, stepId) => Object.fromEntries(Object.entries(errors).filter(([field]) => FIELD_STEP[field] !== stepId));
 const safeStorage = (fn) => { try { return fn(); } catch { return null; } };
 
+// A server auction_end (UTC ISO) -> the local "YYYY-MM-DDTHH:mm" a <input type="datetime-local"> expects.
+function toLocalDatetimeInput(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function CreateAuction() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
   const { user } = useAuth();
   const userId = user?.id;
   const reduceMotion = useReducedMotion();
@@ -99,11 +109,13 @@ export default function CreateAuction() {
   const [step, setStep] = useState(1);
   const [reached, setReached] = useState(1);
   const [files, setFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [photoNotices, setPhotoNotices] = useState([]);
   const [cropQueue, setCropQueue] = useState([]);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [loadingListing, setLoadingListing] = useState(!!editId);
   const [lookupPieces, setLookupPieces] = useState(null);
   const [lookupPricing, setLookupPricing] = useState(null);
   const [restoredAtStep, setRestoredAtStep] = useState(null);
@@ -113,6 +125,9 @@ export default function CreateAuction() {
   const [guideOpen, setGuideOpen] = useState(false);
   const [published, setPublished] = useState(null);
   const [guideSeen, setGuideSeen] = useState(() => safeStorage(() => window.localStorage.getItem('cardbrix_auction_guide_seen')) === '1');
+  // Once an auction is no longer a draft, the server locks its starting bid and end date for good.
+  const [existingStatus, setExistingStatus] = useState(null);
+  const bidLocked = !!editId && existingStatus != null && existingStatus !== 'draft';
 
   const draftReady = useRef(false);
   const lastSig = useRef('');
@@ -122,9 +137,12 @@ export default function CreateAuction() {
 
   const isLego = form.productType === 'lego';
   const stepId = STEP_IDS[step - 1];
-  const photoCount = files.length;
-  const guidedCards = form.productType === 'tcg';
-  const ctx = useMemo(() => ({ photoCount, editing: false, guidedCards, isPro }), [photoCount, guidedCards, isPro]);
+  const photoCount = files.length || (editId ? existingImages.length : 0);
+  const guidedCards = form.productType === 'tcg' && !editId;
+  const ctx = useMemo(
+    () => ({ photoCount, editing: !!editId, guidedCards, isPro, bidLocked }),
+    [photoCount, editId, guidedCards, isPro, bidLocked]
+  );
 
   const shots = useMemo(() => shotListFor({ productType: form.productType, mainCategory: form.mainCategory }), [form.productType, form.mainCategory]);
   const photoQuality = usePhotoQuality(files);
@@ -205,9 +223,73 @@ export default function CreateAuction() {
     };
   }, [form, previews, photoCount, carrierIds, t, i18n.language, customDateFormatted, standardDateFormatted]);
 
+  // ── Edit mode: load the listing ──────────────────────────────────────────
+  useEffect(() => {
+    if (!editId) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingListing(true);
+        const data = await apiFetch(`/api/listings/${editId}`);
+        if (cancelled) return;
+        const c = (data.condition || '').toLowerCase();
+        let condition = 'used';
+        if (TCG_CONDITIONS.includes(c)) condition = c;
+        else if (c === 'new' || c === 'sealed') condition = 'new';
+        else if (c === 'complete') condition = 'complete';
+        else if (c === 'parts') condition = 'parts';
+
+        const shippingOptions = {};
+        if (Array.isArray(data.shipping_options)) {
+          data.shipping_options.forEach((opt) => { shippingOptions[opt.carrier] = { selected: true, price: opt.cost }; });
+        }
+        const hasEnd = !!data.auction_end;
+        patch({
+          productType: data.product_type || 'lego',
+          game: data.game || '',
+          title: data.title || '',
+          setNumber: data.set_number || '',
+          mainCategory: data.category || 'sets',
+          category: data.theme || '',
+          year: data.year || '',
+          condition,
+          boxCondition: data.box_condition || '',
+          instructions: data.instructions || '',
+          isComplete: !!data.is_complete,
+          startingBid: data.auction_start != null ? String(data.auction_start) : '',
+          durationMode: hasEnd ? 'custom' : 'standard',
+          customEndDate: hasEnd ? toLocalDatetimeInput(data.auction_end) : '',
+          shippingOptions,
+          weightKg: data.weight_kg != null ? String(data.weight_kg) : '',
+          lengthCm: data.length_cm != null ? String(data.length_cm) : '',
+          widthCm: data.width_cm != null ? String(data.width_cm) : '',
+          heightCm: data.height_cm != null ? String(data.height_cm) : '',
+          description: data.description || '',
+          proNotes: data.pro_notes || '',
+          imageOrientation: data.image_orientation || '',
+          cardLanguage: data.card_language || '',
+          cardRarity: data.card_rarity || '',
+          gradingCompany: data.card_grading_company || '',
+          cardGrade: data.card_grade || '',
+          cardSetId: data.card_set_id || '',
+          cardSetName: '',
+          cardNumber: data.card_number || '',
+          cardExternalId: data.card_external_id || '',
+        });
+        setExistingImages(data.images || []);
+        setExistingStatus(data.status || 'active');
+      } catch {
+        if (!cancelled) setServerError(t(`${NS}.error_generic`));
+      } finally {
+        if (!cancelled) setLoadingListing(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [editId, t, patch]);
+
   // ── Automatic draft: restore once, then save while typing ────────────────
   useEffect(() => {
-    if (!userId) return;
+    if (editId || !userId) return;
     const saved = parseDraft(safeStorage(() => window.localStorage.getItem(draftKey(userId))));
     if (saved) {
       setForm({ ...emptyForm(), ...saved.form });
@@ -217,10 +299,10 @@ export default function CreateAuction() {
       lastSig.current = serializeDraft(saved.form, saved.step, 0);
     }
     draftReady.current = true;
-  }, [userId]);
+  }, [editId, userId]);
 
   useEffect(() => {
-    if (!userId || published || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
+    if (editId || !userId || published || !draftReady.current || !isDraftWorthSaving(form)) return undefined;
     const sig = serializeDraft(form, step, 0);
     if (sig === lastSig.current) return undefined;
     const id = setTimeout(() => {
@@ -228,7 +310,7 @@ export default function CreateAuction() {
       if (ok) { lastSig.current = sig; setSavedFlash(true); }
     }, 700);
     return () => clearTimeout(id);
-  }, [form, step, userId, published]);
+  }, [form, step, editId, userId, published]);
 
   useEffect(() => {
     if (!savedFlash) return undefined;
@@ -383,14 +465,28 @@ export default function CreateAuction() {
     setErrors({});
 
     const fd = new FormData();
-    buildAuctionFields(form, mode, { isPro }).forEach(([name, value]) => fd.append(name, value));
+    buildAuctionFields(form, mode, { isPro, editing: !!editId, bidLocked }).forEach(([name, value]) => fd.append(name, value));
     files.forEach((f) => fd.append('images', f));
 
     setBusy(true);
     try {
-      const created = await apiPostForm(LISTING_ENDPOINTS.create, fd);
+      let created = null;
+      if (editId) {
+        const token = localStorage.getItem('cardbrix_token');
+        const res = await fetch(`${SERVER_URL}/api/listings/${editId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+        if (!res.ok) {
+          const d = await res.json();
+          throw new Error(d.error || t(`${NS}.error_generic`));
+        }
+      } else {
+        created = await apiPostForm(LISTING_ENDPOINTS.create, fd);
+      }
       clearDraft();
-      if (mode === 'publish') {
+      if (mode === 'publish' && !editId) {
         const path = publishedPath(created);
         setPublished({ path, listing: created?.id != null ? { ...previewListing, id: created.id } : previewListing });
       } else {
@@ -407,6 +503,14 @@ export default function CreateAuction() {
   const tcgGameLabel = (g) => g.name;
   const conditionOptions = form.productType === 'tcg' ? TCG_CONDITIONS : ['new', 'used', 'complete', 'parts'];
   const conditionLabelOf = (c) => (form.productType === 'tcg' ? t(`${NS}.condition_grade_${c}`) : t(`${NS}.condition_option_${c}`));
+
+  if (loadingListing) {
+    return (
+      <div className="lx-page flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="animate-spin text-pillar-auctions" size={34} aria-label={t(`${NS}.ui.eyebrow_edit`)} />
+      </div>
+    );
+  }
 
   if (published) {
     return (
@@ -436,17 +540,17 @@ export default function CreateAuction() {
         >
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-pillar-auctions/30 bg-pillar-auctions/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-pillar-auctions">
-              <Gavel size={13} aria-hidden="true" /> {t(`${NS}.ui.eyebrow_new`)}
+              <Gavel size={13} aria-hidden="true" /> {editId ? t(`${NS}.ui.eyebrow_edit`) : t(`${NS}.ui.eyebrow_new`)}
             </span>
             <Link to="/my-listings" className="rounded-xl border border-white/15 px-3.5 py-1.5 text-sm font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white">
               {t(`${NS}.cancel`)}
             </Link>
           </div>
           <h1 className="mt-4 text-[clamp(2rem,6.5vw,3.6rem)] font-black leading-[1] tracking-[-0.045em] text-white [text-shadow:0_0_60px_rgba(255,90,54,0.22)]">
-            {t(`${NS}.ui.hero_title_new`)}
+            {editId ? t(`${NS}.ui.hero_title_edit`) : t(`${NS}.ui.hero_title_new`)}
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/60">
-            {t(`${NS}.ui.hero_sub_new`)}
+            {editId ? t(`${NS}.ui.hero_sub_edit`) : t(`${NS}.ui.hero_sub_new`)}
           </p>
         </motion.header>
 
@@ -658,8 +762,8 @@ export default function CreateAuction() {
                   {guidedCards && <CardShotGuide photoCount={files.length} shots={shots} onAdd={addPhotos} accent={ACCENT} ns={NS} />}
                   <PhotoSlots
                     previews={previews}
-                    existingImages={[]}
-                    editing={false}
+                    existingImages={existingImages}
+                    editing={!!editId}
                     error={err('photos')}
                     notices={photoNotices}
                     max={MAX_PHOTOS}
@@ -674,6 +778,7 @@ export default function CreateAuction() {
                     accent={ACCENT}
                     ns={NS}
                     idPrefix={ID_PREFIX}
+                    resolveExisting={(img) => (img.startsWith('http') ? img : `${SERVER_URL}/${img.startsWith('/') ? img.substring(1) : img}`)}
                   />
                   </>
                 )}
@@ -741,79 +846,92 @@ export default function CreateAuction() {
                 {/* STEP 4 — starting bid, duration, shipping, details */}
                 {stepId === 'price' && (
                   <>
-                    <Field id={`${ID_PREFIX}-startingBid`} label={noStar(t(`${NS}.starting_bid_label`))} required error={err('startingBid')} hint={t(`${NS}.starting_bid_note`)} accent={ACCENT} ns={NS}>
-                      <div className="relative">
-                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-pillar-auctions" aria-hidden="true">€</span>
-                        <input
-                          id={`${ID_PREFIX}-startingBid`}
-                          type="text"
-                          inputMode="decimal"
-                          autoComplete="off"
-                          value={form.startingBid}
-                          onChange={(e) => patch({ startingBid: e.target.value.replace(/[^\d.,]/g, '') })}
-                          aria-invalid={errors.startingBid ? true : undefined}
-                          aria-describedby={errors.startingBid ? `${ID_PREFIX}-startingBid-err` : `${ID_PREFIX}-startingBid-hint`}
-                          placeholder={t(`${NS}.starting_bid_placeholder`)}
-                          className={`${inputCls(!!errors.startingBid, ACCENT)} py-3.5 pl-11 text-2xl font-black`}
-                        />
+                    {bidLocked ? (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">{noStar(t(`${NS}.starting_bid_label`))}</p>
+                        <p className="mt-1 text-2xl font-black text-pillar-auctions">€ {formatPrice(form.startingBid)}</p>
+                        {summary.priceNote ? <p className="mt-2 text-sm text-white/60">{summary.priceNote}</p> : null}
+                        <p className="mt-3 flex items-center gap-1.5 text-xs text-white/40">
+                          <Lock size={12} aria-hidden="true" /> {t(`${NS}.ui.price_locked_note`)}
+                        </p>
                       </div>
-                    </Field>
-
-                    <FieldGroup id={`${ID_PREFIX}-durationMode`} label={t(`${NS}.duration_label`)} required error={err('customEndDate')} accent={ACCENT} ns={NS}>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <button
-                          type="button"
-                          role="radio"
-                          aria-checked={form.durationMode === 'standard'}
-                          onClick={() => patch({ durationMode: 'standard' })}
-                          className={`rounded-2xl border p-4 text-left transition-all duration-200 ${form.durationMode === 'standard' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
-                        >
-                          <div className="mb-2 flex items-center justify-between gap-2">
-                            <span className="flex items-center gap-2 text-sm font-bold text-white">
-                              <Clock size={16} className={form.durationMode === 'standard' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_standard_title`)}
-                            </span>
-                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'standard' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
-                              {form.durationMode === 'standard' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
-                            </span>
-                          </div>
-                          <p className="text-[13px] leading-relaxed text-white/55">
-                            {t(`${NS}.duration_standard_desc`)}<br /><strong className="text-white/80">{standardDateFormatted}</strong>
-                          </p>
-                          <span className="mt-3 inline-block rounded bg-pillar-auctions/15 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-pillar-auctions">{t(`${NS}.promo_badge`)}</span>
-                        </button>
-
-                        <div
-                          role="radio"
-                          aria-checked={form.durationMode === 'custom'}
-                          tabIndex={0}
-                          onClick={() => patch({ durationMode: 'custom' })}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); patch({ durationMode: 'custom' }); } }}
-                          className={`cursor-pointer rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pillar-auctions/50 ${form.durationMode === 'custom' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
-                        >
-                          <div className="mb-2 flex items-center justify-between gap-2">
-                            <span className="flex items-center gap-2 text-sm font-bold text-white">
-                              <Calendar size={16} className={form.durationMode === 'custom' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_custom_title`)}
-                            </span>
-                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'custom' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
-                              {form.durationMode === 'custom' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
-                            </span>
-                          </div>
-                          <p className="text-[13px] leading-relaxed text-white/55">{t(`${NS}.duration_custom_desc`)}</p>
-                          {form.durationMode === 'custom' ? (
+                    ) : (
+                      <>
+                        <Field id={`${ID_PREFIX}-startingBid`} label={noStar(t(`${NS}.starting_bid_label`))} required error={err('startingBid')} hint={t(`${NS}.starting_bid_note`)} accent={ACCENT} ns={NS}>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-pillar-auctions" aria-hidden="true">€</span>
                             <input
-                              id={`${ID_PREFIX}-customEndDate`}
-                              type="datetime-local"
-                              value={form.customEndDate}
-                              onChange={(e) => patch({ customEndDate: e.target.value })}
-                              onClick={(e) => e.stopPropagation()}
-                              min={new Date().toISOString().slice(0, 16)}
-                              aria-invalid={errors.customEndDate ? true : undefined}
-                              className={`${inputCls(!!errors.customEndDate, ACCENT)} mt-3`}
+                              id={`${ID_PREFIX}-startingBid`}
+                              type="text"
+                              inputMode="decimal"
+                              autoComplete="off"
+                              value={form.startingBid}
+                              onChange={(e) => patch({ startingBid: e.target.value.replace(/[^\d.,]/g, '') })}
+                              aria-invalid={errors.startingBid ? true : undefined}
+                              aria-describedby={errors.startingBid ? `${ID_PREFIX}-startingBid-err` : `${ID_PREFIX}-startingBid-hint`}
+                              placeholder={t(`${NS}.starting_bid_placeholder`)}
+                              className={`${inputCls(!!errors.startingBid, ACCENT)} py-3.5 pl-11 text-2xl font-black`}
                             />
-                          ) : null}
-                        </div>
-                      </div>
-                    </FieldGroup>
+                          </div>
+                        </Field>
+
+                        <FieldGroup id={`${ID_PREFIX}-durationMode`} label={t(`${NS}.duration_label`)} required error={err('customEndDate')} accent={ACCENT} ns={NS}>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <button
+                              type="button"
+                              role="radio"
+                              aria-checked={form.durationMode === 'standard'}
+                              onClick={() => patch({ durationMode: 'standard' })}
+                              className={`rounded-2xl border p-4 text-left transition-all duration-200 ${form.durationMode === 'standard' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <span className="flex items-center gap-2 text-sm font-bold text-white">
+                                  <Clock size={16} className={form.durationMode === 'standard' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_standard_title`)}
+                                </span>
+                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'standard' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
+                                  {form.durationMode === 'standard' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
+                                </span>
+                              </div>
+                              <p className="text-[13px] leading-relaxed text-white/55">
+                                {t(`${NS}.duration_standard_desc`)}<br /><strong className="text-white/80">{standardDateFormatted}</strong>
+                              </p>
+                              <span className="mt-3 inline-block rounded bg-pillar-auctions/15 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-pillar-auctions">{t(`${NS}.promo_badge`)}</span>
+                            </button>
+
+                            <div
+                              role="radio"
+                              aria-checked={form.durationMode === 'custom'}
+                              tabIndex={0}
+                              onClick={() => patch({ durationMode: 'custom' })}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); patch({ durationMode: 'custom' }); } }}
+                              className={`cursor-pointer rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pillar-auctions/50 ${form.durationMode === 'custom' ? 'border-pillar-auctions/70 bg-pillar-auctions/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <span className="flex items-center gap-2 text-sm font-bold text-white">
+                                  <Calendar size={16} className={form.durationMode === 'custom' ? 'text-pillar-auctions' : 'text-white/45'} aria-hidden="true" /> {t(`${NS}.duration_custom_title`)}
+                                </span>
+                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${form.durationMode === 'custom' ? 'border-pillar-auctions' : 'border-white/25'}`} aria-hidden="true">
+                                  {form.durationMode === 'custom' ? <span className="h-2 w-2 rounded-full bg-pillar-auctions" /> : null}
+                                </span>
+                              </div>
+                              <p className="text-[13px] leading-relaxed text-white/55">{t(`${NS}.duration_custom_desc`)}</p>
+                              {form.durationMode === 'custom' ? (
+                                <input
+                                  id={`${ID_PREFIX}-customEndDate`}
+                                  type="datetime-local"
+                                  value={form.customEndDate}
+                                  onChange={(e) => patch({ customEndDate: e.target.value })}
+                                  onClick={(e) => e.stopPropagation()}
+                                  min={new Date().toISOString().slice(0, 16)}
+                                  aria-invalid={errors.customEndDate ? true : undefined}
+                                  className={`${inputCls(!!errors.customEndDate, ACCENT)} mt-3`}
+                                />
+                              ) : null}
+                            </div>
+                          </div>
+                        </FieldGroup>
+                      </>
+                    )}
 
                     <FieldGroup id={`${ID_PREFIX}-shipping`} role="group" label={t(`${NS}.ui.shipping_label`)} required error={err('shipping')} hint={t(`${NS}.shipping_cost_note`)} accent={ACCENT} ns={NS}>
                       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -933,7 +1051,7 @@ export default function CreateAuction() {
                     className="lx-shine relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-gold-300 via-gold-400 to-gold-600 px-7 py-3.5 text-[15px] font-black text-[#100d07] shadow-[0_10px_30px_-8px_rgba(212,175,55,0.55)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {busy ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : null}
-                    {busy ? t(`${NS}.publishing`) : t(`${NS}.create_auction_btn`)}
+                    {busy ? (editId ? t(`${NS}.updating`) : t(`${NS}.publishing`)) : editId ? t(`${NS}.update_auction_btn`) : t(`${NS}.create_auction_btn`)}
                   </button>
                 )}
               </div>

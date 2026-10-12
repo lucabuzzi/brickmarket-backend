@@ -224,6 +224,12 @@ const patchSchema = Joi.object({
   imageOrientation: Joi.string().valid(...IMAGE_ORIENTATIONS),
   ...CARD_DETAIL_FIELDS,
   status: Joi.string().valid('draft', 'active', 'removed'),
+  // Only ever applied while the listing is still a draft (see the PATCH handler below): once an
+  // auction has been published its terms are locked, so a currently-active auction's type/bid/end
+  // date are silently ignored even if present in the body.
+  type: Joi.string().valid(...LISTING_TYPES_DB, ...LISTING_TYPE_LEGACY_ALIASES),
+  auctionStart: Joi.number().positive().allow(null),
+  auctionEnd: Joi.date().iso().allow(null),
 });
 
 // POST — crea annuncio (multipart: campi + images[])
@@ -808,6 +814,39 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
   }
   Object.assign(value, cardDetailsForDb(value, value.productType, { partial: true }));
 
+  // type/auctionStart/auctionEnd are only ever written while the row is still a draft — this is how a
+  // drafted auction gets its terms for the first time (see lib/auction/payload.js on the client, which
+  // omits them entirely once the listing is no longer a draft). An already-published auction's terms
+  // are immutable: silently drop these three fields rather than let a PATCH rewrite a live auction.
+  const current = await query('SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2', [req.params.id, req.user.userId]);
+  const currentRow = current.rows[0];
+  if (currentRow && currentRow.status !== 'draft') {
+    delete value.type;
+    delete value.auctionStart;
+    delete value.auctionEnd;
+  }
+  if (value.type !== undefined) value.type = coerceListingTypeForDb(value.type);
+  // Mirrors the POST route: current_bid starts out equal to the starting bid until the first real bid.
+  if (value.auctionStart !== undefined) value.currentBid = value.auctionStart;
+
+  if (currentRow) {
+    const targetStatus = value.status !== undefined ? value.status : currentRow.status;
+    const targetType = value.type !== undefined ? value.type : currentRow.type;
+    if (targetStatus === 'active' && targetType === 'auction') {
+      const effectiveStart = value.auctionStart !== undefined ? value.auctionStart : currentRow.auction_start;
+      const effectiveEnd = value.auctionEnd !== undefined ? value.auctionEnd : currentRow.auction_end;
+      if (effectiveStart == null || effectiveStart <= 0) {
+        return res.status(400).json({ error: 'Per le aste è obbligatorio specificare la base d\'asta (auctionStart > 0)' });
+      }
+      if (effectiveEnd == null) {
+        return res.status(400).json({ error: 'Per le aste è obbligatoria la data di scadenza (auctionEnd)' });
+      }
+      if (new Date(effectiveEnd) <= new Date()) {
+        return res.status(400).json({ error: 'La data di fine asta deve essere nel futuro' });
+      }
+    }
+  }
+
   let newImages = null;
   if (req.files && req.files.length > 0) {
     newImages = [];
@@ -846,6 +885,10 @@ router.patch('/:id', auth, upload.array('images', 10), async (req, res) => {
     productType: 'product_type',
     game: 'game',
     imageOrientation: 'image_orientation',
+    type: 'type',
+    auctionStart: 'auction_start',
+    auctionEnd: 'auction_end',
+    currentBid: 'current_bid',
     ...CARD_DETAIL_COLUMNS,
   };
 

@@ -1576,7 +1576,8 @@
         "refine": "{{count}} weitere Ergebnisse: Gib mehr ein, um einzugrenzen.",
         "not_found_hint": "Karte nicht gefunden? Überspringe das und trage Titel und Details von Hand ein.",
         "variant": "Variante {{n}}"
-      }
+      },
+      "price_locked_note": "Nach der Veröffentlichung der Auktion nicht mehr änderbar."
     },
     "pricing_cond_new": "Versiegelt",
     "pricing_cond_used": "Gebraucht",
@@ -1607,7 +1608,9 @@
     "pro_notes_label": "Interne Unternehmensnotizen",
     "pro_notes_placeholder": "Lagerregal, Bestandsnotizen...",
     "year_label": "Erscheinungsjahr",
-    "year_placeholder": "z. B. 2017"
+    "year_placeholder": "z. B. 2017",
+    "updating": "Aktualisierung...",
+    "update_auction_btn": "Auktion aktualisieren"
   },
   "catalog": {
     "accessing_archives": "Zugriff auf globale Archive...",

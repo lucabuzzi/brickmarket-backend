@@ -266,10 +266,10 @@ export default function MyListings() {
                       )}
 
                       <Link
-                        to={`/sell?edit=${item.id}`}
+                        to={isAuctionItem(item) ? `/create-auction?edit=${item.id}` : `/sell?edit=${item.id}`}
                         className="btn-icon"
                         title={t('my_listings.action_edit')}
-                        style={{ color: '#c6ff3d' }}
+                        style={{ color: isAuctionItem(item) ? '#ff5a36' : '#c6ff3d' }}
                       >
                         <Pencil size={18} />
                       </Link>

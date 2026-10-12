@@ -1576,7 +1576,8 @@
         "refine": "{{count}} more results: type more to narrow down.",
         "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand.",
         "variant": "Variant {{n}}"
-      }
+      },
+      "price_locked_note": "Not editable after the auction is published."
     },
     "pricing_cond_new": "Sealed",
     "pricing_cond_used": "Used",
@@ -1607,7 +1608,9 @@
     "pro_notes_label": "Internal Company Notes",
     "pro_notes_placeholder": "Warehouse shelf, stock notes...",
     "year_label": "Release Year",
-    "year_placeholder": "e.g. 2017"
+    "year_placeholder": "e.g. 2017",
+    "updating": "Updating...",
+    "update_auction_btn": "Update Auction"
   },
   "catalog": {
     "accessing_archives": "Accessing Global Archives...",

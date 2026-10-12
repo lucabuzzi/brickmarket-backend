@@ -32,9 +32,11 @@ export const FIELD_STEP = {
 
 const DIMENSION_FIELDS = ['weightKg', 'lengthCm', 'widthCm', 'heightCm'];
 
-function validateAuction(form, mode, { isPro = false } = {}) {
+function validateAuction(form, mode, { isPro = false, bidLocked = false } = {}) {
   const errors = {};
-  if (mode !== 'draft') {
+  // Once an auction is published its starting bid and duration are immutable (the server ignores
+  // both after that point) — bidLocked means the wizard shows them read-only, so nothing to validate.
+  if (mode !== 'draft' && !bidLocked) {
     if (String(form.startingBid ?? '').trim() === '') errors.startingBid = 'starting_bid_required';
     else if (!isPositive(form.startingBid)) errors.startingBid = 'starting_bid_invalid';
 
@@ -47,9 +49,8 @@ function validateAuction(form, mode, { isPro = false } = {}) {
         else if (d.getTime() <= Date.now()) errors.customEndDate = 'end_date_past';
       }
     }
-
-    if (selectedCarriers(form.shippingOptions).length === 0) errors.shipping = 'shipping_required';
   }
+  if (mode !== 'draft' && selectedCarriers(form.shippingOptions).length === 0) errors.shipping = 'shipping_required';
   if (form.productType !== 'tcg') {
     for (const f of DIMENSION_FIELDS) {
       if (String(form[f] ?? '').trim() !== '' && !isPositive(form[f])) errors[f] = 'dimension_invalid';

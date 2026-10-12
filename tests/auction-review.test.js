@@ -63,17 +63,19 @@ describe('texts of the auction wizard, in all five languages', () => {
   const flat = (o, p = '') => Object.entries(o).flatMap(([k, v]) => (v && typeof v === 'object' ? flat(v, `${p}${k}.`) : [[`${p}${k}`, v]]));
   const placeholders = (s) => (s.match(/\{\{\s*\w+\s*\}\}/g) || []).map((p) => p.replace(/\s/g, '')).sort().join(',');
 
-  // create_auction.ui.err has 5 extra codes sell.ui.err has no use for (starting bid + custom end date).
+  // create_auction.ui.err has 5 extra codes sell.ui.err has no use for (starting bid + custom end date),
+  // plus the note shown next to the read-only bid/duration once an auction is published (bidLocked).
   const EXTRA_ERR_KEYS = ['err.starting_bid_required', 'err.starting_bid_invalid', 'err.end_date_required', 'err.end_date_invalid', 'err.end_date_past'];
+  const EXTRA_KEYS = [...EXTRA_ERR_KEYS, 'price_locked_note'];
 
-  test('create_auction.ui has the same keys as sell.ui (plus the auction-only error codes) in every language, none empty, same placeholders', () => {
+  test('create_auction.ui has the same keys as sell.ui (plus the auction-only extras) in every language, none empty, same placeholders', () => {
     for (const [lang, data] of Object.entries(langs)) {
       const sellKeys = Object.fromEntries(flat(data.sell.ui));
       const auctionKeys = Object.fromEntries(flat(data.create_auction.ui));
-      expect([lang, Object.keys(auctionKeys).sort()]).toEqual([lang, [...Object.keys(sellKeys), ...EXTRA_ERR_KEYS].sort()]);
+      expect([lang, Object.keys(auctionKeys).sort()]).toEqual([lang, [...Object.keys(sellKeys), ...EXTRA_KEYS].sort()]);
       for (const [k, v] of Object.entries(auctionKeys)) {
         expect([lang, k, typeof v === 'string' && v.trim().length > 0]).toEqual([lang, k, true]);
-        if (!EXTRA_ERR_KEYS.includes(k)) expect([lang, k, placeholders(v)]).toEqual([lang, k, placeholders(sellKeys[k])]);
+        if (!EXTRA_KEYS.includes(k)) expect([lang, k, placeholders(v)]).toEqual([lang, k, placeholders(sellKeys[k])]);
       }
     }
   });
@@ -86,7 +88,7 @@ describe('texts of the auction wizard, in all five languages', () => {
   });
 
   test('every language has the same auction-only flat keys, none empty', () => {
-    const EXTRA = ['pricing_cond_new', 'pricing_cond_used', 'pricing_cond_complete', 'pricing_cond_parts', 'market_value_estimated', 'set_fallback', 'auction_note_standard', 'auction_note_custom', 'shipping_cost_note', 'weight_kg_label', 'weight_kg_placeholder', 'dimensions_cm_label', 'length_placeholder', 'width_placeholder', 'height_placeholder', 'dimensions_note', 'box_condition_label', 'box_condition_mint', 'box_condition_damaged', 'box_condition_none', 'instructions_label', 'instructions_present', 'instructions_absent', 'instructions_pdf_only', 'complete_set_label', 'complete_set_desc', 'pro_notes_label', 'pro_notes_placeholder', 'year_label', 'year_placeholder'];
+    const EXTRA = ['pricing_cond_new', 'pricing_cond_used', 'pricing_cond_complete', 'pricing_cond_parts', 'market_value_estimated', 'set_fallback', 'auction_note_standard', 'auction_note_custom', 'shipping_cost_note', 'weight_kg_label', 'weight_kg_placeholder', 'dimensions_cm_label', 'length_placeholder', 'width_placeholder', 'height_placeholder', 'dimensions_note', 'box_condition_label', 'box_condition_mint', 'box_condition_damaged', 'box_condition_none', 'instructions_label', 'instructions_present', 'instructions_absent', 'instructions_pdf_only', 'complete_set_label', 'complete_set_desc', 'pro_notes_label', 'pro_notes_placeholder', 'year_label', 'year_placeholder', 'updating', 'update_auction_btn'];
     for (const [lang, data] of Object.entries(langs)) {
       for (const k of EXTRA) expect([lang, k, typeof data.create_auction[k] === 'string' && data.create_auction[k].trim().length > 0]).toEqual([lang, k, true]);
     }

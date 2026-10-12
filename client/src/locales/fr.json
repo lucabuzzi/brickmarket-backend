@@ -1576,7 +1576,8 @@
         "refine": "{{count}} résultats de plus : précisez votre recherche.",
         "not_found_hint": "Vous ne trouvez pas la carte ? Passez cette étape et remplissez titre et détails à la main.",
         "variant": "Variante {{n}}"
-      }
+      },
+      "price_locked_note": "Non modifiable une fois l'enchère publiée."
     },
     "pricing_cond_new": "Scellé",
     "pricing_cond_used": "Occasion",
@@ -1607,7 +1608,9 @@
     "pro_notes_label": "Notes internes de l'entreprise",
     "pro_notes_placeholder": "Étagère d'entrepôt, notes de stock...",
     "year_label": "Année de sortie",
-    "year_placeholder": "ex. 2017"
+    "year_placeholder": "ex. 2017",
+    "updating": "Mise à jour...",
+    "update_auction_btn": "Mettre à jour l'enchère"
   },
   "catalog": {
     "accessing_archives": "Accès aux Archives Globales...",

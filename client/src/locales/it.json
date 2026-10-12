@@ -1576,7 +1576,8 @@
         "refine": "Altri {{count}} risultati: scrivi di più per restringere.",
         "not_found_hint": "Non trovi la carta? Salta questo passaggio e compila titolo e dettagli a mano.",
         "variant": "Variante {{n}}"
-      }
+      },
+      "price_locked_note": "Non modificabile dopo la pubblicazione dell'asta."
     },
     "pricing_cond_new": "Sigillato",
     "pricing_cond_used": "Usato",
@@ -1607,7 +1608,9 @@
     "pro_notes_label": "Note Interne Aziendali",
     "pro_notes_placeholder": "Scaffale magazzino, note di stock...",
     "year_label": "Anno Rilascio",
-    "year_placeholder": "es. 2017"
+    "year_placeholder": "es. 2017",
+    "updating": "Aggiornamento...",
+    "update_auction_btn": "Aggiorna Asta"
   },
   "catalog": {
     "accessing_archives": "Accesso agli Archivi Globali...",

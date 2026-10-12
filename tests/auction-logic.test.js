@@ -60,6 +60,14 @@ describe('validation: starting bid, duration and the rest of the auction step', 
     expect(validateStep('price', F({ ...base, proNotes: 'x'.repeat(2001) }), { isPro: true }, 'next').proNotes).toBe('pro_notes_long');
   });
 
+  test('bidLocked (editing an already-published auction): starting bid and duration are never required, shipping still is', () => {
+    expect(price({}, 'publish')).not.toEqual({}); // sanity: unlocked, an empty form does fail
+    expect(validateStep('price', F({}), { bidLocked: true }, 'publish').startingBid).toBeUndefined();
+    expect(validateStep('price', F({ durationMode: 'custom', customEndDate: 'nope' }), { bidLocked: true }, 'publish').customEndDate).toBeUndefined();
+    expect(validateStep('price', F({ startingBid: '10' }), { bidLocked: true }, 'publish').shipping).toBe('shipping_required');
+    expect(validateStep('price', F({ shippingOptions: ship('DHL') }), { bidLocked: true }, 'publish')).toEqual({});
+  });
+
   test("'what', 'photos' and 'condition' are the same checks a listing gets", () => {
     expect(validateStep('what', F(), {}, 'next').title).toBe('title_required');
     expect(validateStep('photos', F(), { photoCount: 0 }, 'publish')).toEqual({ photos: 'photo_required' });
@@ -100,6 +108,12 @@ describe('payload: auctionStart/auctionEnd instead of price', () => {
   test('custom duration sends the chosen end date; standard sends 7 days from now', () => {
     const custom = find(F({ ...base, durationMode: 'custom', customEndDate: '2030-06-01T10:00' }), 'publish', 'auctionEnd');
     expect(custom[1]).toBe(new Date('2030-06-01T10:00').toISOString());
+  });
+
+  test('bidLocked (editing an already-published auction): neither auctionStart nor auctionEnd is sent', () => {
+    expect(find(F(base), 'publish', 'auctionStart', { bidLocked: true })).toBeUndefined();
+    expect(find(F(base), 'publish', 'auctionEnd', { bidLocked: true })).toBeUndefined();
+    expect(find(F(base), 'publish', 'type', { bidLocked: true })).toEqual(['type', 'auction']); // the server drops this safely too
   });
 
   test('never sends a plain "price" field, and otherwise matches a listing payload shape (shipping, condition, category)', () => {

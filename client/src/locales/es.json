@@ -1576,7 +1576,8 @@
         "refine": "{{count}} resultados más: escribe más para acotar.",
         "not_found_hint": "¿No encuentras la carta? Sáltate esto y rellena título y detalles a mano.",
         "variant": "Variante {{n}}"
-      }
+      },
+      "price_locked_note": "No se puede editar una vez publicada la subasta."
     },
     "pricing_cond_new": "Sellado",
     "pricing_cond_used": "Usado",
@@ -1607,7 +1608,9 @@
     "pro_notes_label": "Notas internas de la empresa",
     "pro_notes_placeholder": "Estante de almacén, notas de stock...",
     "year_label": "Año de lanzamiento",
-    "year_placeholder": "ej. 2017"
+    "year_placeholder": "ej. 2017",
+    "updating": "Actualizando...",
+    "update_auction_btn": "Actualizar subasta"
   },
   "catalog": {
     "accessing_archives": "Accediendo a los Archivos Globales...",
