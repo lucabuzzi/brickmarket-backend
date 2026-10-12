@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Gavel, Hammer, Timer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatEUR, listingImage, pad2, useCountdown } from './landingUtils';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 function Countdown({ endDate, size = 'lg' }) {
   const { t } = useTranslation();
@@ -167,6 +168,7 @@ function LotRow({ lot }) {
 
 export default function LandingAuctions({ auctions, loading }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const [featured, ...others] = auctions;
 
@@ -187,7 +189,7 @@ export default function LandingAuctions({ auctions, loading }) {
             </h2>
             <p className="mt-6 max-w-md text-base leading-relaxed text-white/60">{t('landing.auctions.antisniping_desc')}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/aste" className="inline-flex items-center gap-2 rounded-xl bg-[#ff5a36] px-5 py-3 text-sm font-black text-white transition-transform hover:-translate-y-0.5">
+              <Link to={navTo('/aste')} className="inline-flex items-center gap-2 rounded-xl bg-[#ff5a36] px-5 py-3 text-sm font-black text-white transition-transform hover:-translate-y-0.5">
                 {t('landing.auctions.all_cta')} <ArrowUpRight size={17} />
               </Link>
               <Link to="/create-auction" className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-black text-white transition-colors hover:border-[#ff5a36]">

@@ -6,9 +6,11 @@ import { Search, Loader2, ArrowLeft, Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { StitchCard, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import { getCatalogGame } from '../config/catalogGames';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function TcgSearchResults({ gameSlug }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const game = getCatalogGame(gameSlug);
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -39,7 +41,7 @@ export default function TcgSearchResults({ gameSlug }) {
   }, [query, game, t]);
 
   if (!game || game.status !== 'active') {
-    return <Navigate to="/catalog" replace />;
+    return <Navigate to={navTo('/catalog')} replace />;
   }
 
   return (
@@ -49,7 +51,7 @@ export default function TcgSearchResults({ gameSlug }) {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div>
-            <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-4">
+            <Link to={navTo(`/catalog/${game.slug}`)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-4">
               <ArrowLeft size={14} /> {t('tcg.back_to_catalog_game', { name: game.name })}
             </Link>
             <div className="flex items-center gap-4">
@@ -65,7 +67,7 @@ export default function TcgSearchResults({ gameSlug }) {
             </div>
           </div>
 
-          <Link to={`/catalog/${game.slug}`} className="px-8 py-4 bg-[#120f0a] border border-white/5 rounded-2xl text-white text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all shadow-xl flex items-center gap-3">
+          <Link to={navTo(`/catalog/${game.slug}`)} className="px-8 py-4 bg-[#120f0a] border border-white/5 rounded-2xl text-white text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all shadow-xl flex items-center gap-3">
             {t('tcg.new_search')} <Hash size={16} />
           </Link>
         </div>
@@ -83,7 +85,7 @@ export default function TcgSearchResults({ gameSlug }) {
           <div className="p-24 text-center bg-[#120f0a] rounded-[48px] border border-white/5 shadow-2xl">
             <div className="text-stone-700 font-black text-6xl mb-6 uppercase tracking-tighter opacity-20 italic">{t('tcg.no_data_title')}</div>
             <p className="text-stone-500 max-w-md mx-auto mb-12 font-medium">{t('tcg.no_data_desc')}</p>
-            <Link to={`/catalog/${game.slug}`} className="btn bg-pillar-catalog hover:bg-pillar-catalog/85 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('tcg.new_search')}</Link>
+            <Link to={navTo(`/catalog/${game.slug}`)} className="btn bg-pillar-catalog hover:bg-pillar-catalog/85 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('tcg.new_search')}</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

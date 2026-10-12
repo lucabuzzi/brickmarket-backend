@@ -139,7 +139,7 @@ describe('page definitions (Phase A: text pages)', () => {
     expect(g.h1).toBe('Annunci Pokémon');
     expect(g.listings[0]).toMatchObject({ productType: 'tcg', game: 'pokemon' });
     expect(g.crumbs.map((c) => c.name)).toEqual(['CardBrix', 'Annunci', 'Carte Collezionabili', 'Pokémon']);
-    expect(pageFor('/catalog').body).toContain('href="/catalog/lego"');
+    expect(pageFor('/catalog').body).toContain('href="/it/catalog/lego"');
     expect(pageFor('/catalog/onepiece').h1).toBe('Catalogo One Piece');
   });
 
@@ -213,7 +213,7 @@ describe('listing blocks (Phase B: live data)', () => {
     expect(d.lead).toMatch(/^Offerta attuale: 77,00\s€\. Scade il 1 ottobre 2026/);
     expect(d.body).not.toContain('Descrizione');
     expect(d.body).not.toContain('<img');
-    expect(d.crumbs[1]).toMatchObject({ name: 'Aste', href: '/aste' });
+    expect(d.crumbs[1]).toMatchObject({ name: 'Aste', href: '/aste' }); // product pages are not localized: their own breadcrumb hrefs stay bare
   });
 });
 
@@ -261,14 +261,14 @@ describe('renderPage puts the content shell in the HTML', () => {
   });
 
   test('FAQ carries FAQPage JSON-LD next to its text', async () => {
-    const { html } = await doc('/faq');
+    const { html } = await doc('/it/faq');
     const ld = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
     expect(ld.some((b) => b['@type'] === 'FAQPage' && b.mainEntity.length >= 10)).toBe(true);
   });
 
   test('a category page lists live listings; the SQL was asked for the right slice', async () => {
     query.mockResolvedValue({ rows: [row(1), row(2)] });
-    const { parsed } = await doc('/annunci/carte-collezionabili/pokemon');
+    const { parsed } = await doc('/it/annunci/carte-collezionabili/pokemon');
     expect(parsed.anchors.map((a) => a.href)).toEqual(expect.arrayContaining(['/product/id-1', '/product/id-2']));
     expect(query.mock.calls[0][1]).toEqual(['tcg', 'pokemon', 20]);
   });
@@ -297,7 +297,7 @@ describe('renderPage puts the content shell in the HTML', () => {
 
   test('no page has an empty heading, paragraph or link, and no unresolved locale key leaks through', async () => {
     query.mockResolvedValue({ rows: [row(1)] });
-    const paths = [...STATIC_PATHS, '/crediti', '/product/abc'];
+    const paths = [...STATIC_PATHS, '/it/crediti', '/product/abc'];
     for (const p of paths) {
       const { html } = await doc(p);
       const shell = html.slice(html.indexOf('class="seo-shell"'), html.indexOf('</body>'));
@@ -321,7 +321,7 @@ describe('renderPage puts the content shell in the HTML', () => {
 
   test('the audit no longer flags "thin raw HTML" on the text-rich pages', async () => {
     query.mockResolvedValue({ rows: [row(1), row(2), row(3)] });
-    for (const p of ['/', '/come-funziona', '/faq', '/norme-legali']) {
+    for (const p of ['/', '/it/come-funziona', '/it/faq', '/it/norme-legali']) {
       const { parsed } = await doc(p);
       const r = { url: `${BASE}${p}`, finalUrl: `${BASE}${p}`, status: 200, chain: [], headers: { 'content-encoding': 'br' }, bytes: 1000, ttfbMs: 100, error: null };
       const ids = checkPage(r, parsed, { baseUrl: BASE }).map((i) => i.id);

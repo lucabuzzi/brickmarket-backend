@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Database, Lock } from 'lucide-react';
 import { CATALOG_GAMES } from '../config/catalogGames';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 // Per-game hover glow, independent of the page's own pillar-catalog accent below. Was
 // accidentally pointing 'blue' and 'purple' at gold; restored to their actual named colors.
@@ -17,6 +18,7 @@ const GLOW_STYLES = {
 
 function CatalogPickerDropdown() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -58,7 +60,7 @@ function CatalogPickerDropdown() {
                 disabled={!isActive}
                 onClick={() => {
                   setOpen(false);
-                  navigate(`/catalog/${game.slug}`);
+                  navigate(navTo(`/catalog/${game.slug}`));
                 }}
                 className="flex items-center gap-3 px-4 py-2.5 text-left text-sm font-bold text-white hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
@@ -80,6 +82,7 @@ function CatalogPickerDropdown() {
 
 export default function CatalogHub() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
 
   useEffect(() => {
     document.title = 'Catalogo - Scegli il tuo gioco | CardBrix';
@@ -142,7 +145,7 @@ export default function CatalogHub() {
               transition={{ delay: idx * 0.05 }}
             >
               <Link
-                to={`/catalog/${game.slug}`}
+                to={navTo(`/catalog/${game.slug}`)}
                 className={`group relative flex flex-col items-center justify-center text-center gap-3 aspect-square p-6 bg-[#120f0a] border border-white/5 rounded-[32px] transition-all duration-300 ${GLOW_STYLES[game.accent] || GLOW_STYLES.blue}`}
               >
                 {!isActive && (

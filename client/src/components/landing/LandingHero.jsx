@@ -5,6 +5,7 @@ import { ArrowRight, Search, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatEUR } from './landingUtils';
 import art from '../../assets/brand/art-1100.webp';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 // The art is a rectangle of dark image; fading every edge to transparent is what lets it dissolve
 // into the page instead of reading as a pasted-on box.
@@ -78,6 +79,7 @@ function StackCard({ item, slot, index }) {
 
 export default function LandingHero({ stackItems, stats, statsLoading }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const [query, setQuery] = useState('');
@@ -101,7 +103,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
   const handleSearch = (e) => {
     e.preventDefault();
     const q = query.trim();
-    navigate(q ? `/search-results?q=${encodeURIComponent(q)}` : '/annunci');
+    navigate(q ? `${navTo('/search-results')}?q=${encodeURIComponent(q)}` : navTo('/annunci'));
   };
 
   const words = [
@@ -111,17 +113,17 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
   ];
 
   const quickLinks = [
-    { label: 'LEGO', to: '/annunci/lego' },
-    { label: 'Pokémon', to: '/annunci/carte-collezionabili/pokemon' },
-    { label: 'One Piece', to: '/annunci/carte-collezionabili/onepiece' },
-    { label: 'Magic', to: '/annunci/carte-collezionabili/magic' },
-    { label: 'Funko', to: '/annunci/funko' },
+    { label: 'LEGO', to: navTo('/annunci/lego') },
+    { label: 'Pokémon', to: navTo('/annunci/carte-collezionabili/pokemon') },
+    { label: 'One Piece', to: navTo('/annunci/carte-collezionabili/onepiece') },
+    { label: 'Magic', to: navTo('/annunci/carte-collezionabili/magic') },
+    { label: 'Funko', to: navTo('/annunci/funko') },
   ];
 
   const liveCounts = [
-    { to: '/annunci', value: stats.listings, label: t('landing.hero.count_listings'), dot: 'bg-[#c6ff3d]' },
-    { to: '/aste', value: stats.auctions, label: t('landing.hero.count_auctions'), dot: 'bg-[#ff5a36]' },
-    { to: '/skill-zone', value: stats.contests, label: t('landing.hero.count_contests'), dot: 'bg-[#8b5cf6]' },
+    { to: navTo('/annunci'), value: stats.listings, label: t('landing.hero.count_listings'), dot: 'bg-[#c6ff3d]' },
+    { to: navTo('/aste'), value: stats.auctions, label: t('landing.hero.count_auctions'), dot: 'bg-[#ff5a36]' },
+    { to: navTo('/skill-zone'), value: stats.contests, label: t('landing.hero.count_contests'), dot: 'bg-[#8b5cf6]' },
   ];
 
   return (
@@ -187,14 +189,14 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
 
           <div className="mt-8 flex flex-col gap-3 min-[430px]:flex-row">
             <Link
-              to="/annunci"
+              to={navTo('/annunci')}
               className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white px-6 py-4 text-[15px] font-black text-[#07060b] transition-transform hover:-translate-y-0.5"
             >
               {t('landing.hero.cta_listings')}
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/skill-zone"
+              to={navTo('/skill-zone')}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#8b5cf6]/50 bg-[#8b5cf6]/10 px-6 py-4 text-[15px] font-black text-white transition-all hover:-translate-y-0.5 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/25"
             >
               <Swords size={18} />

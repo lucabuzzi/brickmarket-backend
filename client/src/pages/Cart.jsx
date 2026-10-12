@@ -11,6 +11,7 @@ import {
   Plus, ShieldCheck, ShoppingBag, Trash2, Truck,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { CARRIERS } from './Sell';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
@@ -397,6 +398,7 @@ function Steps({ current }) {
 
 function EmptyCart() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const { items } = useMarketItems(MARKET_MODES.listings);
   const picks = items.slice(0, 4);
 
@@ -412,11 +414,11 @@ function EmptyCart() {
         <h2 className="text-[clamp(2.2rem,6vw,3.8rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">{t('cart_page.empty_title')}</h2>
         <p className="mt-4 max-w-md text-base text-white/60 md:text-lg">{t('cart_page.empty_desc')}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/annunci" className="lx-shine relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full px-6 font-black text-[#10140a] transition hover:brightness-110" style={{ background: LIME }}>
+          <Link to={navTo('/annunci')} className="lx-shine relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full px-6 font-black text-[#10140a] transition hover:brightness-110" style={{ background: LIME }}>
             {t('cart_page.empty_cta_listings')}
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link to="/aste" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/15 px-6 font-bold text-white transition hover:border-white/40">
+          <Link to={navTo('/aste')} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/15 px-6 font-bold text-white transition hover:border-white/40">
             <Gavel className="h-4 w-4 text-[#ff5a36]" />
             {t('cart_page.empty_cta_auctions')}
           </Link>

@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, RotateCcw, Shuffle, Trophy, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cldImage, formatEUR, pad2 } from './landingUtils';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 const SIZE = 3;
 const TILE_COUNT = SIZE * SIZE;
@@ -23,6 +24,7 @@ function shuffled() {
 
 function MiniPuzzle({ image }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const [order, setOrder] = useState(shuffled);
   const [selected, setSelected] = useState(null);
@@ -138,7 +140,7 @@ function MiniPuzzle({ image }) {
                 {t('landing.arena.puzzle_result', { time: clock, count: moves })}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                <Link to="/skill-zone" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#07060b]">
+                <Link to={navTo('/skill-zone')} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#07060b]">
                   {t('landing.arena.puzzle_play_real')} <ArrowUpRight size={16} />
                 </Link>
                 <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white">
@@ -157,13 +159,14 @@ function MiniPuzzle({ image }) {
 
 function ContestRow({ contest }) {
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const pct = contest.totalSlots ? Math.min(100, Math.round((contest.filledSlots / contest.totalSlots) * 100)) : 0;
   const left = Math.max(0, contest.totalSlots - contest.filledSlots);
   const isOpen = contest.status === 'open';
 
   return (
     <Link
-      to="/skill-zone"
+      to={navTo('/skill-zone')}
       className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition-all hover:-translate-y-0.5 hover:border-[#8b5cf6]/70 hover:bg-[#8b5cf6]/10"
     >
       <img src={cldImage(contest.imageUrl, 180)} alt="" loading="lazy" className="h-20 w-16 shrink-0 rounded-xl object-cover" />
@@ -195,6 +198,7 @@ function ContestRow({ contest }) {
 
 export default function LandingArena({ contests, loading }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const puzzleImage = contests.find((c) => c.imageUrl)?.imageUrl;
   const listed = [...contests]
@@ -247,7 +251,7 @@ export default function LandingArena({ contests, loading }) {
           <div>
             <div className="flex items-end justify-between gap-4">
               <h3 className="text-2xl font-black tracking-[-0.02em] text-white">{t('landing.arena.contests_title')}</h3>
-              <Link to="/skill-zone" className="-my-3 inline-block shrink-0 py-3 text-sm font-bold text-[#22d3ee] underline decoration-[#22d3ee]/30 underline-offset-4 hover:decoration-[#22d3ee]">
+              <Link to={navTo('/skill-zone')} className="-my-3 inline-block shrink-0 py-3 text-sm font-bold text-[#22d3ee] underline decoration-[#22d3ee]/30 underline-offset-4 hover:decoration-[#22d3ee]">
                 {t('landing.arena.contests_all')}
               </Link>
             </div>
@@ -263,7 +267,7 @@ export default function LandingArena({ contests, loading }) {
                 <p className="text-sm font-black text-white">{t('landing.arena.credits_title')}</p>
                 <p className="text-sm text-white/60">{t('landing.arena.credits_desc')}</p>
               </div>
-              <Link to="/crediti" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#07060b]">
+              <Link to={navTo('/crediti')} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#07060b]">
                 {t('landing.arena.credits_cta')} <ArrowUpRight size={16} />
               </Link>
             </div>

@@ -25,8 +25,23 @@ function parseSetPath(reqPath) {
 }
 
 /** Title and description for one expansion page. Pure: `set` is a card_sets row, `mode` 'annunci' | 'aste'. */
-function buildSetMeta(set, mode, game = 'pokemon') {
+function buildSetMeta(set, mode, game = 'pokemon', locale = 'it') {
   const label = GAMES[game] ? GAMES[game].label : game;
+  if (locale === 'en') {
+    const name = set.name_en || set.name || set.id;
+    const series = set.series_name_en || set.series_name || '';
+    const cards = set.card_count_total ? ` A ${set.card_count_total}-card expansion${series ? ` (${series})` : ''}.` : '';
+    if (mode === 'aste') {
+      return {
+        title: `${label} ${name} Auctions | CardBrix`,
+        description: `Bid in live auctions for ${label} cards from the ${name} expansion on CardBrix.${cards}`.slice(0, 300),
+      };
+    }
+    return {
+      title: `${label} ${name} Cards for Sale | CardBrix`,
+      description: `Buy and sell ${label} cards from the ${name} expansion on CardBrix, between collectors.${cards}`.slice(0, 300),
+    };
+  }
   const name = set.name || set.name_en || set.id;
   const series = set.series_name || set.series_name_en || '';
   const cards = set.card_count_total ? ` Espansione da ${set.card_count_total} carte${series ? ` (${series})` : ''}.` : '';
@@ -46,7 +61,7 @@ function buildSetMeta(set, mode, game = 'pokemon') {
  * Meta for an expansion page, or null when the id is not a known expansion (the caller answers 404).
  * A database error is NOT "unknown": it throws, so the caller can keep serving the page.
  */
-async function fetchSetPageMeta(reqPath) {
+async function fetchSetPageMeta(reqPath, locale = 'it') {
   const parsed = parseSetPath(reqPath);
   if (!parsed) return null;
   const find = () => query(
@@ -61,7 +76,7 @@ async function fetchSetPageMeta(reqPath) {
     await GAMES[parsed.game].provider().ensureSets().catch((err) => console.error('seoSetPages: ensureSets failed:', err.message));
     ({ rows } = await find());
   }
-  return rows[0] ? buildSetMeta(rows[0], parsed.mode, parsed.game) : null;
+  return rows[0] ? buildSetMeta(rows[0], parsed.mode, parsed.game, locale) : null;
 }
 
 /** Expansion pages with at least one active listing (annunci) or auction (aste): [{ path, lastmod }]. */

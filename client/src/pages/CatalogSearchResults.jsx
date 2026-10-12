@@ -5,9 +5,11 @@ import { Search, Loader2, ArrowLeft, ArrowRight, Package, Clock, Hash } from 'lu
 import { motion } from 'framer-motion';
 import { StitchCard, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function CatalogSearchResults() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   
@@ -44,7 +46,7 @@ export default function CatalogSearchResults() {
         {/* HEADER / BREADCRUMBS */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div>
-            <Link to="/catalog/lego" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-4">
+            <Link to={navTo('/catalog/lego')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-4">
               <ArrowLeft size={14} /> {t('catalog.back_to_vault')}
             </Link>
             <div className="flex items-center gap-4">
@@ -60,7 +62,7 @@ export default function CatalogSearchResults() {
             </div>
           </div>
 
-          <Link to="/catalog/lego" className="px-8 py-4 bg-[#120f0a] border border-white/5 rounded-2xl text-white text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all shadow-xl flex items-center gap-3">
+          <Link to={navTo('/catalog/lego')} className="px-8 py-4 bg-[#120f0a] border border-white/5 rounded-2xl text-white text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all shadow-xl flex items-center gap-3">
              {t('catalog.new_query')} <Hash size={16} />
           </Link>
         </div>
@@ -79,7 +81,7 @@ export default function CatalogSearchResults() {
           <div className="p-24 text-center bg-[#120f0a] rounded-[48px] border border-white/5 shadow-2xl">
              <div className="text-stone-700 font-black text-6xl mb-6 uppercase tracking-tighter opacity-20 italic">{t('catalog.no_data_found')}</div>
              <p className="text-stone-500 max-w-md mx-auto mb-12 font-medium">{t('catalog.no_data_desc')}</p>
-             <Link to="/catalog/lego" className="btn bg-pillar-catalog hover:bg-pillar-catalog/85 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('catalog.restart_search')}</Link>
+             <Link to={navTo('/catalog/lego')} className="btn bg-pillar-catalog hover:bg-pillar-catalog/85 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest">{t('catalog.restart_search')}</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

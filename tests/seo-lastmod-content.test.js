@@ -8,8 +8,9 @@ const { wordCount } = require('../src/services/seoContent/html');
 const { pageFor } = require('../src/services/seoContent/pages');
 const { shellForRoute, shellForListing } = require('../src/services/seoContent');
 const { catalogBlock, listingsBlock, shippingSection } = require('../src/services/seoContent/listings');
-const { STATIC_PATHS } = require('../src/services/sitemapPaths');
+const { CANONICAL_STATIC_PATHS } = require('../src/services/sitemapPaths');
 const { pageFingerprint, refreshStored, dataDateFor, lastmodFor } = require('../src/services/sitemapLastmod');
+const { resolveLocalizedPath } = require('../src/services/localizedRoutes');
 const stored = require('../src/config/sitemapLastmod.json');
 const sitemapRouter = require('../src/routes/sitemap');
 
@@ -67,14 +68,14 @@ describe('catalog pages carry real catalog content', () => {
     query.mockRejectedValue(new Error('db down'));
     const { html } = await shellForRoute('/catalog/lego');
     expect(html).toContain('<h1>Catalogo LEGO</h1>');
-    expect(html).toContain('href="/annunci/lego"');
+    expect(html).toContain('href="/it/annunci/lego"');
     expect(html).not.toContain('undefined');
   });
 
   test('the catalog hub explains the catalog on top of the list of catalogs', () => {
     const def = pageFor('/catalog');
     expect(textOf(def.body)).toBeGreaterThan(60);
-    expect(def.body).toContain('href="/catalog/pokemon"');
+    expect(def.body).toContain('href="/it/catalog/pokemon"');
   });
 });
 
@@ -95,11 +96,11 @@ describe('empty categories say so honestly instead of showing nothing', () => {
     const funko = pageFor('/annunci/funko');
     expect(funko.listings[0].empty).toMatch(/Non ci sono annunci attivi per Funko/);
     expect(funko.body).toContain('href="/sell"');
-    expect(funko.body).toContain('href="/catalog/funko"');
+    expect(funko.body).toContain('href="/it/catalog/funko"');
     const auctions = pageFor('/aste/carte-collezionabili/magic');
     expect(auctions.listings[0].empty).toMatch(/Non ci sono aste in corso per Magic/);
     expect(auctions.body).toContain('href="/create-auction"');
-    expect(auctions.body).toContain('href="/catalog/magic"');
+    expect(auctions.body).toContain('href="/it/catalog/magic"');
   });
 
   test('empty-state text never promises credits, prices or results', () => {
@@ -112,14 +113,14 @@ describe('empty categories say so honestly instead of showing nothing', () => {
 describe('help and user directory pages', () => {
   test('help lists the FAQ questions as links to the FAQ', () => {
     const def = pageFor('/help');
-    expect((def.body.match(/<a href="\/faq">/g) || []).length).toBeGreaterThanOrEqual(10);
+    expect((def.body.match(/<a href="\/it\/faq">/g) || []).length).toBeGreaterThanOrEqual(10);
     expect(textOf(def.body)).toBeGreaterThan(100);
   });
 
   test('the user directory page has its own headline instead of the generic shell', () => {
     const def = pageFor('/ricerca-utente');
     expect(def.h1).toBe('Directory Community');
-    expect(def.body).toContain('href="/annunci"');
+    expect(def.body).toContain('href="/it/annunci"');
   });
 });
 
@@ -148,17 +149,17 @@ describe('listing pages show the seller\'s shipping options', () => {
 
 describe('sitemap lastmod for static pages', () => {
   test('the fingerprint file covers every static page, with valid dates, and matches the current text (run `npm run sitemap:lastmod` if this fails)', () => {
-    for (const p of STATIC_PATHS) {
+    for (const p of CANONICAL_STATIC_PATHS) {
       expect([p, Boolean(stored[p])]).toEqual([p, true]);
       expect([p, stored[p].date]).toEqual([p, expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)]);
       expect([p, stored[p].hash]).toEqual([p, pageFingerprint(p)]);
     }
-    expect(Object.keys(stored).filter((p) => !STATIC_PATHS.includes(p))).toEqual([]);
+    expect(Object.keys(stored).filter((p) => !CANONICAL_STATIC_PATHS.includes(p))).toEqual([]);
   });
 
   test('fingerprints are stable and differ between pages', () => {
     expect(pageFingerprint('/faq')).toBe(pageFingerprint('/faq'));
-    expect(new Set(STATIC_PATHS.map(pageFingerprint)).size).toBe(STATIC_PATHS.length);
+    expect(new Set(CANONICAL_STATIC_PATHS.map(pageFingerprint)).size).toBe(CANONICAL_STATIC_PATHS.length);
   });
 
   test('refreshStored keeps the date of unchanged pages and gives changed or new ones today', () => {
@@ -225,18 +226,23 @@ describe('GET /sitemap.xml', () => {
       return { rows: [] }; // the listing urls query
     });
     const xml = await run();
-    for (const p of STATIC_PATHS) expect([p, lastmods(xml, p === '/' ? '/' : p)]).toEqual([p, expect.stringMatching(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/)]);
-    expect(lastmods(xml, '/annunci/lego')).toBe('<lastmod>2099-01-02</lastmod>');
-    expect(lastmods(xml, '/catalog/pokemon')).toBe('<lastmod>2099-01-03</lastmod>');
-    expect(lastmods(xml, '/faq')).toBe(`<lastmod>${stored['/faq'].date}</lastmod>`);
+    for (const p of CANONICAL_STATIC_PATHS) {
+      for (const locale of ['it', 'en']) {
+        const prefixed = resolveLocalizedPath(p, locale);
+        expect([prefixed, lastmods(xml, prefixed)]).toEqual([prefixed, expect.stringMatching(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/)]);
+      }
+    }
+    expect(lastmods(xml, '/it/annunci/lego')).toBe('<lastmod>2099-01-02</lastmod>');
+    expect(lastmods(xml, '/it/catalog/pokemon')).toBe('<lastmod>2099-01-03</lastmod>');
+    expect(lastmods(xml, '/it/faq')).toBe(`<lastmod>${stored['/faq'].date}</lastmod>`);
   });
 
   test('with the database down the static pages keep the date of their own text and nothing throws', async () => {
     clear();
     query.mockRejectedValue(new Error('db down'));
     const xml = await run();
-    expect(lastmods(xml, '/faq')).toBe(`<lastmod>${stored['/faq'].date}</lastmod>`);
-    expect(lastmods(xml, '/annunci')).toBe(`<lastmod>${stored['/annunci'].date}</lastmod>`);
+    expect(lastmods(xml, '/it/faq')).toBe(`<lastmod>${stored['/faq'].date}</lastmod>`);
+    expect(lastmods(xml, '/it/annunci')).toBe(`<lastmod>${stored['/annunci'].date}</lastmod>`);
     expect(xml.startsWith('<?xml')).toBe(true);
   });
 });

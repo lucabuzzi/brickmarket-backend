@@ -3,9 +3,11 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { Clock, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getCatalogGame } from '../config/catalogGames';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function CatalogComingSoon() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const { slug } = useParams();
   const game = getCatalogGame(slug);
 
@@ -15,7 +17,7 @@ export default function CatalogComingSoon() {
 
   // Unknown slug or an already-active game landing here by mistake: bounce to the hub.
   if (!game || game.status === 'active') {
-    return <Navigate to="/catalog" replace />;
+    return <Navigate to={navTo('/catalog')} replace />;
   }
 
   return (
@@ -29,7 +31,7 @@ export default function CatalogComingSoon() {
         {t('catalog.coming_soon_desc')}
       </p>
       <Link
-        to="/catalog"
+        to={navTo('/catalog')}
         className="inline-flex items-center gap-2 px-6 py-3 bg-[#120f0a] border border-white/10 rounded-2xl text-white text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all"
       >
         <ArrowLeft size={16} /> {t('catalog.back_to_catalog')}

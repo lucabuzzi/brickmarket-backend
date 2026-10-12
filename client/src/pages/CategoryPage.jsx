@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../api';
 import Sidebar, { CATEGORIES, THEMES } from '../components/Sidebar';
 import ListingCard from '../components/ListingCard';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function CategoryPage() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const { slug } = useParams();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function CategoryPage() {
            return (
             <Link
               key={idx}
-              to={item.slug ? `/category/${item.slug}` : `/search-results?q=${encodeURIComponent(item.name)}`}
+              to={item.slug ? `/category/${item.slug}` : `${navTo('/search-results')}?q=${encodeURIComponent(item.name)}`}
               className="flex flex-col items-center gap-2 min-w-[60px] flex-shrink-0 group no-underline"
             >
               {/* Was 'border-gold-400' vs 'border-[#d4af37]' — the same color either way, so

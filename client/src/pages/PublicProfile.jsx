@@ -6,6 +6,7 @@ import {
   MessageSquare, Package, Share2, ShoppingBag, Star, Users,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { apiFetch } from '../api';
 import BrickRating from '../components/BrickRating';
 import MarketCard from '../components/market/MarketCard';
@@ -83,6 +84,7 @@ function EmptyState({ icon: Icon, title, desc }) {
 
 export default function PublicProfile() {
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const { username } = useParams();
   const toast = useToast();
   const [data, setData] = useState(null);
@@ -184,7 +186,7 @@ export default function PublicProfile() {
           </span>
           <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] text-white md:text-4xl">{t('seller_page.not_found_title')}</h1>
           <p className="mt-3 text-white/60">{t('seller_page.not_found_desc', { username })}</p>
-          <Link to="/ricerca-utente" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c6ff3d] px-6 font-black text-[#10140a] transition hover:brightness-110">
+          <Link to={navTo('/ricerca-utente')} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c6ff3d] px-6 font-black text-[#10140a] transition hover:brightness-110">
             <ArrowLeft className="h-4 w-4" />
             {t('public_profile.back_to_search')}
           </Link>
@@ -238,7 +240,7 @@ export default function PublicProfile() {
         <div className="pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full opacity-20 blur-[120px]" style={{ background: LIME }} />
 
         <div className="relative mx-auto max-w-[1320px] px-4 pb-12 pt-24 md:px-10 md:pb-16 md:pt-32">
-          <Link to="/ricerca-utente" className="mb-8 inline-flex min-h-10 items-center gap-2 text-[13px] font-semibold text-white/55 transition hover:text-white">
+          <Link to={navTo('/ricerca-utente')} className="mb-8 inline-flex min-h-10 items-center gap-2 text-[13px] font-semibold text-white/55 transition hover:text-white">
             <ArrowLeft className="h-4 w-4" />
             {t('public_profile.back_to_directory')}
           </Link>

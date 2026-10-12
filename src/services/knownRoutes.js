@@ -4,29 +4,33 @@
 //
 // Keep in sync with App.jsx: tests/not-found.test.js parses App.jsx and fails in both directions
 // (a client route missing here, or a route here that the client no longer has).
+//
+// The structural/marketing pages (home, annunci/aste hubs, catalog hub, info/legal pages) live at
+// /it/... and /en/... only - same shared registry the client resolver (localizedPaths.js) reads -
+// so they're generated here as `it/<path>` and `en/<translated path>` instead of being listed once
+// in Italian. Everything else (auth, account, product/:id, user/:username, catalog item detail,
+// admin/*) is dynamic or non-indexable and keeps its single unprefixed path, exactly as before.
+const LOCALIZED_ROUTES = require('../../client/src/config/localizedRoutes.json');
+const STRUCTURAL_ENTRIES = Object.entries(LOCALIZED_ROUTES).filter(([k]) => k !== '_comment' && k !== '/');
+const STRUCTURAL_ROUTES = [
+  'it', 'en', // the localized home (index route inside each locale block)
+  ...STRUCTURAL_ENTRIES.flatMap(([itPath, enPath]) => [`it${itPath}`, `en${enPath}`]),
+];
+
 const KNOWN_ROUTES = [
   '', // the home
-  'account', 'accessibilita', 'archive', 'cart', 'come-funziona', 'create-auction', 'crediti', 'crediti/acquista', 'crediti/converti',
-  'cookie-policy', 'faq', 'forgot-password', 'help', 'login', 'my-listings', 'my-shipments', 'norme-legali', 'notifications', 'privacy', 'profile', 'register',
-  'reset-password', 'ricerca-utente', 'search-results', 'sell', 'sell/cards', 'seller/onboarding-complete', 'seller/onboarding-retry',
-  'skill-zone', 'verifica-email',
+  'account', 'archive', 'cart', 'create-auction', 'crediti/acquista', 'crediti/converti',
+  'forgot-password', 'login', 'my-listings', 'my-shipments', 'notifications', 'profile', 'register',
+  'reset-password', 'sell', 'sell/cards', 'seller/onboarding-complete', 'seller/onboarding-retry',
+  'verifica-email',
   'product/:id', 'user/:username', 'category/:slug',
   'admin', 'admin/analytics', 'admin/analytics/calendar', 'admin/archive', 'admin/credit-config', 'admin/disputes',
   'admin/featured-pricing', 'admin/flagged-grants', 'admin/interactions', 'admin/listings', 'admin/payouts',
   'admin/users', 'admin/users/:id', 'admin/wallet-transactions',
-  'annunci', 'annunci/lego', 'annunci/funko', 'annunci/carte-collezionabili', 'annunci/carte-collezionabili/:slug',
-  'annunci/carte-collezionabili/dragonball', 'annunci/carte-collezionabili/lorcana', 'annunci/carte-collezionabili/magic',
-  'annunci/carte-collezionabili/onepiece', 'annunci/carte-collezionabili/pokemon', 'annunci/carte-collezionabili/yugioh',
-  'annunci/carte-collezionabili/pokemon/:espansione', 'annunci/carte-collezionabili/magic/:espansione', 'annunci/carte-collezionabili/onepiece/:espansione',
-  'annunci/carte-collezionabili/yugioh/:espansione', 'annunci/carte-collezionabili/lorcana/:espansione',
-  'aste', 'aste/lego', 'aste/funko', 'aste/carte-collezionabili', 'aste/carte-collezionabili/:slug',
-  'aste/carte-collezionabili/dragonball', 'aste/carte-collezionabili/lorcana', 'aste/carte-collezionabili/magic',
-  'aste/carte-collezionabili/onepiece', 'aste/carte-collezionabili/pokemon', 'aste/carte-collezionabili/yugioh',
-  'aste/carte-collezionabili/pokemon/:espansione', 'aste/carte-collezionabili/magic/:espansione', 'aste/carte-collezionabili/onepiece/:espansione',
-  'aste/carte-collezionabili/yugioh/:espansione', 'aste/carte-collezionabili/lorcana/:espansione',
-  'catalog', 'catalog/:slug',
-  'catalog/lego', 'catalog/lego/search', 'catalog/lego/:setNum',
-  ...['dragonball', 'funko', 'lorcana', 'magic', 'onepiece', 'pokemon', 'yugioh'].flatMap((g) => [`catalog/${g}`, `catalog/${g}/search`, `catalog/${g}/:cardId`]),
+  'catalog/:slug',
+  'catalog/lego/:setNum',
+  ...['dragonball', 'funko', 'lorcana', 'magic', 'onepiece', 'pokemon', 'yugioh'].map((g) => `catalog/${g}/:cardId`),
+  ...STRUCTURAL_ROUTES,
 ];
 
 // "a/:b/c" -> /^a\/[^/]+\/c$/ ; matching is case-insensitive and ignores a trailing slash, like React Router.
@@ -38,8 +42,8 @@ const MATCHERS = [...new Set(KNOWN_ROUTES)].map(toRegex);
 // in-sync test with App.jsx keeps working.
 const legalPages = require('../../client/src/config/legalPages.json');
 const UNPUBLISHED = new Set([
-  ...(legalPages.published ? [] : ['privacy', 'cookie-policy']),
-  ...(legalPages.accessibilityPublished ? [] : ['accessibilita']),
+  ...(legalPages.published ? [] : ['it/privacy', 'en/privacy', 'it/cookie-policy', 'en/cookie-policy']),
+  ...(legalPages.accessibilityPublished ? [] : ['it/accessibilita', 'en/accessibility']),
 ]);
 
 function isKnownRoute(pathname) {

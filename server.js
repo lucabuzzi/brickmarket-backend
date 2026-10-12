@@ -16,6 +16,7 @@ const path = require('path');
 const fs = require('fs');
 const payments = require('./src/routes/payments');
 const { createSpaFallback } = require('./src/routes/spaFallback');
+const { localeRedirect } = require('./src/routes/localeRedirect');
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -389,6 +390,8 @@ const clientDistPath = path.join(__dirname, 'client', 'dist');
 // rewrites the meta tags) instead of being answered by express.static with the raw dist/index.html.
 // /index.html is a raw copy of the shell reachable at a second address: send it to "/" with a permanent redirect.
 app.get('/index.html', (req, res) => res.redirect(301, '/'));
+// Old unprefixed structural URLs (and bare "/") -> their real /it or /en URL, before anything else can answer them.
+app.get(/^\/(?!api\/|uploads\/).*/, localeRedirect);
 app.use(express.static(clientDistPath, { index: false }));
 // Unknown URLs and missing listings answer HTTP 404 (with the same shell) — see src/routes/spaFallback.js.
 app.get(/^\/(?!api\/|uploads\/).*/, createSpaFallback(clientDistPath));

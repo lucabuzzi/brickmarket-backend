@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../api';
 import { ArrowRight, AlertCircle, ArrowLeft, Sparkles } from 'lucide-react';
 import { getCatalogGame } from '../config/catalogGames';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function TcgCardPage({ gameSlug }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const game = getCatalogGame(gameSlug);
   const { cardId } = useParams();
   const [data, setData] = useState(null);
@@ -32,7 +34,7 @@ export default function TcgCardPage({ gameSlug }) {
   }, [cardId, game, t]);
 
   if (!game || game.status !== 'active') {
-    return <Navigate to="/catalog" replace />;
+    return <Navigate to={navTo('/catalog')} replace />;
   }
 
   if (loading) {
@@ -50,7 +52,7 @@ export default function TcgCardPage({ gameSlug }) {
         <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
         <h1 className="text-2xl font-bold text-white mb-2">{t('tcg.card_not_found_title')}</h1>
         <p className="text-stone-400 mb-8">{error || t('tcg.card_not_found_fallback')}</p>
-        <Link to={`/catalog/${game.slug}`} className="btn btn--primary">{t('catalog.back_to_catalog')}</Link>
+        <Link to={navTo(`/catalog/${game.slug}`)} className="btn btn--primary">{t('catalog.back_to_catalog')}</Link>
       </div>
     );
   }
@@ -67,7 +69,7 @@ export default function TcgCardPage({ gameSlug }) {
 
   return (
     <div className="p-4 md:p-8 max-w-[1200px] mx-auto animate-fadeIn">
-      <Link to={`/catalog/${game.slug}`} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
+      <Link to={navTo(`/catalog/${game.slug}`)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
         <ArrowLeft size={14} /> {t('tcg.back_to_catalog_game', { name: game.name })}
       </Link>
 

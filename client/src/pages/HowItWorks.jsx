@@ -6,9 +6,11 @@ import {
   Star, Bell, UserCircle2, Coins,
 } from 'lucide-react';
 import { StitchCard } from '../components/StitchComponents';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function HowItWorks() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
 
   useEffect(() => {
     document.title = t('how_it_works_page.page_title');
@@ -27,12 +29,12 @@ export default function HowItWorks() {
     {
       icon: <Search size={20} />, color: 'text-pillar-catalog bg-pillar-catalog/10 border-pillar-catalog/20', linkColor: 'text-pillar-catalog hover:text-pillar-catalog/80',
       title: t('how_it_works_page.step1_title'), desc: t('how_it_works_page.step1_long_desc'),
-      cta: t('how_it_works_page.step1_cta'), to: '/catalog',
+      cta: t('how_it_works_page.step1_cta'), to: navTo('/catalog'),
     },
     {
       icon: <ShoppingCart size={20} />, color: 'text-pillar-listings bg-pillar-listings/10 border-pillar-listings/20', linkColor: 'text-pillar-listings hover:text-pillar-listings/80',
       title: t('how_it_works_page.step2_title'), desc: t('how_it_works_page.step2_long_desc'),
-      cta: t('how_it_works_page.step2_cta'), to: '/annunci',
+      cta: t('how_it_works_page.step2_cta'), to: navTo('/annunci'),
     },
     {
       icon: <PackagePlus size={20} />, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', linkColor: 'text-emerald-400 hover:text-emerald-300',
@@ -42,7 +44,7 @@ export default function HowItWorks() {
     {
       icon: <Gamepad2 size={20} />, color: 'text-pillar-arena bg-pillar-arena/10 border-pillar-arena/20', linkColor: 'text-pillar-arena hover:text-pillar-arena/80',
       title: t('how_it_works_page.step4_title'), desc: t('how_it_works_page.step4_long_desc'),
-      cta: t('how_it_works_page.step4_cta'), to: '/skill-zone',
+      cta: t('how_it_works_page.step4_cta'), to: navTo('/skill-zone'),
     },
   ];
 
@@ -74,7 +76,7 @@ export default function HowItWorks() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              to="/catalog"
+              to={navTo('/catalog')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-gold-500 hover:bg-gold-400 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all shadow-lg shadow-gold-500/25 active-shrink"
             >
               {t('how_it_works_page.hero_cta_catalog')} <ArrowRight size={14} />
@@ -185,7 +187,7 @@ export default function HowItWorks() {
               {t('how_it_works_page.cta_register')} <ArrowRight size={14} />
             </Link>
             <Link
-              to="/catalog"
+              to={navTo('/catalog')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all active-shrink"
             >
               {t('how_it_works_page.cta_browse')}

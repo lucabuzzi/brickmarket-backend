@@ -27,22 +27,28 @@ describe('policy pages in the server-rendered shell', () => {
   });
 
   const FLAGS = { '/privacy': legalPages.published, '/cookie-policy': legalPages.published, '/accessibilita': legalPages.accessibilityPublished };
+  // these pages are structural: real traffic only ever reaches them as /it/... or /en/... (see localizedRoutes.json)
+  const EN_PATH = { '/privacy': '/privacy', '/cookie-policy': '/cookie-policy', '/accessibilita': '/accessibility' };
 
   test('every policy route has its own meta, and is a known route only once its flag is on', () => {
     for (const [p, published] of Object.entries(FLAGS)) {
       expect(getRouteMeta(p)).toBeTruthy();
-      expect([p, isKnownRoute(p)]).toEqual([p, published]);
-      expect([p, isKnownRoute(p.toUpperCase()), isKnownRoute(`${p}/`)]).toEqual([p, published, published]); // case and trailing slash cannot bypass it
+      for (const prefixed of [`/it${p}`, `/en${EN_PATH[p]}`]) {
+        expect([prefixed, isKnownRoute(prefixed)]).toEqual([prefixed, published]);
+        expect([prefixed, isKnownRoute(prefixed.toUpperCase()), isKnownRoute(`${prefixed}/`)]).toEqual([prefixed, published, published]); // case and trailing slash cannot bypass it
+      }
     }
   });
 
   test('an unpublished page answers 404 + noindex on the server, like any invented URL; a published one answers 200', async () => {
     const template = '<!doctype html><html lang="it"><head><title>x</title><link rel="canonical" href="https://cardbrix.com/"></head><body><div id="root"></div></body></html>';
     for (const [p, published] of Object.entries(FLAGS)) {
-      const { status, html } = await renderPage(p, template);
-      expect([p, status]).toEqual([p, published ? 200 : 404]);
-      expect([p, /<meta name="robots" content="noindex">/.test(html)]).toEqual([p, !published]);
-      if (!published) expect(html).not.toMatch(/\[DA COMPILARE|\[DATA\]|\[EMAIL/); // the placeholder text never reaches the HTML
+      for (const prefixed of [`/it${p}`, `/en${EN_PATH[p]}`]) {
+        const { status, html } = await renderPage(prefixed, template);
+        expect([prefixed, status]).toEqual([prefixed, published ? 200 : 404]);
+        expect([prefixed, /<meta name="robots" content="noindex">/.test(html)]).toEqual([prefixed, !published]);
+        if (!published) expect(html).not.toMatch(/\[DA COMPILARE|\[DATA\]|\[EMAIL/); // the placeholder text never reaches the HTML
+      }
     }
   });
 
@@ -55,8 +61,9 @@ describe('policy pages in the server-rendered shell', () => {
   test('sitemap and server footer list each page only when its flag is true', () => {
     const flags = { '/privacy': legalPages.published, '/cookie-policy': legalPages.published, '/accessibilita': legalPages.accessibilityPublished };
     for (const [p, published] of Object.entries(flags)) {
-      expect([p, STATIC_PATHS.includes(p)]).toEqual([p, published]);
-      expect([p, footerNav().map(([href]) => href).includes(p)]).toEqual([p, published]);
+      const prefixed = `/it${p}`;
+      expect([prefixed, STATIC_PATHS.includes(prefixed)]).toEqual([prefixed, published]);
+      expect([prefixed, footerNav('it').map(([href]) => href).includes(prefixed)]).toEqual([prefixed, published]);
     }
   });
 

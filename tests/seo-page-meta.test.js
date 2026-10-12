@@ -6,6 +6,7 @@ const { query } = require('../src/db');
 const { getRouteMeta } = require('../src/services/pageMeta');
 const { renderIndexHtmlForRequest, DEFAULT_TITLE, DEFAULT_DESCRIPTION } = require('../src/services/seoMeta');
 const { STATIC_PATHS } = require('../src/routes/sitemap');
+const { CANONICAL_STATIC_PATHS } = require('../src/services/sitemapPaths');
 const { parseHtml } = require('../scripts/seo-audit/lib/htmlParse');
 const { checkPage } = require('../scripts/seo-audit/lib/pageChecks');
 const { checkDuplicates } = require('../scripts/seo-audit/lib/siteChecks');
@@ -18,9 +19,11 @@ const template = `<!doctype html><html lang="it"><head><title>Old default title<
 <meta name="twitter:title" content="Default"><meta name="twitter:description" content="Default"><meta name="twitter:image" content="x"><meta name="twitter:image:alt" content="Default">
 </head><body></body></html>`;
 
-// every route the client can serve that is worth indexing, incl. some that are not in the sitemap
+// every CANONICAL (Italian) route the client can serve that is worth indexing, incl. some that are not
+// in the sitemap - getRouteMeta always takes the canonical path, regardless of the /it or /en URL it's
+// actually served under (see seoMeta.js, which does that translation for a real request).
 const EXTRA_PATHS = ['/crediti', '/search-results', ...GAMES.flatMap((g) => [`/catalog/${g}/search`]), '/catalog/lego/search', '/catalog/funko', '/catalog/funko/search'];
-const ALL_PATHS = [...new Set([...STATIC_PATHS, ...EXTRA_PATHS])].filter((p) => p !== '/');
+const ALL_PATHS = [...new Set([...CANONICAL_STATIC_PATHS, ...EXTRA_PATHS])].filter((p) => p !== '/');
 
 describe('getRouteMeta', () => {
   test('the home keeps the site-wide text (null = use the default)', () => {
@@ -29,7 +32,7 @@ describe('getRouteMeta', () => {
   });
 
   test('every page listed in the sitemap (except the home) has its own meta', () => {
-    const missing = STATIC_PATHS.filter((p) => p !== '/' && !getRouteMeta(p));
+    const missing = CANONICAL_STATIC_PATHS.filter((p) => p !== '/' && !getRouteMeta(p));
     expect(missing).toEqual([]); // adding a path to sitemap.js without giving it a title fails here
   });
 
@@ -91,22 +94,47 @@ describe('getRouteMeta', () => {
     for (const banned of ['€', 'euro', 'acquista', 'compra', 'converti', 'rimbors', 'vale ', 'valore', '1 credito']) expect(text).not.toContain(banned);
     expect(text).toContain('puzzle arena');
   });
+
+  test('the English text (same canonical paths, locale="en") is just as unique and within range, and follows the same credit rule', () => {
+    const titles = ALL_PATHS.map((p) => getRouteMeta(p, 'en').title);
+    const descs = ALL_PATHS.map((p) => getRouteMeta(p, 'en').description);
+    expect(new Set(titles).size).toBe(titles.length);
+    expect(new Set(descs).size).toBe(descs.length);
+    for (const p of ALL_PATHS) {
+      const { title, description } = getRouteMeta(p, 'en');
+      expect([p, title.length >= 30 && title.length <= 65]).toEqual([p, true]);
+      expect([p, description.length >= 70 && description.length <= 160]).toEqual([p, true]);
+      expect(title.endsWith(' | CardBrix')).toBe(true);
+    }
+    const credits = getRouteMeta('/crediti', 'en');
+    const text = `${credits.title} ${credits.description}`.toLowerCase();
+    for (const banned of ['€', 'euro', 'buy', 'purchase', 'convert', 'refund', 'worth', 'value', '1 credit']) expect(text).not.toContain(banned);
+    expect(text).toContain('puzzle arena');
+  });
 });
 
 describe('renderIndexHtmlForRequest applies route meta', () => {
   afterEach(() => query.mockReset());
 
   test('a category page gets its own title, description, og and twitter tags, and self canonical', async () => {
-    const html = await renderIndexHtmlForRequest('/annunci/carte-collezionabili/pokemon', template);
+    const html = await renderIndexHtmlForRequest('/it/annunci/carte-collezionabili/pokemon', template);
     const p = parseHtml(html);
     expect(p.title).toBe('Annunci di carte Pokémon | CardBrix');
     expect(p.description).toMatch(/^Compra carte Pokémon a prezzo fisso/);
-    expect(p.canonical).toBe('https://cardbrix.com/annunci/carte-collezionabili/pokemon');
+    expect(p.canonical).toBe('https://cardbrix.com/it/annunci/carte-collezionabili/pokemon');
     expect(p.og.title).toBe(p.title);
     expect(p.og.description).toBe(p.description);
     expect(html).toContain('<meta name="twitter:title" content="Annunci di carte Pokémon | CardBrix">');
     // category pages read the ACTIVE listings list for the content shell, but never look up a single listing
     expect(query.mock.calls.every(([sql]) => !/FROM listings WHERE id = \$1/.test(sql))).toBe(true);
+  });
+
+  test('its /en/ twin gets English text at its own URL', async () => {
+    const html = await renderIndexHtmlForRequest('/en/listings/trading-cards/pokemon', template);
+    const p = parseHtml(html);
+    expect(p.title).toBe('Listings: Pokémon Cards | CardBrix');
+    expect(p.canonical).toBe('https://cardbrix.com/en/listings/trading-cards/pokemon');
+    expect(p.lang).toBe('en');
   });
 
   test('the home keeps the site default; unknown routes get the not-found text (and a 404, see not-found.test.js)', async () => {
@@ -134,7 +162,7 @@ describe('renderIndexHtmlForRequest applies route meta', () => {
   test('end to end with the audit: the duplicate-title/description checks pass on sitemap pages', async () => {
     const pages = [];
     for (const path of STATIC_PATHS) {
-      const html = await renderIndexHtmlForRequest(path, template);
+      const html = await renderIndexHtmlForRequest(path, template); // STATIC_PATHS is already /it or /en prefixed
       pages.push({ url: `https://cardbrix.com${path}`, parsed: parseHtml(html) });
     }
     const dupes = checkDuplicates(pages);

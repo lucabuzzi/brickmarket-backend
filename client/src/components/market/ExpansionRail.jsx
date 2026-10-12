@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { setDisplayName, setLogoSrc } from '../../lib/sell/catalog';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 // "Browse by expansion" strip on the Pokémon pages: only the expansions that have something to show right now
 // (listings on the listings page, auctions on the auctions page), newest first. Renders nothing when there are none.
 export default function ExpansionRail({ series, mode, game = 'pokemon' }) {
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const countKey = mode.isAuction ? 'auctions_count' : 'listings_count';
   const sets = series.flatMap((s) => s.sets).filter((s) => s[countKey] > 0);
   if (sets.length === 0) return null;
@@ -18,7 +20,7 @@ export default function ExpansionRail({ series, mode, game = 'pokemon' }) {
           {sets.map((s) => (
             <li key={s.id} className="shrink-0">
               <Link
-                to={`${mode.base}/carte-collezionabili/${game}/${String(s.id).toLowerCase()}`}
+                to={navTo(`${mode.base}/carte-collezionabili/${game}/${String(s.id).toLowerCase()}`)}
                 className="flex h-full w-52 items-center gap-3 rounded-2xl border border-white/12 bg-white/[0.03] px-3 py-3 transition-colors hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
                 {s.logo ? <img src={setLogoSrc(s.logo)} alt="" loading="lazy" className="h-9 w-12 shrink-0 object-contain" /> : <span className="h-9 w-12 shrink-0" aria-hidden="true" />}

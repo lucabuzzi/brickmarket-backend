@@ -16,6 +16,7 @@ import { useToast } from '../context/ToastContext';
 import SellerTypeBadge from '../components/SellerTypeBadge';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { GAME_NAMES, cldImage, formatEUR, pad2, useCountdown } from '../components/landing/landingUtils';
 import { languageName, listingGradeLabel } from '../lib/sell/cards';
 import { findSet, hasCatalog, setDisplayName } from '../lib/sell/catalog';
@@ -458,11 +459,12 @@ function SellerReviews({ sellerId, username, accent }) {
 
 function Related({ listing, mode }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const productType = listing.product_type || 'lego';
   const { items } = useMarketItems(mode, { productType });
   const others = items.filter((i) => i.id !== listing.id).slice(0, 4);
   if (others.length === 0) return null;
-  const allTo = `${mode.base}/${CATEGORY_SLUGS[productType] || ''}`;
+  const allTo = navTo(`${mode.base}/${CATEGORY_SLUGS[productType] || ''}`);
 
   return (
     <section className="mx-auto max-w-[1320px] px-4 pb-24 pt-8 md:px-10 md:pb-28">
@@ -494,6 +496,7 @@ export default function ListingDetail() {
   const { cart, addToCart } = useCart();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
@@ -622,7 +625,7 @@ export default function ListingDetail() {
           <p className="lx-outline select-none text-[clamp(6rem,22vw,11rem)] font-black leading-none tracking-[-0.06em]">404</p>
           <h1 className="mt-2 text-3xl font-black tracking-[-0.03em] text-white md:text-4xl">{t('product.not_found_title')}</h1>
           <p className="mt-3 text-white/60">{t('product.not_found_desc')}</p>
-          <Link to="/annunci" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c6ff3d] px-6 font-black text-[#10140a] transition hover:brightness-110">
+          <Link to={navTo('/annunci')} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c6ff3d] px-6 font-black text-[#10140a] transition hover:brightness-110">
             {t('product.not_found_cta')}
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -740,23 +743,23 @@ export default function ListingDetail() {
       <div className="relative mx-auto max-w-[1320px] px-4 pt-20 md:px-10 lg:pt-24">
         {/* breadcrumb */}
         <nav className="mb-4 flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-white/50" aria-label="breadcrumb">
-          <Link to={mode.base} className="inline-flex min-h-10 items-center transition hover:text-white">{t(isAuction ? 'nav.auctions' : 'nav.listings')}</Link>
+          <Link to={navTo(mode.base)} className="inline-flex min-h-10 items-center transition hover:text-white">{t(isAuction ? 'nav.auctions' : 'nav.listings')}</Link>
           {categorySlug && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-white/25" />
-              <Link to={`${mode.base}/${categorySlug}`} className="inline-flex min-h-10 items-center transition hover:text-white">{categoryName}</Link>
+              <Link to={navTo(`${mode.base}/${categorySlug}`)} className="inline-flex min-h-10 items-center transition hover:text-white">{categoryName}</Link>
             </>
           )}
           {game && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-white/25" />
-              <Link to={`${mode.base}/${categorySlug}/${game.slug}`} className="inline-flex min-h-10 items-center transition hover:text-white">{GAME_NAMES[game.slug] || game.name}</Link>
+              <Link to={navTo(`${mode.base}/${categorySlug}/${game.slug}`)} className="inline-flex min-h-10 items-center transition hover:text-white">{GAME_NAMES[game.slug] || game.name}</Link>
             </>
           )}
           {cardSet && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-white/25" />
-              <Link to={`${mode.base}/${categorySlug}/${game.slug}/${String(cardSet.id).toLowerCase()}`} className="inline-flex min-h-10 items-center transition hover:text-white">{setDisplayName(cardSet, i18n.language)}</Link>
+              <Link to={navTo(`${mode.base}/${categorySlug}/${game.slug}/${String(cardSet.id).toLowerCase()}`)} className="inline-flex min-h-10 items-center transition hover:text-white">{setDisplayName(cardSet, i18n.language)}</Link>
             </>
           )}
         </nav>

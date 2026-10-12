@@ -3,10 +3,11 @@ const router = express.Router();
 const { query } = require('../db');
 const { resolveImageUrl } = require('../services/seoMeta');
 
-const { STATIC_PATHS } = require('../services/sitemapPaths');
+const { STATIC_PATHS, CANONICAL_STATIC_PATHS } = require('../services/sitemapPaths');
 const { lastmodFor } = require('../services/sitemapLastmod');
 const { cached } = require('../services/seoContent/cache');
 const { listSetSitemapPaths } = require('../services/seoSetPages');
+const { resolveLocalizedPath, URL_LOCALES } = require('../services/localizedRoutes');
 
 const BASE_URL = 'https://cardbrix.com';
 
@@ -69,11 +70,17 @@ router.get('/sitemap.xml', async (req, res) => {
 
   const lastmodData = (await cached('sitemap:lastmod', LASTMOD_TTL_MS, loadLastmodData, { timeoutMs: 3000 })) || { groups: [], catalog: {} };
 
-  const staticUrls = STATIC_PATHS.map((p) => urlTag(`${BASE_URL}${p}`, lastmodFor(p, lastmodData)));
-  // Pokémon expansion pages that have something to show (an empty one would be a thin page)
+  // lastmod is computed from the canonical (Italian) path - that's what sitemapLastmod.js's text
+  // fingerprint and live-data matching understand - then applied to both the /it and /en URL.
+  const staticUrls = CANONICAL_STATIC_PATHS.flatMap((p) => {
+    const lastmod = lastmodFor(p, lastmodData);
+    return URL_LOCALES.map((locale) => urlTag(`${BASE_URL}${resolveLocalizedPath(p, locale)}`, lastmod));
+  });
+  // Expansion pages (Pokémon, Magic, ...) that have something to show (an empty one would be a thin page).
+  // Structural, like the other static pages above: listed at both their /it and /en URL.
   let setUrls = [];
   try {
-    setUrls = (await listSetSitemapPaths()).map((s) => urlTag(`${BASE_URL}${s.path}`, s.lastmod));
+    setUrls = (await listSetSitemapPaths()).flatMap((s) => URL_LOCALES.map((locale) => urlTag(`${BASE_URL}${resolveLocalizedPath(s.path, locale)}`, s.lastmod)));
   } catch (err) {
     console.error('sitemap.xml: espansioni non disponibili:', err.message);
   }

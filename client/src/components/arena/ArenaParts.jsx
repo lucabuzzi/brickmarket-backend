@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { formatRaceTime } from '../../api';
 import { formatEUR } from '../landing/landingUtils';
 import { contestImage, gameName } from './arenaUtils';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 const PODIUM = ['text-[#facc15]', 'text-[#e2e8f0]', 'text-[#d6955b]'];
 
@@ -17,6 +18,7 @@ function hideBrokenImage(e) {
 
 export function ArenaHero({ contests, user, wallet, spotlight, spotlightLeaderboard, onPlay }) {
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
 
   const open = contests.filter((c) => c.status === 'open');
@@ -73,7 +75,7 @@ export function ArenaHero({ contests, user, wallet, spotlight, spotlightLeaderbo
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Top-up crediti (Stripe) temporaneamente disattivato — vedi WalletInfo.jsx */}
-                <Link to="/crediti" className="rounded-xl px-3 py-3 text-sm font-bold text-white/70 underline decoration-white/25 underline-offset-4 hover:text-white">
+                <Link to={navTo('/crediti')} className="rounded-xl px-3 py-3 text-sm font-bold text-white/70 underline decoration-white/25 underline-offset-4 hover:text-white">
                   {t('arena_page.hero.wallet_how')}
                 </Link>
               </div>

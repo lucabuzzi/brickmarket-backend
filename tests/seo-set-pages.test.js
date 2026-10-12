@@ -12,6 +12,7 @@ const onepieceApi = require('../src/services/onepieceApi');
 const { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths } = require('../src/services/seoSetPages');
 const { renderPage } = require('../src/services/seoMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');
+const { resolveLocalizedPath } = require('../src/services/localizedRoutes');
 
 const TEMPLATE = '<!doctype html><html lang="it"><head><title>x</title><link rel="canonical" href="https://cardbrix.com/"><meta name="description" content="d"><meta property="og:title" content="d"><meta name="twitter:title" content="d"></head><body><div id="root"></div></body></html>';
 const SET_ROW = { id: '30th', name: '30° Anniversario', name_en: '30th Anniversary', series_name: 'Megaevoluzione', series_name_en: 'Mega Evolution', card_count_total: 161 };
@@ -36,9 +37,11 @@ describe('path and meta', () => {
     }
   });
 
-  test('the router knows both pages', () => {
-    expect(isKnownRoute('/annunci/carte-collezionabili/pokemon/30th')).toBe(true);
-    expect(isKnownRoute('/aste/carte-collezionabili/pokemon/30th')).toBe(true);
+  test('the router knows both pages, at their /it and /en URL (expansion pages are structural)', () => {
+    expect(isKnownRoute('/it/annunci/carte-collezionabili/pokemon/30th')).toBe(true);
+    expect(isKnownRoute('/en/listings/trading-cards/pokemon/30th')).toBe(true);
+    expect(isKnownRoute('/it/aste/carte-collezionabili/pokemon/30th')).toBe(true);
+    expect(isKnownRoute('/en/auctions/trading-cards/pokemon/30th')).toBe(true);
   });
 
   test('titles and descriptions name the expansion, differ between listings and auctions, and stay short', () => {
@@ -128,23 +131,31 @@ describe('lookup', () => {
 describe('renderPage', () => {
   test('a known expansion page has its own title and canonical, status 200', async () => {
     query.mockResolvedValue({ rows: [SET_ROW] });
-    const { status, html } = await renderPage('/annunci/carte-collezionabili/pokemon/30th', TEMPLATE);
+    const { status, html } = await renderPage('/it/annunci/carte-collezionabili/pokemon/30th', TEMPLATE);
     expect(status).toBe(200);
     expect(html).toContain('<title>Carte Pokémon 30° Anniversario in vendita | CardBrix</title>');
-    expect(html).toContain('href="https://cardbrix.com/annunci/carte-collezionabili/pokemon/30th"');
+    expect(html).toContain('href="https://cardbrix.com/it/annunci/carte-collezionabili/pokemon/30th"');
     expect(html).not.toMatch(/name="robots" content="noindex"/);
+  });
+
+  test('its /en/ twin gets the English text', async () => {
+    query.mockResolvedValue({ rows: [SET_ROW] });
+    const { status, html } = await renderPage('/en/listings/trading-cards/pokemon/30th', TEMPLATE);
+    expect(status).toBe(200);
+    expect(html).toContain('<title>Pokémon 30th Anniversary Cards for Sale | CardBrix</title>');
+    expect(html).toContain('href="https://cardbrix.com/en/listings/trading-cards/pokemon/30th"');
   });
 
   test('an unknown expansion answers 404 with noindex, never a soft 404', async () => {
     query.mockResolvedValue({ rows: [] });
-    const { status, html } = await renderPage('/annunci/carte-collezionabili/pokemon/inventata', TEMPLATE);
+    const { status, html } = await renderPage('/it/annunci/carte-collezionabili/pokemon/inventata', TEMPLATE);
     expect(status).toBe(404);
     expect(html).toMatch(/name="robots" content="noindex"/);
   });
 
   test('with the database down the page is still served (with the default meta), not claimed missing', async () => {
     query.mockRejectedValue(new Error('db down'));
-    const { status, html } = await renderPage('/aste/carte-collezionabili/pokemon/30th', TEMPLATE);
+    const { status, html } = await renderPage('/it/aste/carte-collezionabili/pokemon/30th', TEMPLATE);
     expect(status).toBe(200);
     expect(html).toContain('CardBrix');
     expect(html).not.toMatch(/name="robots" content="noindex"/);
@@ -152,7 +163,7 @@ describe('renderPage', () => {
 
   test('other Pokémon pages are untouched and do not query the expansion table', async () => {
     query.mockResolvedValue({ rows: [] });
-    const { status } = await renderPage('/annunci/carte-collezionabili/pokemon', TEMPLATE);
+    const { status } = await renderPage('/it/annunci/carte-collezionabili/pokemon', TEMPLATE);
     expect(status).toBe(200);
     expect(query.mock.calls.some(([sql]) => /card_sets/.test(sql))).toBe(false);
   });
@@ -175,8 +186,11 @@ describe('sitemap paths', () => {
     expect(query.mock.calls[0][0]).toMatch(/status = 'active'/);
   });
 
-  test('every path it produces is a known route', async () => {
+  test('every path it produces is a known route, once resolved to its /it and /en URL (see sitemap.js)', async () => {
     query.mockResolvedValueOnce({ rows: [{ game: 'pokemon', id: '30th', auction: false, lastmod: null }, { game: 'pokemon', id: 'sv3pt5', auction: true, lastmod: null }, { game: 'magic', id: 'tblb', auction: false, lastmod: null }, { game: 'onepiece', id: 'ST-01', auction: false, lastmod: null }] });
-    for (const { path } of await listSetSitemapPaths()) expect(isKnownRoute(path)).toBe(true);
+    for (const { path } of await listSetSitemapPaths()) {
+      expect(isKnownRoute(resolveLocalizedPath(path, 'it'))).toBe(true);
+      expect(isKnownRoute(resolveLocalizedPath(path, 'en'))).toBe(true);
+    }
   });
 });

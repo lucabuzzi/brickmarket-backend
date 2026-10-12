@@ -11,6 +11,7 @@ import { listingImage } from '../components/landing/landingUtils';
 import ExpansionRail from '../components/market/ExpansionRail';
 import useCardSets from '../components/market/useCardSets';
 import { findSet, hasCatalog, setDisplayName } from '../lib/sell/catalog';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 function Chip({ active, onClick, children, mode }) {
   return (
@@ -49,6 +50,7 @@ function SkeletonGrid() {
 export default function MarketCategory({ modeKey = 'listings', productType = 'lego', game = null, bySet = false }) {
   const mode = MARKET_MODES[modeKey];
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const { espansione } = useParams();
   const cardSet = bySet ? espansione : null;
@@ -65,10 +67,10 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
   const categoryName = category?.nameKey ? t(category.nameKey) : category?.name;
   const title = setInfo ? setDisplayName(setInfo, i18n.language) : gameInfo ? gameInfo.name : categoryName;
   const back = bySet && gameInfo
-    ? { to: `${mode.base}/carte-collezionabili/${game}`, label: gameInfo.name }
+    ? { to: navTo(`${mode.base}/carte-collezionabili/${game}`), label: gameInfo.name }
     : gameInfo
-    ? { to: `${mode.base}/carte-collezionabili`, label: t('hubs.categories.carte_name') }
-    : { to: mode.base, label: t(`market.back_hub_${mode.key}`) };
+    ? { to: navTo(`${mode.base}/carte-collezionabili`), label: t('hubs.categories.carte_name') }
+    : { to: navTo(mode.base), label: t(`market.back_hub_${mode.key}`) };
 
   useEffect(() => {
     document.title = `${t(`market.hub.${mode.key}.kicker`)} ${title} | CardBrix`;

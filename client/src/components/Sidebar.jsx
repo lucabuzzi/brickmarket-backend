@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export const THEMES = [
   { name: 'Star Wars', img: 'https://picsum.photos/seed/theme-sw/150/150' },
@@ -18,9 +19,10 @@ export const CATEGORIES = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const navTo = useLocalizedNav();
 
   const handleThemeClick = (themeName) => {
-    navigate(`/search-results?q=${encodeURIComponent(themeName)}`);
+    navigate(`${navTo('/search-results')}?q=${encodeURIComponent(themeName)}`);
   };
 
   const handleCategoryClick = (slug) => {

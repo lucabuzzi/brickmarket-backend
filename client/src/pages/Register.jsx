@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { trackEvent } from '../analytics';
 import Turnstile from '../components/Turnstile';
 import GoogleSignInButton from '../components/GoogleSignInButton';
@@ -107,6 +108,7 @@ function Consent({ checked, onChange, children }) {
 export default function Register() {
   const { register, loginWithGoogle, loginWithApple } = useAuth();
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const registrationStartedRef = useRef(false);
@@ -475,7 +477,7 @@ export default function Register() {
                   <Consent checked={acceptTos} onChange={setAcceptTos}>{t('auth.accept_tos')}</Consent>
                   <Consent checked={acceptPrivacy} onChange={setAcceptPrivacy}>{t('auth.accept_privacy')}</Consent>
                   <Consent checked={acceptRevocation} onChange={setAcceptRevocation}>{t('auth.accept_revocation')}</Consent>
-                  <Link to="/norme-legali" target="_blank" rel="noopener" className="inline-flex min-h-10 w-fit items-center gap-2 text-sm font-bold text-white/60 transition hover:text-white">
+                  <Link to={navTo('/norme-legali')} target="_blank" rel="noopener" className="inline-flex min-h-10 w-fit items-center gap-2 text-sm font-bold text-white/60 transition hover:text-white">
                     <Scale className="h-4 w-4" />
                     {t('register_page.legal_link')}
                   </Link>

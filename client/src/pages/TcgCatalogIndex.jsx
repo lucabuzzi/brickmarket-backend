@@ -5,9 +5,11 @@ import { Search, Clock, ArrowRight, Loader2, Zap, Database, ArrowLeft } from 'lu
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getCatalogGame } from '../config/catalogGames';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function TcgCatalogIndex({ gameSlug }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const game = getCatalogGame(gameSlug);
   const navigate = useNavigate();
   const [recentCards, setRecentCards] = useState([]);
@@ -67,20 +69,20 @@ export default function TcgCatalogIndex({ gameSlug }) {
   }, [searchQuery, game]);
 
   if (!game || game.status !== 'active') {
-    return <Navigate to="/catalog" replace />;
+    return <Navigate to={navTo('/catalog')} replace />;
   }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     setIsDropdownOpen(false);
-    navigate(`/catalog/${game.slug}/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(`${navTo(`/catalog/${game.slug}/search`)}?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (
     <div className="page catalog-index max-w-[1400px] mx-auto px-4 py-12 animate-fadeIn">
 
-      <Link to="/catalog" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
+      <Link to={navTo('/catalog')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-stone-500 hover:text-pillar-catalog transition-colors mb-8 w-fit">
         <ArrowLeft size={14} /> {t('tcg.all_catalogs')}
       </Link>
 
@@ -205,7 +207,7 @@ export default function TcgCatalogIndex({ gameSlug }) {
 
                   {searchResults.length > 0 && (
                     <Link
-                      to={`/catalog/${game.slug}/search?q=${encodeURIComponent(searchQuery)}`}
+                      to={`${navTo(`/catalog/${game.slug}/search`)}?q=${encodeURIComponent(searchQuery)}`}
                       onClick={() => setIsDropdownOpen(false)}
                       className="block p-5 bg-white/5 hover:bg-white/10 text-center text-[10px] font-black text-white uppercase tracking-[0.3em] transition-all"
                     >

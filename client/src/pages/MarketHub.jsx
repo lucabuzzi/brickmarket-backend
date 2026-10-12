@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_CATEGORIES, MARKET_MODES, displayPrice, useMarketItems } from '../components/market/marketConfig';
 import { formatEUR, listingImage } from '../components/landing/landingUtils';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 const WALL_MIN = 8;
 
@@ -77,6 +78,7 @@ function EmptyStage() {
 
 function CategoryPortal({ category, mode, items, index }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const name = category.nameKey ? t(category.nameKey) : category.name;
   const thumbs = items.filter((i) => i.images?.length).slice(0, 3);
@@ -90,7 +92,7 @@ function CategoryPortal({ category, mode, items, index }) {
       transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
     >
       <Link
-        to={`${mode.base}/${category.slug}`}
+        to={navTo(`${mode.base}/${category.slug}`)}
         className="group relative flex min-h-[400px] flex-col overflow-hidden rounded-[32px] border border-white/10 bg-[#0f0d14] p-6 transition-colors duration-500 md:p-8 lg:min-h-[460px]"
         style={{ '--mc-accent': mode.accent, '--mc-ink': mode.accentInk }}
       >
@@ -140,6 +142,7 @@ export default function MarketHub({ modeKey = 'listings' }) {
   const mode = MARKET_MODES[modeKey];
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const [query, setQuery] = useState('');
   const { items, loading, loadedAt } = useMarketItems(mode);
@@ -178,7 +181,7 @@ export default function MarketHub({ modeKey = 'listings' }) {
   const handleSearch = (e) => {
     e.preventDefault();
     const q = query.trim();
-    if (q) navigate(`/search-results?q=${encodeURIComponent(q)}`);
+    if (q) navigate(`${navTo('/search-results')}?q=${encodeURIComponent(q)}`);
   };
 
   const withImages = sorted.filter((i) => i.images?.length);

@@ -2,9 +2,16 @@
 // A module of its own (no database import) so scripts can read the list without opening a connection.
 // /privacy and /cookie-policy join the sitemap only once their texts are final (see legalPages.json's _comment).
 const legalPages = require('../../client/src/config/legalPages.json');
+const { resolveLocalizedPath, URL_LOCALES } = require('./localizedRoutes');
 
-/** Static, publicly indexable pages — kept in sync with the route table in client/src/App.jsx */
-const STATIC_PATHS = [
+/**
+ * Canonical (Italian) path of every static, publicly indexable page - kept in sync with the route table
+ * in client/src/App.jsx. This is what sitemapLastmod.js and pageMeta.js match on; it never has a /it or
+ * /en prefix. Deliberately NOT every structural page in localizedRoutes.json: search/query pages
+ * (/catalog/*\/search, /search-results) and the per-expansion pages (handled live by seoSetPages.js,
+ * only listed when they have something to show) are excluded as thin or duplicate content.
+ */
+const CANONICAL_STATIC_PATHS = [
   '/',
   '/catalog',
   '/catalog/lego',
@@ -45,4 +52,7 @@ const STATIC_PATHS = [
   ...(legalPages.accessibilityPublished ? ['/accessibilita'] : []),
 ];
 
-module.exports = { STATIC_PATHS };
+/** Each canonical path resolved to both /it and /en - the actual indexable URLs listed in sitemap.xml. */
+const STATIC_PATHS = CANONICAL_STATIC_PATHS.flatMap((p) => URL_LOCALES.map((locale) => resolveLocalizedPath(p, locale)));
+
+module.exports = { STATIC_PATHS, CANONICAL_STATIC_PATHS };

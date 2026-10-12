@@ -17,6 +17,7 @@ import { hasConsent, trackPageview, OPEN_COOKIE_SETTINGS_EVENT } from '../analyt
 import legalPages from '../config/legalPages.json';
 import socialProfiles from '../config/socialProfiles.json';
 import { FacebookIcon, InstagramIcon } from './SocialIcons';
+import { URL_LOCALES, DEFAULT_URL_LOCALE, resolveLocalizedPath, matchLocalizedRoute, buildLocaleHref } from '../routing/localizedPaths';
 
 const LANGUAGES = [
   { code: 'it', name: 'ITALIANO', flag: 'fi fi-it' },
@@ -81,8 +82,13 @@ export default function Layout() {
   const [topbarQuery, setTopbarQuery] = useState('');
   const topbarInputRef   = useRef(null);
 
+  // Structural pages (e.g. /search-results) now also answer at /it/search-results and /en/search-results.
+  const urlLocale = URL_LOCALES.includes(i18n.language) ? i18n.language : DEFAULT_URL_LOCALE;
+  const navTo = (canonicalPath) => resolveLocalizedPath(canonicalPath, urlLocale) || canonicalPath;
+
   useEffect(() => {
-    if (location.pathname === '/search-results') {
+    const canonicalPath = matchLocalizedRoute(location.pathname)?.canonicalPath;
+    if (location.pathname === '/search-results' || canonicalPath === '/search-results') {
       setTopbarQuery(searchParams.get('q') || '');
     } else {
       setTopbarQuery('');
@@ -114,7 +120,7 @@ export default function Layout() {
     e.preventDefault();
     const q = topbarQuery.trim();
     if (!q) return;
-    navigate(`/search-results?q=${encodeURIComponent(q)}`);
+    navigate(`${navTo('/search-results')}?q=${encodeURIComponent(q)}`);
   };
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -172,14 +178,14 @@ export default function Layout() {
 
          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-             <Link to="/annunci" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
-             <Link to="/aste" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
-             <Link to="/skill-zone" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
-             <Link to="/catalog" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
-             <Link to="/help" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
-             <Link to="/faq" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
-             <Link to="/norme-legali" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
-             <Link to="/ricerca-utente" style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
+             <Link to={navTo('/annunci')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.listings')}</Link>
+             <Link to={navTo('/aste')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.auctions')}</Link>
+             <Link to={navTo('/skill-zone')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.skill_zone') || 'Puzzle Arena'}</Link>
+             <Link to={navTo('/catalog')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.catalog')}</Link>
+             <Link to={navTo('/help')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.help')}</Link>
+             <Link to={navTo('/faq')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.faq')}</Link>
+             <Link to={navTo('/norme-legali')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.legal_rules')}</Link>
+             <Link to={navTo('/ricerca-utente')} style={{ color: '#f0e9d8', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.user_search')}</Link>
 
              {!user ? (
                <Link to="/login" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }} onClick={() => setIsMenuOpen(false)}>{t('nav.login') || 'Accedi'}</Link>
@@ -215,6 +221,11 @@ export default function Layout() {
                  <button 
                    key={lang.code}
                    onClick={() => {
+                     // On a structural page (e.g. /it/annunci), IT/EN also move the URL to its
+                     // translated equivalent; DE/ES/FR (no URL space yet) and any non-structural
+                     // page just change the UI language in place, exactly as before.
+                     const target = URL_LOCALES.includes(lang.code) ? buildLocaleHref(lang.code, location.pathname) : null;
+                     if (target) navigate(target);
                      i18n.changeLanguage(lang.code);
                      setIsMenuOpen(false);
                    }}
@@ -287,19 +298,19 @@ export default function Layout() {
             {/* Each pillar's nav link now tints with that pillar's own color when active — was
                 gold (or, for Puzzle Arena, an unrelated pink) for every entry regardless of
                 which section it led to. Home stays gold: it isn't any one pillar. */}
-            <NavLink to="/annunci" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-listings' : 'text-stone-400 hover:text-white'}`}>
+            <NavLink to={navTo('/annunci')} className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-listings' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.listings')}
             </NavLink>
-            <NavLink to="/aste" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-auctions' : 'text-stone-400 hover:text-white'}`}>
+            <NavLink to={navTo('/aste')} className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-auctions' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.auctions')}
             </NavLink>
-            <NavLink to="/skill-zone" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-arena font-extrabold' : 'text-stone-400 hover:text-white'}`}>
+            <NavLink to={navTo('/skill-zone')} className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-arena font-extrabold' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.skill_zone') || 'Puzzle Arena'}
             </NavLink>
-            <NavLink to="/help" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
+            <NavLink to={navTo('/help')} className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.help')}
             </NavLink>
-            <NavLink to="/catalog" className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-catalog' : 'text-stone-400 hover:text-white'}`}>
+            <NavLink to={navTo('/catalog')} className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-pillar-catalog' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.catalog')}
             </NavLink>
             {user && (
@@ -325,7 +336,7 @@ export default function Layout() {
                 {/* Balance counters wrapped inside container */}
                 <div className="flex items-center gap-1 min-[450px]:gap-2 mr-1">
                   <div
-                    onClick={() => navigate('/crediti')}
+                    onClick={() => navigate(navTo('/crediti'))}
                     className="flex items-center gap-1 min-[450px]:gap-1.5 rounded-lg border border-pillar-arena/30 bg-pillar-arena/5 px-1 py-0.5 min-[450px]:px-2 min-[450px]:py-1 cursor-pointer hover:border-pillar-arena transition-all duration-300 group"
                     title={t('nav.wallet_tooltip')}
                   >

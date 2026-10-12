@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Check, Gavel, ShoppingBag, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PILLARS as PILLAR_TOKENS } from '../../config/pillars';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 const PILLARS = [
   {
@@ -34,6 +35,7 @@ const PILLARS = [
 
 export default function LandingPillars({ images, stats, statsLoading }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
 
@@ -134,7 +136,7 @@ export default function LandingPillars({ images, stats, statsLoading }) {
                     </p>
                     <div className="flex flex-wrap items-center gap-3">
                       <Link
-                        to={p.to}
+                        to={navTo(p.to)}
                         className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black transition-transform hover:-translate-y-0.5 ${p.accentText}`}
                         style={{ background: p.accent }}
                       >
@@ -142,7 +144,7 @@ export default function LandingPillars({ images, stats, statsLoading }) {
                         <ArrowUpRight size={17} strokeWidth={2.6} />
                       </Link>
                       <Link
-                        to={p.secondaryTo}
+                        to={navTo(p.secondaryTo)}
                         className="rounded-xl px-3 py-3 text-sm font-bold text-white/60 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
                       >
                         {t(`landing.pillars.${p.id}.secondary`)}

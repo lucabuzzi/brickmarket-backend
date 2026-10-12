@@ -6,9 +6,11 @@ import { useTranslation } from 'react-i18next';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
 import { listingImage } from '../components/landing/landingUtils';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 function GameTile({ game, mode, items, index }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const cover = items.find((i) => i.images?.length);
   const countKey = mode.isAuction ? 'market.count_auctions' : 'market.count_listings';
@@ -21,7 +23,7 @@ function GameTile({ game, mode, items, index }) {
       transition={{ duration: 0.55, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
     >
       <Link
-        to={`${mode.base}/carte-collezionabili/${game.slug}`}
+        to={navTo(`${mode.base}/carte-collezionabili/${game.slug}`)}
         className="group relative flex aspect-[4/5] flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#0f0d14] p-5 transition-all duration-500 hover:-translate-y-1 sm:aspect-[5/4] md:p-7"
         style={{ '--mc-accent': mode.accent, '--mc-ink': mode.accentInk }}
       >
@@ -61,6 +63,7 @@ function GameTile({ game, mode, items, index }) {
 export default function MarketCardsHub({ modeKey = 'listings' }) {
   const mode = MARKET_MODES[modeKey];
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
   const { items, loading } = useMarketItems(mode, { productType: 'tcg' });
   const title = t('hubs.categories.carte_name');
@@ -84,7 +87,7 @@ export default function MarketCardsHub({ modeKey = 'listings' }) {
         <div className="lx-grid pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="pointer-events-none absolute -right-32 top-10 h-[420px] w-[420px] rounded-full blur-[130px]" style={{ background: mode.accent, opacity: 0.12 }} aria-hidden="true" />
         <div className="relative mx-auto max-w-[1320px] px-5 pb-10 pt-28 md:px-10 md:pt-36">
-          <Link to={mode.base} className="-my-2 inline-flex items-center gap-2 py-2 text-sm font-bold text-white/60 transition-colors hover:text-white">
+          <Link to={navTo(mode.base)} className="-my-2 inline-flex items-center gap-2 py-2 text-sm font-bold text-white/60 transition-colors hover:text-white">
             <ArrowLeft size={16} /> {t(`market.back_hub_${mode.key}`)}
           </Link>
           <motion.h1

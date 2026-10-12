@@ -4,10 +4,12 @@ import { apiFetch } from '../api';
 import { Search, BookOpen, Clock, TrendingUp, Package, ArrowRight, Loader2, Zap, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function CatalogIndex() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const navTo = useLocalizedNav();
   const [recentSets, setRecentSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +70,7 @@ export default function CatalogIndex() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     setIsDropdownOpen(false);
-    navigate(`/catalog/lego/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(`${navTo('/catalog/lego/search')}?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (
@@ -199,7 +201,7 @@ export default function CatalogIndex() {
 
                   {searchResults.length > 0 && (
                     <Link
-                      to={`/catalog/lego/search?q=${encodeURIComponent(searchQuery)}`}
+                      to={`${navTo('/catalog/lego/search')}?q=${encodeURIComponent(searchQuery)}`}
                       onClick={() => setIsDropdownOpen(false)}
                       className="block p-5 bg-white/5 hover:bg-white/10 text-center text-[10px] font-black text-white uppercase tracking-[0.3em] transition-all"
                     >

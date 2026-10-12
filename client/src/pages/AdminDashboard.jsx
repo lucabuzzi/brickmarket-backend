@@ -6,6 +6,7 @@ import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, S
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, flexRender } from '@tanstack/react-table';
 import { StitchCard, AnimateCounter, PulsingGlow, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import SellerTypeBadge from '../components/SellerTypeBadge';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 class SafeErrorBoundary extends React.Component {
   constructor(props) {
@@ -27,7 +28,8 @@ class SafeErrorBoundary extends React.Component {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const navTo = useLocalizedNav();
+
   const [stats, setStats] = useState(null);
   const [crmData, setCrmData] = useState([]);
   const [geoData, setGeoData] = useState([]);
@@ -379,7 +381,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #292524' }}>
-             <button onClick={() => navigate('/catalog/lego')} style={{ background: 'none', border: 'none', padding: 0, color: '#d4af37', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}>
+             <button onClick={() => navigate(navTo('/catalog/lego'))} style={{ background: 'none', border: 'none', padding: 0, color: '#d4af37', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}>
                Manage Catalog ›
              </button>
           </div>

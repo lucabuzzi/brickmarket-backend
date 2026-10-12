@@ -5,9 +5,11 @@ import { Coins, Sparkles, Trophy, Gift, ArrowRight, History, Users, Check, Copy 
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
 import { StitchCard, AnimateCounter } from '../components/StitchComponents';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 export default function WalletInfo() {
   const { t, i18n } = useTranslation();
+  const navTo = useLocalizedNav();
   const { user, wallet } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(true);
@@ -266,7 +268,7 @@ export default function WalletInfo() {
       {user && (
         <div className="mt-10 text-center">
           <Link
-            to="/skill-zone"
+            to={navTo('/skill-zone')}
             className="inline-flex items-center gap-2 text-xs font-bold text-pillar-arena hover:text-pillar-arena/80 uppercase tracking-widest"
           >
             {t('wallet.goto_skillzone')} <ArrowRight className="h-3.5 w-3.5" />

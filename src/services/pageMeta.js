@@ -15,8 +15,14 @@ const CATALOG_GAMES = { ...GAMES, funko: 'Funko' };
 const SHORT = { pokemon: 'Pokémon', magic: 'Magic', yugioh: 'Yu-Gi-Oh!', lorcana: 'Lorcana', onepiece: 'One Piece', dragonball: 'Dragon Ball', funko: 'Funko' };
 
 const MODES = {
-  annunci: { noun: 'Annunci', verb: 'Compra', what: 'a prezzo fisso' },
-  aste: { noun: 'Aste', verb: 'Fai offerte', what: 'nelle aste live' },
+  it: {
+    annunci: { noun: 'Annunci', verb: 'Compra', what: 'a prezzo fisso' },
+    aste: { noun: 'Aste', verb: 'Fai offerte', what: 'nelle aste live' },
+  },
+  en: {
+    annunci: { noun: 'Listings', verb: 'Buy', what: 'at a fixed price' },
+    aste: { noun: 'Auctions', verb: 'Bid on', what: 'in live auctions' },
+  },
 };
 
 const meta = (title, description) => ({ title: `${title} | ${BRAND}`, description });
@@ -30,8 +36,30 @@ function safeDecode(s) {
 }
 
 /** Marketplace hubs and categories: /annunci/..., /aste/... */
-function marketMeta(modeKey, rest) {
-  const m = MODES[modeKey];
+function marketMeta(modeKey, rest, locale = 'it') {
+  const m = MODES[locale][modeKey];
+  if (locale === 'en') {
+    const lower = m.noun.toLowerCase();
+    if (rest.length === 0) {
+      return meta(`${m.noun}: LEGO, Cards & Funko Pop`, `${m.verb} LEGO sets, trading cards and Funko Pop ${m.what}: browse ${lower} from verified sellers and find your next piece.`);
+    }
+    if (rest[0] === 'lego' && rest.length === 1) {
+      return meta(`${m.noun}: New & Used LEGO Sets`, `${m.verb} new and used LEGO sets ${m.what}: Icons, Star Wars, Technic and more, with photos, condition and price for every set.`);
+    }
+    if (rest[0] === 'funko' && rest.length === 1) {
+      return meta(`${m.noun}: Funko Pop & Collectibles`, `${m.verb} Funko Pop and other collectibles ${m.what}: browse new and used figures with photos, condition and price.`);
+    }
+    if (rest[0] === 'carte-collezionabili') {
+      if (rest.length === 1) {
+        return meta(`${m.noun}: Trading Cards`, `${m.verb} Pokémon, Magic, Yu-Gi-Oh!, Lorcana, One Piece and Dragon Ball cards ${m.what}: pick a game and find the card you want.`);
+      }
+      const game = rest[1];
+      if (rest.length === 2 && GAMES[game]) {
+        return meta(`${m.noun}: ${SHORT[game]} Cards`, `${m.verb} ${GAMES[game]} cards ${m.what}: singles in every rarity and condition, with photos and price for each card on ${BRAND}.`);
+      }
+    }
+    return null;
+  }
   const lower = m.noun.toLowerCase();
   if (rest.length === 0) {
     return meta(`${m.noun} LEGO, carte collezionabili e Funko`, `${m.verb} set LEGO, carte collezionabili e Funko ${m.what}: sfoglia le ${lower} di venditori verificati e trova il tuo prossimo pezzo.`);
@@ -58,7 +86,30 @@ function marketMeta(modeKey, rest) {
  * Catalog: /catalog, /catalog/<game>, /catalog/lego/<setNum>, /catalog/<game>/<cardId>, .../search
  * `rest` is matched (lower-cased); `rawRest` keeps the original casing for values we print (set numbers).
  */
-function catalogMeta(rest, rawRest) {
+function catalogMeta(rest, rawRest, locale = 'it') {
+  if (locale === 'en') {
+    if (rest.length === 0) {
+      return meta('LEGO & Trading Card Catalog', 'Browse the catalog of LEGO sets and trading cards: specs, details and estimated market value for every item, even without active listings.');
+    }
+    if (rest.length > 2) return null;
+    const [slug, second] = rest;
+
+    if (slug === 'lego') {
+      if (rest.length === 1) return meta('LEGO Set Catalog: Specs & Market Value', 'Search the LEGO set catalog: number, year, piece count and estimated market value, with available listings on CardBrix.');
+      if (second === 'search') return meta('LEGO Catalog Search Results', 'Search results from the LEGO set catalog: number, year, piece count and market value for every set.');
+      const decoded = safeDecode(rawRest[1]);
+      if (!decoded) return null;
+      const setNum = decoded.slice(0, 30);
+      return meta(`LEGO Set ${setNum}: Value & Details`, `LEGO set ${setNum} page: piece count, release year, estimated market value and available listings on ${BRAND}.`);
+    }
+
+    const name = CATALOG_GAMES[slug];
+    if (!name) return null;
+    if (rest.length === 1) return meta(`${SHORT[slug]} Catalog: Cards & Details`, `Browse the ${name} catalog: search by name and open the page for every card, with details, artwork and available listings.`);
+    if (second === 'search') return meta(`${SHORT[slug]} Catalog Search Results`, `Search results from the ${name} catalog: open a card's page to see details and available listings on ${BRAND}.`);
+    return meta(`${SHORT[slug]} Card: Details & Listings`, `A ${name} card page: details, artwork and available listings on ${BRAND}.`);
+  }
+
   if (rest.length === 0) {
     return meta('Catalogo LEGO e carte collezionabili', 'Consulta il catalogo di set LEGO e carte collezionabili: schede, dettagli e valore di mercato per ogni prodotto, anche senza annunci attivi.');
   }
@@ -82,39 +133,60 @@ function catalogMeta(rest, rawRest) {
 }
 
 const STATIC = {
-  '/come-funziona': meta('Come funziona: compra, vendi e vinci', 'Scopri come funziona CardBrix: pubblica un annuncio, fai offerte nelle aste live e partecipa ai puzzle della Puzzle Arena, passo dopo passo.'),
-  '/skill-zone': meta('Puzzle Arena: concorsi di abilità', 'Metti alla prova la tua abilità con i puzzle della Puzzle Arena e vinci pezzi rari da collezione: scegli il concorso e partecipa.'),
-  '/crediti': meta('Crediti: come si guadagnano e si usano', 'Scopri come si guadagnano i crediti CardBrix e come usarli per partecipare ai puzzle della Puzzle Arena.'),
-  '/faq': meta('Domande frequenti su acquisti e vendite', 'Le risposte alle domande più frequenti su acquisti, vendite, aste, spedizioni e Puzzle Arena su CardBrix.'),
-  '/help': meta('Assistenza per ordini, annunci e account', "Hai bisogno di aiuto con un ordine, un annuncio o il tuo account? Trova le guide e i modi per contattare l'assistenza CardBrix."),
-  '/norme-legali': meta("Norme legali e condizioni d'uso", "Consulta le norme legali e le condizioni d'uso di CardBrix: regole per venditori e acquirenti, aste e concorsi di abilità."),
-  '/privacy': meta('Informativa sulla privacy e dati personali', 'Come CardBrix tratta i tuoi dati personali: quali raccogliamo, perché, con chi li condividiamo e come esercitare i tuoi diritti.'),
-  '/cookie-policy': meta('Cookie Policy: cookie e tecnologie simili', 'Quali cookie usa CardBrix, a cosa servono, quanto durano e come accettarli, rifiutarli o cambiare scelta in qualsiasi momento.'),
-  '/accessibilita': meta('Dichiarazione di accessibilità del sito', "Come CardBrix lavora per l'accessibilità: misure adottate, limiti noti e come segnalare una barriera o chiedere un contenuto accessibile."),
-  '/ricerca-utente': meta('Cerca un utente o un venditore', 'Cerca un utente o un venditore su CardBrix per vederne il profilo, le valutazioni e gli annunci pubblicati.'),
-  '/search-results': meta('Risultati di ricerca', 'Risultati della ricerca su CardBrix tra annunci, aste e catalogo di LEGO, carte collezionabili e Funko.'),
+  it: {
+    '/come-funziona': meta('Come funziona: compra, vendi e vinci', 'Scopri come funziona CardBrix: pubblica un annuncio, fai offerte nelle aste live e partecipa ai puzzle della Puzzle Arena, passo dopo passo.'),
+    '/skill-zone': meta('Puzzle Arena: concorsi di abilità', 'Metti alla prova la tua abilità con i puzzle della Puzzle Arena e vinci pezzi rari da collezione: scegli il concorso e partecipa.'),
+    '/crediti': meta('Crediti: come si guadagnano e si usano', 'Scopri come si guadagnano i crediti CardBrix e come usarli per partecipare ai puzzle della Puzzle Arena.'),
+    '/faq': meta('Domande frequenti su acquisti e vendite', 'Le risposte alle domande più frequenti su acquisti, vendite, aste, spedizioni e Puzzle Arena su CardBrix.'),
+    '/help': meta('Assistenza per ordini, annunci e account', "Hai bisogno di aiuto con un ordine, un annuncio o il tuo account? Trova le guide e i modi per contattare l'assistenza CardBrix."),
+    '/norme-legali': meta("Norme legali e condizioni d'uso", "Consulta le norme legali e le condizioni d'uso di CardBrix: regole per venditori e acquirenti, aste e concorsi di abilità."),
+    '/privacy': meta('Informativa sulla privacy e dati personali', 'Come CardBrix tratta i tuoi dati personali: quali raccogliamo, perché, con chi li condividiamo e come esercitare i tuoi diritti.'),
+    '/cookie-policy': meta('Cookie Policy: cookie e tecnologie simili', 'Quali cookie usa CardBrix, a cosa servono, quanto durano e come accettarli, rifiutarli o cambiare scelta in qualsiasi momento.'),
+    '/accessibilita': meta('Dichiarazione di accessibilità del sito', "Come CardBrix lavora per l'accessibilità: misure adottate, limiti noti e come segnalare una barriera o chiedere un contenuto accessibile."),
+    '/ricerca-utente': meta('Cerca un utente o un venditore', 'Cerca un utente o un venditore su CardBrix per vederne il profilo, le valutazioni e gli annunci pubblicati.'),
+    '/search-results': meta('Risultati di ricerca', 'Risultati della ricerca su CardBrix tra annunci, aste e catalogo di LEGO, carte collezionabili e Funko.'),
+  },
+  en: {
+    '/come-funziona': meta('How It Works: Buy, Sell & Win', 'See how CardBrix works: list an item, bid in live auctions and enter Puzzle Arena contests, step by step.'),
+    '/skill-zone': meta('Puzzle Arena: Skill Contests', 'Put your skills to the test with Puzzle Arena puzzles and win rare collectible pieces: pick a contest and join in.'),
+    '/crediti': meta('Credits: How to Earn & Use Them', 'See how to earn CardBrix credits and how to use them to enter Puzzle Arena puzzle contests.'),
+    '/faq': meta('FAQ: Buying & Selling Questions', 'Answers to the most common questions about buying, selling, auctions, shipping and Puzzle Arena on CardBrix.'),
+    '/help': meta('Help With Orders, Listings & Account', 'Need help with an order, a listing or your account? Find guides and ways to contact CardBrix support.'),
+    '/norme-legali': meta('Legal Rules & Terms of Use', "Read CardBrix's legal rules and terms of use: rules for sellers and buyers, auctions and skill contests."),
+    '/privacy': meta('Privacy Policy & Personal Data', 'How CardBrix handles your personal data: what we collect, why, who we share it with and how to exercise your rights.'),
+    '/cookie-policy': meta('Cookie Policy: Cookies We Use', 'Which cookies CardBrix uses, what they are for, how long they last and how to accept, refuse or change your choice anytime.'),
+    '/accessibilita': meta('Website Accessibility Statement', 'How CardBrix works on accessibility: measures taken, known limits and how to report a barrier or request accessible content.'),
+    '/ricerca-utente': meta('Find a Seller or User', "Find a user or seller on CardBrix to see their profile, ratings and published listings."),
+    '/search-results': meta('Search Across Listings & Catalog', 'Search results on CardBrix across listings, auctions and the catalog of LEGO, trading cards and Funko.'),
+  },
 };
 
 /**
- * @param {string} pathname  request path, e.g. "/annunci/carte-collezionabili/pokemon"
+ * @param {string} pathname  request path, e.g. "/annunci/carte-collezionabili/pokemon" - always the
+ *   canonical (Italian) path, even for an /en/ request: the caller (seoMeta.js) converts a locale-prefixed
+ *   URL back to its canonical path before calling this.
+ * @param {string} locale  'it' (default) or 'en' - which text to return for the same route.
  * @returns {{title: string, description: string} | null}  null = no specific text (caller uses the default)
  */
-function getRouteMeta(pathname) {
+function getRouteMeta(pathname, locale = 'it') {
   const raw = String(pathname || '/').replace(/\/+$/, '') || '/';
   const path = raw.toLowerCase(); // only for matching routes; dynamic values below keep their casing
   if (path === '/') return null; // the home keeps the site-wide title/description from index.html
-  if (STATIC[path]) return STATIC[path];
+  const staticForLocale = STATIC[locale] || STATIC.it;
+  if (staticForLocale[path]) return staticForLocale[path];
 
   const parts = path.split('/').filter(Boolean);
   const rawParts = raw.split('/').filter(Boolean);
   const [head, ...rest] = parts;
-  if (head === 'annunci' || head === 'aste') return marketMeta(head, rest);
-  if (head === 'catalog') return catalogMeta(rest, rawParts.slice(1));
+  if (head === 'annunci' || head === 'aste') return marketMeta(head, rest, locale);
+  if (head === 'catalog') return catalogMeta(rest, rawParts.slice(1), locale);
   if (head === 'user' && rest.length === 1) {
     const username = safeDecode(rawParts[1]);
     if (!username) return null;
     const shown = username.slice(0, 40);
-    return meta(`Profilo di ${shown}`, `Profilo di ${shown} su ${BRAND}: valutazioni, annunci pubblicati e attività di vendita.`);
+    return locale === 'en'
+      ? meta(`${shown}'s Profile`, `${shown}'s profile on ${BRAND}: ratings, published listings and selling activity.`)
+      : meta(`Profilo di ${shown}`, `Profilo di ${shown} su ${BRAND}: valutazioni, annunci pubblicati e attività di vendita.`);
   }
   return null;
 }

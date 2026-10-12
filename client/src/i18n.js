@@ -23,11 +23,20 @@ i18n
   .init({
     resources,
     fallbackLng: 'it',
+    // Lets the 'path' detector below tell "/login" (no locale segment -> not a supported code) apart from
+    // "/it/..." or "/en/..." -> it falls through to localStorage/navigator instead of trying to load a
+    // "login" translation bundle.
+    supportedLngs: ['it', 'en', 'de', 'es', 'fr'],
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // 'path' reads the first URL segment (lookupFromPathIndex: 0): on a structural page under /it or
+      // /en that's authoritative over whatever was saved before (LocaleFrame keeps it in sync on client
+      // navigation too — this only covers the very first load). Every other route has no locale segment,
+      // so the detector finds nothing there and falls through to localStorage/navigator exactly as before.
+      order: ['path', 'localStorage', 'navigator'],
+      lookupFromPathIndex: 0,
       caches: ['localStorage'],
     }
   });

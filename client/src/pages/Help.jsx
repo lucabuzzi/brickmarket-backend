@@ -6,6 +6,7 @@ import {
   HelpCircle, Mail, ScrollText, ArrowRight,
   Bot, Send, User, Sparkles,
 } from 'lucide-react';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 function QuickLinkCard({ icon, title, desc, cta, to, href, color, ctaColor }) {
   const content = (
@@ -158,6 +159,7 @@ function ChatWidget() {
 
 export default function Help() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
 
   return (
     <div className="page help max-w-[1100px] mx-auto px-4 md:px-6 pt-6 pb-16">
@@ -180,7 +182,7 @@ export default function Help() {
           title={t('help.faq_card_title')}
           desc={t('help.faq_card_desc')}
           cta={t('help.faq_card_cta')}
-          to="/faq"
+          to={navTo('/faq')}
           color="text-pillar-catalog bg-pillar-catalog/10 border-pillar-catalog/20"
           ctaColor="text-pillar-catalog group-hover:text-pillar-catalog/80"
         />
@@ -198,7 +200,7 @@ export default function Help() {
           title={t('help.legal_card_title')}
           desc={t('help.legal_card_desc')}
           cta={t('help.legal_card_cta')}
-          to="/norme-legali"
+          to={navTo('/norme-legali')}
           color="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
           ctaColor="text-emerald-400 group-hover:text-emerald-300"
         />

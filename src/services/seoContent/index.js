@@ -12,28 +12,29 @@ const { pageFor } = require('./pages');
 const { listingsBlock, catalogBlock, productPage } = require('./listings');
 const { t } = require('./copy');
 
-async function build(def) {
+async function build(def, locale = 'it') {
   const blocks = await Promise.all([...(def.catalog || []).map((b) => catalogBlock(b)), ...(def.listings || []).map((b) => listingsBlock(b))]);
-  return { html: renderShell({ ...def, body: (def.body || '') + blocks.join('') + (def.tail || '') }), jsonLd: def.jsonLd || null };
+  return { html: renderShell({ ...def, body: (def.body || '') + blocks.join('') + (def.tail || '') }, locale), jsonLd: def.jsonLd || null };
 }
 
 /** Site-wide fallback for routes without their own content (private pages, catalog detail pages, …). */
-function genericPage() {
-  return renderShell({ h1: 'CardBrix', lead: t('landing.hero.subtitle') });
+function genericPage(locale = 'it') {
+  return renderShell({ h1: 'CardBrix', lead: t('landing.hero.subtitle', {}, locale) }, locale);
 }
 
-/** -> { html, jsonLd } for a non-listing route. */
-async function shellForRoute(path) {
+/** -> { html, jsonLd } for a non-listing route. `path` is always the canonical (Italian) path. */
+async function shellForRoute(path, locale = 'it') {
   try {
-    const def = pageFor(path);
-    return def ? await build(def) : { html: genericPage(), jsonLd: null };
+    const def = pageFor(path, locale);
+    return def ? await build(def, locale) : { html: genericPage(locale), jsonLd: null };
   } catch (err) {
     console.error('seoContent shellForRoute:', err.message);
-    return { html: genericPage(), jsonLd: null };
+    return { html: genericPage(locale), jsonLd: null };
   }
 }
 
-/** -> { html, jsonLd } for /product/:id, from the row and absolute image URLs seoMeta already has. */
+/** -> { html, jsonLd } for /product/:id, from the row and absolute image URLs seoMeta already has. Product
+ * pages are not localized (see localizedRoutes.json): always the Italian shell. */
 async function shellForListing(listing, images) {
   try {
     return await build(await productPage(listing, images));
@@ -44,8 +45,8 @@ async function shellForListing(listing, images) {
 }
 
 /** Shell for the HTTP 404 page. */
-function shellForNotFound() {
-  return renderShell({ h1: t('not_found.title') || 'Pagina non trovata', lead: t('not_found.text') });
+function shellForNotFound(locale = 'it') {
+  return renderShell({ h1: t('not_found.title', {}, locale) || (locale === 'en' ? 'Page not found' : 'Pagina non trovata'), lead: t('not_found.text', {}, locale) }, locale);
 }
 
 /** Swaps the placeholder inside <div id="root"> for `shellHtml`. Function replacer: `$` in text stays literal. */

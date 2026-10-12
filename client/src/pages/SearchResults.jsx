@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../api';
 import { Search, X, ArrowLeft, PackageSearch } from 'lucide-react';
 import ListingCard from '../components/ListingCard';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 /* ─── skeleton card ───────────────────────────────────────── */
 function SkeletonCard() {
@@ -27,6 +28,7 @@ function SkeletonCard() {
 /* ─── main page ────────────────────────────────────────────── */
 export default function SearchResults() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -84,12 +86,12 @@ export default function SearchResults() {
     e.preventDefault();
     const term = inputValue.trim();
     if (!term) return;
-    navigate(`/search-results?q=${encodeURIComponent(term)}`);
+    navigate(`${navTo('/search-results')}?q=${encodeURIComponent(term)}`);
   };
 
   const handleClear = () => {
     setInputValue('');
-    navigate('/search-results');
+    navigate(navTo('/search-results'));
   };
 
   return (

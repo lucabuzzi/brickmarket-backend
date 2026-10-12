@@ -4,48 +4,61 @@
 // Styling lives in client/src/index.css under `.seo-shell`.
 const { esc, link, list } = require('./html');
 const { t } = require('./copy');
+const { resolveLocalizedPath } = require('../localizedRoutes');
 const legalPages = require('../../../client/src/config/legalPages.json');
 
-const label = (key, fallback) => t(key) || fallback;
+/** A canonical (Italian) internal path -> its /it or /en URL for `locale` (unchanged if not structural). */
+const loc = (path, locale) => resolveLocalizedPath(path, locale) || path;
 
-function mainNav() {
+const label = (key, fallback, locale) => t(key, {}, locale) || fallback;
+
+const ARIA = {
+  it: { main: 'Principale', info: 'Informazioni', path: 'Percorso' },
+  en: { main: 'Main', info: 'Information', path: 'Path' },
+};
+
+function mainNav(locale = 'it') {
+  const en = locale === 'en';
   return [
-    ['/annunci', label('nav.listings', 'Annunci')],
-    ['/aste', label('nav.auctions', 'Aste')],
-    ['/catalog', label('nav.catalog', 'Catalogo')],
-    ['/skill-zone', label('nav.skill_zone', 'Puzzle Arena')],
-    ['/come-funziona', 'Come funziona'],
+    [loc('/annunci', locale), label('nav.listings', en ? 'Listings' : 'Annunci', locale)],
+    [loc('/aste', locale), label('nav.auctions', en ? 'Auctions' : 'Aste', locale)],
+    [loc('/catalog', locale), label('nav.catalog', en ? 'Catalog' : 'Catalogo', locale)],
+    [loc('/skill-zone', locale), label('nav.skill_zone', 'Puzzle Arena', locale)],
+    [loc('/come-funziona', locale), en ? 'How It Works' : 'Come funziona'],
   ];
 }
 
-function footerNav() {
+function footerNav(locale = 'it') {
+  const en = locale === 'en';
   return [
     // fixed labels: the locale's nav.help / nav.legal_rules are upper-case menu strings ("AIUTO", "NORME LEGALI")
-    ['/faq', 'FAQ'],
-    ['/help', 'Assistenza'],
-    ['/norme-legali', 'Norme legali'],
-    ...(legalPages.published ? [['/privacy', 'Privacy'], ['/cookie-policy', 'Cookie Policy']] : []),
-    ...(legalPages.accessibilityPublished ? [['/accessibilita', 'Accessibilità']] : []),
-    ['/crediti', 'Crediti'],
+    [loc('/faq', locale), 'FAQ'],
+    [loc('/help', locale), en ? 'Support' : 'Assistenza'],
+    [loc('/norme-legali', locale), en ? 'Legal Rules' : 'Norme legali'],
+    ...(legalPages.published ? [[loc('/privacy', locale), 'Privacy'], [loc('/cookie-policy', locale), 'Cookie Policy']] : []),
+    ...(legalPages.accessibilityPublished ? [[loc('/accessibilita', locale), en ? 'Accessibility' : 'Accessibilità']] : []),
+    [loc('/crediti', locale), en ? 'Credits' : 'Crediti'],
   ];
 }
 
 const links = (items) => list(items.map(([href, text]) => link(href, text)));
 
 /** crumbs: [{ name, href? }], the last one (current page) has no href. */
-function breadcrumbs(crumbs) {
+function breadcrumbs(crumbs, locale = 'it') {
   if (!crumbs || crumbs.length < 2) return '';
   const items = crumbs.map((c) => (c.href ? link(c.href, c.name) : `<span>${esc(c.name)}</span>`));
-  return `<nav aria-label="Percorso" class="seo-crumbs">${list(items)}</nav>`;
+  const aria = (ARIA[locale] || ARIA.it).path;
+  return `<nav aria-label="${aria}" class="seo-crumbs">${list(items)}</nav>`;
 }
 
-function renderShell({ h1, lead = '', body = '', crumbs = [] }) {
+function renderShell({ h1, lead = '', body = '', crumbs = [] }, locale = 'it') {
   const year = new Date().getFullYear();
+  const aria = ARIA[locale] || ARIA.it;
   return (
     '<div class="seo-shell">' +
-    `<header><p class="seo-brand">${link('/', 'CardBrix')}</p><nav aria-label="Principale">${links(mainNav())}</nav></header>` +
-    `<main>${breadcrumbs(crumbs)}<h1>${esc(h1)}</h1>${lead ? `<p class="seo-lead">${esc(lead)}</p>` : ''}${body}</main>` +
-    `<footer><nav aria-label="Informazioni">${links(footerNav())}</nav><p>${esc(t('ui.footer_copyright', { year }) || `© ${year} CardBrix`)}</p></footer>` +
+    `<header><p class="seo-brand">${link(loc('/', locale), 'CardBrix')}</p><nav aria-label="${aria.main}">${links(mainNav(locale))}</nav></header>` +
+    `<main>${breadcrumbs(crumbs, locale)}<h1>${esc(h1)}</h1>${lead ? `<p class="seo-lead">${esc(lead)}</p>` : ''}${body}</main>` +
+    `<footer><nav aria-label="${aria.info}">${links(footerNav(locale))}</nav><p>${esc(t('ui.footer_copyright', { year }, locale) || `© ${year} CardBrix`)}</p></footer>` +
     '</div>'
   );
 }

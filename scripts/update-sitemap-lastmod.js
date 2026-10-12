@@ -5,15 +5,15 @@
 // Read-only toward the database: nothing here connects to it.
 const fs = require('fs');
 const path = require('path');
-const { STATIC_PATHS } = require('../src/services/sitemapPaths');
+const { CANONICAL_STATIC_PATHS } = require('../src/services/sitemapPaths');
 const { refreshStored } = require('../src/services/sitemapLastmod');
 
 const FILE = path.join(__dirname, '..', 'src', 'config', 'sitemapLastmod.json');
 const today = new Date().toISOString().slice(0, 10);
 const current = JSON.parse(fs.readFileSync(FILE, 'utf8'));
-const next = refreshStored(STATIC_PATHS, today, current);
-const changed = STATIC_PATHS.filter((p) => !current[p] || current[p].hash !== next[p].hash);
-const stale = Object.keys(current).filter((p) => !STATIC_PATHS.includes(p));
+const next = refreshStored(CANONICAL_STATIC_PATHS, today, current);
+const changed = CANONICAL_STATIC_PATHS.filter((p) => !current[p] || current[p].hash !== next[p].hash);
+const stale = Object.keys(current).filter((p) => !CANONICAL_STATIC_PATHS.includes(p));
 
 if (process.argv.includes('--check')) {
   if (changed.length || stale.length) {

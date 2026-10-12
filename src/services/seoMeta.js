@@ -5,12 +5,22 @@ const { isKnownRoute } = require('./knownRoutes');
 const { buildListingTitle, buildListingDescription } = require('./listingMeta');
 const { shellForRoute, shellForListing, shellForNotFound, injectShell } = require('./seoContent');
 const { parseSetPath, fetchSetPageMeta } = require('./seoSetPages');
+const { URL_LOCALES, DEFAULT_URL_LOCALE, matchLocalizedRoute, resolveLocalizedPath, fillCanonicalPath } = require('./localizedRoutes');
 
 const BASE_URL = 'https://cardbrix.com';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_TITLE = 'CardBrix - Marketplace di LEGO, carte collezionabili e aste';
 const DEFAULT_DESCRIPTION =
   "Il marketplace per set LEGO, carte collezionabili e oggetti da collezione: compra, vendi, rilancia nelle aste live o vinci pezzi rari nella Puzzle Arena.";
+const DEFAULT_TITLE_EN = 'CardBrix - LEGO, Trading Cards & Auctions Marketplace';
+const DEFAULT_DESCRIPTION_EN =
+  'The marketplace for LEGO sets, trading cards and collectibles: buy, sell, bid in live auctions or win rare pieces in the Puzzle Arena.';
+
+/** The locale segment of a request path ("/en/listings" -> "en"), or the default when there isn't one. */
+function localeFromPath(reqPath) {
+  const seg = String(reqPath || '').split('/')[1];
+  return URL_LOCALES.includes(seg) ? seg : DEFAULT_URL_LOCALE;
+}
 
 function escapeHtml(str) {
   return String(str)
@@ -36,16 +46,19 @@ function resolveImageUrl(url) {
   return `${BASE_URL}/${path}`;
 }
 
-function applyMeta(html, { title, description, canonical, ogImage }) {
+function applyMeta(html, { title, description, canonical, ogImage, lang = DEFAULT_URL_LOCALE }) {
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeCanonical = escapeHtml(canonical);
   const safeOgImage = escapeHtml(ogImage);
+  const ogLocale = lang === 'en' ? 'en_US' : 'it_IT';
 
   return html
+    .replace(/<html lang="[^"]*">/, `<html lang="${lang}">`)
     .replace(/<title>[^<]*<\/title>/, `<title>${safeTitle}</title>`)
     .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${safeCanonical}$2`)
     .replace(/(<meta name="description" content=")[^"]*(")/, `$1${safeDescription}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*(")/, `$1${ogLocale}$2`)
     .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${safeCanonical}$2`)
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${safeTitle}$2`)
     .replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${safeDescription}$2`)
@@ -60,6 +73,25 @@ function applyMeta(html, { title, description, canonical, ogImage }) {
 function injectJsonLd(html, obj) {
   const json = escapeForInlineScript(JSON.stringify(obj));
   return html.replace('</head>', `<script type="application/ld+json">${json}</script></head>`);
+}
+
+/** hreflang alternates for a structural page that exists at both /it and /en; `alternates` is [{hreflang, href}]. */
+function injectAlternates(html, alternates) {
+  if (!alternates || !alternates.length) return html;
+  const tags = alternates.map(({ hreflang, href }) => `<link rel="alternate" hreflang="${hreflang}" href="${escapeHtml(href)}">`).join('');
+  return html.replace('</head>', `${tags}</head>`);
+}
+
+/** [{hreflang:'it',href},{hreflang:'en',href},{hreflang:'x-default',href}] for a canonical path, or []. */
+function alternatesFor(canonicalPath) {
+  const itHref = resolveLocalizedPath(canonicalPath, 'it');
+  const enHref = resolveLocalizedPath(canonicalPath, 'en');
+  if (!itHref || !enHref) return [];
+  return [
+    { hreflang: 'it', href: `${BASE_URL}${itHref}` },
+    { hreflang: 'en', href: `${BASE_URL}${enHref}` },
+    { hreflang: 'x-default', href: `${BASE_URL}${itHref}` },
+  ];
 }
 
 /** The listing's seller (public username + type), or null: JSON-LD then names CardBrix as the seller. */
@@ -79,16 +111,19 @@ async function fetchSeller(listingId) {
 
 const NOT_FOUND_TITLE = 'Pagina non trovata | CardBrix';
 const NOT_FOUND_DESCRIPTION = 'La pagina che cerchi non esiste o è stata spostata. Torna alla home di CardBrix o sfoglia gli annunci.';
+const NOT_FOUND_TITLE_EN = 'Page Not Found | CardBrix';
+const NOT_FOUND_DESCRIPTION_EN = "The page you're looking for doesn't exist or has moved. Go back to the CardBrix home page or browse the listings.";
 
 /** HTTP 404 + the app shell (so the client renders its not-found page), marked noindex as a second signal. */
-function notFoundPage(baseHtml, canonical) {
+function notFoundPage(baseHtml, canonical, locale = DEFAULT_URL_LOCALE) {
   const meta = applyMeta(baseHtml, {
-    title: NOT_FOUND_TITLE,
-    description: NOT_FOUND_DESCRIPTION,
+    title: locale === 'en' ? NOT_FOUND_TITLE_EN : NOT_FOUND_TITLE,
+    description: locale === 'en' ? NOT_FOUND_DESCRIPTION_EN : NOT_FOUND_DESCRIPTION,
     canonical,
     ogImage: DEFAULT_OG_IMAGE,
+    lang: locale,
   }).replace('</head>', '<meta name="robots" content="noindex"></head>');
-  return { status: 404, html: injectShell(meta, shellForNotFound()) };
+  return { status: 404, html: injectShell(meta, shellForNotFound(locale)) };
 }
 
 /**
@@ -104,31 +139,40 @@ async function renderPage(reqPath, baseHtml) {
   // A URL that matches no client route would otherwise get the app shell with HTTP 200 (a "soft 404":
   // Google treats every invented URL as a real page). Answer 404 with the same shell so the client
   // can show its own "not found" page.
-  if (!isKnownRoute(reqPath)) return notFoundPage(baseHtml, canonical);
+  if (!isKnownRoute(reqPath)) return notFoundPage(baseHtml, canonical, localeFromPath(reqPath));
 
   const productMatch = reqPath.match(/^\/product\/([^/]+)$/);
   if (!productMatch) {
+    // A structural page lives at /it/... or /en/...: resolve it back to its canonical (Italian) path so
+    // pageMeta/seoContent (which only know Italian route shapes) can look it up, with `locale` just picking
+    // which text comes back. Anything else (home, or a non-localized route) keeps its own bare path.
+    const localeMatch = matchLocalizedRoute(reqPath);
+    const locale = localeMatch ? localeMatch.locale : DEFAULT_URL_LOCALE;
+    const canonicalPath = localeMatch ? fillCanonicalPath(localeMatch.canonicalPath, localeMatch.params) : reqPath;
+
     // Every other route: its own title/description when we have them (see pageMeta.js), else the site default.
-    let routeMeta = getRouteMeta(reqPath);
-    if (parseSetPath(reqPath)) {
+    let routeMeta = getRouteMeta(canonicalPath, locale);
+    if (parseSetPath(canonicalPath)) {
       // Pokémon expansion page: its own meta, and a real 404 for an id that is not an expansion. A database error
       // says nothing about the id, so then the page is served with the default meta instead of claiming 404.
       try {
-        const setMeta = await fetchSetPageMeta(reqPath);
-        if (!setMeta) return notFoundPage(baseHtml, canonical);
+        const setMeta = await fetchSetPageMeta(canonicalPath, locale);
+        if (!setMeta) return notFoundPage(baseHtml, canonical, locale);
         routeMeta = setMeta;
       } catch (err) {
         console.error('renderPage: errore nel recupero espansione per meta tag:', err.message);
       }
     }
     let html = applyMeta(baseHtml, {
-      title: routeMeta ? routeMeta.title : DEFAULT_TITLE,
-      description: routeMeta ? routeMeta.description : DEFAULT_DESCRIPTION,
+      title: routeMeta ? routeMeta.title : (locale === 'en' ? DEFAULT_TITLE_EN : DEFAULT_TITLE),
+      description: routeMeta ? routeMeta.description : (locale === 'en' ? DEFAULT_DESCRIPTION_EN : DEFAULT_DESCRIPTION),
       canonical,
       ogImage: DEFAULT_OG_IMAGE,
+      lang: locale,
     });
+    html = injectAlternates(html, alternatesFor(canonicalPath));
     // Page-specific text inside #root for crawlers that do not run JavaScript (see services/seoContent).
-    const shell = await shellForRoute(reqPath);
+    const shell = await shellForRoute(canonicalPath, locale);
     html = injectShell(html, shell.html);
     if (shell.jsonLd) html = injectJsonLd(html, shell.jsonLd);
     return { status: 200, html };
