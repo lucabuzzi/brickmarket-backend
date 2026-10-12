@@ -8,10 +8,12 @@ import LandingAuctions from '../components/landing/LandingAuctions';
 import LandingArena from '../components/landing/LandingArena';
 import LandingClosing from '../components/landing/LandingClosing';
 import { cldImage, listingImage } from '../components/landing/landingUtils';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 const asArray = (result) => (result.status === 'fulfilled' && Array.isArray(result.value) ? result.value : []);
 
 export default function Home() {
+  const navTo = useLocalizedNav();
   const [listings, setListings] = useState([]);
   const [auctions, setAuctions] = useState([]);
   const [contests, setContests] = useState([]);
@@ -65,7 +67,7 @@ export default function Home() {
       key: `a-${a.id}`, kind: 'auction', title: a.title, value: a.current_bid ?? a.starting_price ?? a.price, image: listingImage(a, 480), href: `/product/${a.id}`,
     }));
     const fromContests = contests.filter((c) => c.status === 'open' && c.imageUrl).slice(0, 2).map((c) => ({
-      key: `c-${c.id}`, kind: 'contest', title: c.title, value: c.marketValue, image: cldImage(c.imageUrl, 480), href: '/skill-zone',
+      key: `c-${c.id}`, kind: 'contest', title: c.title, value: c.marketValue, image: cldImage(c.imageUrl, 480), href: navTo('/skill-zone'),
     }));
 
     const pools = [fromListings, fromContests, fromAuctions];
@@ -74,7 +76,7 @@ export default function Home() {
       pools.forEach((p) => { if (p.length && mixed.length < 5) mixed.push(p.shift()); });
     }
     return mixed;
-  }, [featuredFirst, auctions, contests]);
+  }, [featuredFirst, auctions, contests, navTo]);
 
   const pillarImages = useMemo(() => {
     const listingImg = featuredFirst.find((l) => l.images?.length);

@@ -4,6 +4,7 @@ import { ArrowRight, BadgeCheck, CreditCard, Gavel, LineChart, MessageSquareQuot
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
 import BrandSignature from '../brand/BrandSignature';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 const TRUST = [
   { key: 'verified', icon: BadgeCheck },
@@ -15,6 +16,7 @@ const TRUST = [
 export default function LandingClosing() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navTo = useLocalizedNav();
   const reduceMotion = useReducedMotion();
 
   const primary = user
@@ -42,7 +44,7 @@ export default function LandingClosing() {
               </>
             );
             return to ? (
-              <Link key={key} to={to} className="group bg-[#0d0b12] p-6 transition-colors hover:bg-[#15121c] md:p-8">{body}</Link>
+              <Link key={key} to={navTo(to)} className="group bg-[#0d0b12] p-6 transition-colors hover:bg-[#15121c] md:p-8">{body}</Link>
             ) : (
               <div key={key} className="bg-[#0d0b12] p-6 md:p-8">{body}</div>
             );

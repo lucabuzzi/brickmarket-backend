@@ -468,7 +468,7 @@ export default function Layout() {
               ...(legalPages.accessibilityPublished ? [['/accessibilita', 'footer.accessibility']] : []),
             ].map(([to, key]) => (
               <li key={to}>
-                <Link to={to} className="text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline">{t(key)}</Link>
+                <Link to={navTo(to)} className="text-stone-400 underline-offset-2 transition-colors hover:text-white hover:underline">{t(key)}</Link>
               </li>
             ))}
             <li>

@@ -168,6 +168,7 @@ function Spotlight({ contest, leaderboard, onPlay, user }) {
 
 export function ArenaSteps() {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
   const steps = [
     { icon: Coins, key: 'step1', to: '/crediti' },
     { icon: Zap, key: 'step2' },
@@ -187,7 +188,7 @@ export function ArenaSteps() {
               <p className="mt-6 text-lg font-black text-white">{t(`arena_page.steps.${key}_title`)}</p>
               <p className="mt-2 text-sm leading-relaxed text-white/55">{t(`arena_page.steps.${key}_text`)}</p>
               {to ? (
-                <Link to={to} className="-my-2 mt-3 inline-flex items-center gap-1.5 py-2 text-sm font-bold text-[#22d3ee] hover:underline">
+                <Link to={navTo(to)} className="-my-2 mt-3 inline-flex items-center gap-1.5 py-2 text-sm font-bold text-[#22d3ee] hover:underline">
                   {t('arena_page.hero.wallet_how')} <ArrowRight size={14} />
                 </Link>
               ) : null}

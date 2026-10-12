@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Coins, Loader2, Mail, MailCheck, MailWarning, RotateCw } from 'lucide-react';
 import { apiFetch } from '../api';
 import { useAuth } from '../auth/useAuth';
+import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 const LIME = '#c6ff3d';
 
@@ -49,6 +50,7 @@ function Shell({ icon: Icon, tone = LIME, children }) {
 export default function VerifyEmail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const navTo = useLocalizedNav();
   const { user, refreshMe, refreshWallet } = useAuth();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -121,7 +123,7 @@ export default function VerifyEmail() {
           )}
 
           <Link
-            to={user ? '/crediti' : '/login'}
+            to={user ? navTo('/crediti') : '/login'}
             className="lx-shine relative mt-8 flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-base font-black text-[#10140a] shadow-[0_18px_40px_-14px_rgba(198,255,61,0.6)] transition hover:brightness-110"
             style={{ background: LIME }}
           >
