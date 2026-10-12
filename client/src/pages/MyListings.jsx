@@ -23,6 +23,15 @@ function featuredActive(item) {
   return new Date(item.featured_until) > new Date();
 }
 
+function isAuctionItem(item) {
+  return item?.type === 'auction' || !!item?.is_auction;
+}
+
+// Auctions have no fixed price: show the current bid once someone has bid, otherwise the starting bid.
+function displayPrice(item) {
+  return isAuctionItem(item) ? (item.current_bid ?? item.auction_start) : item.price;
+}
+
 function formatPrice(v) {
   if (v == null || v === '') return '—';
   const n = typeof v === 'string' ? parseFloat(v) : v;
@@ -205,6 +214,9 @@ export default function MyListings() {
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                      {isAuctionItem(item) && (
+                        <span className="badge badge--auction">{t('details.badge_auction')}</span>
+                      )}
                       {item.status === 'active' ? (
                         <span className="badge badge--active">{t('my_listings.status_active')}</span>
                       ) : (
@@ -218,8 +230,8 @@ export default function MyListings() {
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', color: '#c6ff3d' }}>
-                    {formatPrice(item.price)}
+                  <td style={{ padding: '1.25rem 1.5rem', fontWeight: '600', color: isAuctionItem(item) ? '#ff5a36' : '#c6ff3d' }}>
+                    {formatPrice(displayPrice(item))}
                   </td>
                   <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -324,6 +336,11 @@ export default function MyListings() {
           background-color: #7c2d12;
           color: #e4c159;
           border: 1px solid #9a3412;
+        }
+        .badge--auction {
+          background-color: rgba(255,90,54,0.12);
+          color: #ff5a36;
+          border: 1px solid rgba(255,90,54,0.4);
         }
         .badge--featured {
           background-color: rgba(212,175,55,0.12);
