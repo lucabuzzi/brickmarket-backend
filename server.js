@@ -21,6 +21,8 @@ const http = require('http');
 const WebSocket = require('ws');
 
 const app = express();
+// Behind Render's proxy: make req.ip the real visitor (rate limiting, anti-abuse, geo). See src/utils/trustProxy.js.
+app.set('trust proxy', require('./src/utils/trustProxy').parseTrustProxyHops(process.env.TRUST_PROXY_HOPS));
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 

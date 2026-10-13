@@ -69,7 +69,15 @@ const sendViaEthereal = async ({ from, to, subject, text, html }) => {
     return { messageId: info.messageId };
 };
 
-const sendMail = (message) => (hasSendGridKey() ? sendViaSendGridApi(message) : sendViaEthereal(message));
+const sendMail = async (message) => {
+    if (hasSendGridKey()) return sendViaSendGridApi(message);
+    // In produzione Ethereal non consegna a nessun destinatario reale e prova una connessione SMTP che Render
+    // blocca (la richiesta restava appesa): meglio fallire subito e con un messaggio che dice cosa manca.
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error('SENDGRID_API_KEY mancante, vuota o segnaposto: impossibile inviare email in produzione (controlla Environment su Render)');
+    }
+    return sendViaEthereal(message);
+};
 
 const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
     try {

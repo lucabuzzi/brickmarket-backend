@@ -133,3 +133,42 @@ describe('Reply-To', () => {
     expect(axios.post.mock.calls[1][1].reply_to).toEqual({ email: 'luca@example.com', name: 'Luca' });
   });
 });
+
+describe('no SendGrid key', () => {
+  const ORIGINAL = { ...process.env };
+  afterEach(() => { process.env = { ...ORIGINAL }; jest.restoreAllMocks(); });
+
+  test.each([[undefined], [''], ['tuachiave-segnaposto']])('production fails fast with a clear error (key=%j) and never touches the network', async (key) => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    process.env.NODE_ENV = 'production';
+    if (key === undefined) delete process.env.SENDGRID_API_KEY; else process.env.SENDGRID_API_KEY = key;
+    axios.post.mockReset();
+    const nodemailer = require('nodemailer');
+    const spy = jest.spyOn(nodemailer, 'createTestAccount');
+
+    const started = Date.now();
+    await expect(loadEmail().sendVerificationEmail('u@example.com', 'https://x/y')).rejects.toThrow(/SENDGRID_API_KEY mancante/);
+    expect(Date.now() - started).toBeLessThan(500);
+    expect(axios.post).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  test('outside production the Ethereal fallback is still used', async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    process.env.NODE_ENV = 'development';
+    delete process.env.SENDGRID_API_KEY;
+    const sendMail = jest.fn().mockResolvedValue({ messageId: 'm1' });
+    const fakeNodemailer = {
+      createTestAccount: jest.fn().mockResolvedValue({ user: 'u', pass: 'p' }),
+      createTransport: jest.fn().mockReturnValue({ sendMail }),
+      getTestMessageUrl: jest.fn().mockReturnValue('http://preview'),
+    };
+    jest.resetModules();
+    jest.doMock('axios', () => axios);
+    jest.doMock('nodemailer', () => fakeNodemailer);
+    const { sendVerificationEmail } = require('../src/services/email');
+    await expect(sendVerificationEmail('u@example.com', 'https://x/y')).resolves.toBe(true);
+    expect(sendMail).toHaveBeenCalledTimes(1);
+    jest.dontMock('nodemailer');
+  });
+});
