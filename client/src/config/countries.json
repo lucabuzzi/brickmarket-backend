@@ -1,0 +1,34 @@
+{
+  "_comment": "Paesi supportati per users.address_country (ISO 3166-1 alpha-2, maiuscolo): UE27 + CH + GB + SM. Letto sia dal client (client/src/lib/country.js) sia dal backend (src/utils/country.js). 'aliases' = varianti storiche/endonimi che Intl.DisplayNames (it/en/de/fr/es) non copre da solo.",
+  "codes": [
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT",
+    "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+    "CH", "GB", "SM"
+  ],
+  "aliases": {
+    "GB": ["UK", "U.K.", "Great Britain", "Gran Bretagna", "England", "Inghilterra", "Scotland", "Scozia", "Wales", "Galles", "Reino Unido", "Royaume-Uni", "Grossbritannien"],
+    "NL": ["Holland", "Olanda", "Nederland", "Pays Bas", "Paises Bajos", "Niederlande"],
+    "CZ": ["Czechia", "Czech Republic", "Repubblica Ceca", "Cechia", "Ceska republika", "Tschechien"],
+    "DE": ["Deutschland", "Germany"],
+    "AT": ["Osterreich"],
+    "BE": ["Belgique", "Belgie", "Belgien"],
+    "BG": ["Balgariya"],
+    "HR": ["Hrvatska"],
+    "CY": ["Kypros", "Kibris"],
+    "DK": ["Danmark"],
+    "EE": ["Eesti"],
+    "FI": ["Suomi"],
+    "GR": ["Ellada", "Hellas", "Grecia"],
+    "HU": ["Magyarorszag"],
+    "IE": ["Eire"],
+    "LV": ["Latvija"],
+    "LT": ["Lietuva"],
+    "PL": ["Polska"],
+    "RO": ["Romania"],
+    "SK": ["Slovensko"],
+    "SI": ["Slovenija"],
+    "SE": ["Sverige"],
+    "CH": ["Schweiz", "Suisse", "Svizra"],
+    "SM": ["Repubblica di San Marino"]
+  }
+}

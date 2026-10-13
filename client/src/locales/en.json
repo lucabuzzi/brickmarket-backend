@@ -110,6 +110,7 @@
     "zip": "ZIP",
     "city": "City",
     "country": "Country",
+    "country_select": "Select your country",
     "phone": "Phone",
     "verifications": "Verifications",
     "id_scan": "ID Card Scan",

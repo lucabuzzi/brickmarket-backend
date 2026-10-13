@@ -13,6 +13,7 @@ import MarketCard from '../components/market/MarketCard';
 import { MARKET_MODES, isLiveAuction } from '../components/market/marketConfig';
 import { cldImage, formatEUR, listingImage } from '../components/landing/landingUtils';
 import { useToast } from '../context/ToastContext';
+import { normalizeCountry, flagClass } from '../lib/country';
 
 const LIME = '#c6ff3d';
 const EMBER = '#ff5a36';
@@ -226,7 +227,8 @@ export default function PublicProfile() {
   const tab = tabs.some((x) => x.id === activeTab) ? activeTab : defaultTab;
   const tabAccent = tabs.find((x) => x.id === tab)?.accent || LIME;
 
-  const location = [user.city, user.address_country?.toUpperCase()].filter(Boolean).join(', ');
+  const countryCode = normalizeCountry(user.address_country);
+  const location = [user.city, countryCode || user.address_country?.toUpperCase()].filter(Boolean).join(', ');
   const kicker = user.seller_type === 'professional'
     ? t('seller_page.kicker_professional')
     : user.seller_type === 'private' ? t('seller_page.kicker_private') : t('seller_page.kicker_member');
@@ -307,7 +309,7 @@ export default function PublicProfile() {
                   <span className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     {location}
-                    {user.address_country && <span className={`fi fi-${user.address_country.toLowerCase()} rounded-[2px]`} />}
+                    {countryCode && <span className={`${flagClass(countryCode)} rounded-[2px]`} />}
                   </span>
                 )}
                 <span className="flex items-center gap-2">

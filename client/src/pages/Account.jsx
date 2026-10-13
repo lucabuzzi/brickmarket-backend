@@ -3,10 +3,11 @@ import { useAuth } from '../auth/useAuth';
 import { Link, Navigate } from 'react-router-dom';
 import { apiPostForm } from '../api';
 import { useTranslation } from 'react-i18next';
+import { countryOptions, normalizeCountry } from '../lib/country';
 
 export default function Account() {
   const { user, loading, refreshMe } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const [city, setCity] = useState('');
   const [fullName, setFullName] = useState('');
@@ -29,7 +30,7 @@ export default function Account() {
       setStreet(user.address_street || '');
       setHouseNumber(user.address_house_number || '');
       setZipCode(user.address_zip_code || '');
-      setCountry(user.address_country || '');
+      setCountry(normalizeCountry(user.address_country) || '');
       setPhone(user.phone || '');
       setAvatarPreview(user.avatar_url || '');
     }
@@ -148,10 +149,12 @@ export default function Account() {
           </label>
           <label>
             {t('auth.country')}
-            <input
-              type="text" maxLength={2} placeholder="IT"
-              value={country} onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            />
+            <select value={country} onChange={(e) => setCountry(e.target.value)}>
+              <option value="">{t('auth.country_select')}</option>
+              {countryOptions(i18n.language).map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
           </label>
         </div>
 

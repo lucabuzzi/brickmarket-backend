@@ -110,6 +110,7 @@
     "zip": "Code postal",
     "city": "Ville",
     "country": "Pays",
+    "country_select": "Sélectionnez votre pays",
     "phone": "Téléphone",
     "verifications": "Vérifications",
     "id_scan": "Scan de la carte d'identité",

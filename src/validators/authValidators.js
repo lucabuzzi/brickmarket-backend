@@ -1,4 +1,11 @@
 const Joi = require('joi');
+const { normalizeCountry } = require('../utils/country');
+
+// Free text in, ISO alpha-2 uppercase out ('Italia' -> 'IT'); unknown/unsupported countries are rejected
+// instead of stored as-is (that is what used to split the user directory into two "Italia" groups).
+const countryField = Joi.string().trim().max(100).allow('', null)
+  .custom((value, helpers) => normalizeCountry(value) || helpers.error('country.unsupported'))
+  .messages({ 'country.unsupported': 'Paese non supportato' });
 
 const registerSchema = Joi.object({
   email: Joi.string().trim().email().required(),
@@ -13,7 +20,7 @@ const registerSchema = Joi.object({
   street: Joi.string().trim().max(200).allow('', null),
   houseNumber: Joi.string().trim().max(20).allow('', null),
   zipCode: Joi.string().trim().max(20).allow('', null),
-  country: Joi.string().trim().max(100).allow('', null),
+  country: countryField,
   phone: Joi.string().trim().max(30).allow('', null),
   turnstileToken: Joi.string().allow('', null),
   referralCode: Joi.string().trim().max(20).allow('', null),
@@ -48,7 +55,7 @@ const updateProfileSchema = Joi.object({
   street: Joi.string().trim().max(200).allow('', null),
   houseNumber: Joi.string().trim().max(20).allow('', null),
   zipCode: Joi.string().trim().max(20).allow('', null),
-  country: Joi.string().trim().max(100).allow('', null),
+  country: countryField,
   phone: Joi.string().trim().max(30).allow('', null),
 }).unknown(false);
 

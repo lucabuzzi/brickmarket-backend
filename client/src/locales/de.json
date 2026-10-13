@@ -110,6 +110,7 @@
     "zip": "PLZ",
     "city": "Stadt",
     "country": "Land",
+    "country_select": "Land auswählen",
     "phone": "Telefon",
     "verifications": "Überprüfungen",
     "id_scan": "Scan des Personalausweises",

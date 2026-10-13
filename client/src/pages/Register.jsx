@@ -8,6 +8,7 @@ import { useAuth } from '../auth/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { trackEvent } from '../analytics';
+import { countryOptions } from '../lib/country';
 import Turnstile from '../components/Turnstile';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import AppleSignInButton from '../components/AppleSignInButton';
@@ -107,7 +108,7 @@ function Consent({ checked, onChange, children }) {
 
 export default function Register() {
   const { register, loginWithGoogle, loginWithApple } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navTo = useLocalizedNav();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -454,7 +455,12 @@ export default function Register() {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label={t('auth.country')}>
-                      <input value={country} onChange={(e) => setCountry(e.target.value)} required autoComplete="country-name" className={inputClass} />
+                      <select value={country} onChange={(e) => setCountry(e.target.value)} required autoComplete="country" className={inputClass}>
+                        <option value="" disabled>{t('auth.country_select')}</option>
+                        {countryOptions(i18n.language).map((c) => (
+                          <option key={c.code} value={c.code}>{c.name}</option>
+                        ))}
+                      </select>
                     </Field>
                     <Field label={t('auth.phone')}>
                       <input value={phone} onChange={(e) => setPhone(e.target.value)} required type="tel" autoComplete="tel" inputMode="tel" className={inputClass} />

@@ -110,6 +110,7 @@
     "zip": "CAP",
     "city": "Città",
     "country": "Nazione",
+    "country_select": "Seleziona il paese",
     "phone": "Telefono",
     "verifications": "Verifiche",
     "id_scan": "Scan Carta d'Identità",

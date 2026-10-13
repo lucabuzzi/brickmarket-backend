@@ -87,7 +87,7 @@ router.get('/users/detailed', adminAuth, async (req, res) => {
   let paramCount = 1;
 
   if (country) {
-    whereClause += ` AND address_country = $${paramCount}`;
+    whereClause += ` AND UPPER(address_country) = UPPER($${paramCount})`;
     queryParams.push(country);
     paramCount++;
   }
@@ -120,10 +120,10 @@ router.get('/users/detailed', adminAuth, async (req, res) => {
 
     // Geo-data aggregation for the heatmap (not paginated, across filtered dataset or all)
     const geoRes = await query(`
-      SELECT address_country as country, COUNT(*)::int as user_count 
-      FROM users 
+      SELECT UPPER(address_country) as country, COUNT(*)::int as user_count
+      FROM users
       WHERE address_country IS NOT NULL
-      GROUP BY address_country
+      GROUP BY UPPER(address_country)
     `);
 
     res.json({

@@ -5,9 +5,10 @@ import { Users, MapPin, Search, ChevronDown, ChevronRight, Crown } from 'lucide-
 import { useTranslation } from 'react-i18next';
 import BrickRating from '../components/BrickRating';
 import SellerTypeBadge from '../components/SellerTypeBadge';
+import { normalizeCountry, countryName } from '../lib/country';
 
 export default function UserSearch() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -46,24 +47,15 @@ export default function UserSearch() {
 
   // Grouping
   const groupedUsers = filteredUsers.reduce((acc, u) => {
-    const country = u.country ? u.country.toLowerCase() : 'unknown';
+    // address_country used to be free text ('it', 'IT', 'Italia'...); normalize so one country = one group.
+    const country = normalizeCountry(u.country)?.toLowerCase() || 'unknown';
     if (!acc[country]) acc[country] = [];
     acc[country].push(u);
     return acc;
   }, {});
-
-  const countryNames = {
-    it: t('user_search.country_it'),
-    ch: t('user_search.country_ch'),
-    sm: t('user_search.country_sm'),
-    de: t('user_search.country_de'),
-    fr: t('user_search.country_fr'),
-    es: t('user_search.country_es'),
-    nl: t('user_search.country_nl'),
-    at: t('user_search.country_at'),
-    gb: t('user_search.country_gb'),
-    unknown: t('user_search.country_unknown')
-  };
+  const countryLabel = (code) => (code === 'unknown'
+    ? t('user_search.country_unknown')
+    : countryName(code.toUpperCase(), i18n.language));
 
   if (loading) return (
     <div className="page" style={{ padding: '4rem 2rem', textAlign: 'center' }}>
@@ -119,9 +111,9 @@ export default function UserSearch() {
                   onMouseOver={e => e.currentTarget.style.backgroundColor = '#292524'}
                   onMouseOut={e => e.currentTarget.style.backgroundColor = '#120f0a'}
                 >
-                  <span className={`fi fi-${countryCode}`} style={{ fontSize: '1.2rem', borderRadius: '2px' }}></span>
+                  {countryCode !== 'unknown' && <span className={`fi fi-${countryCode}`} style={{ fontSize: '1.2rem', borderRadius: '2px' }}></span>}
                   <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: '700', color: '#e7e5e4', flex: 1 }}>
-                    {countryNames[countryCode] || countryCode.toUpperCase()}
+                    {countryLabel(countryCode)}
                   </h2>
                   <span style={{ color: '#78716c', fontSize: '0.8rem', fontWeight: 'bold', marginRight: '0.5rem' }}>
                     {t('user_search.members_count', { count: countryUsers.length })}
@@ -164,7 +156,7 @@ export default function UserSearch() {
                         <div style={{ width: '30%', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a8a29e' }}>
                           <MapPin size={14} />
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.city}</span>
-                          <span className={`fi fi-${countryCode}`} style={{ fontSize: '0.9rem', opacity: 0.6, marginLeft: 'auto', marginRight: '1rem' }}></span>
+                          {countryCode !== 'unknown' && <span className={`fi fi-${countryCode}`} style={{ fontSize: '0.9rem', opacity: 0.6, marginLeft: 'auto', marginRight: '1rem' }}></span>}
                         </div>
 
                         {/* [BrickRating] */}
