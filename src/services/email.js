@@ -5,8 +5,24 @@ const { verificationEmail } = require('./emailTemplates');
 const SENDGRID_SEND_URL = 'https://api.sendgrid.com/v3/mail/send';
 const SENDGRID_TIMEOUT_MS = 10000;
 
-const hasSendGridKey = () =>
-    Boolean(process.env.SENDGRID_API_KEY) && !process.env.SENDGRID_API_KEY.includes('tuachiave');
+// Il valore è sempre ripulito da spazi/a-capo (copiando la chiave da una pagina web capita di portarseli dietro).
+const sendGridKey = () => (process.env.SENDGRID_API_KEY || '').trim();
+
+const hasSendGridKey = () => Boolean(sendGridKey()) && !sendGridKey().includes('tuachiave');
+
+// Perché l'invio è impossibile, senza mai includere il valore della chiave. Se la variabile non esiste ma ne
+// esiste una dal nome simile (errore di battitura, spazio nel nome...) lo dice, perché è il caso più frequente.
+const sendGridKeyProblem = () => {
+    const raw = process.env.SENDGRID_API_KEY;
+    if (raw === undefined) {
+        const similar = Object.keys(process.env).filter((k) => /send|grid/i.test(k));
+        return similar.length
+            ? `variabile SENDGRID_API_KEY non trovata (esistono variabili dal nome simile: ${similar.map((k) => JSON.stringify(k)).join(', ')})`
+            : 'variabile SENDGRID_API_KEY non trovata';
+    }
+    if (!raw.trim()) return 'variabile SENDGRID_API_KEY presente ma vuota';
+    return 'variabile SENDGRID_API_KEY presente ma contiene il segnaposto "tuachiave"';
+};
 
 // '"CardBrix" <noreply@cardbrix.com>' | 'noreply@cardbrix.com' -> { email, name? }
 const parseAddress = (raw) => {
@@ -35,7 +51,7 @@ const sendViaSendGridApi = async ({ from, to, subject, text, html }) => {
                 ],
             },
             {
-                headers: { Authorization: `Bearer ${process.env.SENDGRID_API_KEY}` },
+                headers: { Authorization: `Bearer ${sendGridKey()}` },
                 timeout: SENDGRID_TIMEOUT_MS,
             }
         );
@@ -74,23 +90,23 @@ const sendMail = async (message) => {
     // In produzione Ethereal non consegna a nessun destinatario reale e prova una connessione SMTP che Render
     // blocca (la richiesta restava appesa): meglio fallire subito e con un messaggio che dice cosa manca.
     if (process.env.NODE_ENV === 'production') {
-        throw new Error('SENDGRID_API_KEY mancante, vuota o segnaposto: impossibile inviare email in produzione (controlla Environment su Render)');
+        throw new Error(`SENDGRID_API_KEY mancante, vuota o segnaposto: ${sendGridKeyProblem()}. Impossibile inviare email in produzione (controlla Environment su Render)`);
     }
     return sendViaEthereal(message);
 };
 
 const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
     try {
-        const fromEmail = process.env.FROM_EMAIL || '"Supporto BrickMarket" <noreply@brickmarket.com>';
+        const fromEmail = process.env.FROM_EMAIL || '"Supporto Cardbrix" <noreply@cardbrix.com>';
 
         const info = await sendMail({
             from: fromEmail,
             to: toEmail,
-            subject: "Recupero Password - BrickMarket",
+            subject: "Recupero Password - Cardbrix",
             text: `Hai richiesto il reset della password. Vai a questo link per resettarla: ${resetTokenLink}`,
             html: `
               <div style="font-family: sans-serif; padding: 20px;">
-                <h2>Supporto BrickMarket</h2>
+                <h2>Supporto Cardbrix</h2>
                 <p>Hai richiesto il reset della tua password.</p>
                 <p>Clicca sul pulsante sottostante per crearne una nuova:</p>
                 <a href="${resetTokenLink}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
@@ -109,7 +125,7 @@ const sendRecoveryEmail = async (toEmail, resetTokenLink) => {
 
 const sendVerificationEmail = async (toEmail, verifyLink) => {
     try {
-        const fromEmail = process.env.FROM_EMAIL || '"CardBrix" <noreply@cardbrix.com>';
+        const fromEmail = process.env.FROM_EMAIL || '"Cardbrix" <noreply@cardbrix.com>';
 
         const info = await sendMail({
             from: fromEmail,

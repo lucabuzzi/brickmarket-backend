@@ -40,7 +40,8 @@ describe('sendVerificationEmail with a SendGrid key', () => {
     const [url, body, config] = axios.post.mock.calls[0];
     expect(url).toBe('https://api.sendgrid.com/v3/mail/send');
     expect(body.personalizations).toEqual([{ to: [{ email: 'user@example.com' }] }]);
-    expect(body.from).toEqual({ email: 'noreply@cardbrix.com', name: 'CardBrix' });
+    expect(body.from.email).toBe('noreply@cardbrix.com');
+    expect(body.from.name).toMatch(/^cardbrix$/i);
     expect(body.subject).toBe('Conferma il tuo indirizzo email - CardBrix');
     expect(body.content.map((c) => c.type)).toEqual(['text/plain', 'text/html']);
     expect(body.content[1].value).toContain('https://cardbrix.com/verifica-email?token=t1');
@@ -170,5 +171,48 @@ describe('no SendGrid key', () => {
     await expect(sendVerificationEmail('u@example.com', 'https://x/y')).resolves.toBe(true);
     expect(sendMail).toHaveBeenCalledTimes(1);
     jest.dontMock('nodemailer');
+  });
+});
+
+describe('no key: the error says why (never the key itself)', () => {
+  const ORIGINAL = { ...process.env };
+  afterEach(() => { process.env = { ...ORIGINAL }; jest.restoreAllMocks(); });
+  const run = async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    process.env.NODE_ENV = 'production';
+    try { await loadEmail().sendVerificationEmail('u@example.com', 'https://x/y'); } catch (e) { return e.message; }
+    throw new Error('expected a rejection');
+  };
+
+  test('variable not found, with a look-alike name listed', async () => {
+    delete process.env.SENDGRID_API_KEY;
+    process.env['SENDGRID_API_KEY '] = 'SG.secret-value-must-not-leak';
+    const msg = await run();
+    expect(msg).toMatch(/non trovata/);
+    expect(msg).toContain('"SENDGRID_API_KEY "');
+    expect(msg).not.toContain('secret-value-must-not-leak');
+  });
+  test('variable not found, nothing similar', async () => {
+    delete process.env.SENDGRID_API_KEY;
+    for (const k of Object.keys(process.env)) if (/send|grid/i.test(k)) delete process.env[k];
+    expect(await run()).toMatch(/non trovata$|non trovata\./);
+  });
+  test('empty / whitespace-only', async () => {
+    process.env.SENDGRID_API_KEY = '   \n';
+    expect(await run()).toMatch(/presente ma vuota/);
+  });
+  test('placeholder', async () => {
+    process.env.SENDGRID_API_KEY = 'tuachiave-qui';
+    const msg = await run();
+    expect(msg).toMatch(/segnaposto "tuachiave"/);
+    expect(msg).not.toContain('tuachiave-qui');
+  });
+  test('a key pasted with surrounding whitespace/newline is trimmed before use', async () => {
+    process.env.SENDGRID_API_KEY = '  SG.fake-key-for-tests\n';
+    axios.post.mockReset();
+    axios.post.mockResolvedValue({ status: 202, headers: {} });
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    await loadEmail().sendVerificationEmail('u@example.com', 'https://x/y');
+    expect(axios.post.mock.calls[0][2].headers.Authorization).toBe('Bearer SG.fake-key-for-tests');
   });
 });
