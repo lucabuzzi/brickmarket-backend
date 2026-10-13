@@ -450,8 +450,8 @@ export default function Layout() {
       <CookieConsent />
       <GeoLanguageSuggestion />
 
+      <EmailVerificationBanner />
       <main id="contenuto-principale" tabIndex={-1} className="main pt-16 focus:outline-none">
-        <EmailVerificationBanner />
         <Outlet />
       </main>
 

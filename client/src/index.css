@@ -346,7 +346,8 @@ code {
 
 .main {
   flex: 1;
-  padding: 2rem;
+  /* --verify-banner-h: height of the fixed email-verification bar (EmailVerificationBanner), 0 when hidden */
+  padding: calc(2rem + var(--verify-banner-h, 0px)) 2rem 2rem;
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
