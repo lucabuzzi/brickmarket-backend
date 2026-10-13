@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const axios = require('axios');
+const { verificationEmail } = require('./emailTemplates');
 
 const SENDGRID_SEND_URL = 'https://api.sendgrid.com/v3/mail/send';
 const SENDGRID_TIMEOUT_MS = 10000;
@@ -17,6 +18,8 @@ const parseAddress = (raw) => {
 // Perché l'API HTTPS e non l'SMTP: Render blocca l'SMTP in uscita (porte 25/465/587) sui web service
 // gratuiti, quindi smtp.sendgrid.net:587 non si apriva mai e la richiesta restava appesa senza errore.
 // La 443 non è bloccata, e il timeout evita che una richiesta HTTP resti in attesa all'infinito.
+const replyTo = () => (process.env.REPLY_TO_EMAIL ? parseAddress(process.env.REPLY_TO_EMAIL) : null);
+
 const sendViaSendGridApi = async ({ from, to, subject, text, html }) => {
     try {
         const res = await axios.post(
@@ -24,6 +27,7 @@ const sendViaSendGridApi = async ({ from, to, subject, text, html }) => {
             {
                 personalizations: [{ to: [{ email: to }] }],
                 from: parseAddress(from),
+                ...(replyTo() ? { reply_to: replyTo() } : {}),
                 subject,
                 content: [
                     { type: 'text/plain', value: text },
@@ -102,16 +106,7 @@ const sendVerificationEmail = async (toEmail, verifyLink) => {
         const info = await sendMail({
             from: fromEmail,
             to: toEmail,
-            subject: "Verifica la tua email - CardBrix",
-            text: `Conferma il tuo indirizzo email per attivare il bonus di benvenuto: ${verifyLink}`,
-            html: `
-              <div style="font-family: sans-serif; padding: 20px;">
-                <h2>Benvenuto su CardBrix</h2>
-                <p>Verifica il tuo indirizzo email per completare la registrazione e ricevere il bonus di benvenuto in crediti.</p>
-                <a href="${verifyLink}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verifica Email</a>
-                <p style="margin-top: 20px; font-size: 12px; color: #888;">Se non hai creato tu questo account, ignora questa email.</p>
-              </div>
-            `,
+            ...verificationEmail(verifyLink),
         });
 
         console.log("Messaggio inviato: %s", info.messageId);

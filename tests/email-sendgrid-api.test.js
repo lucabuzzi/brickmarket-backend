@@ -41,7 +41,7 @@ describe('sendVerificationEmail with a SendGrid key', () => {
     expect(url).toBe('https://api.sendgrid.com/v3/mail/send');
     expect(body.personalizations).toEqual([{ to: [{ email: 'user@example.com' }] }]);
     expect(body.from).toEqual({ email: 'noreply@cardbrix.com', name: 'CardBrix' });
-    expect(body.subject).toContain('Verifica');
+    expect(body.subject).toBe('Conferma il tuo indirizzo email - CardBrix');
     expect(body.content.map((c) => c.type)).toEqual(['text/plain', 'text/html']);
     expect(body.content[1].value).toContain('https://cardbrix.com/verifica-email?token=t1');
     expect(config.headers.Authorization).toBe('Bearer SG.fake-key-for-tests');
@@ -73,5 +73,63 @@ describe('sendVerificationEmail with a SendGrid key', () => {
     axios.post.mockResolvedValue({ status: 202, headers: {} });
     await loadEmail().sendRecoveryEmail('user@example.com', 'https://cardbrix.com/reset?t=1');
     expect(axios.post.mock.calls[0][1].content[1].value).toContain('https://cardbrix.com/reset?t=1');
+  });
+});
+
+describe('verification email content', () => {
+  const { verificationEmail, VERIFY_LINK_TTL_HOURS } = require('../src/services/emailTemplates');
+  const link = 'https://cardbrix.com/verifica-email?token=abc123';
+  const mail = verificationEmail(link);
+
+  test('has subject, plain text and html, all carrying the real link', () => {
+    expect(mail.subject).toMatch(/CardBrix/);
+    expect(mail.text).toContain(link);
+    expect(mail.html).toContain(`href="${link}"`);
+  });
+  test('html is a complete, mobile-friendly document with a hidden preheader', () => {
+    expect(mail.html).toMatch(/^<!doctype html>/i);
+    expect(mail.html).toContain('width=device-width');
+    expect(mail.html).toContain('display:none');
+    expect(mail.html).toContain('max-width:560px');
+  });
+  test('states the 24h validity (must match the token expiry in authService)', () => {
+    expect(VERIFY_LINK_TTL_HOURS).toBe(24);
+    expect(mail.text).toContain('24 ore');
+    expect(mail.html).toContain('24 ore');
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../src/services/authService.js'), 'utf8');
+    expect(src).toMatch(/24 \* 3600000/);
+  });
+  test('product rules: no euro/credit ratio and no hardcoded bonus amount', () => {
+    for (const body of [mail.text, mail.html]) {
+      expect(body).not.toMatch(/€|euro|EUR/i);
+      expect(body).not.toMatch(/\b\d+\s*crediti/i);
+      expect(body).not.toMatch(/recesso/i);
+    }
+    expect(mail.text).toMatch(/bonus di benvenuto in crediti/);
+  });
+  test('the link is HTML-escaped', () => {
+    const evil = verificationEmail('https://x.it/?a=1&b="><script>1</script>');
+    expect(evil.html).not.toContain('<script>');
+    expect(evil.html).toContain('&amp;b=&quot;&gt;&lt;script&gt;');
+  });
+});
+
+describe('Reply-To', () => {
+  const ORIGINAL = { ...process.env };
+  afterEach(() => { process.env = { ...ORIGINAL }; jest.restoreAllMocks(); });
+
+  test('is sent only when REPLY_TO_EMAIL is set', async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    process.env.SENDGRID_API_KEY = 'SG.fake-key-for-tests';
+    axios.post.mockReset();
+    axios.post.mockResolvedValue({ status: 202, headers: {} });
+
+    delete process.env.REPLY_TO_EMAIL;
+    await loadEmail().sendVerificationEmail('u@example.com', 'https://x/y');
+    expect(axios.post.mock.calls[0][1].reply_to).toBeUndefined();
+
+    process.env.REPLY_TO_EMAIL = 'Luca <luca@example.com>';
+    await loadEmail().sendVerificationEmail('u@example.com', 'https://x/y');
+    expect(axios.post.mock.calls[1][1].reply_to).toEqual({ email: 'luca@example.com', name: 'Luca' });
   });
 });

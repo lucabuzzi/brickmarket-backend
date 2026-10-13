@@ -43,7 +43,9 @@ export default function EmailVerificationBanner() {
   const handleResend = async () => {
     setStatus('sending');
     try {
-      await apiFetch('/api/auth/resend-verification-email', { method: 'POST' });
+      // The server gives up on the mail provider after 10s; this makes sure the button never stays on
+      // "sending" forever if the request itself hangs (cold start, network).
+      await apiFetch('/api/auth/resend-verification-email', { method: 'POST', signal: AbortSignal.timeout(15000) });
       setStatus('sent');
     } catch {
       setStatus('error');
