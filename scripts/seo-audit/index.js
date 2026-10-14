@@ -80,6 +80,7 @@ async function main() {
 
   // ---- sample pages: every non-listing URL, plus a few listings
   const paths = sitemap.urls.map((u) => new URL(u.loc).pathname);
+  const sitemapPaths = new Set(paths);
   const isListing = (p) => /^\/product\//.test(p);
   const staticPaths = [...new Set(paths.filter((p) => !isListing(p)))];
   const listingPaths = paths.filter(isListing).slice(0, opts.listings);
@@ -111,7 +112,9 @@ async function main() {
 
   const pageIssues = new Map();
   for (const p of pages) {
-    const list = checkPage(p, p.parsed, { baseUrl: base });
+    // "/" is fetched for the site-level checks even when the sitemap does not list it: its redirect to /it is
+    // normal and is only a "sitemap URL that redirects" problem for URLs the sitemap really contains.
+    const list = checkPage(p, p.parsed, { baseUrl: base }).filter((i) => !(i.id === 'redirect-chain' && !sitemapPaths.has(p.path)));
     pageIssues.set(p.path, list.map((i) => i.id));
     list.forEach((i) => findings.push({ ...i, url: p.url }));
   }

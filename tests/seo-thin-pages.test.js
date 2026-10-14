@@ -179,3 +179,51 @@ describe('user directory: noindex instead of padding', () => {
     expect(robots).not.toMatch(/Disallow:\s*\/(it\/|en\/)?(ricerca-utente|find-seller)/);
   });
 });
+
+describe('long expansion titles are shortened to fit a search result', () => {
+  const { buildSetMeta, fitTitle } = require('../src/services/seoSetPages');
+  const LONG = { id: 'lob', name: 'Legend of Blue Eyes White Dragon', name_en: 'Legend of Blue Eyes White Dragon' };
+
+  test.each([
+    ['annunci', 'it', 'Carte Yu-Gi-Oh! Legend of Blue Eyes White Dragon | CardBrix'],
+    ['annunci', 'en', 'Yu-Gi-Oh! Legend of Blue Eyes White Dragon Cards | CardBrix'],
+  ])('%s/%s drops the "for sale" part when it would exceed 60 characters', (mode, locale, expected) => {
+    const { title } = buildSetMeta(LONG, mode, 'yugioh', locale);
+    expect(title).toBe(expected);
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
+
+  test.each([['it', 'Aste Yu-Gi-Oh! Legend of Blue Eyes White Dragon | CardBrix'], ['en', 'Yu-Gi-Oh! Legend of Blue Eyes White Dragon Auctions']])('auctions (%s) fit too', (locale, expected) => {
+    const { title } = buildSetMeta(LONG, 'aste', 'yugioh', locale);
+    expect(title).toBe(expected);
+    expect(title.length).toBeLessThanOrEqual(60);
+  });
+
+  test('short names keep the full, more descriptive title (unchanged behaviour)', () => {
+    expect(buildSetMeta({ id: 'sv10', name: 'Rivali Predestinati' }, 'annunci', 'pokemon', 'it').title).toBe('Carte Pokémon Rivali Predestinati in vendita | CardBrix');
+    expect(buildSetMeta({ id: 'sv10', name_en: 'Destined Rivals', name: 'x' }, 'annunci', 'pokemon', 'en').title).toBe('Pokémon Destined Rivals Cards for Sale | CardBrix');
+  });
+
+  test('fitTitle picks the first candidate that fits, else the shortest', () => {
+    expect(fitTitle(['a'.repeat(70), 'b'.repeat(50)])).toBe('b'.repeat(50));
+    expect(fitTitle(['a'.repeat(90), 'b'.repeat(70)])).toBe('b'.repeat(70));
+  });
+});
+
+describe('audit: redirect and its target are one document', () => {
+  const { checkDuplicates } = require('../scripts/seo-audit/lib/siteChecks');
+  const page = (url, finalUrl, title, description) => ({ url, finalUrl, parsed: { title, description } });
+
+  test('"/" -> "/it" is not reported as a duplicate of itself', () => {
+    const pages = [page(`${BASE}/`, `${BASE}/it`, 'Home', 'D'), page(`${BASE}/it`, `${BASE}/it`, 'Home', 'D'), page(`${BASE}/faq`, `${BASE}/faq`, 'FAQ', 'F')];
+    expect(checkDuplicates(pages)).toEqual([]);
+  });
+  test('two genuinely different pages with the same title are still reported', () => {
+    const pages = [page(`${BASE}/a`, `${BASE}/a`, 'Same', 'A'), page(`${BASE}/b`, `${BASE}/b`, 'Same', 'B')];
+    expect(checkDuplicates(pages).map((i) => i.id)).toEqual(['title-duplicate']);
+  });
+  test('index.js only reports a redirect for URLs the sitemap really lists', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'seo-audit', 'index.js'), 'utf8');
+    expect(src).toMatch(/i\.id === 'redirect-chain' && !sitemapPaths\.has\(p\.path\)/);
+  });
+});

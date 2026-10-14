@@ -141,7 +141,16 @@ function checkHreflang(expectedLanguages, homeParsed) {
 
 // ---------------------------------------------------------------- cross-page
 /** title-duplicate / desc-duplicate: same text on 2+ pages of the sample. */
-function checkDuplicates(pages) {
+function checkDuplicates(rawPages) {
+  // A URL that redirects and the page it lands on are ONE document (e.g. "/" -> "/it"): count it once, or every
+  // redirect would be reported as a duplicate of its own target.
+  const seen = new Set();
+  const pages = rawPages.filter((p) => {
+    const key = p.finalUrl || p.url;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   const out = [];
   for (const [field, id] of [['title', 'title-duplicate'], ['description', 'desc-duplicate']]) {
     const byText = new Map();

@@ -24,6 +24,13 @@ function parseSetPath(reqPath) {
   return m ? { mode: m[1], game: m[2], id: m[3] } : null;
 }
 
+const TITLE_MAX = 60;
+
+/** The first candidate that fits a search-result title (<= 60 characters), else the shortest one. */
+function fitTitle(candidates) {
+  return candidates.find((t) => t.length <= TITLE_MAX) || candidates.reduce((a, b) => (b.length < a.length ? b : a));
+}
+
 /** Title and description for one expansion page. Pure: `set` is a card_sets row, `mode` 'annunci' | 'aste'. */
 function buildSetMeta(set, mode, game = 'pokemon', locale = 'it') {
   const label = GAMES[game] ? GAMES[game].label : game;
@@ -33,12 +40,12 @@ function buildSetMeta(set, mode, game = 'pokemon', locale = 'it') {
     const cards = set.card_count_total ? ` A ${set.card_count_total}-card expansion${series ? ` (${series})` : ''}.` : '';
     if (mode === 'aste') {
       return {
-        title: `${label} ${name} Auctions | CardBrix`,
+        title: fitTitle([`${label} ${name} Auctions | CardBrix`, `${label} ${name} Auctions`]),
         description: `Bid in live auctions for ${label} cards from the ${name} expansion on CardBrix.${cards}`.slice(0, 300),
       };
     }
     return {
-      title: `${label} ${name} Cards for Sale | CardBrix`,
+      title: fitTitle([`${label} ${name} Cards for Sale | CardBrix`, `${label} ${name} Cards | CardBrix`]),
       description: `Buy and sell ${label} cards from the ${name} expansion on CardBrix, between collectors.${cards}`.slice(0, 300),
     };
   }
@@ -47,12 +54,12 @@ function buildSetMeta(set, mode, game = 'pokemon', locale = 'it') {
   const cards = set.card_count_total ? ` Espansione da ${set.card_count_total} carte${series ? ` (${series})` : ''}.` : '';
   if (mode === 'aste') {
     return {
-      title: `Aste carte ${label} ${name} | CardBrix`,
+      title: fitTitle([`Aste carte ${label} ${name} | CardBrix`, `Aste ${label} ${name} | CardBrix`]),
       description: `Rilancia nelle aste live di carte ${label} dell'espansione ${name} su CardBrix.${cards}`.slice(0, 300),
     };
   }
   return {
-    title: `Carte ${label} ${name} in vendita | CardBrix`,
+    title: fitTitle([`Carte ${label} ${name} in vendita | CardBrix`, `Carte ${label} ${name} | CardBrix`]),
     description: `Compra e vendi carte ${label} dell'espansione ${name} su CardBrix, tra collezionisti.${cards}`.slice(0, 300),
   };
 }
@@ -96,4 +103,4 @@ async function listSetSitemapPaths() {
   }));
 }
 
-module.exports = { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths, CATALOG_GAME_SLUGS, BASE_URL };
+module.exports = { parseSetPath, buildSetMeta, fitTitle, fetchSetPageMeta, listSetSitemapPaths, CATALOG_GAME_SLUGS, BASE_URL };
