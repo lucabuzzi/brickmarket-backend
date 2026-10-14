@@ -216,3 +216,19 @@ describe('no key: the error says why (never the key itself)', () => {
     expect(axios.post.mock.calls[0][2].headers.Authorization).toBe('Bearer SG.fake-key-for-tests');
   });
 });
+
+describe('link tracking', () => {
+  const ORIGINAL = { ...process.env };
+  afterEach(() => { process.env = { ...ORIGINAL }; jest.restoreAllMocks(); });
+  test('click and open tracking are disabled so links stay direct', async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    process.env.SENDGRID_API_KEY = 'SG.fake-key-for-tests';
+    axios.post.mockReset();
+    axios.post.mockResolvedValue({ status: 202, headers: {} });
+    await loadEmail().sendVerificationEmail('u@example.com', 'https://cardbrix.com/verifica-email?token=t');
+    expect(axios.post.mock.calls[0][1].tracking_settings).toEqual({
+      click_tracking: { enable: false, enable_text: false },
+      open_tracking: { enable: false },
+    });
+  });
+});

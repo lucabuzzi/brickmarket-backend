@@ -6,6 +6,7 @@ const walletRepository = require('../repositories/walletRepository');
 const creditConfigRepository = require('../repositories/creditConfigRepository');
 const identitySignalRepository = require('../repositories/identitySignalRepository');
 const { sendRecoveryEmail, sendVerificationEmail } = require('./email');
+const { getFrontendUrl } = require('../utils/frontendUrl');
 const { withTransaction } = require('../db');
 
 class AuthError extends Error {
@@ -103,7 +104,7 @@ async function sendEmailVerification(userId, email) {
 
   await userRepository.setEmailVerificationToken(userId, hashedToken, expires);
 
-  const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verifica-email?token=${rawToken}`;
+  const verifyLink = `${getFrontendUrl()}/verifica-email?token=${rawToken}`;
   await sendVerificationEmail(email.toLowerCase(), verifyLink);
 }
 
@@ -220,7 +221,7 @@ async function requestPasswordReset(email) {
 
   await userRepository.setResetToken(email, hashedToken, expires);
 
-  const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+  const resetLink = `${getFrontendUrl()}/reset-password?token=${resetToken}`;
   await sendRecoveryEmail(email.toLowerCase(), resetLink);
 }
 

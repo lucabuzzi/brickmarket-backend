@@ -43,6 +43,9 @@ const sendViaSendGridApi = async ({ from, to, subject, text, html }) => {
             {
                 personalizations: [{ to: [{ email: to }] }],
                 from: parseAddress(from),
+                // Niente tracciamento: i link (verifica email, reset password) devono puntare direttamente a cardbrix.com,
+                // non passare da un redirect di terzi (url####.cardbrix.com/ls/click) che può rompersi e vede i token.
+                tracking_settings: { click_tracking: { enable: false, enable_text: false }, open_tracking: { enable: false } },
                 ...(replyTo() ? { reply_to: replyTo() } : {}),
                 subject,
                 content: [

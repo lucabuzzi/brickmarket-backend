@@ -1,4 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { getFrontendUrl } = require('../utils/frontendUrl');
 const paymentsRepository = require('../repositories/paymentsRepository');
 const userRepository = require('../repositories/userRepository');
 const addressRepository = require('../repositories/addressRepository');
@@ -73,8 +74,8 @@ async function onboardSellerHandler(req, res) {
 
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.FRONTEND_URL}/seller/onboarding-retry`,
-      return_url: `${process.env.FRONTEND_URL}/seller/onboarding-complete`,
+      refresh_url: `${getFrontendUrl()}/seller/onboarding-retry`,
+      return_url: `${getFrontendUrl()}/seller/onboarding-complete`,
       type: 'account_onboarding',
     });
 
