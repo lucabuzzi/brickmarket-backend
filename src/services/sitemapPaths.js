@@ -47,7 +47,6 @@ const CANONICAL_STATIC_PATHS = [
   '/faq',
   '/help',
   '/norme-legali',
-  '/ricerca-utente',
   ...(legalPages.published ? ['/privacy', '/cookie-policy'] : []),
   ...(legalPages.accessibilityPublished ? ['/accessibilita'] : []),
 ];

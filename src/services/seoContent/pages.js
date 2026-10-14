@@ -272,6 +272,34 @@ function market(mode, rest, locale = 'it') {
   return null;
 }
 
+// Catalog hubs whose local card cache (master_cards) is empty show no "recently added" list, which left them at
+// ~120 words. A factual description of what the catalog covers and how to use it fills that gap without claims
+// about data we do not have. Keep every sentence true for the site as it is (search by name, reference page per
+// card, listings of other collectors).
+const CATALOG_ABOUT = {
+  onepiece: {
+    it: { game: 'One Piece Card Game', covers: 'leader, personaggi ed eventi della ciurma', setsHeading: 'Espansioni del One Piece Card Game' },
+    en: { game: 'One Piece Card Game', covers: 'leaders, characters and events of the crew', setsHeading: 'One Piece Card Game expansions' },
+  },
+  dragonball: {
+    it: { game: 'Dragon Ball Super Card Game – Fusion World', covers: 'guerrieri, tecniche e trasformazioni' },
+    en: { game: 'Dragon Ball Super Card Game – Fusion World', covers: 'warriors, techniques and transformations' },
+  },
+};
+
+function catalogAbout(slug, name, locale = 'it') {
+  const about = CATALOG_ABOUT[slug] && CATALOG_ABOUT[slug][locale === 'en' ? 'en' : 'it'];
+  if (!about) return '';
+  if (locale === 'en') {
+    return section(`How to use the ${name} catalog`,
+      `<p>The CardBrix ${name} catalog covers the ${about.game}: ${about.covers}. Search a card by name to open its reference page.</p>` +
+      '<p>Check which expansion a card belongs to and compare it with the listings of other collectors before you buy. If you have a card to sell, publish your own listing.</p>');
+  }
+  return section(`Come usare il catalogo ${name}`,
+    `<p>Il catalogo ${name} di CardBrix riguarda il ${about.game}: ${about.covers}. Cerca una carta per nome per aprirne la scheda di riferimento.</p>` +
+    "<p>Controlla a quale espansione appartiene la carta e confrontala con gli annunci degli altri collezionisti prima di comprare. Se ne hai una da vendere, pubblica il tuo annuncio.</p>");
+}
+
 function catalog(rest, locale = 'it') {
   const catalogLabel = CATALOG_LABEL[locale === 'en' ? 'en' : 'it'];
   const home = { name: 'CardBrix', href: loc('/', locale) };
@@ -300,14 +328,96 @@ function catalog(rest, locale = 'it') {
       lead: t(`catalog_games.${slug}`, {}, locale),
       body:
         `<p>${esc(t('hubs.catalog.subtitle', {}, locale))}</p>` +
+        catalogAbout(slug, name, locale) +
         section(t('landing.trust.pricing_title', {}, locale), `<p>${esc(t('landing.trust.pricing_desc', {}, locale))}</p><p>${esc(t('how_it_works_page.why1_desc', {}, locale))}</p>`),
       tail: `${cta(loc(marketPath, locale), `${t('annunci.title_prefix', {}, locale)} ${name}`)}${cta(loc('/catalog', locale), catalogLabel)}`,
       crumbs: [home, { name: catalogLabel, href: loc('/catalog', locale) }, { name }],
       catalog: [{ slug, heading: recentHeading, limit: 12 }],
+      ...(CATALOG_ABOUT[slug] && CATALOG_ABOUT[slug][locale === 'en' ? 'en' : 'it'].setsHeading
+        ? { setsLists: [{ game: slug, heading: CATALOG_ABOUT[slug][locale === 'en' ? 'en' : 'it'].setsHeading, limit: 30 }] }
+        : {}),
       listings: [{ heading: listingsHeading, auction: false, productType, ...(productType === 'tcg' ? { game: slug } : {}), limit: 8, empty: emptyText('annunci', name, locale) }],
     };
   }
   return null;
+}
+
+// ------------------------------------------------------------------ expansion pages
+// /annunci|aste/carte-collezionabili/<game>/<setId>. Until now these answered with the 45-word generic shell
+// (title and meta were right, the body empty). The facts come from the card_sets row, never invented.
+
+/** A DATE (Date or 'YYYY-MM-DD') -> "12 marzo 2025" / "12 March 2025", independent of the server time zone. */
+function formatSetDate(value, locale) {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  return utc.toLocaleDateString(locale === 'en' ? 'en-GB' : 'it-IT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+const SET_COPY = {
+  it: {
+    heading: (mode, label, name) => (mode === 'aste' ? `Aste carte ${label} ${name}` : `Carte ${label} ${name} in vendita`),
+    facts: ({ label, name, series, cards, date }) =>
+      `Espansione ${label} «${name}»${series ? ` della serie ${series}` : ''}${cards ? `, composta da ${cards} carte` : ''}${date ? `, uscita il ${date}` : ''}.`,
+    intro: (mode) => (mode === 'aste'
+      ? 'Qui trovi le aste live di questa espansione: rilancia, segui il tempo rimasto e vinci le carte che cerchi.'
+      : 'Qui trovi le carte di questa espansione messe in vendita dai collezionisti CardBrix, a prezzo fisso e con le foto di ogni carta.'),
+    findTitle: (name) => `Come trovare le carte di ${name}`,
+    find: 'Sfoglia gli annunci qui sopra oppure apri il catalogo: ogni carta ha una scheda di riferimento che ti aiuta a controllare edizione e prezzo prima di comprare o vendere.',
+    othersTitle: (label) => `Altre espansioni ${label} con annunci attivi`,
+    carte: 'Carte collezionabili',
+  },
+  en: {
+    heading: (mode, label, name) => (mode === 'aste' ? `${label} ${name} Auctions` : `${label} ${name} Cards for Sale`),
+    facts: ({ label, name, series, cards, date }) =>
+      `${label} expansion “${name}”${series ? ` from the ${series} series` : ''}${cards ? `, with ${cards} cards` : ''}${date ? `, released on ${date}` : ''}.`,
+    intro: (mode) => (mode === 'aste'
+      ? 'Here are the live auctions for this expansion: place bids, follow the time left and win the cards you are after.'
+      : 'Here are the cards from this expansion that CardBrix collectors have put up for sale, at a fixed price and with photos of every card.'),
+    findTitle: (name) => `How to find ${name} cards`,
+    find: 'Browse the listings above or open the catalog: every card has a reference page that helps you check the edition and the price before you buy or sell.',
+    othersTitle: (label) => `More ${label} expansions with active listings`,
+    carte: 'Trading cards',
+  },
+};
+
+/**
+ * Page definition of one expansion page. Pure: `data` is { set: card_sets row, others: [{ id, name, name_en }] }
+ * (other expansions of the same game that have active listings), `parsed` is seoSetPages.parseSetPath().
+ */
+function setPageDef(data, parsed, locale = 'it') {
+  const c = SET_COPY[locale === 'en' ? 'en' : 'it'];
+  const { set, others = [] } = data;
+  const { mode, game } = parsed;
+  const en = locale === 'en';
+  const label = NAMES[game] || game;
+  const name = en ? (set.name_en || set.name || set.id) : (set.name || set.name_en || set.id);
+  const series = en ? (set.series_name_en || set.series_name) : (set.series_name || set.series_name_en);
+  const kindLabel = KIND_LABEL[en ? 'en' : 'it'][mode];
+  const home = { name: 'CardBrix', href: loc('/', locale) };
+  const otherLinks = others
+    .filter((o) => o && o.id)
+    .map((o) => link(loc(`/${mode}/carte-collezionabili/${game}/${String(o.id).toLowerCase()}`, locale), en ? (o.name_en || o.name || o.id) : (o.name || o.name_en || o.id)));
+  return {
+    h1: c.heading(mode, label, name),
+    lead: `${c.facts({ label, name, series, cards: set.card_count_total, date: formatSetDate(set.release_date, locale) })} ${c.intro(mode)}`,
+    body:
+      section(c.findTitle(name), `<p>${esc(c.find)}</p>`) +
+      (otherLinks.length ? section(c.othersTitle(label), list(otherLinks)) : '') +
+      howTo(mode, locale) +
+      catalogLink(game, label, locale) +
+      section(t('landing.trust.pricing_title', {}, locale), `<p>${esc(t('landing.trust.pricing_desc', {}, locale))}</p><p>${esc(t('how_it_works_page.why1_desc', {}, locale))}</p>`) +
+      sellCta(mode, locale),
+    crumbs: [
+      home,
+      { name: kindLabel, href: loc(`/${mode}`, locale) },
+      { name: c.carte, href: loc(`/${mode}/carte-collezionabili`, locale) },
+      { name: label, href: loc(`/${mode}/carte-collezionabili/${game}`, locale) },
+      { name },
+    ],
+    listings: [{ heading: `${kindLabel} ${label} ${name}`, auction: mode === 'aste', productType: 'tcg', game, cardSetId: set.id, limit: 20, empty: emptyText(mode, `${label} ${name}`, locale) }],
+  };
 }
 
 /** Definition for a request path (always canonical/Italian), or null when the route has no specific content. */
@@ -320,4 +430,4 @@ function pageFor(rawPath, locale = 'it') {
   return null;
 }
 
-module.exports = { pageFor, STATIC_PATHS: Object.keys(STATIC) };
+module.exports = { pageFor, setPageDef, formatSetDate, STATIC_PATHS: Object.keys(STATIC) };

@@ -8,6 +8,11 @@ const { parseSetPath, fetchSetPageMeta } = require('./seoSetPages');
 const { URL_LOCALES, DEFAULT_URL_LOCALE, matchLocalizedRoute, resolveLocalizedPath, fillCanonicalPath } = require('./localizedRoutes');
 
 const BASE_URL = 'https://cardbrix.com';
+
+// Structural pages that stay reachable and crawlable but must not be indexed: thin by nature, no search value
+// (the user directory is a list loaded in the browser). `noindex, follow` needs the page to be crawlable, so
+// they must NOT be Disallowed in robots.txt. Also left out of the sitemap (see sitemapPaths.js).
+const NOINDEX_PATHS = new Set(['/ricerca-utente']);
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_TITLE = 'CardBrix - Marketplace di LEGO, carte collezionabili e aste';
 const DEFAULT_DESCRIPTION =
@@ -171,6 +176,7 @@ async function renderPage(reqPath, baseHtml) {
       lang: locale,
     });
     html = injectAlternates(html, alternatesFor(canonicalPath));
+    if (NOINDEX_PATHS.has(canonicalPath)) html = html.replace('</head>', '<meta name="robots" content="noindex, follow"></head>');
     // Page-specific text inside #root for crawlers that do not run JavaScript (see services/seoContent).
     const shell = await shellForRoute(canonicalPath, locale);
     html = injectShell(html, shell.html);
@@ -239,4 +245,4 @@ async function renderIndexHtmlForRequest(reqPath, baseHtml) {
   return (await renderPage(reqPath, baseHtml)).html;
 }
 
-module.exports = { renderPage, renderIndexHtmlForRequest, resolveImageUrl, DEFAULT_TITLE, DEFAULT_DESCRIPTION };
+module.exports = { renderPage, renderIndexHtmlForRequest, resolveImageUrl, NOINDEX_PATHS, DEFAULT_TITLE, DEFAULT_DESCRIPTION };

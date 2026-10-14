@@ -28,12 +28,12 @@
     "date": "2026-10-12"
   },
   "/catalog/onepiece": {
-    "hash": "e81735fe55910b65",
-    "date": "2026-10-12"
+    "hash": "b306d36ed5edd8d3",
+    "date": "2026-10-14"
   },
   "/catalog/dragonball": {
-    "hash": "c532b76289eddb3d",
-    "date": "2026-10-12"
+    "hash": "61510d3d69a4722d",
+    "date": "2026-10-14"
   },
   "/catalog/funko": {
     "hash": "2be25ead254896f2",
@@ -138,9 +138,5 @@
   "/norme-legali": {
     "hash": "b6c63c3a0ec811bc",
     "date": "2026-10-05"
-  },
-  "/ricerca-utente": {
-    "hash": "e4918003d5760bca",
-    "date": "2026-10-12"
   }
 }

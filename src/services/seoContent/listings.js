@@ -13,7 +13,7 @@ const TTL_MS = 5 * 60 * 1000;
 const priceOf = (l) => eur(l.type === 'auction' ? l.current_bid ?? l.auction_start : l.price);
 
 /** Same visibility rules as the public API: active, and auctions that have not already ended. */
-async function fetchListings({ auction, productType, game, limit = 12 }) {
+async function fetchListings({ auction, productType, game, cardSetId, limit = 12 }) {
   const params = [];
   const where = ["l.status = 'active'"];
   where.push(auction
@@ -21,6 +21,7 @@ async function fetchListings({ auction, productType, game, limit = 12 }) {
     : "(l.type <> 'auction' AND (l.is_auction = false OR l.is_auction IS NULL))");
   if (productType) { params.push(productType); where.push(`l.product_type = $${params.length}`); }
   if (game) { params.push(game); where.push(`l.game = $${params.length}`); }
+  if (cardSetId) { params.push(String(cardSetId)); where.push(`lower(l.card_set_id) = lower($${params.length})`); }
   params.push(Math.min(Math.max(Number(limit) || 12, 1), 50));
   const { rows } = await query(
     `SELECT l.id, l.title, l.price, l.current_bid, l.auction_start, l.type, l.condition, l.product_type, l.game
@@ -49,7 +50,7 @@ function listingItems(rows) {
  * missing section); when the read failed or timed out (null) nothing is invented: the section is left out.
  */
 async function listingsBlock(block) {
-  const key = `list:${block.auction ? 'a' : 'f'}:${block.productType || '*'}:${block.game || '*'}:${block.limit || 12}`;
+  const key = `list:${block.auction ? 'a' : 'f'}:${block.productType || '*'}:${block.game || '*'}:${block.cardSetId || '*'}:${block.limit || 12}`;
   const rows = await cached(key, TTL_MS, () => fetchListings(block));
   if (!rows) return '';
   if (rows.length === 0) return block.empty ? section(block.heading, `<p>${esc(block.empty)}</p>`) : '';

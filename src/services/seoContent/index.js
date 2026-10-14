@@ -8,12 +8,14 @@
 //
 // Contract: these functions never throw. Anything that goes wrong degrades to a smaller page.
 const { renderShell } = require('./layout');
-const { pageFor } = require('./pages');
+const { pageFor, setPageDef } = require('./pages');
+const { fetchSetData, setsListBlock } = require('./setData');
+const { parseSetPath } = require('../seoSetPages');
 const { listingsBlock, catalogBlock, productPage } = require('./listings');
 const { t } = require('./copy');
 
 async function build(def, locale = 'it') {
-  const blocks = await Promise.all([...(def.catalog || []).map((b) => catalogBlock(b)), ...(def.listings || []).map((b) => listingsBlock(b))]);
+  const blocks = await Promise.all([...(def.catalog || []).map((b) => catalogBlock(b)), ...(def.setsLists || []).map((b) => setsListBlock(b, locale)), ...(def.listings || []).map((b) => listingsBlock(b))]);
   return { html: renderShell({ ...def, body: (def.body || '') + blocks.join('') + (def.tail || '') }, locale), jsonLd: def.jsonLd || null };
 }
 
@@ -25,7 +27,14 @@ function genericPage(locale = 'it') {
 /** -> { html, jsonLd } for a non-listing route. `path` is always the canonical (Italian) path. */
 async function shellForRoute(path, locale = 'it') {
   try {
-    const def = pageFor(path, locale);
+    const parsedSet = parseSetPath(path);
+    let def;
+    if (parsedSet) {
+      const data = await fetchSetData(parsedSet);
+      def = data ? setPageDef(data, parsedSet, locale) : null;
+    } else {
+      def = pageFor(path, locale);
+    }
     return def ? await build(def, locale) : { html: genericPage(locale), jsonLd: null };
   } catch (err) {
     console.error('seoContent shellForRoute:', err.message);
