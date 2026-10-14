@@ -104,6 +104,9 @@ app.use('/api/webhooks/sendcloud',
   require('./src/routes/webhooksSendcloud')
 );
 
+// Liveness probe (no DB, outside the rate limiter). /api/health kept for existing callers.
+app.get(['/health', '/api/health'], require('./src/routes/health'));
+
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting globale (escluso webhook Stripe)
@@ -380,7 +383,6 @@ async function _disabledAuctionBidHandler(req, res) {
 }
 
 // Health check under /api for the frontend helper
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Serve the built React app (client/dist, produced by `npm run build`) and fall back to
 // index.html for any non-API, non-uploads GET path so React Router's client-side routes
