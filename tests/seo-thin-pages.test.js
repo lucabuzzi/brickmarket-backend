@@ -227,3 +227,92 @@ describe('audit: redirect and its target are one document', () => {
     expect(src).toMatch(/i\.id === 'redirect-chain' && !sitemapPaths\.has\(p\.path\)/);
   });
 });
+
+describe('listing pages without seller text', () => {
+  const ID = '0f7e7507-c320-499f-a010-abcb7f0e3e6a';
+  const LISTING = { id: ID, title: 'Dark Magician - Carta LOB-005', description: null, price: '15.00', current_bid: null, auction_start: null, auction_end: null, type: 'used', status: 'active', images: [], condition: 'used', product_type: 'tcg', game: 'yugioh', set_number: null, theme: 'Yu-Gi-Oh!', year: null, pieces: null, box_condition: null, shipping_options: null, card_set_id: 'LOB', card_number: 'LOB-005' };
+  const LOB = { id: 'LOB', name: 'Legend of Blue Eyes White Dragon', name_en: 'Legend of Blue Eyes White Dragon', series_name: null, series_name_en: null, card_count_total: 126, release_date: '2002-03-08' };
+  const SIBLING = (n) => ({ id: `id-${n}`, title: `Altra carta ${n}`, price: '3', current_bid: null, auction_start: null, type: 'used', condition: 'used', product_type: 'tcg', game: n < 3 ? 'yugioh' : 'pokemon' });
+
+  function mockListing({ listing = LISTING, set = LOB, related = [] } = {}) {
+    query.mockImplementation(async (sql, params) => {
+      const q = String(sql);
+      if (q.includes('FROM listings WHERE id = $1')) return { rows: [listing] };
+      if (q.includes('JOIN users')) return { rows: [] };
+      if (q.includes('FROM card_sets') && q.includes('lower(id) = lower(')) return { rows: set ? [set] : [] };
+      if (q.includes('FROM card_sets cs')) return { rows: [] };
+      if (q.includes('ORDER BY l.created_at')) return { rows: related.filter((r) => !params.includes('yugioh') || r.game === 'yugioh') };
+      return { rows: [] };
+    });
+  }
+
+  test('a card with no description is no longer thin (>= 150 words), using only its own data', async () => {
+    mockListing();
+    const d = await audit(`/product/${ID}`);
+    expect(d.status).toBe(200);
+    expect(d.parsed.wordCount).toBeGreaterThanOrEqual(150);
+    expect(d.ids).not.toContain('raw-html-thin');
+  });
+
+  test('states facts from the listing and from card_sets, and links to the expansion page', async () => {
+    mockListing();
+    const { html } = await audit(`/product/${ID}`);
+    expect(html).toContain('<h2>In sintesi</h2>');
+    expect(html).toContain('è un annuncio a prezzo fisso su CardBrix nella categoria Carte collezionabili – Yu-Gi-Oh!.');
+    expect(html).toContain('Condizione dichiarata dal venditore: usato.');
+    expect(html).toContain('<h2>Scheda della carta</h2>');
+    expect(html).toContain("Questa carta appartiene all'espansione Yu-Gi-Oh! «Legend of Blue Eyes White Dragon», composta da 126 carte, uscita il 8 marzo 2002. Numero della carta: LOB-005.");
+    expect(html).toContain('href="/it/annunci/carte-collezionabili/yugioh/lob"');
+    expect(html).toContain('<h2>Catalogo Yu-Gi-Oh!</h2>');
+  });
+
+  test('auctions say so and link to the auction page of the expansion', async () => {
+    mockListing({ listing: { ...LISTING, type: 'auction', auction_start: '5', auction_end: null } });
+    const { html } = await audit(`/product/${ID}`);
+    expect(html).toContain("è un'asta su CardBrix");
+    expect(html).toContain("Puoi rilanciare fino alla scadenza dell'asta.");
+    expect(html).toContain('href="/it/aste/carte-collezionabili/yugioh/lob"');
+  });
+
+  test('without card_set_id there is no card section, and the page still has its summary and catalog', async () => {
+    mockListing({ listing: { ...LISTING, card_set_id: null, card_number: null } });
+    const { html } = await audit(`/product/${ID}`);
+    expect(html).not.toContain('Scheda della carta');
+    expect(html).toContain('<h2>In sintesi</h2>');
+    expect(html).toContain('<h2>Catalogo Yu-Gi-Oh!</h2>');
+  });
+
+  test('an unknown expansion id leaves the card section out instead of inventing one', async () => {
+    mockListing({ set: null });
+    expect((await audit(`/product/${ID}`)).html).not.toContain('Scheda della carta');
+  });
+
+  test('similar listings complete with the category when the game has fewer than 3 others', async () => {
+    mockListing({ related: [SIBLING(1), SIBLING(3), SIBLING(4), SIBLING(5)] });
+    const { html } = await audit(`/product/${ID}`);
+    expect(html).toContain('Altri annunci simili');
+    expect(html).toContain('/product/id-1'); // same game
+    expect(html).toContain('/product/id-3'); // completed from the category
+    const lookups = query.mock.calls.filter(([sql]) => String(sql).includes('ORDER BY l.created_at'));
+    expect(lookups.length).toBe(2);
+  });
+
+  test('user-written text is escaped', async () => {
+    mockListing({ listing: { ...LISTING, title: '<img src=x onerror=1> Carta' } });
+    const { html } = await audit(`/product/${ID}`);
+    expect(html).not.toContain('<img src=x');
+  });
+
+  test('a failure while reading card_sets does not break the page', async () => {
+    query.mockImplementation(async (sql) => {
+      const q = String(sql);
+      if (q.includes('FROM listings WHERE id = $1')) return { rows: [LISTING] };
+      if (q.includes('FROM card_sets')) throw new Error('db down');
+      return { rows: [] };
+    });
+    const d = await audit(`/product/${ID}`);
+    expect(d.status).toBe(200);
+    expect(d.html).toContain('<h2>In sintesi</h2>');
+    expect(d.html).not.toContain('Scheda della carta');
+  });
+});

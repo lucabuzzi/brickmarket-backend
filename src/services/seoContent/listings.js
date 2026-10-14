@@ -7,6 +7,11 @@ const { cached } = require('./cache');
 const { esc, link, paragraphs, list, section } = require('./html');
 const { t } = require('./copy');
 const { eur, conditionLabel, TYPE_LABELS } = require('../listingText');
+const { fetchSetData } = require('./setData');
+const { CATALOG_GAME_SLUGS } = require('../seoSetPages');
+const { SHORT } = require('../pageMeta');
+const { resolveLocalizedPath } = require('../localizedRoutes');
+const { formatSetDate } = require('./pages');
 
 const TTL_MS = 5 * 60 * 1000;
 
@@ -99,7 +104,12 @@ async function relatedListings(listing) {
   if (!listing.product_type) return [];
   const key = `related:${listing.product_type}:${listing.game || '*'}`;
   const rows = await cached(key, TTL_MS, () => fetchListings({ auction: false, productType: listing.product_type, game: listing.game, limit: 8 }));
-  return (rows || []).filter((r) => r.id !== listing.id).slice(0, 6);
+  const same = (rows || []).filter((r) => r.id !== listing.id);
+  if (same.length >= 3 || !listing.game) return same.slice(0, 6);
+  // A listing alone in its game (e.g. the only Yu-Gi-Oh! card) would show no similar items at all: complete with the category.
+  const wide = await cached(`related:${listing.product_type}:*`, TTL_MS, () => fetchListings({ auction: false, productType: listing.product_type, limit: 8 }));
+  const seen = new Set(same.map((r) => r.id));
+  return [...same, ...(wide || []).filter((r) => r.id !== listing.id && !seen.has(r.id))].slice(0, 6);
 }
 
 function crumbsFor(listing) {
@@ -119,6 +129,48 @@ function formatEnd(date) {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return null;
   return new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(d);
+}
+
+const loc = (p) => resolveLocalizedPath(p, 'it') || p;
+const TCG_GAME_SET = new Set(CATALOG_GAME_SLUGS);
+
+/**
+ * Sections built only from the listing's own fields and the reference data (card_sets): they give every listing a
+ * minimum of real text even when the seller wrote none, without inventing anything. Italian only (product pages
+ * are not localized).
+ */
+async function listingFacts(listing, { isAuction }) {
+  const kind = isAuction ? "un'asta" : 'un annuncio a prezzo fisso';
+  const category = TYPE_LABELS[listing.product_type];
+  const gameName = listing.game ? SHORT[listing.game] : '';
+  const where = [category, gameName].filter(Boolean).join(' – ');
+  const condition = conditionLabel(listing.condition);
+  const summary =
+    `<p>«${esc(listing.title)}» è ${kind} su CardBrix${where ? ` nella categoria ${esc(where)}` : ''}.` +
+    `${condition ? ` Condizione dichiarata dal venditore: ${esc(condition.toLowerCase())}.` : ''}` +
+    ` ${isAuction ? "Puoi rilanciare fino alla scadenza dell'asta." : 'Puoi aggiungerlo al carrello e acquistarlo subito.'}</p>`;
+
+  let cardInfo = '';
+  if (listing.product_type === 'tcg' && TCG_GAME_SET.has(listing.game) && listing.card_set_id) {
+    const data = await fetchSetData({ game: listing.game, id: listing.card_set_id });
+    if (data && data.set) {
+      const s = data.set;
+      const name = s.name || s.name_en || s.id;
+      const series = s.series_name || s.series_name_en;
+      const date = formatSetDate(s.release_date, 'it');
+      const setPath = loc(`/${isAuction ? 'aste' : 'annunci'}/carte-collezionabili/${listing.game}/${String(s.id).toLowerCase()}`);
+      cardInfo = section('Scheda della carta',
+        `<p>Questa carta appartiene all'espansione ${esc(gameName)} «${esc(name)}»${series ? ` della serie ${esc(series)}` : ''}${s.card_count_total ? `, composta da ${esc(s.card_count_total)} carte` : ''}${date ? `, uscita il ${esc(date)}` : ''}.${listing.card_number ? ` Numero della carta: ${esc(listing.card_number)}.` : ''}</p>` +
+        `<p>${link(setPath, `Altre carte dell'espansione ${name}`)}</p>`);
+    }
+  }
+
+  const catalogSlug = listing.product_type === 'lego' || listing.product_type === 'funko' ? listing.product_type : (listing.game || '');
+  const catalogName = catalogSlug === 'lego' ? 'LEGO' : SHORT[catalogSlug];
+  const blurb = catalogName ? t(`catalog_games.${catalogSlug}`) : '';
+  const catalog = blurb ? section(`Catalogo ${catalogName}`, `<p>${esc(blurb)}.</p><p>${link(loc(`/catalog/${catalogSlug}`), `Apri il catalogo ${catalogName}`)}</p>`) : '';
+
+  return section('In sintesi', summary) + cardInfo + catalog;
 }
 
 /**
@@ -144,6 +196,7 @@ async function productPage(listing, images = []) {
     ['Anno', listing.year],
     ['Pezzi', listing.pieces],
     ['Condizione scatola', listing.box_condition],
+    ['Numero carta', listing.card_number],
   ].filter(([, v]) => v != null && v !== '');
 
   const related = await relatedListings(listing);
@@ -153,6 +206,7 @@ async function productPage(listing, images = []) {
     image +
     (listing.description ? section('Descrizione', paragraphs(listing.description)) : '') +
     section('Dettagli', `<dl>${details.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`) +
+    (await listingFacts(listing, { isAuction })) +
     shippingSection(listing) +
     (related.length ? section('Altri annunci simili', listingItems(related)) : '') +
     section('Come funziona', `<p>${esc(t('how_it_works_page.step2_long_desc'))}</p><p>${link('/come-funziona', t('how_it_works_page.page_title'))} · ${link('/faq', t('nav.faq') || 'FAQ')}</p>`);
