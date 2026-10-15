@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, Search, Swords } from 'lucide-react';
+import { ArrowRight, Check, Search, Swords, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatEUR } from './landingUtils';
 import art from '../../assets/brand/art-1100.webp';
@@ -10,6 +10,8 @@ import { useLocalizedNav } from '../../routing/useLocalizedNav';
 // The art is a rectangle of dark image; fading every edge to transparent is what lets it dissolve
 // into the page instead of reading as a pasted-on box.
 const BACKDROP_MASK = 'radial-gradient(ellipse 48% 48% at 50% 50%, #000 38%, transparent 100%)';
+
+const MIN_LIVE_COUNT = 5;
 
 // Fan layout for the floating card stack, front card first. x/y are desktop pixels,
 // multiplied by --k (smaller on mobile) so the same arrangement scales down.
@@ -120,11 +122,12 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
     { label: 'Funko', to: navTo('/annunci/funko') },
   ];
 
+  // Tiny numbers make the site look empty, so a count only shows once it's worth bragging about.
   const liveCounts = [
     { to: navTo('/annunci'), value: stats.listings, label: t('landing.hero.count_listings'), dot: 'bg-[#c6ff3d]' },
     { to: navTo('/aste'), value: stats.auctions, label: t('landing.hero.count_auctions'), dot: 'bg-[#ff5a36]' },
     { to: navTo('/skill-zone'), value: stats.contests, label: t('landing.hero.count_contests'), dot: 'bg-[#8b5cf6]' },
-  ];
+  ].filter((c) => !statsLoading && c.value >= MIN_LIVE_COUNT);
 
   return (
     <section
@@ -141,6 +144,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
         {/* On phones: headline + CTAs first, then the product fan, then search, so imagery and the main
             actions land within the first swipe. From lg the fan moves to its own column spanning both rows. */}
         <div className="min-w-0 lg:col-start-1 lg:row-start-1 lg:self-end">
+          {liveCounts.length > 0 && (
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -157,26 +161,35 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
             {liveCounts.map((c) => (
               <Link key={c.to} to={c.to} className="relative flex items-center gap-1.5 text-[12px] font-semibold text-white/60 transition-colors after:absolute after:-inset-x-1.5 after:-inset-y-3 after:content-[''] hover:text-white">
                 <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
-                <span className="font-mono font-bold tabular-nums text-white">{statsLoading ? '–' : c.value}</span>
+                <span className="font-mono font-bold tabular-nums text-white">{c.value}</span>
                 {c.label}
               </Link>
             ))}
           </motion.div>
+          )}
 
-          <h1 className="mt-7 text-[clamp(3.1rem,11vw,7.4rem)] font-black leading-[0.86] tracking-[-0.055em] lg:text-[clamp(3rem,7.5vw,7.4rem)]">
+          <p className="mt-7 flex flex-wrap items-center gap-x-3 text-sm font-black uppercase tracking-[0.18em] md:text-base" aria-hidden="true">
             {words.map((w, i) => (
-              <span key={w.text} className="block overflow-hidden pb-[0.08em]">
-                <motion.span
-                  className={`block ${w.className}`}
-                  initial={reduceMotion ? false : { y: '105%' }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.12, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {w.text}
-                </motion.span>
-              </span>
+              <motion.span
+                key={w.text}
+                className={w.className}
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.1, duration: 0.5 }}
+              >
+                {w.text}
+              </motion.span>
             ))}
-          </h1>
+          </p>
+
+          <motion.h1
+            className="mt-4 text-[clamp(2.4rem,8.5vw,4.6rem)] font-black leading-[0.98] tracking-[-0.045em] text-white lg:text-[clamp(2.6rem,4.6vw,4.6rem)]"
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {t('landing.hero.title')}
+          </motion.h1>
 
           <motion.p
             className="mt-6 max-w-[34rem] text-base leading-relaxed text-white/65 md:text-lg"
@@ -192,17 +205,35 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
               to={navTo('/annunci')}
               className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white px-6 py-4 text-[15px] font-black text-[#07060b] transition-transform hover:-translate-y-0.5"
             >
-              {t('landing.hero.cta_listings')}
+              {t('landing.hero.cta_buy')}
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to={navTo('/skill-zone')}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#8b5cf6]/50 bg-[#8b5cf6]/10 px-6 py-4 text-[15px] font-black text-white transition-all hover:-translate-y-0.5 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/25"
+              to={navTo('/sell')}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#c6ff3d]/50 bg-[#c6ff3d]/10 px-6 py-4 text-[15px] font-black text-white transition-all hover:-translate-y-0.5 hover:border-[#c6ff3d] hover:bg-[#c6ff3d]/20"
             >
-              <Swords size={18} />
-              {t('landing.hero.cta_arena')}
+              <Tag size={18} className="text-[#c6ff3d]" />
+              {t('landing.hero.cta_sell')}
             </Link>
           </div>
+
+          <ul className="mt-6 flex flex-col gap-2 text-[13px] font-semibold text-white/65 sm:flex-row sm:flex-wrap sm:gap-x-5">
+            {[1, 2, 3].map((n) => (
+              <li key={n} className="flex items-center gap-2">
+                <Check size={14} strokeWidth={3} className="shrink-0 text-[#c6ff3d]" aria-hidden="true" />
+                {t(`landing.hero.trust${n}`)}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            to={navTo('/skill-zone')}
+            className="relative mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#a78bfa] transition-colors after:absolute after:-inset-x-2 after:-inset-y-2.5 after:content-[''] hover:text-white"
+          >
+            <Swords size={14} aria-hidden="true" />
+            {t('landing.hero.cta_arena')}
+            <ArrowRight size={13} aria-hidden="true" />
+          </Link>
         </div>
 
         <div className="relative lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
