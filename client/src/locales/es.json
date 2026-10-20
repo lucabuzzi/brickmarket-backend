@@ -2546,7 +2546,11 @@
       "auctions": "Subastas",
       "arena": "Puzzle Arena",
       "catalog": "Catálogo Wiki",
-      "credits": "Dragón de Créditos"
+      "credits": "Dragón de Créditos",
+      "lego": "LEGO",
+      "cards": "Cartas",
+      "funko": "Funko Pop",
+      "exit": "Plaza"
     },
     "world": {
       "loading": "Cargando el juego…",
@@ -2560,7 +2564,9 @@
       "rotate_title": "Gira el móvil",
       "rotate_text": "En horizontal la plaza es mucho más grande y se juega mejor.",
       "rotate_dismiss": "Seguir así",
-      "toolbar_label": "Controles del juego"
+      "toolbar_label": "Controles del juego",
+      "travel_market": "Entrar al mercado",
+      "travel_plaza": "Volver a la plaza"
     },
     "tutorial": {
       "next": "Siguiente",
@@ -2575,7 +2581,7 @@
       },
       "listings": {
         "title": "Anuncios",
-        "body": "Aquí compras y vendes cartas coleccionables, sets LEGO y Funko. Publicas un anuncio con fotos y precio y el pago se hace dentro de CardBrix, con una comisión. Publicar un anuncio no da créditos."
+        "body": "Aquí compras y vendes cartas coleccionables, sets LEGO y Funko. Publicas un anuncio con fotos y precio y el pago se hace dentro de CardBrix, con una comisión. Publicar un anuncio no da créditos. Entra en el castillo: dentro está el mercado con los puestos de LEGO, cartas y Funko."
       },
       "auctions": {
         "title": "Subastas",
@@ -2608,7 +2614,8 @@
       "visible_off": "Oculto en la plaza",
       "view_inventory": "Ver inventario",
       "in_plaza": "En la plaza ahora",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "online_market": "{{count}} en el mercado"
     },
     "inventory": {
       "kicker": "Inventario",
@@ -2626,9 +2633,9 @@
     },
     "places_info": {
       "listings": {
-        "title": "Bazar TCG & Bricks",
-        "subtitle": "Mint · Precintados",
-        "flavour": "Compra y vende cartas sueltas, cajas precintadas y sets raros."
+        "title": "Castillo de los Anuncios",
+        "subtitle": "Mercado · LEGO · Cartas · Funko",
+        "flavour": "Tras el portón está el mercado: un puesto para cada tipo de anuncio."
       },
       "auctions": {
         "title": "Arena de Subastas",
@@ -2649,6 +2656,26 @@
         "title": "Fuente de Créditos",
         "subtitle": "Dragón guardián",
         "flavour": "Los créditos sirven para participar en los puzzles de la Skill Zone."
+      },
+      "lego": {
+        "title": "Puesto LEGO",
+        "subtitle": "Sets · Minifiguras · Piezas",
+        "flavour": "Sets precintados, sets usados completos y minifiguras a la venta."
+      },
+      "cards": {
+        "title": "Puesto de cartas",
+        "subtitle": "Pokémon · Magic · Lorcana y más",
+        "flavour": "Cartas sueltas, sobres y cajas de todos los juegos de cartas coleccionables."
+      },
+      "funko": {
+        "title": "Puesto Funko Pop",
+        "subtitle": "En caja · Exclusivos",
+        "flavour": "Funko Pop en caja, ediciones especiales y piezas raras."
+      },
+      "exit": {
+        "title": "Portón del castillo",
+        "subtitle": "Salida",
+        "flavour": "Vuelve a la plaza de CardBrix."
       }
     },
     "chat": {

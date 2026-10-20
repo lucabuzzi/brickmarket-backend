@@ -1,6 +1,6 @@
 // Every text the game world shows for a place must exist in all five languages (the map file only holds ids),
 // so no player ever sees a raw key like "game.places_info.listings.title".
-const { PLACES } = require('../client/src/lib/game/gameMap');
+const { ALL_PLACES: PLACES } = require('../client/src/lib/game/maps');
 
 const LANGS = ['it', 'en', 'es', 'fr', 'de'];
 const locales = Object.fromEntries(LANGS.map((l) => [l, require(`../client/src/locales/${l}.json`)]));

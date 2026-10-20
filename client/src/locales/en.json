@@ -2546,7 +2546,11 @@
       "auctions": "Auctions",
       "arena": "Puzzle Arena",
       "catalog": "Wiki Catalog",
-      "credits": "Credits Dragon"
+      "credits": "Credits Dragon",
+      "lego": "LEGO",
+      "cards": "Cards",
+      "funko": "Funko Pop",
+      "exit": "Plaza"
     },
     "world": {
       "loading": "Loading the game…",
@@ -2560,7 +2564,9 @@
       "rotate_title": "Turn your phone",
       "rotate_text": "In landscape the plaza is much bigger and easier to play.",
       "rotate_dismiss": "Keep it like this",
-      "toolbar_label": "Game controls"
+      "toolbar_label": "Game controls",
+      "travel_market": "Enter the market",
+      "travel_plaza": "Back to the plaza"
     },
     "tutorial": {
       "next": "Next",
@@ -2575,7 +2581,7 @@
       },
       "listings": {
         "title": "Listings",
-        "body": "Here you buy and sell trading cards, LEGO sets and Funko. You post a listing with photos and a price, and payment happens inside CardBrix, with a fee. Posting a listing does not give credits."
+        "body": "Here you buy and sell trading cards, LEGO sets and Funko. You post a listing with photos and a price, and payment happens inside CardBrix, with a fee. Posting a listing does not give credits. Step into the castle: inside is the market with the LEGO, card and Funko stalls."
       },
       "auctions": {
         "title": "Auctions",
@@ -2608,7 +2614,8 @@
       "visible_off": "Hidden in the plaza",
       "view_inventory": "View inventory",
       "in_plaza": "In the plaza now",
-      "close": "Close"
+      "close": "Close",
+      "online_market": "{{count}} in the market"
     },
     "inventory": {
       "kicker": "Inventory",
@@ -2626,9 +2633,9 @@
     },
     "places_info": {
       "listings": {
-        "title": "Bazaar TCG & Bricks",
-        "subtitle": "Mint · Sealed",
-        "flavour": "Buy and sell single cards, sealed boxes and rare sets."
+        "title": "Castle of Listings",
+        "subtitle": "Market · LEGO · Cards · Funko",
+        "flavour": "Past the gate is the market: one stall for each kind of listing."
       },
       "auctions": {
         "title": "Auction Arena",
@@ -2649,6 +2656,26 @@
         "title": "Wellspring of Credits",
         "subtitle": "Guardian dragon",
         "flavour": "Credits are used to join the Skill Zone puzzles."
+      },
+      "lego": {
+        "title": "LEGO stall",
+        "subtitle": "Sets · Minifigures · Bricks",
+        "flavour": "Sealed sets, complete used sets and minifigures for sale."
+      },
+      "cards": {
+        "title": "Card stall",
+        "subtitle": "Pokémon · Magic · Lorcana and more",
+        "flavour": "Single cards, packs and boxes from every trading card game."
+      },
+      "funko": {
+        "title": "Funko Pop stall",
+        "subtitle": "Boxed · Exclusives",
+        "flavour": "Boxed Funko Pops, special editions and rare pieces."
+      },
+      "exit": {
+        "title": "Castle gate",
+        "subtitle": "Exit",
+        "flavour": "Back to the CardBrix plaza."
       }
     },
     "chat": {

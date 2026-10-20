@@ -1,6 +1,7 @@
-// The four stalls of "CardBrix the game", drawn in code like the bancarelle of the game video: wooden stall,
+// The buildings of "CardBrix the game", drawn in code like the bancarelle of the game video: wooden stall,
 // striped awning in the pillar colour, hanging sign board, a counter with props that tell what is sold there
-// (cards and bricks / auction timer and gavel / glowing puzzle cubes / books), and a door in the middle.
+// (auction timer and gavel / glowing puzzle cubes / books, and in the market: bricks / cards / Funko boxes),
+// and a door in the middle. Annunci is a small stone castle instead (style 'castle'), whose gate leads to the market.
 // The sign text and the auction timer digits are drawn live by the scene; this file only paints the pixels.
 export const BUILDING_PAD = 3; // the awning overhangs the walls by 3px on each side
 export const AUCTION_TIMER_BOX = { x: 58, y: 41, w: 26, h: 9 }; // coordinates inside the building box
@@ -15,7 +16,7 @@ function shade(hex, amt) {
 }
 
 /** Paints the roof decoration of `roofStyle` and the `signIcon` above a building box of width `w`. */
-function paintRoof(px, { w, color, roofStyle, signIcon }) {
+function paintRoof(px, { w, color, awning, roofStyle, signIcon }) {
   const mid = Math.floor(w / 2);
   if (roofStyle === 'lego_studs') {
     for (let x = 2; x + 6 <= w; x += 10) {
@@ -40,6 +41,13 @@ function paintRoof(px, { w, color, roofStyle, signIcon }) {
     px(w - 14, -11, 5, 2, '#22d3ee');
     px(10, -6, 1, 6, '#9ca3af');
     px(9, -7, 3, 2, '#f472b6');
+  } else if (roofStyle === 'pennants') {
+    // a string of little medieval flags along the roof beam (market stalls)
+    px(-BUILDING_PAD, -6, w + 2 * BUILDING_PAD, 1, '#3a2a18');
+    const flagColors = [awning || color, '#fdfdf6', color];
+    for (let x = 0, i = 0; x + 6 <= w; x += 8, i++) {
+      for (let k = 0; k < 3; k++) px(x + k, -5 + k, 6 - 2 * k, 1, flagColors[i % 3]);
+    }
   } else if (roofStyle === 'crystal_dome') {
     // a glass dome (half ellipse) on the middle of the roof
     const rx = 20;
@@ -74,6 +82,24 @@ function paintRoof(px, { w, color, roofStyle, signIcon }) {
     px(ix + 3, -11, 3, 3, '#c084fc');
     px(ix + 7, -6, 2, 2, '#c084fc');
     px(ix + 2, -7, 2, 1, '#f5d0fe');
+  } else if (signIcon === 'brick') { // a red 2x2 LEGO brick
+    px(ix - 1, -9, 10, 8, '#111111');
+    px(ix, -8, 8, 6, '#e53935');
+    px(ix, -8, 8, 1, '#ff8a80');
+    px(ix + 1, -11, 2, 2, '#e53935');
+    px(ix + 5, -11, 2, 2, '#e53935');
+  } else if (signIcon === 'card') { // a trading card with a star
+    px(ix, -12, 8, 11, '#111111');
+    px(ix + 1, -11, 6, 9, '#fdfdf6');
+    px(ix + 1, -11, 6, 4, '#2f6fe0');
+    px(ix + 3, -6, 2, 2, '#ffd23f');
+  } else if (signIcon === 'funko') { // a big-headed Funko figure
+    px(ix, -12, 8, 6, '#111111');
+    px(ix + 1, -11, 6, 4, '#f5d0a9');
+    px(ix + 2, -10, 1, 1, '#111111');
+    px(ix + 5, -10, 1, 1, '#111111');
+    px(ix + 2, -6, 4, 5, '#111111');
+    px(ix + 3, -6, 2, 4, '#ff8a2a');
   } else if (signIcon === 'slab') { // graded card slab
     px(ix, -12, 8, 11, '#111111');
     px(ix + 1, -11, 6, 9, '#e5e7eb');
@@ -88,8 +114,10 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
   const X = ox + BUILDING_PAD;
   const Y = oy + ROOF_EXTRA;
   const px = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(X + x, Y + y, w, h); };
+  if (b.style === 'castle') { paintCastle(px, b); return; }
   const { w, h, color } = b;
-  const dark = shade(color, -0.45);
+  const awning = b.awning || color; // market stalls have their own tent colour
+  const dark = shade(awning, -0.45);
 
   // back wall: wooden planks
   px(0, 20, w, h - 20, '#8b5a2b');
@@ -103,14 +131,14 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
 
   // roof beam + striped scalloped awning
   px(-BUILDING_PAD, 0, w + 2 * BUILDING_PAD, 8, dark);
-  px(-BUILDING_PAD, 0, w + 2 * BUILDING_PAD, 2, shade(color, -0.15));
+  px(-BUILDING_PAD, 0, w + 2 * BUILDING_PAD, 2, shade(awning, -0.15));
   px(-BUILDING_PAD, 7, w + 2 * BUILDING_PAD, 1, 'rgba(0,0,0,0.35)');
   const stripes = 8;
   const sw = (w + 2 * BUILDING_PAD) / stripes;
   for (let i = 0; i < stripes; i++) {
     const x = -BUILDING_PAD + Math.round(i * sw);
     const next = -BUILDING_PAD + Math.round((i + 1) * sw);
-    const c = i % 2 ? '#fdfdf6' : color;
+    const c = i % 2 ? '#fdfdf6' : awning;
     px(x, 8, next - x, 12, c);
     for (let k = 0; k < 4; k++) px(x + k, 20 + k, next - x - 2 * k, 1, c); // round the bottom edge
     px(x, 8, next - x, 1, 'rgba(255,255,255,0.35)');
@@ -136,8 +164,8 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
 
   // door (middle): dark frame, pillar-coloured inside
   px(33, h - 24, 22, 24, '#1b1208');
-  px(35, h - 22, 18, 22, shade(color, -0.55));
-  px(35, h - 22, 18, 2, shade(color, -0.35));
+  px(35, h - 22, 18, 22, shade(awning, -0.55));
+  px(35, h - 22, 18, 2, shade(awning, -0.35));
   px(49, h - 11, 2, 2, color);
 
   // counter on both sides of the door
@@ -149,15 +177,7 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
   }
 
   // props
-  if (b.id === 'listings') {
-    [['#ffd23f', 8], ['#e53935', 13], ['#2f6fe0', 18]].forEach(([c, x], i) => {
-      px(x, 43 - (i === 1 ? 1 : 0), 6, 9, '#101010');
-      px(x + 1, 44 - (i === 1 ? 1 : 0), 4, 7, '#fdfdf6');
-      px(x + 1, 45 - (i === 1 ? 1 : 0), 4, 3, c);
-    });
-    px(60, 46, 8, 6, '#e53935'); px(60, 46, 8, 1, '#ff8a80'); px(61, 44, 2, 2, '#e53935'); px(65, 44, 2, 2, '#e53935');
-    px(69, 47, 8, 5, '#ffd23f'); px(69, 47, 8, 1, '#fff08a'); px(70, 45, 2, 2, '#ffd23f'); px(74, 45, 2, 2, '#ffd23f');
-  } else if (b.id === 'auctions') {
+  if (b.id === 'auctions') {
     px(8, 49, 10, 3, '#5e3a18'); // gavel block
     px(10, 43, 8, 4, '#c08a3e'); px(10, 43, 8, 1, '#e3b565'); // gavel head
     px(13, 46, 2, 6, '#8b5a2b'); // handle
@@ -184,7 +204,118 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
     }
   }
 
+  // market stalls (inside the castle)
+  if (b.id === 'lego') {
+    // loose bricks on one counter, a little brick house on the other
+    [[6, '#e53935'], [14, '#ffd23f'], [22, '#2f6fe0']].forEach(([x, c], i) => {
+      const y = 46 - (i % 2) * 2;
+      px(x, y, 7, 6, '#101010');
+      px(x + 1, y + 1, 5, 4, c);
+      px(x + 1, y + 1, 5, 1, shade(c, 0.4));
+      px(x + 1, y - 1, 2, 1, c);
+      px(x + 4, y - 1, 2, 1, c);
+    });
+    px(60, 46, 20, 6, '#2fa84f'); px(60, 46, 20, 1, '#86efac');
+    px(63, 42, 14, 4, '#fdfdf6'); px(65, 43, 3, 2, '#2f6fe0'); px(71, 43, 3, 2, '#2f6fe0');
+    px(62, 40, 16, 2, '#e53935');
+  } else if (b.id === 'cards') {
+    // a fan of cards and two booster packs
+    [['#ffd23f', 6], ['#e53935', 11], ['#2f6fe0', 16], ['#8b5cf6', 21]].forEach(([c, x], i) => {
+      const y = 43 - (i % 2);
+      px(x, y, 6, 9, '#101010');
+      px(x + 1, y + 1, 4, 7, '#fdfdf6');
+      px(x + 1, y + 2, 4, 3, c);
+    });
+    [[60, '#a855f7'], [69, '#22d3ee']].forEach(([x, c]) => {
+      px(x, 42, 8, 10, '#111111');
+      px(x + 1, 43, 6, 8, c);
+      px(x + 1, 43, 6, 1, '#e5e7eb');
+      px(x + 1, 46, 6, 1, '#f472b6');
+    });
+  } else if (b.id === 'funko') {
+    // Funko Pop window boxes
+    [[5, '#ff8a2a'], [18, '#2f6fe0'], [58, '#e53935'], [71, '#2fa84f']].forEach(([x, c]) => {
+      px(x, 41, 11, 11, '#111111');
+      px(x + 1, 42, 9, 10, c);
+      px(x + 2, 43, 7, 8, '#e8f4ff'); // window
+      px(x + 3, 44, 5, 4, '#f5d0a9'); // big head
+      px(x + 4, 45, 1, 1, '#111111');
+      px(x + 6, 45, 1, 1, '#111111');
+      px(x + 4, 48, 3, 3, c); // small body
+    });
+  }
+
   paintRoof(px, b);
+}
+
+/** Annunci: a small stone castle with two crenellated towers, banners in the pillar colour and a gate with a
+ * portcullis in the middle (where the door zone is). The scene writes the name on the board above the gate. */
+function paintCastle(px, { w, h, color }) {
+  const STONE = '#9aa1ad';
+  const STONE_D = '#6b7280';
+  const STONE_L = '#cdd2da';
+  const stoneBlock = (x, y, bw, bh) => {
+    px(x, y, bw, bh, STONE);
+    for (let yy = y + 5; yy < y + bh; yy += 6) px(x, yy, bw, 1, STONE_D); // mortar rows
+    for (let yy = y, row = 0; yy < y + bh; yy += 6, row++) {
+      for (let xx = x + (row % 2 ? 3 : 0) + 6; xx < x + bw; xx += 8) px(xx, yy, 1, Math.min(5, y + bh - yy), STONE_D);
+    }
+    px(x, y, bw, 1, STONE_L);
+  };
+  const merlons = (x, y, bw) => {
+    for (let xx = x; xx + 4 <= x + bw; xx += 7) {
+      px(xx, y, 4, 5, STONE);
+      px(xx, y, 4, 1, STONE_L);
+      px(xx + 3, y + 1, 1, 4, STONE_D);
+    }
+  };
+
+  // curtain wall between the towers, with battlements
+  stoneBlock(18, 14, w - 36, h - 14);
+  merlons(19, 9, w - 38);
+
+  // the two towers, taller than the wall
+  for (const tx of [0, w - 22]) {
+    stoneBlock(tx, -2, 22, h + 2);
+    merlons(tx, -8, 22);
+    px(tx + 9, 14, 3, 8, '#1f2430'); // arrow slits
+    px(tx + 9, 36, 3, 8, '#1f2430');
+    // banner hanging from the tower
+    px(tx + 6, 2, 10, 1, '#3a2a18');
+    px(tx + 7, 3, 8, 9, color);
+    px(tx + 7, 12, 3, 2, color);
+    px(tx + 12, 12, 3, 2, color);
+    px(tx + 10, 6, 2, 2, '#fdfdf6');
+    // pennant on a pole
+    px(tx + 10, -12, 1, 4, '#3a2a18');
+    px(tx + 11, -12, 5, 2, color);
+  }
+
+  // name board above the gate
+  px(20, 28, w - 40, 12, '#2a1a0e');
+  px(20, 28, w - 40, 1, '#c08a3e');
+  px(20, 39, w - 40, 1, '#c08a3e');
+  px(20, 28, 1, 12, '#c08a3e');
+  px(w - 21, 28, 1, 12, '#c08a3e');
+
+  // the gate: stone arch, wooden doors behind a portcullis
+  px(28, 42, 32, h - 42, STONE_D);
+  px(30, 44, 28, h - 44, '#1b1208');
+  px(32, 46, 24, h - 46, '#5e3a18');
+  px(43, 46, 2, h - 46, '#3a2a18');
+  for (let x = 33; x < 56; x += 4) px(x, 46, 1, 14, '#111111');
+  for (let y = 48; y < 60; y += 4) px(32, y, 24, 1, '#111111');
+  px(30, 44, 3, 1, STONE_D); px(30, 45, 1, 1, STONE_D); // rounded arch corners
+  px(55, 44, 3, 1, STONE_D); px(57, 45, 1, 1, STONE_D);
+  px(42, 43, 4, 2, color); // keystone gem in the pillar colour
+
+  // torches on both sides of the gate
+  for (const lx of [22, 64]) {
+    px(lx - 2, 39, 6, 9, 'rgba(255,190,80,0.22)');
+    px(lx, 46, 2, 6, '#3a2a18');
+    px(lx - 1, 42, 4, 4, '#ff9f1c');
+    px(lx, 41, 2, 2, '#ffe14d');
+  }
 }
 
 export function buildBuildingCanvas(b, createCanvas = () => document.createElement('canvas')) {

@@ -1,17 +1,22 @@
-// "CardBrix the game": the Kaplay scene. Layout, collisions and movement rules come from gameMap.js (pure and
-// unit-tested); the static art (ground, stalls, dragon, character) is painted in code by groundSprite.js,
-// buildingSprite.js, dragonSprite.js and the character sheets (skins.js) and shown here as sprites. This file adds the live
-// parts (floating coins, blue flames, cloud shadows, door hints, tutorial guide arrow) and wires input.
+// "CardBrix the game": the Kaplay scene. Layout, collisions and movement rules come from gameMap.js, marketMap.js
+// and maps.js (pure and unit-tested); the static art (ground, stalls, castle, dragon, character) is painted in
+// code by groundSprite.js, marketGround.js, buildingSprite.js, dragonSprite.js and the character sheets (skins.js)
+// and shown here as sprites. This file adds the live parts (floating coins, blue flames, torches, cloud shadows,
+// door hints, tutorial guide arrow), wires input and switches between the maps (plaza <-> market in the castle):
+// everything that belongs to a map is tagged 'map' and rebuilt on a switch, the player and the overlay stay.
 // Kaplay is imported dynamically so the engine stays out of the main marketplace bundle - it is downloaded
 // only when someone opens /game.
 import { FRAME, COLS, ROWS, IDLE_COL } from './skins';
 import { buildGroundCanvas } from './groundSprite';
+import { buildMarketGroundCanvas } from './marketGround';
 import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from './buildingSprite';
 import { buildDragonCanvas, DRAGON_H } from './dragonSprite';
 import {
-  WORLD, SPAWN, BUILDINGS, PLACES, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
+  WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
 } from './gameMap';
+import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
+import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
 
 const VIEW_W = 320;
@@ -19,6 +24,7 @@ const VIEW_H = 240;
 // The character sheet cells are 48x56 pixels of detail; shown at this scale they are ~26 world units tall,
 // the same size as the door of a stall.
 const CHAR_SCALE = 0.55;
+const FADE_S = 0.22; // each half of the fade when changing map
 
 // Kaplay caches its text glyph atlases in a module-level object keyed by font name, so a second scene in the same
 // page (creator -> world, edit character) would reuse an atlas whose WebGL texture was destroyed with the first
@@ -40,16 +46,19 @@ const CLOUDS = [{ x: 60, y: 90, rx: 60, ry: 18, sp: 5 }, { x: 300, y: 200, rx: 8
 /**
  * Starts the game world on `canvas`. Returns { destroy, enter, setGuide, setFrozen } once assets are ready.
  * - sheet: the player's recoloured character sheet (canvas, see game/skinLoader.js)
- * - labels: { listings, auctions, arena, catalog, credits } place names (already translated)
+ * - labels: place id -> name (already translated), for every place of every map
+ * - start: { map, spawn } where the character appears (default: the plaza start point)
  * - onDoorChange(id | null): fired when the character steps in/out of a place's door zone
  * - onEnterRequest(id): fired when the player presses Enter/Space on a door
  * - onLocalMove({ x, y, d, m }): every frame, our own position (the plaza client throttles what it sends)
  * - onPlayerTap(id): another player's character was tapped/clicked
+ * - onMapChange(mapId): the scene switched map (after travel() or a server correction to another map)
  * The returned handle also manages the OTHER players of the plaza: addRemote / moveRemote / removeRemote,
  * and setPosition (server correction).
  */
 export async function startGame({
-  canvas, sheet, username, labels, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
+  canvas, sheet, username, labels, start = {}, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
+  onMapChange = () => {},
 }) {
   const { default: kaplay } = await import('kaplay');
   const k = kaplay({
@@ -78,28 +87,21 @@ export async function startGame({
   await Promise.all([
     k.loadSprite('me', sheet.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims }),
     k.loadSprite('ground', buildGroundCanvas().toDataURL()),
+    k.loadSprite('ground-market', buildMarketGroundCanvas().toDataURL()),
     k.loadSprite('dragon', buildDragonCanvas().toDataURL()),
-    ...BUILDINGS.map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
+    ...[...BUILDINGS, ...MARKET_STALLS].map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
   ]);
 
-  const state = { activeDoor: null, guide: null, frozen: false };
+  const state = { activeDoor: null, guide: null, frozen: false, fade: null };
+  let current = mapById(start.map);
+  // everything drawn for the current map carries the 'map' tag, so a map switch can clear it in one go
+  const add = (comps) => k.add([...comps, 'map']);
   // on-screen D-pad (touch): held directions, merged with the keyboard every frame
   const virtualKeys = { up: false, down: false, left: false, right: false };
   // speech bubbles over the heads: id ('me' or a player id) -> { text, until }
   const bubbles = new Map();
   const BUBBLE_MS = 4000;
-  const placeById = (id) => PLACES.find((p) => p.id === id) || null;
-
-  // ground + a soft pulsing golden glow under the statue
-  k.add([k.sprite('ground'), k.pos(0, 0), k.z(0)]);
-  const statueX = CREDITS_PLACE.x + CREDITS_PLACE.w / 2;
-  const statueBottom = CREDITS_PLACE.y + CREDITS_PLACE.h;
-  k.add([k.pos(0, 0), k.z(1), {
-    draw() {
-      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.2);
-      k.drawEllipse({ pos: k.vec2(statueX, statueBottom), radiusX: 58, radiusY: 24, color: col('#ffd23f'), opacity: 0.1 + 0.08 * pulse });
-    },
-  }]);
+  const placeById = (id) => current.places.find((p) => p.id === id) || null;
 
   // a pulsing highlight on the door zone + a bouncing arrow over a place the tutorial points at
   const drawDoorHints = (place, ox, oy) => {
@@ -121,206 +123,327 @@ export async function startGame({
     }
   };
 
-  // ── the dragon statue (credits) ──────────────────────────────────────────────
-  k.add([k.sprite('dragon'), k.pos(statueX, statueBottom), k.anchor('bot'), k.scale(STATUE_SCALE), k.z(statueBottom)]);
-  k.add([k.pos(0, 0), k.z(statueBottom + 1), {
-    draw() {
-      // blue flames licking up on both sides of the statue
-      const t = k.time();
-      for (const side of [-1, 1]) {
-        for (let i = 0; i < 4; i++) {
-          const bx = statueX + side * (31 + i * 4);
-          const flick = Math.sin(t * 9 + i * 1.7 + side) * 2.5;
-          const hgt = 13 + i * 2 + flick * 1.4;
-          const half = 4.2 - i * 0.6;
-          const y0 = statueBottom - 3;
-          k.drawTriangle({ p1: k.vec2(bx - half, y0), p2: k.vec2(bx + half, y0), p3: k.vec2(bx + flick * 0.3, y0 - hgt), color: col('#3b82f6') });
-          k.drawTriangle({ p1: k.vec2(bx - half * 0.6, y0), p2: k.vec2(bx + half * 0.6, y0), p3: k.vec2(bx + flick * 0.2, y0 - hgt * 0.7), color: col('#93c5fd') });
-          k.drawTriangle({ p1: k.vec2(bx - half * 0.3, y0), p2: k.vec2(bx + half * 0.3, y0), p3: k.vec2(bx, y0 - hgt * 0.4), color: col('#ffffff') });
-        }
-      }
-      // twinkling sparkles around the statue
-      [[-44, -60], [44, -66], [-14, -78], [20, -76], [-54, -24], [56, -18]].forEach(([dx, dy], i) => {
-        const a = 0.5 + 0.5 * Math.sin(t * 3 + i * 1.3);
-        if (a > 0.55) {
-          rect(statueX + dx - 1, statueBottom + dy, 3, 1, '#fff7c2', a);
-          rect(statueX + dx, statueBottom + dy - 1, 1, 3, '#fff7c2', a);
-        }
-      });
-      const creditsText = String(labels.credits || '').toUpperCase();
-      const lw = k.formatText({ font: FONT, text: creditsText, size: 8 }).width + 8;
-      const ly = statueBottom - DRAGON_H * STATUE_SCALE - 12;
-      k.drawRect({ pos: k.vec2(statueX - lw / 2, ly - 7), width: lw, height: 14, color: col('#07130b'), opacity: 0.75, radius: 2 });
-      k.drawText({ font: FONT, text: creditsText, size: 8, pos: k.vec2(statueX, ly), anchor: 'center', color: col(CREDITS_PLACE.color) });
-      drawDoorHints(CREDITS_PLACE, 0, 0);
-    },
-  }]);
-
-  // ── trees: LEGO pines, cherry / gold bonsai, glowing mana trees ───────────────
-  const blossom = (base, light, shine) => {
-    rect(-2, -9, 4, 9, '#5b3a1e');
-    rect(1, -12, 5, 2, '#5b3a1e'); // a bonsai branch
-    k.drawCircle({ pos: k.vec2(-2, -17), radius: 8, color: col(base) });
-    k.drawCircle({ pos: k.vec2(6, -14), radius: 5, color: col(base) });
-    k.drawCircle({ pos: k.vec2(-4, -20), radius: 5, color: col(light) });
-    k.drawCircle({ pos: k.vec2(-6, -22), radius: 2, color: col(shine) });
-  };
-  const TREE_DRAW = {
-    bonsai_pink: () => blossom('#ec4899', '#f9a8d4', '#fde7f3'),
-    bonsai_gold: () => blossom('#ca8a04', '#facc15', '#fef9c3'),
-    lego_pine: () => {
-      rect(-2, -6, 4, 6, '#5b3a1e');
-      rect(-10, -11, 20, 5, '#14532d'); rect(-10, -11, 20, 1, '#22c55e');
-      rect(-7, -17, 14, 6, '#166534'); rect(-7, -17, 14, 1, '#4ade80');
-      rect(-4, -23, 8, 6, '#15803d'); rect(-4, -23, 8, 1, '#86efac');
-      for (const sx of [-7, -1, 5]) rect(sx, -13, 2, 2, '#4ade80');
-      rect(-2, -25, 4, 2, '#86efac');
-    },
-    mana_tree_cyan: () => mana('#0e7490', '#22d3ee', '#cffafe'),
-    mana_tree_purple: () => mana('#6b21a8', '#a855f7', '#f3e8ff'),
-  };
-  function mana(base, glow, shine) {
-    const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.5);
-    k.drawEllipse({ pos: k.vec2(0, -17), radiusX: 15, radiusY: 13, color: col(glow), opacity: 0.12 + 0.12 * pulse });
-    rect(-2, -9, 4, 9, '#3f2a1a');
-    k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col(base) });
-    k.drawCircle({ pos: k.vec2(-2, -19), radius: 6, color: col(glow) });
-    if (pulse > 0.6) rect(5, -24, 2, 2, shine);
-    if (pulse < 0.4) rect(-8, -14, 2, 2, shine);
-  }
-  for (const tr of TREES) {
-    const drawTree = TREE_DRAW[tr.variant];
-    k.add([k.pos(tr.x, tr.y), k.z(tr.y), {
+  // ── the plaza ──────────────────────────────────────────────────────────────────
+  function buildPlaza() {
+    // ground + a soft pulsing golden glow under the statue
+    add([k.sprite('ground'), k.pos(0, 0), k.z(0)]);
+    const statueX = CREDITS_PLACE.x + CREDITS_PLACE.w / 2;
+    const statueBottom = CREDITS_PLACE.y + CREDITS_PLACE.h;
+    add([k.pos(0, 0), k.z(1), {
       draw() {
-        k.drawEllipse({ pos: k.vec2(0, 0), radiusX: 9, radiusY: 3, color: col('#000000'), opacity: 0.25 });
-        if (drawTree) { drawTree(); return; }
-        rect(-2, -9, 4, 9, '#7a4a22');
-        k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col('#2e9a4a') });
-        k.drawCircle({ pos: k.vec2(-3, -20), radius: 6, color: col('#4fc36a') });
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.2);
+        k.drawEllipse({ pos: k.vec2(statueX, statueBottom), radiusX: 58, radiusY: 24, color: col('#ffd23f'), opacity: 0.1 + 0.08 * pulse });
+      },
+    }]);
+
+    // ── the dragon statue (credits) ──────────────────────────────────────────────
+    add([k.sprite('dragon'), k.pos(statueX, statueBottom), k.anchor('bot'), k.scale(STATUE_SCALE), k.z(statueBottom)]);
+    add([k.pos(0, 0), k.z(statueBottom + 1), {
+      draw() {
+        // blue flames licking up on both sides of the statue
+        const t = k.time();
+        for (const side of [-1, 1]) {
+          for (let i = 0; i < 4; i++) {
+            const bx = statueX + side * (31 + i * 4);
+            const flick = Math.sin(t * 9 + i * 1.7 + side) * 2.5;
+            const hgt = 13 + i * 2 + flick * 1.4;
+            const half = 4.2 - i * 0.6;
+            const y0 = statueBottom - 3;
+            k.drawTriangle({ p1: k.vec2(bx - half, y0), p2: k.vec2(bx + half, y0), p3: k.vec2(bx + flick * 0.3, y0 - hgt), color: col('#3b82f6') });
+            k.drawTriangle({ p1: k.vec2(bx - half * 0.6, y0), p2: k.vec2(bx + half * 0.6, y0), p3: k.vec2(bx + flick * 0.2, y0 - hgt * 0.7), color: col('#93c5fd') });
+            k.drawTriangle({ p1: k.vec2(bx - half * 0.3, y0), p2: k.vec2(bx + half * 0.3, y0), p3: k.vec2(bx, y0 - hgt * 0.4), color: col('#ffffff') });
+          }
+        }
+        // twinkling sparkles around the statue
+        [[-44, -60], [44, -66], [-14, -78], [20, -76], [-54, -24], [56, -18]].forEach(([dx, dy], i) => {
+          const a = 0.5 + 0.5 * Math.sin(t * 3 + i * 1.3);
+          if (a > 0.55) {
+            rect(statueX + dx - 1, statueBottom + dy, 3, 1, '#fff7c2', a);
+            rect(statueX + dx, statueBottom + dy - 1, 1, 3, '#fff7c2', a);
+          }
+        });
+        const creditsText = String(labels.credits || '').toUpperCase();
+        const lw = k.formatText({ font: FONT, text: creditsText, size: 8 }).width + 8;
+        const ly = statueBottom - DRAGON_H * STATUE_SCALE - 12;
+        k.drawRect({ pos: k.vec2(statueX - lw / 2, ly - 7), width: lw, height: 14, color: col('#07130b'), opacity: 0.75, radius: 2 });
+        k.drawText({ font: FONT, text: creditsText, size: 8, pos: k.vec2(statueX, ly), anchor: 'center', color: col(CREDITS_PLACE.color) });
+        drawDoorHints(CREDITS_PLACE, 0, 0);
+      },
+    }]);
+
+    // ── trees: LEGO pines, cherry / gold bonsai, glowing mana trees ───────────────
+    const blossom = (base, light, shine) => {
+      rect(-2, -9, 4, 9, '#5b3a1e');
+      rect(1, -12, 5, 2, '#5b3a1e'); // a bonsai branch
+      k.drawCircle({ pos: k.vec2(-2, -17), radius: 8, color: col(base) });
+      k.drawCircle({ pos: k.vec2(6, -14), radius: 5, color: col(base) });
+      k.drawCircle({ pos: k.vec2(-4, -20), radius: 5, color: col(light) });
+      k.drawCircle({ pos: k.vec2(-6, -22), radius: 2, color: col(shine) });
+    };
+    const TREE_DRAW = {
+      bonsai_pink: () => blossom('#ec4899', '#f9a8d4', '#fde7f3'),
+      bonsai_gold: () => blossom('#ca8a04', '#facc15', '#fef9c3'),
+      lego_pine: () => {
+        rect(-2, -6, 4, 6, '#5b3a1e');
+        rect(-10, -11, 20, 5, '#14532d'); rect(-10, -11, 20, 1, '#22c55e');
+        rect(-7, -17, 14, 6, '#166534'); rect(-7, -17, 14, 1, '#4ade80');
+        rect(-4, -23, 8, 6, '#15803d'); rect(-4, -23, 8, 1, '#86efac');
+        for (const sx of [-7, -1, 5]) rect(sx, -13, 2, 2, '#4ade80');
+        rect(-2, -25, 4, 2, '#86efac');
+      },
+      mana_tree_cyan: () => mana('#0e7490', '#22d3ee', '#cffafe'),
+      mana_tree_purple: () => mana('#6b21a8', '#a855f7', '#f3e8ff'),
+    };
+    function mana(base, glow, shine) {
+      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.5);
+      k.drawEllipse({ pos: k.vec2(0, -17), radiusX: 15, radiusY: 13, color: col(glow), opacity: 0.12 + 0.12 * pulse });
+      rect(-2, -9, 4, 9, '#3f2a1a');
+      k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col(base) });
+      k.drawCircle({ pos: k.vec2(-2, -19), radius: 6, color: col(glow) });
+      if (pulse > 0.6) rect(5, -24, 2, 2, shine);
+      if (pulse < 0.4) rect(-8, -14, 2, 2, shine);
+    }
+    for (const tr of TREES) {
+      const drawTree = TREE_DRAW[tr.variant];
+      add([k.pos(tr.x, tr.y), k.z(tr.y), {
+        draw() {
+          k.drawEllipse({ pos: k.vec2(0, 0), radiusX: 9, radiusY: 3, color: col('#000000'), opacity: 0.25 });
+          if (drawTree) { drawTree(); return; }
+          rect(-2, -9, 4, 9, '#7a4a22');
+          k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col('#2e9a4a') });
+          k.drawCircle({ pos: k.vec2(-3, -20), radius: 6, color: col('#4fc36a') });
+        },
+      }]);
+    }
+
+    // ── collector props: graded slabs, duel tables, booster machines, giant bricks, spawn pad ──
+    const PROP_DRAW = {
+      graded_slab(p) {
+        rect(-7, -4, 14, 4, '#4b5563'); rect(-7, -4, 14, 1, '#9ca3af'); // pedestal
+        rect(-6, -24, 12, 20, '#111111');
+        rect(-5, -23, 10, 18, '#e5e7eb');
+        rect(-5, -23, 10, 4, p.color); // grade label
+        rect(-4, -18, 8, 11, p.cardColor); // the card
+        rect(-3, -17, 6, 4, '#fef3c7');
+        k.drawText({ font: FONT, text: '10', size: 4, pos: k.vec2(0, -21), anchor: 'center', color: col('#111111') });
+        const glint = ((k.time() * 0.6) % 2) * 14 - 7; // a shine sweeping across the case
+        if (glint > -5 && glint < 5) rect(glint, -23, 1, 18, '#ffffff', 0.7);
+      },
+      tcg_table(p) {
+        const w = p.w;
+        const h = p.h;
+        rect(-w / 2 + 2, -2, 2, 2, '#3a2a18'); rect(w / 2 - 4, -2, 2, 2, '#3a2a18'); // legs
+        rect(-w / 2, -h, w, h - 2, '#8b5a2b');
+        rect(-w / 2, -4, w, 2, '#5e3a18');
+        rect(-w / 2 + 2, -h + 2, w / 2 - 3, h - 8, p.p1Color, 0.85); // two facing play mats
+        rect(1, -h + 2, w / 2 - 3, h - 8, p.p2Color, 0.85);
+        for (const cx of [-w / 2 + 4, -w / 2 + 8, 4, 8]) rect(cx, -h + 4, 3, 4, '#fdfdf6');
+      },
+      booster_vending(p) {
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 3);
+        k.drawEllipse({ pos: k.vec2(0, -11), radiusX: 11, radiusY: 13, color: col(p.color), opacity: 0.1 + 0.1 * pulse });
+        rect(-7, -22, 14, 22, '#111111');
+        rect(-6, -21, 12, 20, p.color);
+        rect(-6, -21, 12, 2, '#ffffff', 0.8);
+        rect(-5, -17, 10, 9, '#0b1220'); // glass
+        for (const [x, y, c] of [[-4, -16, '#a855f7'], [-1, -16, '#22d3ee'], [2, -16, '#f472b6'], [-4, -12, '#ffd23f'], [-1, -12, '#c6ff3d'], [2, -12, '#ff5a36']]) rect(x, y, 2, 3, c);
+        rect(-2, -6, 4, 2, '#111111'); // the slot
+        rect(3, -6, 2, 2, pulse > 0.5 ? '#c6ff3d' : '#14532d'); // blinking light
+      },
+      giant_lego_brick(p) {
+        rect(-p.w / 2, -p.h, p.w, p.h, '#111111');
+        rect(-p.w / 2 + 1, -p.h + 1, p.w - 2, p.h - 2, p.color);
+        rect(-p.w / 2 + 1, -3, p.w - 2, 2, '#000000', 0.25);
+        for (const sx of [-p.w / 2 + 2, -p.w / 2 + 6, p.w / 2 - 9, p.w / 2 - 5]) rect(sx, -p.h + 2, 3, 2, '#ffffff', 0.45);
+      },
+      teleport_pad(p) {
+        const t = k.time();
+        k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: p.w / 2, radiusY: p.h / 2, color: col('#0b1220'), opacity: 0.6 });
+        for (let i = 0; i < 2; i++) {
+          const s = ((t * 0.7 + i * 0.5) % 1);
+          k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: (p.w / 2) * s, radiusY: (p.h / 2) * s, color: col(p.color), opacity: 0.6 * (1 - s) });
+        }
+      },
+    };
+    for (const p of PROPS) {
+      const drawProp = PROP_DRAW[p.type];
+      if (!drawProp) continue;
+      add([k.pos(p.x, p.y), k.z(p.type === 'teleport_pad' ? 2 : p.y), { draw() { drawProp(p); } }]);
+    }
+
+    // a soft glow in front of each shop, in its aura colour
+    add([k.pos(0, 0), k.z(1), {
+      draw() {
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
+        for (const b of BUILDINGS) {
+          const c = doorCentre(b);
+          k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor || b.color), opacity: 0.1 + 0.12 * pulse });
+        }
+      },
+    }]);
+
+    // ── stalls (one per pillar) ──────────────────────────────────────────────────
+    for (const b of BUILDINGS) {
+      const label = String(labels[b.id] || b.id).toUpperCase();
+      add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
+      add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
+        draw() {
+          k.drawText({ font: FONT, text: label, size: 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
+          if (b.id === 'auctions') {
+            // decorative countdown (not a real auction)
+            const total = 6000 - (Math.floor(k.time()) % 6000);
+            const hh = String(Math.floor(total / 3600)).padStart(2, '0');
+            const mm = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+            const ss = String(total % 60).padStart(2, '0');
+            k.drawText({ font: FONT, text: `${hh}:${mm}:${ss}`, size: 6, pos: k.vec2(AUCTION_TIMER_BOX.x + AUCTION_TIMER_BOX.w / 2, AUCTION_TIMER_BOX.y + AUCTION_TIMER_BOX.h / 2), anchor: 'center', color: col('#7dffa0') });
+          }
+          drawDoorHints(b, b.x, b.y);
+        },
+      }]);
+    }
+
+    // ── floating coins, cards and cloud shadows (decor) ──────────────────────────
+    add([k.pos(0, 0), k.z(5000), {
+      draw() {
+        const t = k.time();
+        COINS.forEach(([x, y], i) => {
+          const bob = Math.sin(t * 2.4 + i) * 2.5;
+          const spin = Math.abs(Math.cos(t * 2 + i * 0.9));
+          const rx = Math.max(1, 4 * spin);
+          k.drawEllipse({ pos: k.vec2(x, y + bob + 3), radiusX: rx + 1, radiusY: 5, color: col('#000000'), opacity: 0.18 });
+          k.drawEllipse({ pos: k.vec2(x, y + bob), radiusX: rx + 1, radiusY: 5, color: col('#7a5200') });
+          k.drawEllipse({ pos: k.vec2(x, y + bob), radiusX: rx, radiusY: 4, color: col('#ffd23f') });
+          if (rx > 2.5) rect(x - rx * 0.5, y + bob - 2, 1, 3, '#fff08a');
+        });
+        CARDS.forEach((c, i) => {
+          const bob = Math.sin(t * 1.8 + i * 2) * 3;
+          rect(c.x - 1, c.y + bob - 1, 12, 15, '#101010');
+          rect(c.x, c.y + bob, 10, 13, '#fdfdf6');
+          rect(c.x + 1, c.y + bob + 1, 8, 7, c.c);
+          rect(c.x + 2, c.y + bob + 9, 6, 1, '#9a9a9a');
+        });
+      },
+    }]);
+    add([k.pos(0, 0), k.z(9000), {
+      draw() {
+        const t = k.time();
+        for (const c of CLOUDS) {
+          const x = ((c.x + t * c.sp) % (WORLD.w + 160)) - 80;
+          k.drawEllipse({ pos: k.vec2(x, c.y), radiusX: c.rx, radiusY: c.ry, color: col('#0b2a14'), opacity: 0.06 });
+        }
       },
     }]);
   }
 
-  // ── collector props: graded slabs, duel tables, booster machines, giant bricks, spawn pad ──
-  const PROP_DRAW = {
-    graded_slab(p) {
-      rect(-7, -4, 14, 4, '#4b5563'); rect(-7, -4, 14, 1, '#9ca3af'); // pedestal
-      rect(-6, -24, 12, 20, '#111111');
-      rect(-5, -23, 10, 18, '#e5e7eb');
-      rect(-5, -23, 10, 4, p.color); // grade label
-      rect(-4, -18, 8, 11, p.cardColor); // the card
-      rect(-3, -17, 6, 4, '#fef3c7');
-      k.drawText({ font: FONT, text: '10', size: 4, pos: k.vec2(0, -21), anchor: 'center', color: col('#111111') });
-      const glint = ((k.time() * 0.6) % 2) * 14 - 7; // a shine sweeping across the case
-      if (glint > -5 && glint < 5) rect(glint, -23, 1, 18, '#ffffff', 0.7);
+  // ── the market inside the castle ───────────────────────────────────────────────
+  const MARKET_PROP_DRAW = {
+    barrel() {
+      k.drawEllipse({ pos: k.vec2(0, 0), radiusX: 7, radiusY: 2, color: col('#000000'), opacity: 0.25 });
+      rect(-6, -14, 12, 14, '#7a4a22');
+      rect(-6, -14, 12, 2, '#a8702f');
+      rect(-6, -10, 12, 1, '#3a2a18');
+      rect(-6, -4, 12, 1, '#3a2a18');
+      rect(-4, -14, 1, 14, '#5e3a18');
+      rect(3, -14, 1, 14, '#5e3a18');
     },
-    tcg_table(p) {
-      const w = p.w;
-      const h = p.h;
-      rect(-w / 2 + 2, -2, 2, 2, '#3a2a18'); rect(w / 2 - 4, -2, 2, 2, '#3a2a18'); // legs
-      rect(-w / 2, -h, w, h - 2, '#8b5a2b');
-      rect(-w / 2, -4, w, 2, '#5e3a18');
-      rect(-w / 2 + 2, -h + 2, w / 2 - 3, h - 8, p.p1Color, 0.85); // two facing play mats
-      rect(1, -h + 2, w / 2 - 3, h - 8, p.p2Color, 0.85);
-      for (const cx of [-w / 2 + 4, -w / 2 + 8, 4, 8]) rect(cx, -h + 4, 3, 4, '#fdfdf6');
+    crate(p) {
+      rect(-p.w / 2, -p.h, p.w, p.h, '#8b5a2b');
+      rect(-p.w / 2, -p.h, p.w, 1, '#c08a3e');
+      rect(-p.w / 2, -p.h, 1, p.h, '#5e3a18');
+      rect(p.w / 2 - 1, -p.h, 1, p.h, '#5e3a18');
+      for (let i = 0; i < p.h; i++) { // two diagonal planks
+        const off = Math.round((i * (p.w - 1)) / p.h);
+        rect(-p.w / 2 + off, -p.h + i, 1, 1, '#5e3a18');
+        rect(p.w / 2 - 1 - off, -p.h + i, 1, 1, '#5e3a18');
+      }
     },
-    booster_vending(p) {
-      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 3);
-      k.drawEllipse({ pos: k.vec2(0, -11), radiusX: 11, radiusY: 13, color: col(p.color), opacity: 0.1 + 0.1 * pulse });
-      rect(-7, -22, 14, 22, '#111111');
-      rect(-6, -21, 12, 20, p.color);
-      rect(-6, -21, 12, 2, '#ffffff', 0.8);
-      rect(-5, -17, 10, 9, '#0b1220'); // glass
-      for (const [x, y, c] of [[-4, -16, '#a855f7'], [-1, -16, '#22d3ee'], [2, -16, '#f472b6'], [-4, -12, '#ffd23f'], [-1, -12, '#c6ff3d'], [2, -12, '#ff5a36']]) rect(x, y, 2, 3, c);
-      rect(-2, -6, 4, 2, '#111111'); // the slot
-      rect(3, -6, 2, 2, pulse > 0.5 ? '#c6ff3d' : '#14532d'); // blinking light
-    },
-    giant_lego_brick(p) {
-      rect(-p.w / 2, -p.h, p.w, p.h, '#111111');
-      rect(-p.w / 2 + 1, -p.h + 1, p.w - 2, p.h - 2, p.color);
-      rect(-p.w / 2 + 1, -3, p.w - 2, 2, '#000000', 0.25);
-      for (const sx of [-p.w / 2 + 2, -p.w / 2 + 6, p.w / 2 - 9, p.w / 2 - 5]) rect(sx, -p.h + 2, 3, 2, '#ffffff', 0.45);
-    },
-    teleport_pad(p) {
+    torch() {
       const t = k.time();
-      k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: p.w / 2, radiusY: p.h / 2, color: col('#0b1220'), opacity: 0.6 });
-      for (let i = 0; i < 2; i++) {
-        const s = ((t * 0.7 + i * 0.5) % 1);
-        k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: (p.w / 2) * s, radiusY: (p.h / 2) * s, color: col(p.color), opacity: 0.6 * (1 - s) });
+      const flick = Math.sin(t * 12) * 0.6 + Math.sin(t * 7.3) * 0.4;
+      k.drawEllipse({ pos: k.vec2(0, -22), radiusX: 14, radiusY: 10, color: col('#ffb347'), opacity: 0.14 + 0.05 * flick });
+      rect(-1, -18, 3, 18, '#3a2a18');
+      rect(-3, -21, 7, 3, '#5e3a18');
+      k.drawTriangle({ p1: k.vec2(-3, -21), p2: k.vec2(4, -21), p3: k.vec2(0.5 + flick, -29 - flick), color: col('#ff9f1c') });
+      k.drawTriangle({ p1: k.vec2(-1.5, -21), p2: k.vec2(2.5, -21), p3: k.vec2(0.5 + flick * 0.6, -26), color: col('#ffe14d') });
+    },
+    cart(p) {
+      rect(-p.w / 2, -p.h + 2, p.w, p.h - 6, '#8b5a2b');
+      rect(-p.w / 2, -p.h + 2, p.w, 2, '#c08a3e');
+      for (let i = 0; i < 5; i++) rect(-p.w / 2 + 2 + i * 5, -p.h - 1 - (i % 2) * 2, 5, 4, i % 2 ? p.color : '#fdfdf6'); // goods
+      for (const wx of [-p.w / 2 + 5, p.w / 2 - 5]) {
+        k.drawCircle({ pos: k.vec2(wx, -3), radius: 4, color: col('#3a2a18') });
+        k.drawCircle({ pos: k.vec2(wx, -3), radius: 2, color: col('#8b5a2b') });
       }
     },
   };
-  for (const p of PROPS) {
-    const drawProp = PROP_DRAW[p.type];
-    if (!drawProp) continue;
-    k.add([k.pos(p.x, p.y), k.z(p.type === 'teleport_pad' ? 2 : p.y), { draw() { drawProp(p); } }]);
-  }
 
-  // a soft glow in front of each shop, in its aura colour
-  k.add([k.pos(0, 0), k.z(1), {
-    draw() {
-      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
-      for (const b of BUILDINGS) {
-        const c = doorCentre(b);
-        k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor || b.color), opacity: 0.1 + 0.12 * pulse });
-      }
-    },
-  }]);
-
-  // ── stalls (one per pillar) ──────────────────────────────────────────────────
-  for (const b of BUILDINGS) {
-    const label = String(labels[b.id] || b.id).toUpperCase();
-    k.add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
-    k.add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
+  function buildMarket() {
+    add([k.sprite('ground-market'), k.pos(0, 0), k.z(0)]);
+    // a soft glow in front of every stall and of the gate
+    add([k.pos(0, 0), k.z(1), {
       draw() {
-        k.drawText({ font: FONT, text: label, size: 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
-        if (b.id === 'auctions') {
-          // decorative countdown (not a real auction)
-          const total = 6000 - (Math.floor(k.time()) % 6000);
-          const hh = String(Math.floor(total / 3600)).padStart(2, '0');
-          const mm = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
-          const ss = String(total % 60).padStart(2, '0');
-          k.drawText({ font: FONT, text: `${hh}:${mm}:${ss}`, size: 6, pos: k.vec2(AUCTION_TIMER_BOX.x + AUCTION_TIMER_BOX.w / 2, AUCTION_TIMER_BOX.y + AUCTION_TIMER_BOX.h / 2), anchor: 'center', color: col('#7dffa0') });
+        const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
+        for (const b of [...MARKET_STALLS, EXIT_GATE]) {
+          const c = doorCentre(b);
+          k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor), opacity: 0.08 + 0.1 * pulse });
         }
-        drawDoorHints(b, b.x, b.y);
+      },
+    }]);
+    // the three stalls with their names on the sign boards
+    for (const b of MARKET_STALLS) {
+      const label = String(labels[b.id] || b.id).toUpperCase();
+      add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
+      add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
+        draw() {
+          k.drawText({ font: FONT, text: label, size: label.length > 9 ? 6 : 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
+          drawDoorHints(b, b.x, b.y);
+        },
+      }]);
+    }
+    // the well in the middle of the square
+    const wx = WELL.x + WELL.w / 2;
+    const wb = WELL.y + WELL.h;
+    add([k.pos(wx, wb), k.z(wb), {
+      draw() {
+        k.drawEllipse({ pos: k.vec2(0, -1), radiusX: 17, radiusY: 5, color: col('#000000'), opacity: 0.25 });
+        rect(-14, -14, 28, 13, '#6b7280');
+        rect(-14, -14, 28, 2, '#cdd2da');
+        for (let x = -14; x < 14; x += 7) rect(x, -12, 1, 11, '#4b5563');
+        k.drawEllipse({ pos: k.vec2(0, -14), radiusX: 13, radiusY: 4, color: col('#1e3a5f') });
+        rect(-13, -34, 2, 20, '#5e3a18');
+        rect(11, -34, 2, 20, '#5e3a18');
+        k.drawTriangle({ p1: k.vec2(-18, -32), p2: k.vec2(18, -32), p3: k.vec2(0, -42), color: col('#8b2e1a') });
+        rect(-18, -33, 36, 2, '#5e3a18');
+        rect(-1, -32, 2, 8, '#3a2a18'); // rope
+        rect(-3, -25, 6, 4, '#8b5a2b'); // bucket
+      },
+    }]);
+    for (const p of MARKET_PROPS) {
+      const drawProp = MARKET_PROP_DRAW[p.type];
+      if (drawProp) add([k.pos(p.x, p.y), k.z(p.y), { draw() { drawProp(p); } }]);
+    }
+    // the gate back to the plaza: name board + door hint
+    const gateLabel = String(labels.exit || 'exit').toUpperCase();
+    add([k.pos(0, 0), k.z(EXIT_GATE.y + EXIT_GATE.h + 1), {
+      draw() {
+        const cx = EXIT_GATE.x + EXIT_GATE.w / 2;
+        const lw = k.formatText({ font: FONT, text: gateLabel, size: 8 }).width + 8;
+        k.drawRect({ pos: k.vec2(cx - lw / 2, EXIT_GATE.y - 4), width: lw, height: 13, color: col('#2a1a0e'), outline: { width: 1, color: col('#c08a3e') } });
+        k.drawText({ font: FONT, text: gateLabel, size: 8, pos: k.vec2(cx, EXIT_GATE.y + 2.5), anchor: 'center', color: col(EXIT_GATE.color) });
+        drawDoorHints(EXIT_GATE, 0, 0);
       },
     }]);
   }
 
-  // ── floating coins, cards and cloud shadows (decor) ──────────────────────────
-  k.add([k.pos(0, 0), k.z(5000), {
-    draw() {
-      const t = k.time();
-      COINS.forEach(([x, y], i) => {
-        const bob = Math.sin(t * 2.4 + i) * 2.5;
-        const spin = Math.abs(Math.cos(t * 2 + i * 0.9));
-        const rx = Math.max(1, 4 * spin);
-        k.drawEllipse({ pos: k.vec2(x, y + bob + 3), radiusX: rx + 1, radiusY: 5, color: col('#000000'), opacity: 0.18 });
-        k.drawEllipse({ pos: k.vec2(x, y + bob), radiusX: rx + 1, radiusY: 5, color: col('#7a5200') });
-        k.drawEllipse({ pos: k.vec2(x, y + bob), radiusX: rx, radiusY: 4, color: col('#ffd23f') });
-        if (rx > 2.5) rect(x - rx * 0.5, y + bob - 2, 1, 3, '#fff08a');
-      });
-      CARDS.forEach((c, i) => {
-        const bob = Math.sin(t * 1.8 + i * 2) * 3;
-        rect(c.x - 1, c.y + bob - 1, 12, 15, '#101010');
-        rect(c.x, c.y + bob, 10, 13, '#fdfdf6');
-        rect(c.x + 1, c.y + bob + 1, 8, 7, c.c);
-        rect(c.x + 2, c.y + bob + 9, 6, 1, '#9a9a9a');
-      });
-    },
-  }]);
-  k.add([k.pos(0, 0), k.z(9000), {
-    draw() {
-      const t = k.time();
-      for (const c of CLOUDS) {
-        const x = ((c.x + t * c.sp) % (WORLD.w + 160)) - 80;
-        k.drawEllipse({ pos: k.vec2(x, c.y), radiusX: c.rx, radiusY: c.ry, color: col('#0b2a14'), opacity: 0.06 });
-      }
-    },
-  }]);
+  /** Clears whatever map is on screen and builds the current one. */
+  function buildMap() {
+    k.destroyAll('map');
+    if (current.id === 'market') buildMarket();
+    else buildPlaza();
+  }
 
   // ── player ───────────────────────────────────────────────────────────────────
-  let pos = { ...SPAWN };
+  let pos = spawnPoint(current.id, start.spawn);
   let facing = { dir: 'down', flip: false };
   let currentAnim = 'down-idle';
   let target = null;
@@ -387,7 +510,8 @@ export async function startGame({
         k.drawText({ font: FONT, text: r.username, size: 6, pos: k.vec2(r.x, r.y + 7), anchor: 'center', color: col('#e5e7eb') });
       }
 
-      const place = state.guide ? placeById(state.guide) : null;
+      // the tutorial stops are in the plaza: from the market the arrow points at the gate back
+      const place = state.guide ? (placeById(state.guide) || (current.id === 'market' ? EXIT_GATE : null)) : null;
       if (place && state.activeDoor !== place.id) {
         const c = doorCentre(place);
         const vx = c.x - pos.x;
@@ -415,7 +539,7 @@ export async function startGame({
   // so a click with no movement before it (some touch screens, stylus, assistive tools) would land on a stale
   // spot. The view is letterboxed (VIEW_W x VIEW_H scaled to fit, centred), so undo that mapping by hand.
   const onPointerDown = (e) => {
-    if (state.frozen) return;
+    if (state.frozen || state.fade) return;
     const box = canvas.getBoundingClientRect();
     const scale = Math.min(box.width / VIEW_W, box.height / VIEW_H);
     const lx = (e.clientX - box.left - (box.width - VIEW_W * scale) / 2) / scale;
@@ -426,16 +550,50 @@ export async function startGame({
     for (const [id, r] of remotes) {
       if (r.obj && Math.abs(p.x - r.x) <= 9 && p.y >= r.y - 32 && p.y <= r.y + 4) { onPlayerTap(id); return; }
     }
-    target = { x: Math.min(WORLD.w - 8, Math.max(8, p.x)), y: Math.min(WORLD.h - 4, Math.max(14, p.y)) };
+    target = { x: Math.min(current.world.w - 8, Math.max(8, p.x)), y: Math.min(current.world.h - 4, Math.max(14, p.y)) };
   };
   canvas.addEventListener('pointerdown', onPointerDown);
-  const requestEnter = () => { if (!state.frozen && state.activeDoor) onEnterRequest(state.activeDoor); };
+  const requestEnter = () => { if (!state.frozen && !state.fade && state.activeDoor) onEnterRequest(state.activeDoor); };
   k.onKeyPress('enter', requestEnter);
   k.onKeyPress('space', requestEnter);
 
+  // ── changing map: fade to black, rebuild, fade back in ───────────────────────
+  function switchMap(mapId, at) {
+    current = mapById(mapId);
+    buildMap();
+    pos = { x: at.x, y: at.y };
+    target = null;
+    player.pos = k.vec2(pos.x, pos.y);
+    state.activeDoor = null;
+    onDoorChange(null);
+    onMapChange(current.id);
+  }
+  function stepFade(dt) {
+    const f = state.fade;
+    if (!f) return;
+    f.t += dt;
+    if (f.phase === 'out' && f.t >= FADE_S) {
+      switchMap(f.mapId, f.at);
+      f.phase = 'in';
+      f.t = 0;
+    } else if (f.phase === 'in' && f.t >= FADE_S) {
+      state.fade = null;
+    }
+  }
+  // the black veil of the fade, drawn over everything in screen space
+  k.add([k.pos(0, 0), k.fixed(), k.z(10000), {
+    draw() {
+      const f = state.fade;
+      if (!f) return;
+      const a = f.phase === 'out' ? f.t / FADE_S : 1 - f.t / FADE_S;
+      k.drawRect({ pos: k.vec2(0, 0), width: VIEW_W, height: VIEW_H, color: col('#000000'), opacity: Math.max(0, Math.min(1, a)) });
+    },
+  }]);
+
   k.onUpdate(() => {
     const dt = k.dt();
-    const keys = state.frozen ? { dx: 0, dy: 0 } : keyVector({
+    stepFade(dt);
+    const keys = state.frozen || state.fade ? { dx: 0, dy: 0 } : keyVector({
       left: down('left', 'a') || virtualKeys.left,
       right: down('right', 'd') || virtualKeys.right,
       up: down('up', 'w') || virtualKeys.up,
@@ -447,14 +605,14 @@ export async function startGame({
       target = null;
       dx = keys.dx * WALK_SPEED * dt;
       dy = keys.dy * WALK_SPEED * dt;
-    } else if (target && !state.frozen) {
+    } else if (target && !state.frozen && !state.fade) {
       const s = stepToward(pos, target, WALK_SPEED, dt);
       dx = s.dx;
       dy = s.dy;
       if (s.arrived) target = null;
     }
 
-    const next = dx || dy ? moveWithCollision(pos, dx, dy) : pos;
+    const next = dx || dy ? moveWithCollision(pos, dx, dy, current.blocked, current.world) : pos;
     const moved = next.x !== pos.x || next.y !== pos.y;
     if (target && !moved) target = null; // walked into a wall: stop instead of pushing forever
     pos = next;
@@ -467,11 +625,11 @@ export async function startGame({
     player.pos = k.vec2(pos.x, pos.y - bob);
     player.z = pos.y;
 
-    const camX = Math.min(WORLD.w - VIEW_W / 2, Math.max(VIEW_W / 2, pos.x));
-    const camY = Math.min(WORLD.h - VIEW_H / 2, Math.max(VIEW_H / 2, pos.y - (FRAME.h * CHAR_SCALE) / 2));
+    const camX = Math.min(current.world.w - VIEW_W / 2, Math.max(VIEW_W / 2, pos.x));
+    const camY = Math.min(current.world.h - VIEW_H / 2, Math.max(VIEW_H / 2, pos.y - (FRAME.h * CHAR_SCALE) / 2));
     k.setCamPos(camX, camY);
 
-    const door = doorAt(pos);
+    const door = state.fade ? null : doorAt(pos, current.places);
     const id = door ? door.id : null;
     if (id !== state.activeDoor) { state.activeDoor = id; onDoorChange(id); }
 
@@ -492,6 +650,8 @@ export async function startGame({
     }
   });
 
+  buildMap();
+
   return {
     enter: requestEnter,
     /** Place id the guide arrow should point at (null hides it). */
@@ -507,8 +667,20 @@ export async function startGame({
     },
     /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character). */
     showBubble(id, text) { bubbles.set(id, { text: String(text), until: k.time() * 1000 + BUBBLE_MS }); },
-    /** The server refused a move: snap back to where it says we are. */
-    setPosition(x, y) { pos = { x, y }; target = null; },
+    /** The server refused a move: snap back to where it says we are (switching map first if it says so). */
+    setPosition(x, y, mapId) {
+      if (mapId && mapId !== current.id) { switchMap(mapId, { x, y }); return; }
+      pos = { x, y };
+      target = null;
+    },
+    /** Walks through a linking door: fades out, rebuilds `mapId` and puts the character at `spawnId`. */
+    travel(mapId, spawnId) {
+      if (state.fade) return;
+      state.fade = { phase: 'out', t: 0, mapId, at: spawnPoint(mapId, spawnId) };
+      target = null;
+    },
+    /** The current map id and the spawn closest to the character (to come back here after a visit to the site). */
+    whereAmI() { return { map: current.id, spawn: nearestSpawn(current.id, pos) }; },
     destroy() {
       alive = false;
       canvas.removeEventListener('pointerdown', onPointerDown);

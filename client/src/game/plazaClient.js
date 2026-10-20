@@ -12,10 +12,11 @@ function readToken() {
 /**
  * @param {object} opts
  * @param {boolean} opts.visible        start visible in the plaza or not
+ * @param {() => { map, spawn }} [opts.where]  where the character is when (re)connecting (default: plaza start)
  * @param {(msg: object) => void} opts.onMessage
  * @param {(status: 'connecting'|'online'|'offline'|'replaced') => void} opts.onStatus
  */
-export function connectPlaza({ visible, onMessage, onStatus }) {
+export function connectPlaza({ visible, where = () => ({}), onMessage, onStatus }) {
   const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/game`;
   let ws = null;
   let closed = false;
@@ -30,7 +31,8 @@ export function connectPlaza({ visible, onMessage, onStatus }) {
     ws = new WebSocket(url);
     ws.onopen = () => {
       retry = 0;
-      ws.send(JSON.stringify({ t: 'hello', token, visible: isVisible }));
+      const { map, spawn } = where() || {};
+      ws.send(JSON.stringify({ t: 'hello', token, visible: isVisible, map, spawn }));
     };
     ws.onmessage = (event) => {
       let msg;
@@ -56,6 +58,8 @@ export function connectPlaza({ visible, onMessage, onStatus }) {
     setVisible(v) { isVisible = Boolean(v); sendJson({ t: 'visible', v: isVisible }); },
     /** Says one of the fixed phrases / emojis (client/src/config/plazaPhrases.json). */
     say(k) { sendJson({ t: 'say', k }); },
+    /** Walks through a linking door into map `to` (the server checks we are at the door). */
+    travel(to) { sendJson({ t: 'travel', to }); },
     close() { closed = true; clearTimeout(timer); if (ws) ws.close(); },
   };
 }

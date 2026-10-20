@@ -1,15 +1,21 @@
 // WebSocket channel of the game plaza (/ws/game). Separate from the public "Live Hub" broadcast socket in
 // server.js: here every connection must identify itself with the site's JWT before it sees or is seen by anyone.
 //
+// Players are in one map at a time (the plaza or the market inside the castle, client/src/config/gameMaps.json):
+// everything below (join, leave, moves, chat) only reaches the players of the same map.
+//
 // Protocol (JSON text frames):
-//   client -> server  { t: 'hello', token, visible }     first message, within HELLO_TIMEOUT_MS
+//   client -> server  { t: 'hello', token, visible, map, spawn }  first message, within HELLO_TIMEOUT_MS
+//                                                       (map/spawn: where the client starts, default the plaza)
 //                     { t: 'move', x, y, d, m }           own position (d = down|up|right|left, m = walking)
 //                     { t: 'visible', v }                 show / hide me in the plaza
 //                     { t: 'say', k }                     say a fixed phrase / emoji (client/src/config/plazaPhrases.json)
-//   server -> client  { t: 'welcome', you, players }      after a valid hello: who is already there
+//                     { t: 'travel', to }                 walk through a linking door into map `to`
+//   server -> client  { t: 'welcome', you, map, x, y, players }  after a valid hello or travel: where I am and
+//                                                       who is already in that map
 //                     { t: 'join', p } / { t: 'leave', id }
 //                     { t: 'moves', list }                batched every TICK_MS, never includes the receiver
-//                     { t: 'correct', x, y }              a move was impossible: snap back here
+//                     { t: 'correct', map, x, y }         a move or travel was impossible: snap back here
 //                     { t: 'said', id, u, k }             someone (also the sender) said phrase k
 // Close codes: 4001 missing/invalid hello, 4002 replaced by a newer connection of the same account,
 //              4003 account not allowed (disabled / unknown).
@@ -26,10 +32,15 @@ function createPlaza({ verifyToken, loadUser, room = new PlazaRoom(), tickMs = 1
   const sockets = new Map(); // userId -> ws (one live connection per account)
 
   const send = (ws, obj) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj)); };
-  const broadcast = (obj, exceptId) => {
+  // to everyone in `map` except `exceptId`
+  const broadcast = (map, obj, exceptId) => {
     const payload = JSON.stringify(obj);
-    for (const [id, ws] of sockets) if (id !== exceptId && ws.readyState === WebSocket.OPEN) ws.send(payload);
+    for (const [id, ws] of sockets) {
+      const p = room.get(id);
+      if (id !== exceptId && p && p.map === map && ws.readyState === WebSocket.OPEN) ws.send(payload);
+    }
   };
+  const welcome = (ws, p) => send(ws, { t: 'welcome', you: p.id, map: p.map, x: p.x, y: p.y, players: room.visiblePlayers(p.id, p.map) });
 
   wss.on('connection', (ws) => {
     let userId = null;
@@ -58,27 +69,37 @@ function createPlaza({ verifyToken, loadUser, room = new PlazaRoom(), tickMs = 1
         const previous = sockets.get(userId);
         if (previous && previous !== ws) previous.close(4002, 'replaced');
         sockets.set(userId, ws);
-        const p = room.join(user, { visible: msg.visible !== false });
-        send(ws, { t: 'welcome', you: userId, players: room.visiblePlayers(userId) });
-        if (p.visible) broadcast({ t: 'join', p: room.publicView(p) }, userId);
+        const p = room.join(user, { visible: msg.visible !== false, map: msg.map, spawn: msg.spawn });
+        welcome(ws, p);
+        if (p.visible) broadcast(p.map, { t: 'join', p: room.publicView(p) }, userId);
         return;
       }
 
       if (msg.t === 'move') {
         if (room.move(userId, msg) === 'rejected') {
           const p = room.get(userId);
-          send(ws, { t: 'correct', x: p.x, y: p.y });
+          send(ws, { t: 'correct', map: p.map, x: p.x, y: p.y });
         }
+      } else if (msg.t === 'travel') {
+        const r = room.travel(userId, msg.to);
+        const p = room.get(userId);
+        if (!r) { send(ws, { t: 'correct', map: p.map, x: p.x, y: p.y }); return; }
+        if (p.visible) {
+          broadcast(r.from, { t: 'leave', id: userId }, userId);
+          broadcast(r.to, { t: 'join', p: room.publicView(p) }, userId);
+        }
+        welcome(ws, p);
       } else if (msg.t === 'say') {
         if (room.say(userId, msg.k) === 'ok') {
           const p = room.get(userId);
           const said = { t: 'said', id: userId, u: p.username, k: msg.k };
-          broadcast(said, userId);
+          broadcast(p.map, said, userId);
           send(ws, said); // the sender sees their own message too
         }
       } else if (msg.t === 'visible') {
         const r = room.setVisible(userId, msg.v);
-        if (r.changed) broadcast(r.visible ? { t: 'join', p: room.publicView(room.get(userId)) } : { t: 'leave', id: userId }, userId);
+        const p = room.get(userId);
+        if (r.changed) broadcast(p.map, r.visible ? { t: 'join', p: room.publicView(p) } : { t: 'leave', id: userId }, userId);
       }
     });
 
@@ -86,7 +107,8 @@ function createPlaza({ verifyToken, loadUser, room = new PlazaRoom(), tickMs = 1
       clearTimeout(helloTimer);
       if (userId && sockets.get(userId) === ws) {
         sockets.delete(userId);
-        if (room.leave(userId)) broadcast({ t: 'leave', id: userId });
+        const p = room.get(userId);
+        if (room.leave(userId)) broadcast(p.map, { t: 'leave', id: userId });
       }
     });
   });
@@ -95,7 +117,9 @@ function createPlaza({ verifyToken, loadUser, room = new PlazaRoom(), tickMs = 1
     const moves = room.takeDirtyMoves();
     if (!moves.length) return;
     for (const [id, ws] of sockets) {
-      const list = moves.filter((mv) => mv.id !== id);
+      const me = room.get(id);
+      if (!me) continue;
+      const list = moves.filter((mv) => mv.id !== id && mv.map === me.map).map(({ map, ...mv }) => mv);
       if (list.length) send(ws, { t: 'moves', list });
     }
   }, tickMs);

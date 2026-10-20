@@ -2554,7 +2554,11 @@
       "auctions": "Enchères",
       "arena": "Puzzle Arena",
       "catalog": "Catalogue Wiki",
-      "credits": "Dragon des Crédits"
+      "credits": "Dragon des Crédits",
+      "lego": "LEGO",
+      "cards": "Cartes",
+      "funko": "Funko Pop",
+      "exit": "Place"
     },
     "world": {
       "loading": "Chargement du jeu…",
@@ -2568,7 +2572,9 @@
       "rotate_title": "Tournez votre téléphone",
       "rotate_text": "À l'horizontale, la place est bien plus grande et on joue mieux.",
       "rotate_dismiss": "Continuer ainsi",
-      "toolbar_label": "Commandes du jeu"
+      "toolbar_label": "Commandes du jeu",
+      "travel_market": "Entrer dans le marché",
+      "travel_plaza": "Retour sur la place"
     },
     "tutorial": {
       "next": "Suivant",
@@ -2583,7 +2589,7 @@
       },
       "listings": {
         "title": "Annonces",
-        "body": "Ici vous achetez et vendez des cartes à collectionner, des sets LEGO et des Funko. Vous publiez une annonce avec photos et prix et le paiement se fait dans CardBrix, avec une commission. Publier une annonce ne donne pas de crédits."
+        "body": "Ici vous achetez et vendez des cartes à collectionner, des sets LEGO et des Funko. Vous publiez une annonce avec photos et prix et le paiement se fait dans CardBrix, avec une commission. Publier une annonce ne donne pas de crédits. Entrez dans le château : à l'intérieur, le marché avec les étals LEGO, cartes et Funko."
       },
       "auctions": {
         "title": "Enchères",
@@ -2616,7 +2622,8 @@
       "visible_off": "Caché sur la place",
       "view_inventory": "Voir l'inventaire",
       "in_plaza": "Sur la place maintenant",
-      "close": "Fermer"
+      "close": "Fermer",
+      "online_market": "{{count}} au marché"
     },
     "inventory": {
       "kicker": "Inventaire",
@@ -2634,9 +2641,9 @@
     },
     "places_info": {
       "listings": {
-        "title": "Bazar TCG & Bricks",
-        "subtitle": "Mint · Scellés",
-        "flavour": "Achetez et vendez cartes à l'unité, boîtes scellées et sets rares."
+        "title": "Château des Annonces",
+        "subtitle": "Marché · LEGO · Cartes · Funko",
+        "flavour": "Derrière la porte se trouve le marché : un étal pour chaque type d'annonce."
       },
       "auctions": {
         "title": "Arène des Enchères",
@@ -2657,6 +2664,26 @@
         "title": "Source des Crédits",
         "subtitle": "Dragon gardien",
         "flavour": "Les crédits servent à participer aux puzzles de la Skill Zone."
+      },
+      "lego": {
+        "title": "Étal LEGO",
+        "subtitle": "Sets · Minifigurines · Briques",
+        "flavour": "Sets scellés, sets d'occasion complets et minifigurines à vendre."
+      },
+      "cards": {
+        "title": "Étal des cartes",
+        "subtitle": "Pokémon · Magic · Lorcana et plus",
+        "flavour": "Cartes à l'unité, boosters et boîtes de tous les jeux de cartes à collectionner."
+      },
+      "funko": {
+        "title": "Étal Funko Pop",
+        "subtitle": "En boîte · Exclusivités",
+        "flavour": "Funko Pop en boîte, éditions spéciales et pièces rares."
+      },
+      "exit": {
+        "title": "Porte du château",
+        "subtitle": "Sortie",
+        "flavour": "Retour sur la place de CardBrix."
       }
     },
     "chat": {

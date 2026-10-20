@@ -154,8 +154,8 @@ describe('collector props and tree variants', () => {
 
   test('every shop declares its roof style, sign icon and aura colour', () => {
     for (const b of BUILDINGS) {
-      expect(['lego_studs', 'fire', 'cyber_grid', 'crystal_dome']).toContain(b.roofStyle);
-      expect(['booster', 'gavel', 'puzzle', 'slab']).toContain(b.signIcon);
+      expect(['castle_towers', 'fire', 'cyber_grid', 'crystal_dome']).toContain(b.roofStyle);
+      expect(['banner', 'gavel', 'puzzle', 'slab']).toContain(b.signIcon);
       expect(b.auraColor).toMatch(/^#[0-9a-f]{6}$/);
     }
   });

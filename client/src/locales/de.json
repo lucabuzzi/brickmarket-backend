@@ -2546,7 +2546,11 @@
       "auctions": "Auktionen",
       "arena": "Puzzle Arena",
       "catalog": "Wiki-Katalog",
-      "credits": "Credits-Drache"
+      "credits": "Credits-Drache",
+      "lego": "LEGO",
+      "cards": "Karten",
+      "funko": "Funko Pop",
+      "exit": "Platz"
     },
     "world": {
       "loading": "Spiel wird geladen …",
@@ -2560,7 +2564,9 @@
       "rotate_title": "Dreh dein Handy",
       "rotate_text": "Im Querformat ist der Platz viel größer und es spielt sich besser.",
       "rotate_dismiss": "So weiterspielen",
-      "toolbar_label": "Spielsteuerung"
+      "toolbar_label": "Spielsteuerung",
+      "travel_market": "Markt betreten",
+      "travel_plaza": "Zurück zum Platz"
     },
     "tutorial": {
       "next": "Weiter",
@@ -2575,7 +2581,7 @@
       },
       "listings": {
         "title": "Anzeigen",
-        "body": "Hier kaufst und verkaufst du Sammelkarten, LEGO-Sets und Funko. Du stellst eine Anzeige mit Fotos und Preis ein, die Zahlung läuft innerhalb von CardBrix, mit einer Gebühr. Eine Anzeige zu veröffentlichen gibt keine Credits."
+        "body": "Hier kaufst und verkaufst du Sammelkarten, LEGO-Sets und Funko. Du stellst eine Anzeige mit Fotos und Preis ein, die Zahlung läuft innerhalb von CardBrix, mit einer Gebühr. Eine Anzeige zu veröffentlichen gibt keine Credits. Geh in die Burg: Drinnen ist der Markt mit den Ständen für LEGO, Karten und Funko."
       },
       "auctions": {
         "title": "Auktionen",
@@ -2608,7 +2614,8 @@
       "visible_off": "Versteckt auf dem Platz",
       "view_inventory": "Inventar ansehen",
       "in_plaza": "Gerade auf dem Platz",
-      "close": "Schließen"
+      "close": "Schließen",
+      "online_market": "{{count}} auf dem Markt"
     },
     "inventory": {
       "kicker": "Inventar",
@@ -2626,9 +2633,9 @@
     },
     "places_info": {
       "listings": {
-        "title": "Basar TCG & Bricks",
-        "subtitle": "Mint · Versiegelt",
-        "flavour": "Kaufe und verkaufe Einzelkarten, versiegelte Boxen und seltene Sets."
+        "title": "Burg der Anzeigen",
+        "subtitle": "Markt · LEGO · Karten · Funko",
+        "flavour": "Hinter dem Tor liegt der Markt: ein Stand für jede Art von Anzeige."
       },
       "auctions": {
         "title": "Auktionsarena",
@@ -2649,6 +2656,26 @@
         "title": "Quelle der Credits",
         "subtitle": "Wächterdrache",
         "flavour": "Credits dienen zur Teilnahme an den Puzzles der Skill Zone."
+      },
+      "lego": {
+        "title": "LEGO-Stand",
+        "subtitle": "Sets · Minifiguren · Steine",
+        "flavour": "Versiegelte Sets, vollständige gebrauchte Sets und Minifiguren zu verkaufen."
+      },
+      "cards": {
+        "title": "Kartenstand",
+        "subtitle": "Pokémon · Magic · Lorcana und mehr",
+        "flavour": "Einzelkarten, Booster und Displays aller Sammelkartenspiele."
+      },
+      "funko": {
+        "title": "Funko-Pop-Stand",
+        "subtitle": "In OVP · Exklusiv",
+        "flavour": "Funko Pops in OVP, Sondereditionen und seltene Stücke."
+      },
+      "exit": {
+        "title": "Burgtor",
+        "subtitle": "Ausgang",
+        "flavour": "Zurück auf den CardBrix-Platz."
       }
     },
     "chat": {

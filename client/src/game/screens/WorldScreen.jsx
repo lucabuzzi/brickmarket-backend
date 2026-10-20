@@ -11,7 +11,7 @@ import usePlaza from '../usePlaza';
 import { buildAvatarSheet } from '../skinLoader';
 import { useAuth } from '../../auth/useAuth';
 import { useLocalizedNav } from '../../routing/useLocalizedNav';
-import { PLACES } from '../../lib/game/gameMap';
+import { ALL_PLACES } from '../../lib/game/maps';
 import {
   startTutorial, tutorialReducer, currentStep, guideTarget, progress, shouldAutoStart, markDone, clearDone,
 } from '../../lib/game/tutorial';
@@ -29,6 +29,22 @@ const PANEL_COLUMN = '(min-width: 1280px) and (min-height: 560px) and (hover: ho
 // Phones in landscape: too short for the chat under the map, so it moves beside it.
 const SHORT_LANDSCAPE = '(orientation: landscape) and (max-height: 520px)';
 const ROTATE_DISMISSED_KEY = 'cardbrix_game_rotate_dismissed';
+// Where the character was when the world was left (a stall's page, the inventory, editing the character): the
+// next start in this tab puts it back there, e.g. in the market in front of the LEGO stall. Stale after 2 hours.
+const RETURN_KEY = 'cardbrix_game_return';
+const RETURN_TTL_MS = 2 * 60 * 60 * 1000;
+
+function readReturnPoint() {
+  try {
+    const r = JSON.parse(sessionStorage.getItem(RETURN_KEY) || 'null');
+    if (r && typeof r.map === 'string' && Date.now() - r.at < RETURN_TTL_MS) return { map: r.map, spawn: r.spawn };
+  } catch { /* blocked or malformed */ }
+  return {};
+}
+
+function saveReturnPoint(where) {
+  try { sessionStorage.setItem(RETURN_KEY, JSON.stringify({ ...where, at: Date.now() })); } catch { /* blocked */ }
+}
 
 function useMedia(query) {
   return useSyncExternalStore(
@@ -104,7 +120,8 @@ function ToolButton({ label, pressed, onClick, children }) {
 
 /**
  * The plaza: the map with the guided tutorial on top, the other players, the fixed-phrase chat, an on-screen
- * D-pad and the inventory of whoever you tap. Entering a place leaves the game for the matching site page.
+ * D-pad and the inventory of whoever you tap. Entering a place leaves the game for the matching site page; the
+ * castle gate (Annunci) leads to the market map instead, and the market gate back to the plaza.
  */
 export default function WorldScreen({ avatar, onEdit }) {
   const { t } = useTranslation();
@@ -123,6 +140,8 @@ export default function WorldScreen({ avatar, onEdit }) {
   const [door, setDoor] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [selected, setSelected] = useState(null); // public info of the tapped player ({ u, a, ... })
+  const [start] = useState(readReturnPoint); // { map, spawn } to start from (empty = plaza start)
+  const [mapId, setMapId] = useState(start.map || 'plaza');
   const portraitPhone = useMedia(PORTRAIT_PHONE);
   const wide = useMedia(WIDE);
   const panelColumn = useMedia(PANEL_COLUMN);
@@ -139,7 +158,7 @@ export default function WorldScreen({ avatar, onEdit }) {
   const onSaid = useCallback((m) => {
     gameRef.current?.showBubble(m.mine ? 'me' : m.id, chatText(t, m.k));
   }, [t]);
-  const plaza = usePlaza({ gameRef, ready: status === 'ready', onSaid });
+  const plaza = usePlaza({ gameRef, ready: status === 'ready', onSaid, start });
   // the scene is created once; it reaches the (stable) plaza callbacks through refs
   const plazaRef = useRef(plaza);
   useEffect(() => { plazaRef.current = plaza; }, [plaza]);
@@ -149,9 +168,18 @@ export default function WorldScreen({ avatar, onEdit }) {
     return store && !shouldAutoStart(store, user?.id) ? INACTIVE : startTutorial();
   });
 
-  const labels = useMemo(() => Object.fromEntries(PLACES.map((p) => [p.id, t(`game.places.${p.id}`)])), [t]);
-  const placeById = (id) => PLACES.find((p) => p.id === id) || null;
+  const labels = useMemo(() => Object.fromEntries(ALL_PLACES.map((p) => [p.id, t(`game.places.${p.id}`)])), [t]);
+  const placeById = (id) => ALL_PLACES.find((p) => p.id === id) || null;
   const goSite = (place) => navigate(navTo(place.path));
+  // a door either leads to another map (castle gate, market gate) or out to the site page of the place
+  const enterPlace = (place) => {
+    if (place.travel) {
+      plazaRef.current.travel(place.travel.to);
+      gameRef.current?.travel(place.travel.to, place.travel.spawn);
+    } else {
+      goSite(place);
+    }
+  };
   const step = currentStep(tut);
   const target = guideTarget(tut);
   const canvasLabel = t('game.world.canvas_label');
@@ -177,8 +205,10 @@ export default function WorldScreen({ avatar, onEdit }) {
           sheet,
           username: user?.username || '',
           labels,
+          start,
           onDoorChange: setDoor,
-          onEnterRequest: (id) => { const p = placeById(id); if (p) goSite(p); },
+          onMapChange: setMapId,
+          onEnterRequest: (id) => { const p = placeById(id); if (p) enterPlace(p); },
           onLocalMove: (move) => plazaRef.current.reportMove(move),
           onPlayerTap: (id) => setSelected(plazaRef.current.playerInfo(id)),
         });
@@ -193,7 +223,10 @@ export default function WorldScreen({ avatar, onEdit }) {
     return () => {
       cancelled = true;
       gameRef.current = null;
-      if (game) game.destroy();
+      if (game) {
+        saveReturnPoint(game.whereAmI());
+        game.destroy();
+      }
       canvas.remove();
       if (canvasRef.current === canvas) canvasRef.current = null;
     };
@@ -266,7 +299,7 @@ export default function WorldScreen({ avatar, onEdit }) {
       {status === 'ready' && (
         <div className="cbg-pixel absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 border-2 border-black bg-[#14111f]/95 px-1.5 py-1 text-[0.45rem] uppercase text-white sm:right-3 sm:top-3 sm:gap-2 sm:border-4 sm:px-2.5 sm:py-1.5 sm:text-[0.55rem]" aria-live="polite">
           <Users className="h-3 w-3 text-[#22d3ee] sm:h-3.5 sm:w-3.5" aria-hidden />
-          {plaza.status === 'online' ? t('game.plaza.online', { count: plaza.count })
+          {plaza.status === 'online' ? t(mapId === 'market' ? 'game.plaza.online_market' : 'game.plaza.online', { count: plaza.count })
             : plaza.status === 'replaced' ? t('game.plaza.replaced')
               : plaza.status === 'connecting' ? t('game.plaza.connecting') : t('game.plaza.offline')}
         </div>
@@ -274,13 +307,13 @@ export default function WorldScreen({ avatar, onEdit }) {
 
       {status === 'ready' && !wide && toolbar}
 
-      {near?.path && !(tut.active && tut.phase === 'explain') && (
+      {(near?.path || near?.travel) && !(tut.active && tut.phase === 'explain') && (
         <div className="cbg-panel cbg-card-enter absolute bottom-2 left-1/2 z-10 w-[min(94%,380px)] -translate-x-1/2 p-2.5 text-center sm:bottom-3 sm:p-3" style={{ borderColor: near.color }}>
           <p className="cbg-pixel text-[0.55rem] uppercase sm:text-xs" style={{ color: near.color }}>{t(`game.places_info.${near.id}.title`)}</p>
           <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55 sm:text-[0.7rem]">{t(`game.places_info.${near.id}.subtitle`)}</p>
           <p className="mt-1.5 hidden text-sm leading-snug text-white/80 sm:block">{t(`game.places_info.${near.id}.flavour`)}</p>
           <button type="button" onClick={() => gameRef.current?.enter()} className="cbg-btn mt-2 w-full" style={{ background: near.color }}>
-            {t('game.world.enter', { place: labels[near.id] })} ▶
+            {near.travel ? t(`game.world.travel_${near.travel.to}`) : t('game.world.enter', { place: labels[near.id] })} ▶
           </button>
         </div>
       )}
@@ -307,7 +340,7 @@ export default function WorldScreen({ avatar, onEdit }) {
   // The canvas is not readable by screen readers: the sections stay reachable as plain links for them.
   const srLinks = (
     <ul className="sr-only" aria-label="CardBrix">
-      {PLACES.filter((p) => p.path).map((p) => <li key={p.id}><Link to={navTo(p.path)}>{labels[p.id]}</Link></li>)}
+      {ALL_PLACES.filter((p) => p.path).map((p) => <li key={p.id}><Link to={navTo(p.path)}>{labels[p.id]}</Link></li>)}
     </ul>
   );
 

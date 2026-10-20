@@ -1,4 +1,5 @@
-// The plaza of "CardBrix the game": who is in it, where they stand, and whether a move they report is possible.
+// The plaza of "CardBrix the game": who is in it, in which map (the plaza or the market inside the castle), where
+// they stand, and whether a move or a change of map they report is possible.
 // Pure (no sockets, no DB, injectable clock), unit-tested in tests/game-plaza.test.js; the WebSocket wiring is
 // in gamePlazaSocket.js. Players are shown only by username and character (never e-mail or any other data),
 // and a player who switched "visible in the plaza" off is never sent to anyone.
@@ -8,6 +9,18 @@
 const WORLD = require('../../client/src/config/gameWorld.json');
 const { normalizeAvatarConfig, defaultAvatarConfig } = require('./avatarConfig');
 const PHRASES = require('../../client/src/config/plazaPhrases.json');
+const MAPS = require('../../client/src/config/gameMaps.json');
+
+// How far (world px) from a linking door the server still accepts "I walk through it": the client checks the
+// door with its live position, the server only knows the last one it was sent (up to ~100 ms old).
+const TRAVEL_REACH = 16;
+
+const mapOf = (id) => MAPS.maps[id] || null;
+function spawnOf(mapId, spawnId) {
+  const map = mapOf(mapId);
+  const p = map.spawns[spawnId] || map.spawns[map.defaultSpawn];
+  return { x: p.x, y: p.y };
+}
 
 // Everything a player may say: the fixed phrase ids and emoji ids (no free text, see plazaPhrases.json).
 const SAYABLE = new Set([...PHRASES.phrases, ...Object.keys(PHRASES.emojis)]);
@@ -29,16 +42,24 @@ class PlazaRoom {
     this.players = new Map();
   }
 
-  /** Adds (or refreshes, on reconnect) a player at the spawn point. `user` = { id, username, avatar_config }. */
-  join(user, { visible = true } = {}) {
+  /**
+   * Adds (or refreshes, on reconnect) a player. `user` = { id, username, avatar_config }. `map` / `spawn` say where
+   * the client starts (e.g. back in the market after a visit to the site): only known maps and their spawn points
+   * are accepted, anything else means the plaza start point. A reconnect in the same map keeps the position.
+   */
+  join(user, { visible = true, map = 'plaza', spawn = null } = {}) {
     const existing = this.players.get(user.id);
+    const mapId = mapOf(map) ? map : 'plaza';
+    const keep = existing && existing.map === mapId;
+    const at = keep ? { x: existing.x, y: existing.y } : spawnOf(mapId, spawn);
     const p = {
       id: user.id,
       username: String(user.username || '').slice(0, 40),
       avatar: normalizeAvatarConfig(user.avatar_config) || defaultAvatarConfig(),
-      x: existing ? existing.x : WORLD.spawn.x,
-      y: existing ? existing.y : WORLD.spawn.y,
-      d: existing ? existing.d : 'down',
+      map: mapId,
+      x: at.x,
+      y: at.y,
+      d: keep ? existing.d : 'down',
       m: false,
       visible: Boolean(visible),
       lastMoveAt: this.now(),
@@ -93,8 +114,9 @@ class PlazaRoom {
     const elapsed = now - p.lastMoveAt;
     if (elapsed < this.minIntervalMs) return 'ignored';
 
-    const nx = Math.min(WORLD.w, Math.max(0, x));
-    const ny = Math.min(WORLD.h, Math.max(0, y));
+    const size = mapOf(p.map);
+    const nx = Math.min(size.w, Math.max(0, x));
+    const ny = Math.min(size.h, Math.max(0, y));
     const maxDist = WORLD.walkSpeed * (elapsed / 1000) * this.speedSlack + 6;
     if (Math.hypot(nx - p.x, ny - p.y) > maxDist) return 'rejected';
 
@@ -105,6 +127,30 @@ class PlazaRoom {
     p.lastMoveAt = now;
     if (p.visible) p.dirty = true;
     return 'ok';
+  }
+
+  /**
+   * A player walks through a door into another map. Accepted only when a link goes from their map to `to` and
+   * their last known position is at that link's door; they then appear at the link's spawn point.
+   * Returns { from, to } when accepted, null otherwise (the caller sends the current position back).
+   */
+  travel(id, to) {
+    const p = this.players.get(id);
+    if (!p || typeof to !== 'string') return null;
+    const link = MAPS.links.find((l) => l.from === p.map && l.to === to && (
+      p.x >= l.door.x - TRAVEL_REACH && p.x <= l.door.x + l.door.w + TRAVEL_REACH
+      && p.y >= l.door.y - TRAVEL_REACH && p.y <= l.door.y + l.door.h + TRAVEL_REACH
+    ));
+    if (!link) return null;
+    const from = p.map;
+    const at = spawnOf(link.to, link.spawn);
+    p.map = link.to;
+    p.x = at.x;
+    p.y = at.y;
+    p.m = false;
+    p.dirty = false;
+    p.lastMoveAt = this.now();
+    return { from, to: link.to };
   }
 
   /**
@@ -122,29 +168,31 @@ class PlazaRoom {
     return 'ok';
   }
 
-  /** Every visible player except `exceptId`, as public views. */
-  visiblePlayers(exceptId) {
+  /** Every visible player except `exceptId` (only those in `map`, when given), as public views. */
+  visiblePlayers(exceptId, map) {
     const out = [];
-    for (const p of this.players.values()) if (p.visible && p.id !== exceptId) out.push(this.publicView(p));
+    for (const p of this.players.values()) {
+      if (p.visible && p.id !== exceptId && (!map || p.map === map)) out.push(this.publicView(p));
+    }
     return out;
   }
 
-  /** Moves of visible players since the last call ({ id, x, y, d, m }), clearing them. */
+  /** Moves of visible players since the last call ({ id, map, x, y, d, m }), clearing them. */
   takeDirtyMoves() {
     const out = [];
     for (const p of this.players.values()) {
       if (!p.dirty) continue;
       p.dirty = false;
-      if (p.visible) out.push({ id: p.id, x: p.x, y: p.y, d: p.d, m: p.m });
+      if (p.visible) out.push({ id: p.id, map: p.map, x: p.x, y: p.y, d: p.d, m: p.m });
     }
     return out;
   }
 
-  visibleCount() {
+  visibleCount(map) {
     let n = 0;
-    for (const p of this.players.values()) if (p.visible) n++;
+    for (const p of this.players.values()) if (p.visible && (!map || p.map === map)) n++;
     return n;
   }
 }
 
-module.exports = { PlazaRoom, PLAZA_DIRS: DIRS, PLAZA_WORLD: WORLD, PLAZA_PHRASES: PHRASES };
+module.exports = { PlazaRoom, PLAZA_DIRS: DIRS, PLAZA_WORLD: WORLD, PLAZA_PHRASES: PHRASES, PLAZA_MAPS: MAPS, PLAZA_TRAVEL_REACH: TRAVEL_REACH };

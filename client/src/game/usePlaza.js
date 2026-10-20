@@ -17,8 +17,10 @@ function readVisible() {
  * Connects the running scene (`gameRef.current`, once `ready`) to the plaza: other players appear, walk and
  * leave in the scene; our own moves go out throttled. Returns what the HUD needs.
  * `onSaid({ id, u, k, mine })` fires for every chat message (ours included), e.g. to show a speech bubble.
+ * `start` = { map, spawn } where the scene put the character, sent with the first hello. Players only see the
+ * others of the same map; `travel(to)` takes us through a linking door.
  */
-export default function usePlaza({ gameRef, ready, onSaid }) {
+export default function usePlaza({ gameRef, ready, onSaid, start = {} }) {
   const [status, setStatus] = useState('connecting');
   const [count, setCount] = useState(0);
   const [visible, setVisibleState] = useState(readVisible);
@@ -31,6 +33,7 @@ export default function usePlaza({ gameRef, ready, onSaid }) {
   const onSaidRef = useRef(onSaid);
   useEffect(() => { onSaidRef.current = onSaid; }, [onSaid]);
   const counterRef = useRef(0);
+  const startRef = useRef(start);
 
   useEffect(() => {
     if (!ready) return undefined;
@@ -56,11 +59,17 @@ export default function usePlaza({ gameRef, ready, onSaid }) {
 
     const client = connectPlaza({
       visible: readVisible(),
+      // the first hello says where the scene started; a reconnect says where the character is now
+      where: () => gameRef.current?.whereAmI() || startRef.current,
       onStatus: setStatus,
       onMessage: (msg) => {
         if (msg.t === 'correct') {
-          gameRef.current?.setPosition(msg.x, msg.y);
+          gameRef.current?.setPosition(msg.x, msg.y, msg.map);
           return;
+        }
+        // the server says we are in another map than the scene shows (e.g. a refused travel): follow it
+        if (msg.t === 'welcome' && msg.you && msg.map && gameRef.current && gameRef.current.whereAmI().map !== msg.map) {
+          gameRef.current.setPosition(msg.x, msg.y, msg.map);
         }
         if (msg.t === 'said') {
           const mine = msg.id === stateRef.current.you;
@@ -124,8 +133,19 @@ export default function usePlaza({ gameRef, ready, onSaid }) {
     setTimeout(() => setCooldown(false), PHRASES.cooldownMs);
   }, [cooldown]);
 
+  /** Walks through a linking door: the players of this map disappear, the server sends those of the next one. */
+  const travel = useCallback((to) => {
+    for (const id of [...shownRef.current]) {
+      shownRef.current.delete(id);
+      gameRef.current?.removeRemote(id);
+    }
+    stateRef.current = { ...emptyPlaza(), you: stateRef.current.you };
+    setCount(0);
+    clientRef.current?.travel(to);
+  }, [gameRef]);
+
   /** The public info of another player (for the card shown when they are tapped). */
   const playerInfo = useCallback((id) => stateRef.current.players[id] || null, []);
 
-  return { status, count, visible, setVisible, reportMove, playerInfo, messages, say, cooldown };
+  return { status, count, visible, setVisible, reportMove, playerInfo, messages, say, cooldown, travel };
 }
