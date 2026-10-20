@@ -2659,12 +2659,6 @@
         "flavour": "Les crédits servent à participer aux puzzles de la Skill Zone."
       }
     },
-    "easter_eggs": {
-      "pond_secret": "✨ Quelque chose brille au fond de l'étang… une carte Secret Rare ?",
-      "slab_left_lore": "💎 Carte gradée 10 : centrage, coins, bords et surface parfaits.",
-      "slab_right_lore": "🧱 Légende de la place : une brique 2x4 en or massif. Personne ne l'a jamais vue.",
-      "duel_west_lore": "⚔️ Table de tournoi : un top deck au troisième tour supplémentaire s'est joué ici !"
-    },
     "chat": {
       "title": "Chat de la place",
       "say": "Phrases rapides",

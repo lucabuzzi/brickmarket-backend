@@ -122,9 +122,9 @@ describe('facingFor / keyVector / stepToward', () => {
   });
 });
 
-describe('collector props, tree variants and easter eggs', () => {
+describe('collector props and tree variants', () => {
   const {
-    PROPS, propBox, EASTER_EGG_ZONES, easterEggAt, isWalkable, TREE_VARIANTS, TREES: ALL_TREES,
+    PROPS, propBox, TREE_VARIANTS, TREES: ALL_TREES,
   } = require('../client/src/lib/game/gameMap');
 
   test('props have unique ids, known types and stay inside the world', () => {
@@ -146,21 +146,6 @@ describe('collector props, tree variants and easter eggs', () => {
       for (const place of PLACES) expect(overlaps(box, place.door)).toBe(false);
       expect(overlaps(box, footRect(SPAWN))).toBe(false);
     }
-  });
-
-  test('every easter egg can be reached (some walkable spot lies inside its circle)', () => {
-    for (const z of EASTER_EGG_ZONES) {
-      let found = null;
-      for (let dy = -z.r; dy <= z.r && !found; dy += 2) {
-        for (let dx = -z.r; dx <= z.r && !found; dx += 2) {
-          const p = { x: z.x + dx, y: z.y + dy };
-          if (Math.hypot(dx, dy) <= z.r && isWalkable(p)) found = p;
-        }
-      }
-      expect(found).not.toBeNull();
-      expect(easterEggAt(found).id).toBe(z.id);
-    }
-    expect(easterEggAt(SPAWN)).toBeNull();
   });
 
   test('every tree uses a known variant', () => {

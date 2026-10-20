@@ -127,32 +127,66 @@
   .cbg-title .cbg-btn { margin-top: 0.9rem; }
 }
 
-/* ── 3-column plaza (desktop, landscape tablets and phones) ─────────────────────────────────────────── */
+/* ── wide plaza (desktop, tablets and phones in landscape) ──────────────────────────────────────────────
+   --full     controls | map + chat              touch screens and medium windows: the inventory is a drawer
+   --panel    controls | map + chat | inventory  wide desktops with a mouse: the side bands are free space
+   --sidechat controls | map | chat              short landscape phones: the chat moves beside the map, which
+                                                 then gets the whole height */
 .cbg-wide {
   --cbg-left-w: 136px;
-  --cbg-right-min: 240px;
-  --cbg-chat-h: 104px;
+  --cbg-reserve: 0px;   /* width kept for the right column */
+  --cbg-chat-h: 104px;  /* chat height under the map */
+  --cbg-col-gap: 0.5rem;
+  --cbg-gap: 0.75rem;
+  --cbg-pad: 0.5rem;
   height: 100dvh;
   display: grid;
-  grid-template-columns: var(--cbg-left-w) minmax(0, auto) minmax(var(--cbg-right-min), 1fr);
-  gap: 0.75rem;
-  padding: 0.5rem;
+  grid-template-columns: var(--cbg-left-w) minmax(0, 1fr);
+  gap: var(--cbg-gap);
+  padding: var(--cbg-pad);
+  padding-left: max(var(--cbg-pad), env(safe-area-inset-left));
+  padding-right: max(var(--cbg-pad), env(safe-area-inset-right));
   overflow: hidden;
 }
+.cbg-wide--panel { --cbg-reserve: 260px; grid-template-columns: var(--cbg-left-w) minmax(0, auto) minmax(var(--cbg-reserve), 1fr); }
+.cbg-wide--sidechat { --cbg-reserve: 150px; --cbg-chat-h: 0px; --cbg-col-gap: 0px; grid-template-columns: var(--cbg-left-w) minmax(0, auto) minmax(var(--cbg-reserve), 1fr); }
 .cbg-wide-left { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 0; padding-bottom: 0.25rem; }
 .cbg-wide-left-spacer { height: 3.5rem; flex-shrink: 0; }
 .cbg-wide-center { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; }
 .cbg-wide-column {
-  display: flex; flex-direction: column; gap: 0.5rem;
-  width: min(calc((100dvh - var(--cbg-chat-h) - 1.5rem) * 1.3333), calc(100vw - var(--cbg-left-w) - var(--cbg-right-min) - 2.5rem));
+  display: flex; flex-direction: column; gap: var(--cbg-col-gap);
+  width: min(
+    calc((100dvh - var(--cbg-chat-h) - var(--cbg-col-gap) - 2 * var(--cbg-pad)) * 1.3333),
+    calc(100vw - var(--cbg-left-w) - var(--cbg-reserve) - 2 * var(--cbg-pad) - 2 * var(--cbg-gap) - env(safe-area-inset-left) - env(safe-area-inset-right))
+  );
 }
 .cbg-wide-right { height: 100%; min-height: 0; }
 @media (orientation: landscape) and (max-height: 520px) {
-  .cbg-wide { --cbg-left-w: 124px; --cbg-right-min: 200px; --cbg-chat-h: 78px; gap: 0.5rem; padding: 0.35rem; }
+  .cbg-wide { --cbg-left-w: 124px; --cbg-chat-h: 78px; --cbg-gap: 0.5rem; --cbg-pad: 0.35rem; }
+  .cbg-wide--sidechat { --cbg-chat-h: 0px; }
   .cbg-wide-left-spacer { height: 2.9rem; }
   .cbg-wide .cbg-tool { width: 40px; height: 40px; }
   .cbg-wide .cbg-chat-bar { scrollbar-width: none; }
 }
+
+/* ── inventory drawer (touch screens and narrow windows): opens only when a player is tapped ─────────── */
+.cbg-drawer-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.45); border: 0; cursor: default; }
+.cbg-drawer {
+  position: fixed; z-index: 41;
+  top: max(0.35rem, env(safe-area-inset-top));
+  bottom: max(0.35rem, env(safe-area-inset-bottom));
+  right: max(0.35rem, env(safe-area-inset-right));
+  width: min(320px, 46vw);
+  animation: cbg-drawer-in 0.22s ease-out;
+}
+.cbg-drawer--bottom {
+  top: auto; left: 0.5rem; right: 0.5rem; bottom: max(0.5rem, env(safe-area-inset-bottom));
+  width: auto; max-width: 28rem; max-height: 62dvh; margin: 0 auto;
+  animation-name: cbg-sheet-in;
+}
+@keyframes cbg-drawer-in { from { transform: translateX(105%); } to { transform: none; } }
+@keyframes cbg-sheet-in { from { transform: translateY(105%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cbg-drawer { animation: none; } }
 
 /* ── chat (fixed phrases and emojis) ────────────────────────────────────────────────────────────────── */
 .cbg-chat {
@@ -163,6 +197,9 @@
 }
 .cbg-chat--wide { height: var(--cbg-chat-h); }
 .cbg-chat--narrow { height: 132px; }
+.cbg-chat--side { height: 100%; }
+.cbg-chat--side .cbg-chat-bar { flex-wrap: wrap; white-space: normal; overflow: hidden auto; max-height: 58%; align-content: flex-start; }
+.cbg-chat--side .cbg-chip { min-height: 28px; padding: 0 6px; font-size: 10px; }
 .cbg-chat-list { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 8px; }
 .cbg-chat-bar {
   display: flex; align-items: center; gap: 4px; flex-shrink: 0;

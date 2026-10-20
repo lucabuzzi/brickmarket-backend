@@ -2715,12 +2715,6 @@
         "flavour": "I crediti servono per partecipare ai puzzle della Skill Zone."
       }
     },
-    "easter_eggs": {
-      "pond_secret": "✨ Qualcosa luccica sul fondo del laghetto… una carta Secret Rare?",
-      "slab_left_lore": "💎 Lastra gradata 10: centratura, angoli, bordi e superficie perfetti.",
-      "slab_right_lore": "🧱 Leggenda della piazza: un mattoncino 2x4 d'oro massiccio. Nessuno l'ha mai visto.",
-      "duel_west_lore": "⚔️ Tavolo da torneo: qui si è deciso un top deck al terzo turno supplementare!"
-    },
     "chat": {
       "title": "Chat della piazza",
       "say": "Frasi veloci",
