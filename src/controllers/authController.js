@@ -166,11 +166,9 @@ async function forgotPasswordHandler(req, res) {
 
   try {
     await authService.requestPasswordReset(value.email);
-    // Risposta sempre identica, a prescindere dall'esistenza dell'account.
-    res.json({ message: "Se l'email esiste, riceverai un link per reimpostare la tua password." });
+    res.json({ message: 'Ti abbiamo inviato un link per reimpostare la tua password.' });
   } catch (err) {
-    console.error('ERRORE FORGOT PASSWORD:', err);
-    res.status(500).json({ error: 'Errore interno nel processo di reset.' });
+    handleAuthError(res, err, 'Errore interno nel processo di reset.');
   }
 }
 

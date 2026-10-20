@@ -211,8 +211,10 @@ async function login(identifier, password, ip, userAgent) {
 async function requestPasswordReset(email) {
   const user = await userRepository.findByEmail(email);
   if (!user) {
-    // Prevenzione enumerazione account: nessun segnale al chiamante.
-    return;
+    // Scelta di prodotto: l'utente deve sapere che l'indirizzo non è registrato
+    // (altrimenti attende una mail che non arriverà). Accetta l'enumerazione degli
+    // account; la rotta resta protetta da authRateLimit.
+    throw new AuthError(404, 'Nessun account CardBrix è associato a questo indirizzo email.');
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
