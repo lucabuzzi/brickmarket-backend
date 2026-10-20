@@ -5,10 +5,12 @@
 //   client -> server  { t: 'hello', token, visible }     first message, within HELLO_TIMEOUT_MS
 //                     { t: 'move', x, y, d, m }           own position (d = down|up|right|left, m = walking)
 //                     { t: 'visible', v }                 show / hide me in the plaza
+//                     { t: 'say', k }                     say a fixed phrase / emoji (client/src/config/plazaPhrases.json)
 //   server -> client  { t: 'welcome', you, players }      after a valid hello: who is already there
 //                     { t: 'join', p } / { t: 'leave', id }
 //                     { t: 'moves', list }                batched every TICK_MS, never includes the receiver
 //                     { t: 'correct', x, y }              a move was impossible: snap back here
+//                     { t: 'said', id, u, k }             someone (also the sender) said phrase k
 // Close codes: 4001 missing/invalid hello, 4002 replaced by a newer connection of the same account,
 //              4003 account not allowed (disabled / unknown).
 const WebSocket = require('ws');
@@ -66,6 +68,13 @@ function createPlaza({ verifyToken, loadUser, room = new PlazaRoom(), tickMs = 1
         if (room.move(userId, msg) === 'rejected') {
           const p = room.get(userId);
           send(ws, { t: 'correct', x: p.x, y: p.y });
+        }
+      } else if (msg.t === 'say') {
+        if (room.say(userId, msg.k) === 'ok') {
+          const p = room.get(userId);
+          const said = { t: 'said', id: userId, u: p.username, k: msg.k };
+          broadcast(said, userId);
+          send(ws, said); // the sender sees their own message too
         }
       } else if (msg.t === 'visible') {
         const r = room.setVisible(userId, msg.v);

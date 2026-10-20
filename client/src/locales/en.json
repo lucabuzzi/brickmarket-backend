@@ -2620,7 +2620,9 @@
       "back": "Back to the plaza",
       "full_profile": "Full profile",
       "not_found": "This player no longer exists.",
-      "error": "Could not load the inventory. Please try again shortly."
+      "error": "Could not load the inventory. Please try again shortly.",
+      "panel_empty": "Tap a player in the plaza to see their inventory.",
+      "panel_full": "Open full inventory"
     },
     "places_info": {
       "listings": {
@@ -2654,6 +2656,39 @@
       "slab_left_lore": "💎 Graded slab 10: perfect centring, corners, edges and surface.",
       "slab_right_lore": "🧱 Plaza legend: a solid gold 2x4 brick. Nobody has ever seen it.",
       "duel_west_lore": "⚔️ Tournament table: a top deck in the third extra turn was decided right here!"
+    },
+    "chat": {
+      "title": "Plaza chat",
+      "say": "Quick phrases",
+      "empty": "No messages yet. Say hi to the plaza!",
+      "hidden_note": "You are hidden: make your character visible to talk in the plaza.",
+      "phrases": {
+        "hello": "Hi! 👋",
+        "nice_collection": "Nice collection!",
+        "see_my_listings": "Check my listings",
+        "good_luck": "Good luck!",
+        "gg": "Well played!",
+        "thanks": "Thanks!",
+        "wow": "Wow!",
+        "bye": "See you!"
+      },
+      "emoji": {
+        "thumbs_up": "Thumbs up",
+        "fire": "Fire",
+        "star": "Star",
+        "dragon": "Dragon",
+        "cards": "Cards",
+        "brick": "Brick",
+        "laugh": "Laugh",
+        "heart": "Heart"
+      }
+    },
+    "dpad": {
+      "label": "Movement controls",
+      "up": "Up",
+      "down": "Down",
+      "left": "Left",
+      "right": "Right"
     }
   }
 }

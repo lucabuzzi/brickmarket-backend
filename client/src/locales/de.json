@@ -2620,7 +2620,9 @@
       "back": "Zurück zum Platz",
       "full_profile": "Ganzes Profil",
       "not_found": "Diesen Spieler gibt es nicht mehr.",
-      "error": "Das Inventar konnte nicht geladen werden. Bitte versuche es gleich noch einmal."
+      "error": "Das Inventar konnte nicht geladen werden. Bitte versuche es gleich noch einmal.",
+      "panel_empty": "Tippe auf einen Spieler auf dem Platz, um sein Inventar zu sehen.",
+      "panel_full": "Ganzes Inventar öffnen"
     },
     "places_info": {
       "listings": {
@@ -2654,6 +2656,39 @@
       "slab_left_lore": "💎 Gegradete 10: perfekte Zentrierung, Ecken, Kanten und Oberfläche.",
       "slab_right_lore": "🧱 Legende des Platzes: ein 2x4-Stein aus massivem Gold. Niemand hat ihn je gesehen.",
       "duel_west_lore": "⚔️ Turniertisch: Hier wurde ein Topdeck im dritten Extrazug entschieden!"
+    },
+    "chat": {
+      "title": "Platz-Chat",
+      "say": "Schnelle Sätze",
+      "empty": "Noch keine Nachrichten. Sag dem Platz Hallo!",
+      "hidden_note": "Du bist versteckt: Mach deine Figur sichtbar, um auf dem Platz zu sprechen.",
+      "phrases": {
+        "hello": "Hallo! 👋",
+        "nice_collection": "Schöne Sammlung!",
+        "see_my_listings": "Schau dir meine Anzeigen an",
+        "good_luck": "Viel Glück!",
+        "gg": "Gut gespielt!",
+        "thanks": "Danke!",
+        "wow": "Wow!",
+        "bye": "Bis bald!"
+      },
+      "emoji": {
+        "thumbs_up": "Daumen hoch",
+        "fire": "Feuer",
+        "star": "Stern",
+        "dragon": "Drache",
+        "cards": "Karten",
+        "brick": "Stein",
+        "laugh": "Lachen",
+        "heart": "Herz"
+      }
+    },
+    "dpad": {
+      "label": "Bewegungssteuerung",
+      "up": "Hoch",
+      "down": "Runter",
+      "left": "Links",
+      "right": "Rechts"
     }
   }
 }

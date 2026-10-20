@@ -85,6 +85,11 @@ export async function startGame({
   ]);
 
   const state = { activeDoor: null, guide: null, frozen: false, egg: null };
+  // on-screen D-pad (touch): held directions, merged with the keyboard every frame
+  const virtualKeys = { up: false, down: false, left: false, right: false };
+  // speech bubbles over the heads: id ('me' or a player id) -> { text, until }
+  const bubbles = new Map();
+  const BUBBLE_MS = 4000;
   const placeById = (id) => PLACES.find((p) => p.id === id) || null;
 
   // ground + a soft pulsing golden glow under the statue
@@ -362,6 +367,20 @@ export async function startGame({
       const w = ft.width + 6;
       k.drawRect({ pos: k.vec2(pos.x - w / 2, pos.y + 3), width: w, height: 11, color: col('#000000'), opacity: 0.6, radius: 2 });
       k.drawText({ font: FONT, text: username, size: 8, pos: k.vec2(pos.x, pos.y + 8.5), anchor: 'center', color: col('#ffffff') });
+      // speech bubbles (fixed phrases / emojis from the plaza chat) above the heads
+      const nowMs = k.time() * 1000;
+      const drawBubble = (x, footY, text) => {
+        const bw = k.formatText({ font: FONT, text, size: 7 }).width + 8;
+        const by = footY - FRAME.h * CHAR_SCALE - 14;
+        k.drawRect({ pos: k.vec2(x - bw / 2, by), width: bw, height: 11, color: col('#0b0914'), opacity: 0.88, radius: 3 });
+        k.drawTriangle({ p1: k.vec2(x - 3, by + 11), p2: k.vec2(x + 3, by + 11), p3: k.vec2(x, by + 14), color: col('#0b0914'), opacity: 0.88 });
+        k.drawText({ font: FONT, text, size: 7, pos: k.vec2(x, by + 5.5), anchor: 'center', color: col('#ffffff') });
+      };
+      for (const [bid, b] of bubbles) {
+        if (b.until < nowMs) { bubbles.delete(bid); continue; }
+        if (bid === 'me') drawBubble(pos.x, pos.y, b.text);
+        else { const r = remotes.get(bid); if (r && r.obj) drawBubble(r.x, r.y, b.text); }
+      }
       // other players: smaller, dimmer name tags
       for (const r of remotes.values()) {
         if (!r.obj) continue;
@@ -419,7 +438,10 @@ export async function startGame({
   k.onUpdate(() => {
     const dt = k.dt();
     const keys = state.frozen ? { dx: 0, dy: 0 } : keyVector({
-      left: down('left', 'a'), right: down('right', 'd'), up: down('up', 'w'), down: down('down', 's'),
+      left: down('left', 'a') || virtualKeys.left,
+      right: down('right', 'd') || virtualKeys.right,
+      up: down('up', 'w') || virtualKeys.up,
+      down: down('down', 's') || virtualKeys.down,
     });
     let dx = 0;
     let dy = 0;
@@ -485,6 +507,12 @@ export async function startGame({
     addRemote,
     moveRemote,
     removeRemote,
+    /** Directions held on the on-screen D-pad: { up, down, left, right } (missing = released). */
+    setVirtualKeys(keys) {
+      for (const dir of ['up', 'down', 'left', 'right']) virtualKeys[dir] = Boolean(keys && keys[dir]);
+    },
+    /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character). */
+    showBubble(id, text) { bubbles.set(id, { text: String(text), until: k.time() * 1000 + BUBBLE_MS }); },
     /** The server refused a move: snap back to where it says we are. */
     setPosition(x, y) { pos = { x, y }; target = null; },
     destroy() {

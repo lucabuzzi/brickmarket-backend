@@ -163,3 +163,22 @@ describe('one connection per account', () => {
     expect(b2.readyState).toBe(WebSocket.OPEN);
   });
 });
+
+describe('chat over the socket', () => {
+  test('a phrase reaches the others and echoes back to the sender, with the sender name', async () => {
+    const a = await joined('tok-a');
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'say', k: 'hello' });
+    expect(await waitFor(a, (m) => m.t === 'said')).toEqual({ t: 'said', id: 'b', u: 'bob', k: 'hello' });
+    expect(await waitFor(b, (m) => m.t === 'said')).toEqual({ t: 'said', id: 'b', u: 'bob', k: 'hello' });
+  });
+
+  test('free text is dropped silently', async () => {
+    const a = await joined('tok-a');
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'say', k: 'compra fuori dal sito: 333 1234567' });
+    await new Promise((r) => setTimeout(r, 80));
+    expect(a.inbox.some((m) => m.t === 'said')).toBe(false);
+    expect(b.readyState).toBe(WebSocket.OPEN);
+  });
+});
