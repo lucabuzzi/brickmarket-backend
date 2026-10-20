@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Pencil, Users, X } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Pencil, Smartphone, Users, X } from 'lucide-react';
 import DragonView from '../components/DragonView';
 import AvatarPreview from '../components/AvatarPreview';
 import usePlaza from '../usePlaza';
@@ -51,6 +51,46 @@ function TutorialCard({ step, state, place, goSite, dispatch }) {
   );
 }
 
+// A phone held upright (touch screen, narrow, portrait): the plaza is much bigger in landscape.
+const PORTRAIT_PHONE = '(pointer: coarse) and (orientation: portrait) and (max-width: 767px)';
+const ROTATE_DISMISSED_KEY = 'cardbrix_game_rotate_dismissed';
+
+function usePortraitPhone() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(PORTRAIT_PHONE);
+      mq.addEventListener('change', onChange);
+      return () => mq.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia(PORTRAIT_PHONE).matches,
+    () => false,
+  );
+}
+
+/** "Turn your phone" card, shown once per visit on a phone held upright; it goes away by itself in landscape. */
+function RotateHint({ onDismiss }) {
+  const { t } = useTranslation();
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-6" role="dialog" aria-modal="true" aria-labelledby="cbg-rotate-title">
+      <div className="cbg-panel cbg-card-enter w-full max-w-xs p-5 text-center">
+        <Smartphone className="cbg-rotate-phone mx-auto h-12 w-12 text-[#22d3ee]" aria-hidden />
+        <h2 id="cbg-rotate-title" className="cbg-pixel mt-4 text-sm uppercase text-white">{t('game.world.rotate_title')}</h2>
+        <p className="mt-3 text-sm leading-relaxed text-white/75">{t('game.world.rotate_text')}</p>
+        <button type="button" className="cbg-btn cbg-btn--ghost mt-5 w-full" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", textTransform: 'none', fontSize: '0.95rem', fontWeight: 800 }} onClick={onDismiss}>{t('game.world.rotate_dismiss')}</button>
+      </div>
+    </div>
+  );
+}
+
+/** Small square icon button that sits on the map. */
+function ToolButton({ label, pressed, onClick, children }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label} title={label} aria-pressed={pressed} className="cbg-tool">
+      {children}
+    </button>
+  );
+}
+
 /** Card of another player of the plaza, shown when their character is tapped. */
 function PlayerCard({ player, onClose, onInventory }) {
   const { t } = useTranslation();
@@ -83,6 +123,14 @@ export default function WorldScreen({ avatar, onEdit }) {
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [selected, setSelected] = useState(null); // public info of the tapped player
   const [egg, setEgg] = useState(null); // easter egg message currently shown (id)
+  const portraitPhone = usePortraitPhone();
+  const [rotateDismissed, setRotateDismissed] = useState(() => {
+    try { return sessionStorage.getItem(ROTATE_DISMISSED_KEY) === '1'; } catch { return false; }
+  });
+  const dismissRotate = () => {
+    setRotateDismissed(true);
+    try { sessionStorage.setItem(ROTATE_DISMISSED_KEY, '1'); } catch { /* blocked */ }
+  };
   const plaza = usePlaza({ gameRef, ready: status === 'ready' });
   // the scene is created once; it reaches the (stable) plaza callbacks through refs
   const plazaRef = useRef(plaza);
@@ -182,8 +230,9 @@ export default function WorldScreen({ avatar, onEdit }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-full max-w-[980px] flex-col justify-center px-3 pb-6 pt-20">
-      <div className="relative mx-auto" style={{ width: 'min(100%, calc((100dvh - 13rem) * 1.3333))' }}>
+    <div className="cbg-world mx-auto flex min-h-full max-w-[980px] flex-col justify-center px-3 pb-6 pt-20">
+      {portraitPhone && !rotateDismissed && <RotateHint onDismiss={dismissRotate} />}
+      <div className="cbg-stage-wrap relative mx-auto">
       <div className="cbg-panel relative w-full overflow-hidden bg-[#0b1a12]" style={{ aspectRatio: '4 / 3' }}>
         <div ref={hostRef} className="h-full w-full" />
         {status === 'loading' && <div className="cbg-pixel absolute inset-0 flex items-center justify-center text-xs text-white/70">{t('game.world.loading')}</div>}
@@ -201,6 +250,16 @@ export default function WorldScreen({ avatar, onEdit }) {
             {plaza.status === 'online' ? t('game.plaza.online', { count: plaza.count })
               : plaza.status === 'replaced' ? t('game.plaza.replaced')
                 : plaza.status === 'connecting' ? t('game.plaza.connecting') : t('game.plaza.offline')}
+          </div>
+        )}
+
+        {status === 'ready' && (
+          <div className="absolute left-2 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-2 sm:left-3" role="toolbar" aria-label={t('game.world.toolbar_label')}>
+            <ToolButton label={t('game.world.tutorial_button')} onClick={replay}><GraduationCap className="h-5 w-5" aria-hidden /></ToolButton>
+            <ToolButton label={t('game.creator.edit')} onClick={onEdit}><Pencil className="h-5 w-5" aria-hidden /></ToolButton>
+            <ToolButton label={plaza.visible ? t('game.plaza.visible_on') : t('game.plaza.visible_off')} pressed={plaza.visible} onClick={() => plaza.setVisible(!plaza.visible)}>
+              {plaza.visible ? <Eye className="h-5 w-5" aria-hidden /> : <EyeOff className="h-5 w-5 text-[#ff7a5c]" aria-hidden />}
+            </ToolButton>
           </div>
         )}
 
@@ -236,24 +295,13 @@ export default function WorldScreen({ avatar, onEdit }) {
       )}
       </div>
 
-      <p className="mt-3 text-center text-xs text-white/50">{t('game.world.hint')}</p>
+      <p className="cbg-world-hint mt-3 text-center text-xs text-white/50">{t('game.world.hint')}</p>
 
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <button type="button" className="cbg-btn cbg-btn--ghost" onClick={replay}>{t('game.world.tutorial_button')}</button>
-        <button type="button" className="cbg-btn cbg-btn--ghost" onClick={onEdit}><Pencil className="h-4 w-4" aria-hidden /> {t('game.creator.edit')}</button>
-        <button type="button" className="cbg-btn cbg-btn--ghost" aria-pressed={plaza.visible} onClick={() => plaza.setVisible(!plaza.visible)}>
-          {plaza.visible ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
-          {plaza.visible ? t('game.plaza.visible_on') : t('game.plaza.visible_off')}
-        </button>
-      </div>
-
-      <ul className="mt-5 flex flex-wrap justify-center gap-2" aria-label="CardBrix">
+      {/* The canvas is not readable by screen readers: the sections stay reachable as plain links for them. */}
+      <ul className="sr-only" aria-label="CardBrix">
         {PLACES.filter((p) => p.path).map((p) => (
           <li key={p.id}>
-            <Link to={navTo(p.path)} className="inline-flex min-h-11 items-center gap-2 border-2 border-white/15 px-4 text-sm font-bold text-white transition hover:bg-white/10">
-              <span className="h-2.5 w-2.5" style={{ background: p.color }} aria-hidden />
-              {labels[p.id]}
-            </Link>
+            <Link to={navTo(p.path)}>{labels[p.id]}</Link>
           </li>
         ))}
       </ul>

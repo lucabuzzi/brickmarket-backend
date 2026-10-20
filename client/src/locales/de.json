@@ -2556,7 +2556,11 @@
       "hint": "Tippe oder klicke auf die Karte, um zu laufen, oder nutze die Pfeiltasten / WASD. Vor einem Gebäude drückst du die Eingabetaste.",
       "tutorial_button": "Tutorial",
       "objective": "Ziel: erreiche {{place}}",
-      "leave": "Zurück zur Seite"
+      "leave": "Zurück zur Seite",
+      "rotate_title": "Dreh dein Handy",
+      "rotate_text": "Im Querformat ist der Platz viel größer und es spielt sich besser.",
+      "rotate_dismiss": "So weiterspielen",
+      "toolbar_label": "Spielsteuerung"
     },
     "tutorial": {
       "next": "Weiter",

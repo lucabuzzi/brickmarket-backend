@@ -72,8 +72,8 @@ export default function GamePage() {
 
   return (
     <div className="cbg-root">
-      <Link to="/" className="cbg-pixel fixed left-3 top-3 z-50 inline-flex min-h-11 items-center gap-2 border-4 border-black bg-[#1d1930] px-3 text-[0.6rem] uppercase text-white transition hover:brightness-125">
-        <ArrowLeft className="h-4 w-4" aria-hidden /> {t('game.back_to_site')}
+      <Link to="/" aria-label={t('game.back_to_site')} className="cbg-back cbg-pixel fixed left-3 top-3 z-50 inline-flex min-h-11 min-w-11 items-center justify-center gap-2 border-4 border-black bg-[#1d1930] px-3 text-[0.6rem] uppercase text-white transition hover:brightness-125">
+        <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="cbg-back-label">{t('game.back_to_site')}</span>
       </Link>
       {screen}
     </div>

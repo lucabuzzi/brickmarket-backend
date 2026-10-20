@@ -2620,7 +2620,11 @@
       "hint": "Tocca o clicca la mappa per camminare, oppure usa le frecce / WASD. Davanti a un edificio premi Invio.",
       "tutorial_button": "Tutorial",
       "objective": "Obiettivo: raggiungi {{place}}",
-      "leave": "Torna al sito"
+      "leave": "Torna al sito",
+      "rotate_title": "Gira il telefono",
+      "rotate_text": "In orizzontale la piazza è molto più grande e si gioca meglio.",
+      "rotate_dismiss": "Continua così",
+      "toolbar_label": "Comandi del gioco"
     },
     "tutorial": {
       "next": "Avanti",
