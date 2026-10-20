@@ -2556,7 +2556,11 @@
       "hint": "Tap or click the map to walk, or use the arrow keys / WASD. In front of a building press Enter.",
       "tutorial_button": "Tutorial",
       "objective": "Goal: reach {{place}}",
-      "leave": "Back to the site"
+      "leave": "Back to the site",
+      "rotate_title": "Turn your phone",
+      "rotate_text": "In landscape the plaza is much bigger and easier to play.",
+      "rotate_dismiss": "Keep it like this",
+      "toolbar_label": "Game controls"
     },
     "tutorial": {
       "next": "Next",

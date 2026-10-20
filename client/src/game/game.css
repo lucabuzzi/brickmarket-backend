@@ -87,3 +87,42 @@
 @keyframes cbg-glow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 .cbg-victory { color: #ffd23f; text-shadow: 3px 3px 0 #000, 0 0 18px rgba(255, 210, 63, 0.7); }
 @media (prefers-reduced-motion: reduce) { .cbg-dragon-float, .cbg-dragon-glow { animation: none; } }
+
+/* world screen: the map takes the height the page has; on a phone in landscape it fills the screen */
+.cbg-stage-wrap { width: min(100%, calc((100dvh - 9rem) * 1.3333)); }
+@media (orientation: landscape) and (max-height: 520px) {
+  .cbg-world { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .cbg-stage-wrap { width: min(100%, calc((100dvh - 1rem) * 1.3333)); }
+  .cbg-world-hint { display: none; }
+}
+
+/* small square buttons sitting on the map */
+.cbg-tool {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  border: 2px solid #000; background: rgba(20, 17, 31, 0.9); color: #fff;
+  box-shadow: 0 3px 0 0 #000; cursor: pointer;
+  transition: transform 0.08s steps(2), filter 0.1s;
+}
+.cbg-tool:hover { filter: brightness(1.25); }
+.cbg-tool:active { transform: translateY(2px); box-shadow: 0 1px 0 0 #000; }
+
+/* "turn your phone" icon */
+.cbg-rotate-phone { animation: cbg-rotate 2.2s ease-in-out infinite; }
+@keyframes cbg-rotate { 0%, 25% { transform: rotate(0deg); } 50%, 75% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) { .cbg-rotate-phone { animation: none; transform: rotate(-90deg); } }
+
+/* phone in landscape: the "back to the site" button shrinks to its arrow so it does not cover the map */
+@media (orientation: landscape) and (max-height: 520px) {
+  .cbg-back { left: 0.5rem; top: 0.5rem; padding: 0; }
+  .cbg-back-label { display: none; }
+}
+
+/* phone in landscape: the title screen fits without scrolling (smaller dragon, tighter spacing) */
+@media (orientation: landscape) and (max-height: 520px) {
+  .cbg-title { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .cbg-title canvas { width: 104px !important; height: 96px !important; }
+  .cbg-title h1 { margin-top: 0.25rem; font-size: 1.6rem; }
+  .cbg-title p { margin-top: 0.25rem; }
+  .cbg-title .cbg-btn { margin-top: 0.9rem; }
+}

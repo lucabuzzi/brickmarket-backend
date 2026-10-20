@@ -2564,7 +2564,11 @@
       "hint": "Touchez ou cliquez sur la carte pour marcher, ou utilisez les flèches / WASD. Devant un bâtiment, appuyez sur Entrée.",
       "tutorial_button": "Tutoriel",
       "objective": "Objectif : rejoindre {{place}}",
-      "leave": "Retour au site"
+      "leave": "Retour au site",
+      "rotate_title": "Tournez votre téléphone",
+      "rotate_text": "À l'horizontale, la place est bien plus grande et on joue mieux.",
+      "rotate_dismiss": "Continuer ainsi",
+      "toolbar_label": "Commandes du jeu"
     },
     "tutorial": {
       "next": "Suivant",

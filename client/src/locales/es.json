@@ -2556,7 +2556,11 @@
       "hint": "Toca o haz clic en el mapa para caminar, o usa las flechas / WASD. Frente a un edificio pulsa Intro.",
       "tutorial_button": "Tutorial",
       "objective": "Objetivo: llega a {{place}}",
-      "leave": "Volver al sitio"
+      "leave": "Volver al sitio",
+      "rotate_title": "Gira el móvil",
+      "rotate_text": "En horizontal la plaza es mucho más grande y se juega mejor.",
+      "rotate_dismiss": "Seguir así",
+      "toolbar_label": "Controles del juego"
     },
     "tutorial": {
       "next": "Siguiente",

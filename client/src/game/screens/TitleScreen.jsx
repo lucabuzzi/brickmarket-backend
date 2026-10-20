@@ -23,7 +23,7 @@ export default function TitleScreen({ onStart, busy }) {
   }, [onStart]);
 
   return (
-    <div className="relative flex min-h-full flex-col items-center justify-center px-4 py-24 text-center">
+    <div className="cbg-title relative flex min-h-full flex-col items-center justify-center px-4 py-24 text-center">
       <div className="cbg-bricks" aria-hidden>
         {BRICKS.map((b) => (
           <span key={b.left + b.top} className="cbg-brick" style={{ left: b.left, top: b.top, background: b.c, '--r': b.r, animationDelay: b.d }} />
