@@ -23,6 +23,11 @@ const PORTRAIT_PHONE = '(pointer: coarse) and (orientation: portrait) and (max-w
 // Wide screens (desktop, tablets in landscape, phones in landscape) use the 3-column layout: controls on the
 // left band, map + chat in the middle, the inventory of the tapped player on the right band.
 const WIDE = '(min-width: 1024px) and (min-height: 560px), (orientation: landscape) and (max-height: 520px) and (min-width: 640px)';
+// Only a wide desktop with a mouse keeps the inventory as a fixed right column; every touch screen (phones,
+// tablets, touch laptops) and narrower window opens it as a drawer when a player is tapped.
+const PANEL_COLUMN = '(min-width: 1280px) and (min-height: 560px) and (hover: hover) and (pointer: fine)';
+// Phones in landscape: too short for the chat under the map, so it moves beside it.
+const SHORT_LANDSCAPE = '(orientation: landscape) and (max-height: 520px)';
 const ROTATE_DISMISSED_KEY = 'cardbrix_game_rotate_dismissed';
 
 function useMedia(query) {
@@ -118,9 +123,10 @@ export default function WorldScreen({ avatar, onEdit }) {
   const [door, setDoor] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [selected, setSelected] = useState(null); // public info of the tapped player ({ u, a, ... })
-  const [egg, setEgg] = useState(null); // easter egg message currently shown (id)
   const portraitPhone = useMedia(PORTRAIT_PHONE);
   const wide = useMedia(WIDE);
+  const panelColumn = useMedia(PANEL_COLUMN);
+  const shortLandscape = useMedia(SHORT_LANDSCAPE);
   const [rotateDismissed, setRotateDismissed] = useState(() => {
     try { return sessionStorage.getItem(ROTATE_DISMISSED_KEY) === '1'; } catch { return false; }
   });
@@ -175,7 +181,6 @@ export default function WorldScreen({ avatar, onEdit }) {
           onEnterRequest: (id) => { const p = placeById(id); if (p) goSite(p); },
           onLocalMove: (move) => plazaRef.current.reportMove(move),
           onPlayerTap: (id) => setSelected(plazaRef.current.playerInfo(id)),
-          onEasterEgg: (id) => { if (id) setEgg(id); },
         });
         if (cancelled) { game.destroy(); return; }
         gameRef.current = game;
@@ -195,13 +200,6 @@ export default function WorldScreen({ avatar, onEdit }) {
     // The scene restarts only when the character itself changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar, user?.username]);
-
-  // an easter egg message stays up for a few seconds
-  useEffect(() => {
-    if (!egg) return undefined;
-    const id = setTimeout(() => setEgg(null), 4500);
-    return () => clearTimeout(id);
-  }, [egg]);
 
   // keep the scene in sync with the tutorial: guide arrow + frozen while a card is open
   useEffect(() => {
@@ -228,6 +226,15 @@ export default function WorldScreen({ avatar, onEdit }) {
   const near = !tut.active || tut.phase === 'walk' ? placeById(door) : null;
   const goal = tut.active && tut.phase === 'walk' ? placeById(target) : null;
   const setVirtualKeys = useCallback((keys) => gameRef.current?.setVirtualKeys(keys), []);
+  const drawer = !(wide && panelColumn);
+
+  // Esc closes the inventory drawer
+  useEffect(() => {
+    if (!selected || !drawer) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setSelected(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, drawer]);
 
   function replay() {
     try { clearDone(window.localStorage, user?.id); } catch { /* blocked */ }
@@ -267,12 +274,6 @@ export default function WorldScreen({ avatar, onEdit }) {
 
       {status === 'ready' && !wide && toolbar}
 
-      {egg && (
-        <div className="cbg-card-enter absolute left-1/2 top-9 z-20 w-[min(92%,360px)] -translate-x-1/2 border-2 border-black bg-[#14111f]/95 px-3 py-2 text-center text-xs leading-snug text-white sm:top-14 sm:border-4 sm:text-sm" role="status">
-          {t(`game.easter_eggs.${egg}`)}
-        </div>
-      )}
-
       {near?.path && !(tut.active && tut.phase === 'explain') && (
         <div className="cbg-panel cbg-card-enter absolute bottom-2 left-1/2 z-10 w-[min(94%,380px)] -translate-x-1/2 p-2.5 text-center sm:bottom-3 sm:p-3" style={{ borderColor: near.color }}>
           <p className="cbg-pixel text-[0.55rem] uppercase sm:text-xs" style={{ color: near.color }}>{t(`game.places_info.${near.id}.title`)}</p>
@@ -290,8 +291,17 @@ export default function WorldScreen({ avatar, onEdit }) {
     </div>
   );
 
+  const sideChat = wide && !panelColumn && shortLandscape;
   const chat = (
-    <ChatPanel messages={plaza.messages} onSay={plaza.say} cooldown={plaza.cooldown} canSpeak={plaza.visible && plaza.status === 'online'} className={wide ? 'cbg-chat--wide' : 'cbg-chat--narrow'} />
+    <ChatPanel messages={plaza.messages} onSay={plaza.say} cooldown={plaza.cooldown} canSpeak={plaza.visible && plaza.status === 'online'} className={sideChat ? 'cbg-chat--side' : wide ? 'cbg-chat--wide' : 'cbg-chat--narrow'} />
+  );
+
+  // the inventory of the tapped player as a drawer (from the right in landscape, from the bottom in portrait)
+  const inventoryDrawer = selected && (
+    <>
+      <button type="button" className="cbg-drawer-backdrop" aria-label={t('game.plaza.close')} onClick={() => setSelected(null)} />
+      <InventoryPanel player={selected} onClose={() => setSelected(null)} className={wide ? 'cbg-drawer' : 'cbg-drawer cbg-drawer--bottom'} />
+    </>
   );
 
   // The canvas is not readable by screen readers: the sections stay reachable as plain links for them.
@@ -303,7 +313,7 @@ export default function WorldScreen({ avatar, onEdit }) {
 
   if (wide) {
     return (
-      <div className="cbg-wide">
+      <div className={`cbg-wide ${panelColumn ? 'cbg-wide--panel' : sideChat ? 'cbg-wide--sidechat' : 'cbg-wide--full'}`}>
         <aside className="cbg-wide-left">
           <div className="cbg-wide-left-spacer" aria-hidden />
           {status === 'ready' && toolbar}
@@ -312,10 +322,12 @@ export default function WorldScreen({ avatar, onEdit }) {
         <main className="cbg-wide-center">
           <div className="cbg-wide-column">
             {stage}
-            {chat}
+            {!sideChat && chat}
           </div>
         </main>
-        <InventoryPanel player={selected} onClose={() => setSelected(null)} className="cbg-wide-right" />
+        {panelColumn && <InventoryPanel player={selected} onClose={() => setSelected(null)} className="cbg-wide-right" />}
+        {sideChat && <div className="cbg-wide-right">{chat}</div>}
+        {drawer && inventoryDrawer}
         {srLinks}
       </div>
     );
@@ -338,11 +350,7 @@ export default function WorldScreen({ avatar, onEdit }) {
 
       <p className="cbg-world-hint mt-3 text-center text-xs text-white/50">{t('game.world.hint')}</p>
 
-      {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-30 p-2">
-          <InventoryPanel player={selected} onClose={() => setSelected(null)} className="mx-auto max-h-[62dvh] w-full max-w-md" />
-        </div>
-      )}
+      {inventoryDrawer}
       {srLinks}
     </div>
   );

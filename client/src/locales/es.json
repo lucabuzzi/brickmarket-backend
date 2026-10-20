@@ -2651,12 +2651,6 @@
         "flavour": "Los créditos sirven para participar en los puzzles de la Skill Zone."
       }
     },
-    "easter_eggs": {
-      "pond_secret": "✨ Algo brilla en el fondo del estanque… ¿una carta Secret Rare?",
-      "slab_left_lore": "💎 Carta gradada 10: centrado, esquinas, bordes y superficie perfectos.",
-      "slab_right_lore": "🧱 Leyenda de la plaza: un ladrillo 2x4 de oro macizo. Nadie lo ha visto nunca.",
-      "duel_west_lore": "⚔️ Mesa de torneo: ¡aquí se decidió un top deck en el tercer turno extra!"
-    },
     "chat": {
       "title": "Chat de la plaza",
       "say": "Frases rápidas",

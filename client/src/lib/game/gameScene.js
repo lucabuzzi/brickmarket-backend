@@ -10,7 +10,7 @@ import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from
 import { buildDragonCanvas, DRAGON_H } from './dragonSprite';
 import {
   WORLD, SPAWN, BUILDINGS, PLACES, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
-  easterEggAt, facingFor, stepToward, keyVector,
+  facingFor, stepToward, keyVector,
 } from './gameMap';
 import { approach } from './plazaState';
 
@@ -45,13 +45,11 @@ const CLOUDS = [{ x: 60, y: 90, rx: 60, ry: 18, sp: 5 }, { x: 300, y: 200, rx: 8
  * - onEnterRequest(id): fired when the player presses Enter/Space on a door
  * - onLocalMove({ x, y, d, m }): every frame, our own position (the plaza client throttles what it sends)
  * - onPlayerTap(id): another player's character was tapped/clicked
- * - onEasterEgg(id | null): the character stepped into / out of an easter egg zone
  * The returned handle also manages the OTHER players of the plaza: addRemote / moveRemote / removeRemote,
  * and setPosition (server correction).
  */
 export async function startGame({
   canvas, sheet, username, labels, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
-  onEasterEgg = () => {},
 }) {
   const { default: kaplay } = await import('kaplay');
   const k = kaplay({
@@ -84,7 +82,7 @@ export async function startGame({
     ...BUILDINGS.map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
   ]);
 
-  const state = { activeDoor: null, guide: null, frozen: false, egg: null };
+  const state = { activeDoor: null, guide: null, frozen: false };
   // on-screen D-pad (touch): held directions, merged with the keyboard every frame
   const virtualKeys = { up: false, down: false, left: false, right: false };
   // speech bubbles over the heads: id ('me' or a player id) -> { text, until }
@@ -476,10 +474,6 @@ export async function startGame({
     const door = doorAt(pos);
     const id = door ? door.id : null;
     if (id !== state.activeDoor) { state.activeDoor = id; onDoorChange(id); }
-
-    const egg = easterEggAt(pos);
-    const eggId = egg ? egg.id : null;
-    if (eggId !== state.egg) { state.egg = eggId; onEasterEgg(eggId); }
 
     onLocalMove({ x: Math.round(pos.x * 10) / 10, y: Math.round(pos.y * 10) / 10, d: row, m: moved });
 

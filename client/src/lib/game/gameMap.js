@@ -1,6 +1,6 @@
 // "CardBrix the game": map layout and movement rules, kept free of any rendering/engine code so they are
 // unit-testable (tests/game-map.test.js). gameScene.js draws this layout with Kaplay. Every text shown to the
-// player (titles, flavour lines, easter eggs) lives in the i18n files under game.places_info / game.easter_eggs;
+// player (titles, flavour lines) lives in the i18n files under game.places_info;
 // this file only holds ids, positions and visual styles.
 import WORLD_CONFIG from '../../config/gameWorld.json';
 
@@ -108,14 +108,6 @@ export function propBox(p) {
   return null;
 }
 
-// Little lore messages that pop up when the character walks near them (texts: game.easter_eggs.<id>).
-export const EASTER_EGG_ZONES = [
-  { id: 'pond_secret', x: 104, y: 238, r: 18 },
-  { id: 'slab_left_lore', x: 166, y: 172, r: 14 },
-  { id: 'slab_right_lore', x: 314, y: 172, r: 14 },
-  { id: 'duel_west_lore', x: 122, y: 180, r: 14 },
-];
-
 export const BLOCKED = [
   ...BUILDINGS.map(({ x, y, w, h }) => ({ x, y, w, h })),
   STATUE,
@@ -166,11 +158,6 @@ export function isWalkable(pos, blocked = BLOCKED) {
 export function doorAt(pos, places = PLACES) {
   const f = footRect(pos);
   return places.find((b) => overlaps(f, b.door)) || null;
-}
-
-/** The easter egg zone the character is standing in, or null. */
-export function easterEggAt(pos, zones = EASTER_EGG_ZONES) {
-  return zones.find((z) => Math.hypot(pos.x - z.x, pos.y - z.y) <= z.r) || null;
 }
 
 /** Centre of a place's door zone: where the guide arrow points. */
