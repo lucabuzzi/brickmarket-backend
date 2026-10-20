@@ -1,0 +1,10 @@
+{
+  "_comment": "What an avatar (version 2) is made of. Read by the client (client/src/lib/game/skins.js) AND by the server (src/services/avatarConfig.js) so both agree on what is valid. `looks` are the character sheets built by scripts/build-game-skins.js; every colour part counts its options INCLUDING index 0 = 'as drawn' (no recolouring). Adding a look/colour is backward compatible; removing one invalidates saved avatars.",
+  "version": 2,
+  "looks": ["uomo_base", "uomo_cyber", "donna_base", "donna_cyber"],
+  "skin": 7,
+  "hairColor": 9,
+  "outfitColor": 9,
+  "accentColor": 9,
+  "legsColor": 9
+}

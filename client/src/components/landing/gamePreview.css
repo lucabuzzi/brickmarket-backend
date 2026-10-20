@@ -1,0 +1,93 @@
+/* Mini-scene of the "CardBrix the Game" card on the home page (see GamePreviewStage.jsx): pure CSS, scoped under .gps. */
+.gps {
+  --u: 3px; /* one pixel of the character sheet */
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.8), 0 0 60px -20px rgba(59, 130, 246, 0.6);
+  isolation: isolate;
+}
+@container (min-width: 520px) { .gps-hero, .gps-dragon { --u: 4px; } }
+.gps-sky { position: absolute; inset: 0; background: linear-gradient(#15235a 0%, #2d5bc0 38%, #7cc4ff 62%, #c9ecff 100%); }
+.gps-sky::before, .gps-sky::after { content: ''; position: absolute; border-radius: 999px; background: rgba(255, 255, 255, 0.85); height: 14px; box-shadow: 14px -8px 0 0 rgba(255, 255, 255, 0.85), 30px 0 0 0 rgba(255, 255, 255, 0.85); animation: gps-cloud 26s linear infinite; }
+.gps-sky::before { width: 40px; top: 16%; left: -20%; }
+.gps-sky::after { width: 30px; top: 30%; left: -60%; animation-duration: 38s; opacity: 0.8; }
+@keyframes gps-cloud { to { transform: translateX(260cqw); } }
+
+.gps-ground {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 52%;
+  background-color: #52b441;
+  background-image:
+    radial-gradient(circle at 50% 50%, #8be06f 0 20%, #3f9a33 22% 32%, transparent 34%),
+    linear-gradient(45deg, rgba(0, 0, 0, 0.06) 25%, transparent 25% 75%, rgba(0, 0, 0, 0.06) 75%);
+  background-size: 28px 28px, 56px 56px;
+}
+.gps-path {
+  position: absolute; left: 0; right: 0; bottom: 12%; height: 24%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 31px, rgba(154, 106, 46, 0.6) 31px 32px),
+    repeating-linear-gradient(0deg, transparent 0 15px, rgba(154, 106, 46, 0.6) 15px 16px),
+    #e8c07a;
+  border-top: 3px solid #9a6a2e;
+  border-bottom: 3px solid #9a6a2e;
+}
+.gps-brick { position: absolute; width: 34px; height: 14px; border: 2px solid #111; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.35); }
+.gps-brick::before, .gps-brick::after { content: ''; position: absolute; top: 2px; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.4); }
+.gps-brick::before { left: 5px; }
+.gps-brick::after { right: 5px; }
+
+/* the dragon statue */
+.gps-dragon { --u: 3px; position: absolute; left: 50%; bottom: 30%; transform: translateX(-50%); z-index: 2; line-height: 0; }
+@container (min-width: 520px) { .gps-dragon { transform: translateX(-50%) scale(1.35); transform-origin: bottom center; } }
+.gps-glow { position: absolute; inset: 30% -20% -6%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 210, 63, 0.55), transparent 100%); animation: gps-pulse 2.4s ease-in-out infinite; z-index: -1; }
+@keyframes gps-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.gps-flame { position: absolute; bottom: 4px; width: 12px; height: 26px; background: linear-gradient(to top, #3b82f6 0%, #93c5fd 62%, #ffffff 100%); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform-origin: bottom center; animation: gps-flicker 0.5s ease-in-out infinite alternate; }
+.gps-flame--l1 { left: -4px; }
+.gps-flame--l2 { left: 8px; height: 20px; animation-delay: 0.15s; }
+.gps-flame--r1 { right: -4px; animation-delay: 0.1s; }
+.gps-flame--r2 { right: 8px; height: 20px; animation-delay: 0.3s; }
+@keyframes gps-flicker { from { transform: scaleY(0.75) skewX(-6deg); } to { transform: scaleY(1.15) skewX(6deg); } }
+
+/* the hero: the sheet is 4x4 cells of 48x56 pixels (rows down, up, right, left); we walk the right row there and the left row back */
+.gps-hero { --u: 3px; position: absolute; left: 10px; bottom: 15%; z-index: 3; line-height: 0; }
+.gps-sprite {
+  width: calc(48 * var(--u)); height: calc(56 * var(--u));
+  background-repeat: no-repeat; image-rendering: pixelated;
+  background-size: calc(192 * var(--u)) calc(224 * var(--u));
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.25));
+  animation: gps-steps 0.64s steps(4) infinite;
+}
+.gps-sprite--right { background-position-y: calc(-112 * var(--u)); }
+.gps-sprite--left { background-position-y: calc(-168 * var(--u)); }
+@keyframes gps-steps { from { background-position-x: 0; } to { background-position-x: calc(-192 * var(--u)); } }
+.gps-hero--right { animation: gps-go 9s linear infinite; }
+.gps-hero--left { animation: gps-back 9s linear infinite; }
+@keyframes gps-go { 0% { transform: translateX(0); visibility: visible; } 49.9% { transform: translateX(calc(100cqw - 48 * var(--u) - 20px)); visibility: visible; } 50%, 100% { transform: translateX(calc(100cqw - 48 * var(--u) - 20px)); visibility: hidden; } }
+@keyframes gps-back { 0%, 49.9% { transform: translateX(calc(100cqw - 48 * var(--u) - 20px)); visibility: hidden; } 50% { transform: translateX(calc(100cqw - 48 * var(--u) - 20px)); visibility: visible; } 100% { transform: translateX(0); visibility: visible; } }
+
+/* floating coins, cards and sparkles */
+.gps-coin { position: absolute; z-index: 4; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #7a5200; background: radial-gradient(circle at 35% 30%, #fff08a, #ffd23f 55%, #d9a100); animation: gps-float 3s ease-in-out infinite, gps-spin 1.6s linear infinite; }
+@keyframes gps-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes gps-spin { 0% { transform: scaleX(1); } 50% { transform: scaleX(0.15); } 100% { transform: scaleX(1); } }
+.gps-card { position: absolute; z-index: 4; width: 20px; height: 28px; background: #fdfdf6; border: 2px solid #111; animation: gps-float 3.6s ease-in-out infinite; }
+.gps-card::after { content: ''; position: absolute; inset: 3px 3px 10px; background: var(--card); }
+.gps-spark { position: absolute; z-index: 4; width: 6px; height: 6px; background: #fff7c2; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: gps-twinkle 1.6s ease-in-out infinite; }
+.gps-spark:nth-of-type(odd) { animation-delay: 0.7s; }
+@keyframes gps-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.3); } }
+
+/* motion-sensitive visitors get a still picture: the hero stands next to the dragon */
+@media (prefers-reduced-motion: reduce) {
+  .gps *, .gps-sky::before, .gps-sky::after { animation: none !important; }
+  .gps-hero--left { visibility: hidden; }
+  .gps-hero--right { transform: translateX(calc(50cqw + 70px)); }
+  .gps-sprite { background-position-x: calc(-48 * var(--u)); }
+}
+
+/* small phones: a smaller hero and dragon so they do not cover each other */
+@container (max-width: 400px) {
+  .gps-hero { --u: 2px; bottom: 17%; }
+  .gps-dragon { transform: translateX(-50%) scale(0.8); transform-origin: bottom center; }
+}

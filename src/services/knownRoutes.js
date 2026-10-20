@@ -19,7 +19,7 @@ const STRUCTURAL_ROUTES = [
 
 const KNOWN_ROUTES = [
   '', // the home
-  'account', 'archive', 'cart', 'create-auction', 'crediti/acquista', 'crediti/converti',
+  'account', 'archive', 'cart', 'game', 'create-auction', 'crediti/acquista', 'crediti/converti',
   'forgot-password', 'login', 'my-listings', 'my-shipments', 'notifications', 'profile', 'register',
   'reset-password', 'sell', 'sell/cards', 'seller/onboarding-complete', 'seller/onboarding-retry',
   'verifica-email',
