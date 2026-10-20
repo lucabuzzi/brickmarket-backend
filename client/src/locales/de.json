@@ -2617,6 +2617,39 @@
       "full_profile": "Ganzes Profil",
       "not_found": "Diesen Spieler gibt es nicht mehr.",
       "error": "Das Inventar konnte nicht geladen werden. Bitte versuche es gleich noch einmal."
+    },
+    "places_info": {
+      "listings": {
+        "title": "Basar TCG & Bricks",
+        "subtitle": "Mint · Versiegelt",
+        "flavour": "Kaufe und verkaufe Einzelkarten, versiegelte Boxen und seltene Sets."
+      },
+      "auctions": {
+        "title": "Auktionsarena",
+        "subtitle": "Anti-Sniping: +2 Minuten",
+        "flavour": "Ein Gebot in den letzten 2 Minuten verlängert die Auktion um 2 Minuten: keine Last-Sekunden-Tricks."
+      },
+      "arena": {
+        "title": "Skill Zone Arcade",
+        "subtitle": "Puzzles mit 16 Teilen",
+        "flavour": "Setze das Puzzle so schnell wie möglich zusammen und klettere in der Rangliste."
+      },
+      "catalog": {
+        "title": "Großes Archiv",
+        "subtitle": "Karten und LEGO-Sets",
+        "flavour": "Steckbriefe zu Karten und LEGO-Sets, um zu erkennen, was du sammelst."
+      },
+      "credits": {
+        "title": "Quelle der Credits",
+        "subtitle": "Wächterdrache",
+        "flavour": "Credits dienen zur Teilnahme an den Puzzles der Skill Zone."
+      }
+    },
+    "easter_eggs": {
+      "pond_secret": "✨ Am Grund des Teichs glitzert etwas … eine Secret-Rare-Karte?",
+      "slab_left_lore": "💎 Gegradete 10: perfekte Zentrierung, Ecken, Kanten und Oberfläche.",
+      "slab_right_lore": "🧱 Legende des Platzes: ein 2x4-Stein aus massivem Gold. Niemand hat ihn je gesehen.",
+      "duel_west_lore": "⚔️ Turniertisch: Hier wurde ein Topdeck im dritten Extrazug entschieden!"
     }
   }
 }

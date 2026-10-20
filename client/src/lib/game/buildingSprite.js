@@ -4,6 +4,9 @@
 // The sign text and the auction timer digits are drawn live by the scene; this file only paints the pixels.
 export const BUILDING_PAD = 3; // the awning overhangs the walls by 3px on each side
 export const AUCTION_TIMER_BOX = { x: 58, y: 41, w: 26, h: 9 }; // coordinates inside the building box
+// Room above the building box for the roof decoration (studs, flames, antenna, glass dome) and the sign icon:
+// the canvas is this much taller and the scene draws it this much higher.
+export const ROOF_EXTRA = 12;
 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
@@ -11,10 +14,80 @@ function shade(hex, amt) {
   return `#${((1 << 24) | (f((n >> 16) & 255) << 16) | (f((n >> 8) & 255) << 8) | f(n & 255)).toString(16).slice(1)}`;
 }
 
-/** Paints building `b` ({ id, w, h, color }) with its box's top-left corner at (ox + PAD, oy). */
+/** Paints the roof decoration of `roofStyle` and the `signIcon` above a building box of width `w`. */
+function paintRoof(px, { w, color, roofStyle, signIcon }) {
+  const mid = Math.floor(w / 2);
+  if (roofStyle === 'lego_studs') {
+    for (let x = 2; x + 6 <= w; x += 10) {
+      px(x, -4, 6, 4, shade(color, -0.35));
+      px(x, -4, 6, 1, shade(color, 0.2));
+      px(x + 1, -3, 4, 2, shade(color, -0.15));
+    }
+  } else if (roofStyle === 'fire') {
+    // pixel flames along the roof
+    for (let x = 1; x + 5 <= w; x += 9) {
+      const tall = Math.floor(x / 9) % 2 === 0 ? 9 : 6;
+      for (let k = 0; k < tall; k++) {
+        const width = Math.max(1, 5 - Math.floor((k * 5) / tall));
+        px(x + Math.floor((5 - width) / 2), -1 - k, width, 1, k < tall / 3 ? '#ff5a36' : k < (2 * tall) / 3 ? '#ff9f1c' : '#ffe14d');
+      }
+    }
+  } else if (roofStyle === 'cyber_grid') {
+    // neon grid on the roof beam and an antenna with a blinking tip
+    px(-BUILDING_PAD, 3, w + 2 * BUILDING_PAD, 1, '#22d3ee');
+    for (let x = 4; x < w; x += 8) px(x, 0, 1, 8, '#22d3ee');
+    px(w - 12, -10, 1, 10, '#9ca3af');
+    px(w - 14, -11, 5, 2, '#22d3ee');
+    px(10, -6, 1, 6, '#9ca3af');
+    px(9, -7, 3, 2, '#f472b6');
+  } else if (roofStyle === 'crystal_dome') {
+    // a glass dome (half ellipse) on the middle of the roof
+    const rx = 20;
+    const ry = 11;
+    for (let y = 0; y < ry; y++) {
+      const half = Math.floor(rx * Math.sqrt(1 - ((ry - y) * (ry - y)) / (ry * ry)));
+      if (half > 0) {
+        px(mid - half, y - ry, half * 2, 1, y < 2 ? '#1e3a8a' : '#93c5fd');
+        px(mid - half, y - ry, 1, 1, '#1e3a8a');
+        px(mid + half - 1, y - ry, 1, 1, '#1e3a8a');
+      }
+    }
+    px(mid - 12, -7, 3, 4, '#e0f2fe'); // glass shine
+    px(mid - rx, -1, rx * 2, 1, '#1e3a8a');
+  }
+
+  // the sign icon, centred above the roof
+  const ix = mid - 4;
+  if (signIcon === 'booster') { // holographic booster pack
+    px(ix, -12, 8, 11, '#111111');
+    px(ix + 1, -11, 6, 9, '#a855f7');
+    px(ix + 1, -9, 6, 2, '#22d3ee');
+    px(ix + 1, -5, 6, 1, '#f472b6');
+    px(ix + 1, -11, 6, 1, '#e5e7eb');
+  } else if (signIcon === 'gavel') { // auction gavel
+    px(ix - 1, -11, 10, 4, '#111111');
+    px(ix, -10, 8, 2, '#c08a3e');
+    px(ix + 3, -7, 2, 6, '#8b5a2b');
+  } else if (signIcon === 'puzzle') { // glowing puzzle piece
+    px(ix, -9, 8, 8, '#111111');
+    px(ix + 1, -8, 6, 6, '#c084fc');
+    px(ix + 3, -11, 3, 3, '#c084fc');
+    px(ix + 7, -6, 2, 2, '#c084fc');
+    px(ix + 2, -7, 2, 1, '#f5d0fe');
+  } else if (signIcon === 'slab') { // graded card slab
+    px(ix, -12, 8, 11, '#111111');
+    px(ix + 1, -11, 6, 9, '#e5e7eb');
+    px(ix + 1, -11, 6, 2, '#ffd23f');
+    px(ix + 2, -8, 4, 5, '#3b82f6');
+  }
+}
+
+/** Paints building `b` ({ id, w, h, color, roofStyle, signIcon }) with its box's top-left corner at
+ * (ox + PAD, oy + ROOF_EXTRA); the band above holds the roof decoration. */
 export function paintBuilding(ctx, b, ox = 0, oy = 0) {
   const X = ox + BUILDING_PAD;
-  const px = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(X + x, oy + y, w, h); };
+  const Y = oy + ROOF_EXTRA;
+  const px = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(X + x, Y + y, w, h); };
   const { w, h, color } = b;
   const dark = shade(color, -0.45);
 
@@ -110,12 +183,14 @@ export function paintBuilding(ctx, b, ox = 0, oy = 0) {
       }
     }
   }
+
+  paintRoof(px, b);
 }
 
 export function buildBuildingCanvas(b, createCanvas = () => document.createElement('canvas')) {
   const canvas = createCanvas();
   canvas.width = b.w + 2 * BUILDING_PAD;
-  canvas.height = b.h;
+  canvas.height = b.h + ROOF_EXTRA;
   paintBuilding(canvas.getContext('2d'), b, 0, 0);
   return canvas;
 }

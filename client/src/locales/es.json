@@ -2617,6 +2617,39 @@
       "full_profile": "Perfil completo",
       "not_found": "Este jugador ya no existe.",
       "error": "No se pudo cargar el inventario. Inténtalo de nuevo en breve."
+    },
+    "places_info": {
+      "listings": {
+        "title": "Bazar TCG & Bricks",
+        "subtitle": "Mint · Precintados",
+        "flavour": "Compra y vende cartas sueltas, cajas precintadas y sets raros."
+      },
+      "auctions": {
+        "title": "Arena de Subastas",
+        "subtitle": "Anti-sniping: +2 minutos",
+        "flavour": "Una puja en los últimos 2 minutos alarga la subasta otros 2: nada de golpes en el último segundo."
+      },
+      "arena": {
+        "title": "Skill Zone Arcade",
+        "subtitle": "Puzzles de 16 piezas",
+        "flavour": "Recompón el puzzle lo más rápido posible y sube en la clasificación."
+      },
+      "catalog": {
+        "title": "Gran Archivo",
+        "subtitle": "Cartas y sets LEGO",
+        "flavour": "Fichas de cartas y sets LEGO para reconocer lo que coleccionas."
+      },
+      "credits": {
+        "title": "Fuente de Créditos",
+        "subtitle": "Dragón guardián",
+        "flavour": "Los créditos sirven para participar en los puzzles de la Skill Zone."
+      }
+    },
+    "easter_eggs": {
+      "pond_secret": "✨ Algo brilla en el fondo del estanque… ¿una carta Secret Rare?",
+      "slab_left_lore": "💎 Carta gradada 10: centrado, esquinas, bordes y superficie perfectos.",
+      "slab_right_lore": "🧱 Leyenda de la plaza: un ladrillo 2x4 de oro macizo. Nadie lo ha visto nunca.",
+      "duel_west_lore": "⚔️ Mesa de torneo: ¡aquí se decidió un top deck en el tercer turno extra!"
     }
   }
 }

@@ -121,3 +121,57 @@ describe('facingFor / keyVector / stepToward', () => {
     expect(Math.hypot(pos.x - target.x, pos.y - target.y)).toBeLessThan(2);
   });
 });
+
+describe('collector props, tree variants and easter eggs', () => {
+  const {
+    PROPS, propBox, EASTER_EGG_ZONES, easterEggAt, isWalkable, TREE_VARIANTS, TREES: ALL_TREES,
+  } = require('../client/src/lib/game/gameMap');
+
+  test('props have unique ids, known types and stay inside the world', () => {
+    expect(new Set(PROPS.map((p) => p.id)).size).toBe(PROPS.length);
+    for (const p of PROPS) {
+      expect(['graded_slab', 'tcg_table', 'booster_vending', 'giant_lego_brick', 'teleport_pad']).toContain(p.type);
+      expect(p.x - p.w / 2).toBeGreaterThanOrEqual(0);
+      expect(p.x + p.w / 2).toBeLessThanOrEqual(WORLD.w);
+      expect(p.y).toBeLessThanOrEqual(WORLD.h);
+    }
+  });
+
+  test('solid props block, the spawn pad does not, and no prop blocks a door or the spawn point', () => {
+    expect(propBox(PROPS.find((p) => p.id === 'spawn_pad'))).toBeNull();
+    for (const p of PROPS) {
+      const box = propBox(p);
+      if (!box) continue;
+      expect(BLOCKED).toContainEqual(box);
+      for (const place of PLACES) expect(overlaps(box, place.door)).toBe(false);
+      expect(overlaps(box, footRect(SPAWN))).toBe(false);
+    }
+  });
+
+  test('every easter egg can be reached (some walkable spot lies inside its circle)', () => {
+    for (const z of EASTER_EGG_ZONES) {
+      let found = null;
+      for (let dy = -z.r; dy <= z.r && !found; dy += 2) {
+        for (let dx = -z.r; dx <= z.r && !found; dx += 2) {
+          const p = { x: z.x + dx, y: z.y + dy };
+          if (Math.hypot(dx, dy) <= z.r && isWalkable(p)) found = p;
+        }
+      }
+      expect(found).not.toBeNull();
+      expect(easterEggAt(found).id).toBe(z.id);
+    }
+    expect(easterEggAt(SPAWN)).toBeNull();
+  });
+
+  test('every tree uses a known variant', () => {
+    for (const t of ALL_TREES) expect(TREE_VARIANTS).toContain(t.variant);
+  });
+
+  test('every shop declares its roof style, sign icon and aura colour', () => {
+    for (const b of BUILDINGS) {
+      expect(['lego_studs', 'fire', 'cyber_grid', 'crystal_dome']).toContain(b.roofStyle);
+      expect(['booster', 'gavel', 'puzzle', 'slab']).toContain(b.signIcon);
+      expect(b.auraColor).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+});

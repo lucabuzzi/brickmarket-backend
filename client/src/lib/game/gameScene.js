@@ -6,11 +6,11 @@
 // only when someone opens /game.
 import { FRAME, COLS, ROWS, IDLE_COL } from './skins';
 import { buildGroundCanvas } from './groundSprite';
-import { buildBuildingCanvas, BUILDING_PAD, AUCTION_TIMER_BOX } from './buildingSprite';
+import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from './buildingSprite';
 import { buildDragonCanvas, DRAGON_H } from './dragonSprite';
 import {
-  WORLD, SPAWN, BUILDINGS, PLACES, TREES, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
-  facingFor, stepToward, keyVector,
+  WORLD, SPAWN, BUILDINGS, PLACES, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
+  easterEggAt, facingFor, stepToward, keyVector,
 } from './gameMap';
 import { approach } from './plazaState';
 
@@ -45,11 +45,13 @@ const CLOUDS = [{ x: 60, y: 90, rx: 60, ry: 18, sp: 5 }, { x: 300, y: 200, rx: 8
  * - onEnterRequest(id): fired when the player presses Enter/Space on a door
  * - onLocalMove({ x, y, d, m }): every frame, our own position (the plaza client throttles what it sends)
  * - onPlayerTap(id): another player's character was tapped/clicked
+ * - onEasterEgg(id | null): the character stepped into / out of an easter egg zone
  * The returned handle also manages the OTHER players of the plaza: addRemote / moveRemote / removeRemote,
  * and setPosition (server correction).
  */
 export async function startGame({
   canvas, sheet, username, labels, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
+  onEasterEgg = () => {},
 }) {
   const { default: kaplay } = await import('kaplay');
   const k = kaplay({
@@ -82,7 +84,7 @@ export async function startGame({
     ...BUILDINGS.map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
   ]);
 
-  const state = { activeDoor: null, guide: null, frozen: false };
+  const state = { activeDoor: null, guide: null, frozen: false, egg: null };
   const placeById = (id) => PLACES.find((p) => p.id === id) || null;
 
   // ground + a soft pulsing golden glow under the statue
@@ -151,23 +153,121 @@ export async function startGame({
     },
   }]);
 
-  // ── trees ────────────────────────────────────────────────────────────────────
+  // ── trees: LEGO pines, cherry / gold bonsai, glowing mana trees ───────────────
+  const blossom = (base, light, shine) => {
+    rect(-2, -9, 4, 9, '#5b3a1e');
+    rect(1, -12, 5, 2, '#5b3a1e'); // a bonsai branch
+    k.drawCircle({ pos: k.vec2(-2, -17), radius: 8, color: col(base) });
+    k.drawCircle({ pos: k.vec2(6, -14), radius: 5, color: col(base) });
+    k.drawCircle({ pos: k.vec2(-4, -20), radius: 5, color: col(light) });
+    k.drawCircle({ pos: k.vec2(-6, -22), radius: 2, color: col(shine) });
+  };
+  const TREE_DRAW = {
+    bonsai_pink: () => blossom('#ec4899', '#f9a8d4', '#fde7f3'),
+    bonsai_gold: () => blossom('#ca8a04', '#facc15', '#fef9c3'),
+    lego_pine: () => {
+      rect(-2, -6, 4, 6, '#5b3a1e');
+      rect(-10, -11, 20, 5, '#14532d'); rect(-10, -11, 20, 1, '#22c55e');
+      rect(-7, -17, 14, 6, '#166534'); rect(-7, -17, 14, 1, '#4ade80');
+      rect(-4, -23, 8, 6, '#15803d'); rect(-4, -23, 8, 1, '#86efac');
+      for (const sx of [-7, -1, 5]) rect(sx, -13, 2, 2, '#4ade80');
+      rect(-2, -25, 4, 2, '#86efac');
+    },
+    mana_tree_cyan: () => mana('#0e7490', '#22d3ee', '#cffafe'),
+    mana_tree_purple: () => mana('#6b21a8', '#a855f7', '#f3e8ff'),
+  };
+  function mana(base, glow, shine) {
+    const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.5);
+    k.drawEllipse({ pos: k.vec2(0, -17), radiusX: 15, radiusY: 13, color: col(glow), opacity: 0.12 + 0.12 * pulse });
+    rect(-2, -9, 4, 9, '#3f2a1a');
+    k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col(base) });
+    k.drawCircle({ pos: k.vec2(-2, -19), radius: 6, color: col(glow) });
+    if (pulse > 0.6) rect(5, -24, 2, 2, shine);
+    if (pulse < 0.4) rect(-8, -14, 2, 2, shine);
+  }
   for (const tr of TREES) {
+    const drawTree = TREE_DRAW[tr.variant];
     k.add([k.pos(tr.x, tr.y), k.z(tr.y), {
       draw() {
         k.drawEllipse({ pos: k.vec2(0, 0), radiusX: 9, radiusY: 3, color: col('#000000'), opacity: 0.25 });
+        if (drawTree) { drawTree(); return; }
         rect(-2, -9, 4, 9, '#7a4a22');
         k.drawCircle({ pos: k.vec2(0, -17), radius: 10, color: col('#2e9a4a') });
         k.drawCircle({ pos: k.vec2(-3, -20), radius: 6, color: col('#4fc36a') });
-        k.drawCircle({ pos: k.vec2(-5, -22), radius: 2, color: col('#9ff0a8') });
       },
     }]);
   }
 
+  // ── collector props: graded slabs, duel tables, booster machines, giant bricks, spawn pad ──
+  const PROP_DRAW = {
+    graded_slab(p) {
+      rect(-7, -4, 14, 4, '#4b5563'); rect(-7, -4, 14, 1, '#9ca3af'); // pedestal
+      rect(-6, -24, 12, 20, '#111111');
+      rect(-5, -23, 10, 18, '#e5e7eb');
+      rect(-5, -23, 10, 4, p.color); // grade label
+      rect(-4, -18, 8, 11, p.cardColor); // the card
+      rect(-3, -17, 6, 4, '#fef3c7');
+      k.drawText({ font: FONT, text: '10', size: 4, pos: k.vec2(0, -21), anchor: 'center', color: col('#111111') });
+      const glint = ((k.time() * 0.6) % 2) * 14 - 7; // a shine sweeping across the case
+      if (glint > -5 && glint < 5) rect(glint, -23, 1, 18, '#ffffff', 0.7);
+    },
+    tcg_table(p) {
+      const w = p.w;
+      const h = p.h;
+      rect(-w / 2 + 2, -2, 2, 2, '#3a2a18'); rect(w / 2 - 4, -2, 2, 2, '#3a2a18'); // legs
+      rect(-w / 2, -h, w, h - 2, '#8b5a2b');
+      rect(-w / 2, -4, w, 2, '#5e3a18');
+      rect(-w / 2 + 2, -h + 2, w / 2 - 3, h - 8, p.p1Color, 0.85); // two facing play mats
+      rect(1, -h + 2, w / 2 - 3, h - 8, p.p2Color, 0.85);
+      for (const cx of [-w / 2 + 4, -w / 2 + 8, 4, 8]) rect(cx, -h + 4, 3, 4, '#fdfdf6');
+    },
+    booster_vending(p) {
+      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 3);
+      k.drawEllipse({ pos: k.vec2(0, -11), radiusX: 11, radiusY: 13, color: col(p.color), opacity: 0.1 + 0.1 * pulse });
+      rect(-7, -22, 14, 22, '#111111');
+      rect(-6, -21, 12, 20, p.color);
+      rect(-6, -21, 12, 2, '#ffffff', 0.8);
+      rect(-5, -17, 10, 9, '#0b1220'); // glass
+      for (const [x, y, c] of [[-4, -16, '#a855f7'], [-1, -16, '#22d3ee'], [2, -16, '#f472b6'], [-4, -12, '#ffd23f'], [-1, -12, '#c6ff3d'], [2, -12, '#ff5a36']]) rect(x, y, 2, 3, c);
+      rect(-2, -6, 4, 2, '#111111'); // the slot
+      rect(3, -6, 2, 2, pulse > 0.5 ? '#c6ff3d' : '#14532d'); // blinking light
+    },
+    giant_lego_brick(p) {
+      rect(-p.w / 2, -p.h, p.w, p.h, '#111111');
+      rect(-p.w / 2 + 1, -p.h + 1, p.w - 2, p.h - 2, p.color);
+      rect(-p.w / 2 + 1, -3, p.w - 2, 2, '#000000', 0.25);
+      for (const sx of [-p.w / 2 + 2, -p.w / 2 + 6, p.w / 2 - 9, p.w / 2 - 5]) rect(sx, -p.h + 2, 3, 2, '#ffffff', 0.45);
+    },
+    teleport_pad(p) {
+      const t = k.time();
+      k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: p.w / 2, radiusY: p.h / 2, color: col('#0b1220'), opacity: 0.6 });
+      for (let i = 0; i < 2; i++) {
+        const s = ((t * 0.7 + i * 0.5) % 1);
+        k.drawEllipse({ pos: k.vec2(0, -p.h / 2), radiusX: (p.w / 2) * s, radiusY: (p.h / 2) * s, color: col(p.color), opacity: 0.6 * (1 - s) });
+      }
+    },
+  };
+  for (const p of PROPS) {
+    const drawProp = PROP_DRAW[p.type];
+    if (!drawProp) continue;
+    k.add([k.pos(p.x, p.y), k.z(p.type === 'teleport_pad' ? 2 : p.y), { draw() { drawProp(p); } }]);
+  }
+
+  // a soft glow in front of each shop, in its aura colour
+  k.add([k.pos(0, 0), k.z(1), {
+    draw() {
+      const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
+      for (const b of BUILDINGS) {
+        const c = doorCentre(b);
+        k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor || b.color), opacity: 0.1 + 0.12 * pulse });
+      }
+    },
+  }]);
+
   // ── stalls (one per pillar) ──────────────────────────────────────────────────
   for (const b of BUILDINGS) {
     const label = String(labels[b.id] || b.id).toUpperCase();
-    k.add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y), k.z(b.y + b.h)]);
+    k.add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
     k.add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
       draw() {
         k.drawText({ font: FONT, text: label, size: 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
@@ -299,10 +399,10 @@ export async function startGame({
   // spot. The view is letterboxed (VIEW_W x VIEW_H scaled to fit, centred), so undo that mapping by hand.
   const onPointerDown = (e) => {
     if (state.frozen) return;
-    const rect = canvas.getBoundingClientRect();
-    const scale = Math.min(rect.width / VIEW_W, rect.height / VIEW_H);
-    const lx = (e.clientX - rect.left - (rect.width - VIEW_W * scale) / 2) / scale;
-    const ly = (e.clientY - rect.top - (rect.height - VIEW_H * scale) / 2) / scale;
+    const box = canvas.getBoundingClientRect();
+    const scale = Math.min(box.width / VIEW_W, box.height / VIEW_H);
+    const lx = (e.clientX - box.left - (box.width - VIEW_W * scale) / 2) / scale;
+    const ly = (e.clientY - box.top - (box.height - VIEW_H * scale) / 2) / scale;
     if (lx < 0 || ly < 0 || lx > VIEW_W || ly > VIEW_H) return; // on a letterbox bar
     const p = k.toWorld(k.vec2(lx, ly));
     // tapping another player opens their card instead of walking there
@@ -354,6 +454,10 @@ export async function startGame({
     const door = doorAt(pos);
     const id = door ? door.id : null;
     if (id !== state.activeDoor) { state.activeDoor = id; onDoorChange(id); }
+
+    const egg = easterEggAt(pos);
+    const eggId = egg ? egg.id : null;
+    if (eggId !== state.egg) { state.egg = eggId; onEasterEgg(eggId); }
 
     onLocalMove({ x: Math.round(pos.x * 10) / 10, y: Math.round(pos.y * 10) / 10, d: row, m: moved });
 
