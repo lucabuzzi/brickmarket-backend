@@ -2658,6 +2658,29 @@
         "body": "Ora puoi esplorare la mappa liberamente o passare al sito. Puoi rivedere il tutorial quando vuoi dal pulsante in alto."
       },
       "victory": "VITTORIA!"
+    },
+    "plaza": {
+      "online": "{{count}} in piazza",
+      "connecting": "Connessione…",
+      "offline": "Piazza offline",
+      "replaced": "Aperto in un'altra scheda",
+      "visible_on": "Visibile in piazza",
+      "visible_off": "Nascosto in piazza",
+      "view_inventory": "Vedi inventario",
+      "in_plaza": "In piazza adesso",
+      "close": "Chiudi"
+    },
+    "inventory": {
+      "kicker": "Inventario",
+      "title": "Inventario di {{username}}",
+      "selling": "In vendita",
+      "empty": "Nessun annuncio attivo in questo momento.",
+      "auction": "Asta",
+      "current_bid": "Offerta:",
+      "back": "Torna in piazza",
+      "full_profile": "Profilo completo",
+      "not_found": "Questo giocatore non esiste più.",
+      "error": "Non riesco a caricare l'inventario. Riprova tra poco."
     }
   }
 }

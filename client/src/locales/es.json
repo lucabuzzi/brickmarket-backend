@@ -2594,6 +2594,29 @@
         "body": "Ahora puedes explorar el mapa libremente o pasar al sitio. Puedes repetir el tutorial cuando quieras con el botón de arriba."
       },
       "victory": "¡VICTORIA!"
+    },
+    "plaza": {
+      "online": "{{count}} en la plaza",
+      "connecting": "Conectando…",
+      "offline": "Plaza sin conexión",
+      "replaced": "Abierto en otra pestaña",
+      "visible_on": "Visible en la plaza",
+      "visible_off": "Oculto en la plaza",
+      "view_inventory": "Ver inventario",
+      "in_plaza": "En la plaza ahora",
+      "close": "Cerrar"
+    },
+    "inventory": {
+      "kicker": "Inventario",
+      "title": "Inventario de {{username}}",
+      "selling": "En venta",
+      "empty": "Ningún anuncio activo en este momento.",
+      "auction": "Subasta",
+      "current_bid": "Puja:",
+      "back": "Volver a la plaza",
+      "full_profile": "Perfil completo",
+      "not_found": "Este jugador ya no existe.",
+      "error": "No se pudo cargar el inventario. Inténtalo de nuevo en breve."
     }
   }
 }

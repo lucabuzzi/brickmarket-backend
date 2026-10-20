@@ -1,9 +1,11 @@
 // "CardBrix the game": map layout and movement rules, kept free of any rendering/engine code so they are
 // unit-testable (tests/game-map.test.js). gameScene.js draws this layout with Kaplay.
-export const WORLD = { w: 480, h: 320 };
+import WORLD_CONFIG from '../../config/gameWorld.json';
+
+export const WORLD = { w: WORLD_CONFIG.w, h: WORLD_CONFIG.h };
 export const FOOT = { w: 8, h: 4 }; // the character's collision box, bottom-centred on its position
-export const SPAWN = { x: 240, y: 262 };
-export const WALK_SPEED = 62; // world px per second
+export const SPAWN = { ...WORLD_CONFIG.spawn };
+export const WALK_SPEED = WORLD_CONFIG.walkSpeed; // world px per second
 
 // Pillar colours (src/config/pillars.js): Annunci lime, Aste orange, Puzzle Arena violet, Catalogo blue.
 // `path` is the real page of the site the building stands for.

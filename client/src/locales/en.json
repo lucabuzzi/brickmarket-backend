@@ -2594,6 +2594,29 @@
         "body": "You can now explore the map freely or move on to the site. You can replay the tutorial any time with the button at the top."
       },
       "victory": "VICTORY!"
+    },
+    "plaza": {
+      "online": "{{count}} in the plaza",
+      "connecting": "Connecting…",
+      "offline": "Plaza offline",
+      "replaced": "Open in another tab",
+      "visible_on": "Visible in the plaza",
+      "visible_off": "Hidden in the plaza",
+      "view_inventory": "View inventory",
+      "in_plaza": "In the plaza now",
+      "close": "Close"
+    },
+    "inventory": {
+      "kicker": "Inventory",
+      "title": "{{username}}'s inventory",
+      "selling": "On sale",
+      "empty": "No active listings right now.",
+      "auction": "Auction",
+      "current_bid": "Bid:",
+      "back": "Back to the plaza",
+      "full_profile": "Full profile",
+      "not_found": "This player no longer exists.",
+      "error": "Could not load the inventory. Please try again shortly."
     }
   }
 }

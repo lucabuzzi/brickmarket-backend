@@ -43,7 +43,25 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'WELCOME', message: 'Connected to Live Hub' }));
 });
 
+// Plaza of "CardBrix the game" (/ws/game): unlike the public Live Hub above, every connection must identify
+// itself with the site's JWT, and players only ever see each other's username and character.
+const plaza = require('./src/services/gamePlazaSocket').createPlaza({
+  verifyToken: (token) => require('jsonwebtoken').verify(token, process.env.JWT_SECRET),
+  loadUser: async (userId) => {
+    const { rows } = await require('./src/db').query(
+      'SELECT id, username, avatar_config, is_active FROM users WHERE id = $1',
+      [userId]
+    );
+    return rows[0] || null;
+  },
+});
+
 server.on('upgrade', (request, socket, head) => {
+  const { pathname } = new URL(request.url, 'http://localhost');
+  if (pathname === '/ws/game') {
+    plaza.handleUpgrade(request, socket, head);
+    return;
+  }
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit('connection', ws, request);
   });
