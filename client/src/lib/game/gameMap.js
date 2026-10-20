@@ -16,7 +16,8 @@ export const WALK_SPEED = WORLD_CONFIG.walkSpeed; // world px per second
 // `path` is the real page of the site the building stands for. roofStyle / signIcon pick the roof decoration
 // drawn by buildingSprite.js; auraColor is the soft glow in front of the door.
 export const BUILDINGS = [
-  { id: 'listings', x: 28, y: 22, w: 88, h: 66, color: '#c6ff3d', path: '/annunci', roofStyle: 'lego_studs', signIcon: 'booster', auraColor: '#a3e635' },
+  // Annunci is a small castle: its gate leads into the market map (marketMap.js), where the three stalls are
+  { id: 'listings', x: 28, y: 22, w: 88, h: 66, color: '#c6ff3d', path: '/annunci', style: 'castle', roofStyle: 'castle_towers', signIcon: 'banner', auraColor: '#a3e635', travel: { to: 'market', spawn: 'gate' } },
   { id: 'auctions', x: 140, y: 22, w: 88, h: 66, color: '#ff5a36', path: '/aste', roofStyle: 'fire', signIcon: 'gavel', auraColor: '#fb923c' },
   { id: 'arena', x: 252, y: 22, w: 88, h: 66, color: '#8b5cf6', path: '/skill-zone', roofStyle: 'cyber_grid', signIcon: 'puzzle', auraColor: '#c084fc' },
   { id: 'catalog', x: 364, y: 22, w: 88, h: 66, color: '#3b82f6', path: '/catalog', roofStyle: 'crystal_dome', signIcon: 'slab', auraColor: '#60a5fa' },
@@ -117,7 +118,8 @@ export const BLOCKED = [
 ];
 export const DECOR = { statue: STATUE, pond: POND };
 
-const BOUNDS = { minX: 8, maxX: WORLD.w - 8, minY: 14, maxY: WORLD.h - 4 };
+/** Where a character's feet may go in a world of size { w, h }. */
+const boundsOf = (world) => ({ minX: 8, maxX: world.w - 8, minY: 14, maxY: world.h - 4 });
 
 export function footRect(pos) {
   return { x: pos.x - FOOT.w / 2, y: pos.y - FOOT.h, w: FOOT.w, h: FOOT.h };
@@ -132,26 +134,28 @@ function blockedAt(pos, blocked) {
   return blocked.some((r) => overlaps(f, r));
 }
 
-function clampPos(pos) {
+function clampPos(pos, world) {
+  const b = boundsOf(world);
   return {
-    x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, pos.x)),
-    y: Math.min(BOUNDS.maxY, Math.max(BOUNDS.minY, pos.y)),
+    x: Math.min(b.maxX, Math.max(b.minX, pos.x)),
+    y: Math.min(b.maxY, Math.max(b.minY, pos.y)),
   };
 }
 
 /** Moves by (dx, dy), sliding along obstacles: each axis is tried on its own. Returns the new position. */
-export function moveWithCollision(pos, dx, dy, blocked = BLOCKED) {
+export function moveWithCollision(pos, dx, dy, blocked = BLOCKED, world = WORLD) {
   let next = { ...pos };
-  const tryX = clampPos({ x: pos.x + dx, y: pos.y });
+  const tryX = clampPos({ x: pos.x + dx, y: pos.y }, world);
   if (!blockedAt(tryX, blocked)) next = tryX;
-  const tryY = clampPos({ x: next.x, y: pos.y + dy });
+  const tryY = clampPos({ x: next.x, y: pos.y + dy }, world);
   if (!blockedAt(tryY, blocked)) next = tryY;
   return next;
 }
 
 /** True when the character could stand at `pos` (inside the world, not on an obstacle). */
-export function isWalkable(pos, blocked = BLOCKED) {
-  return pos.x >= BOUNDS.minX && pos.x <= BOUNDS.maxX && pos.y >= BOUNDS.minY && pos.y <= BOUNDS.maxY && !blockedAt(pos, blocked);
+export function isWalkable(pos, blocked = BLOCKED, world = WORLD) {
+  const b = boundsOf(world);
+  return pos.x >= b.minX && pos.x <= b.maxX && pos.y >= b.minY && pos.y <= b.maxY && !blockedAt(pos, blocked);
 }
 
 /** The place (building or statue) whose door zone the character stands in, or null. */

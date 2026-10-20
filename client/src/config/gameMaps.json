@@ -1,0 +1,29 @@
+{
+  "_comment": "The maps of CardBrix the game and the doors that link them. Read by the client (client/src/lib/game/maps.js) AND by the server plaza (src/services/gamePlaza.js), which keeps players of different maps apart and lets a player change map only while standing at a linking door. Spawns are the only places a player can appear at when entering a map (by a door or when coming back from the site). The plaza size and start point are also in gameWorld.json (a test keeps them equal).",
+  "maps": {
+    "plaza": {
+      "w": 480,
+      "h": 320,
+      "defaultSpawn": "start",
+      "spawns": {
+        "start": { "x": 240, "y": 262 },
+        "castle": { "x": 72, "y": 112 }
+      }
+    },
+    "market": {
+      "w": 480,
+      "h": 320,
+      "defaultSpawn": "gate",
+      "spawns": {
+        "gate": { "x": 240, "y": 266 },
+        "lego": { "x": 88, "y": 150 },
+        "cards": { "x": 240, "y": 150 },
+        "funko": { "x": 392, "y": 150 }
+      }
+    }
+  },
+  "links": [
+    { "from": "plaza", "place": "listings", "door": { "x": 56, "y": 88, "w": 32, "h": 14 }, "to": "market", "spawn": "gate" },
+    { "from": "market", "place": "exit", "door": { "x": 224, "y": 276, "w": 32, "h": 14 }, "to": "plaza", "spawn": "castle" }
+  ]
+}

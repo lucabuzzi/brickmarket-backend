@@ -2610,7 +2610,11 @@
       "auctions": "Aste",
       "arena": "Puzzle Arena",
       "catalog": "Catalogo Wiki",
-      "credits": "Drago dei Crediti"
+      "credits": "Drago dei Crediti",
+      "lego": "LEGO",
+      "cards": "Carte",
+      "funko": "Funko Pop",
+      "exit": "Piazza"
     },
     "world": {
       "loading": "Caricamento del gioco…",
@@ -2624,7 +2628,9 @@
       "rotate_title": "Gira il telefono",
       "rotate_text": "In orizzontale la piazza è molto più grande e si gioca meglio.",
       "rotate_dismiss": "Continua così",
-      "toolbar_label": "Comandi del gioco"
+      "toolbar_label": "Comandi del gioco",
+      "travel_market": "Entra nel mercato",
+      "travel_plaza": "Torna in piazza"
     },
     "tutorial": {
       "next": "Avanti",
@@ -2639,7 +2645,7 @@
       },
       "listings": {
         "title": "Annunci",
-        "body": "Qui compri e vendi carte collezionabili, set LEGO e Funko. Pubblichi un annuncio con foto e prezzo e il pagamento avviene dentro CardBrix, con una commissione. Pubblicare un annuncio non dà crediti."
+        "body": "Qui compri e vendi carte collezionabili, set LEGO e Funko. Pubblichi un annuncio con foto e prezzo e il pagamento avviene dentro CardBrix, con una commissione. Pubblicare un annuncio non dà crediti. Entra nel castello: dentro c'è il mercato con le bancarelle di LEGO, carte e Funko."
       },
       "auctions": {
         "title": "Aste",
@@ -2672,7 +2678,8 @@
       "visible_off": "Nascosto in piazza",
       "view_inventory": "Vedi inventario",
       "in_plaza": "In piazza adesso",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "online_market": "{{count}} nel mercato"
     },
     "inventory": {
       "kicker": "Inventario",
@@ -2690,9 +2697,9 @@
     },
     "places_info": {
       "listings": {
-        "title": "Bazaar TCG & Bricks",
-        "subtitle": "Mint · Sigillati",
-        "flavour": "Compra e vendi carte singole, box sigillati e set rari."
+        "title": "Castello degli Annunci",
+        "subtitle": "Mercato · LEGO · Carte · Funko",
+        "flavour": "Oltre il portone c'è il mercato: una bancarella per ogni tipo di annuncio."
       },
       "auctions": {
         "title": "Arena delle Aste",
@@ -2713,6 +2720,26 @@
         "title": "Sorgente dei Crediti",
         "subtitle": "Drago custode",
         "flavour": "I crediti servono per partecipare ai puzzle della Skill Zone."
+      },
+      "lego": {
+        "title": "Bancarella LEGO",
+        "subtitle": "Set · Minifigure · Mattoncini",
+        "flavour": "Set sigillati, set usati completi e minifigure in vendita."
+      },
+      "cards": {
+        "title": "Bancarella delle Carte",
+        "subtitle": "Pokémon · Magic · Lorcana e altre",
+        "flavour": "Carte singole, buste e box di tutti i giochi di carte collezionabili."
+      },
+      "funko": {
+        "title": "Bancarella Funko Pop",
+        "subtitle": "In scatola · Esclusive",
+        "flavour": "Funko Pop in scatola, edizioni speciali e pezzi rari."
+      },
+      "exit": {
+        "title": "Portone del castello",
+        "subtitle": "Uscita",
+        "flavour": "Torna nella piazza di CardBrix."
       }
     },
     "chat": {

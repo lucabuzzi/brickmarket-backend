@@ -182,3 +182,43 @@ describe('chat over the socket', () => {
     expect(b.readyState).toBe(WebSocket.OPEN);
   });
 });
+
+describe('maps (plaza and the market inside the castle)', () => {
+  const hello = async (token, extra) => {
+    const ws = await client();
+    sendJson(ws, { t: 'hello', token, visible: true, ...extra });
+    return { ws, welcome: await waitFor(ws, (m) => m.t === 'welcome') };
+  };
+
+  test('a hello can start in the market at a stall; the welcome says where', async () => {
+    const { welcome } = await hello('tok-a', { map: 'market', spawn: 'lego' });
+    expect(welcome).toMatchObject({ map: 'market', x: 88, y: 150, players: [] });
+  });
+
+  test('walking through the castle gate: the plaza sees a leave, the traveller gets a market welcome', async () => {
+    const a = await joined('tok-a');
+    const { ws: b } = await hello('tok-b', { map: 'plaza', spawn: 'castle' });
+    await waitFor(a, (m) => m.t === 'join');
+    sendJson(b, { t: 'travel', to: 'market' });
+    expect((await waitFor(a, (m) => m.t === 'leave')).id).toBe('b');
+    const w = await waitFor(b, (m) => m.t === 'welcome' && m.map === 'market');
+    expect(w).toMatchObject({ map: 'market', x: 240, y: 266, players: [] });
+  });
+
+  test('a travel far from the door is refused with a correction to the current map', async () => {
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'travel', to: 'market' });
+    expect(await waitFor(b, (m) => m.t === 'correct')).toMatchObject({ map: 'plaza', x: PLAZA_WORLD.spawn.x, y: PLAZA_WORLD.spawn.y });
+  });
+
+  test('players in different maps never get each other\'s join, moves or chat', async () => {
+    const { ws: a } = await hello('tok-a', { map: 'market' });
+    const b = await joined('tok-b');
+    await new Promise((r) => setTimeout(r, 30));
+    sendJson(b, { t: 'move', x: PLAZA_WORLD.spawn.x + 3, y: PLAZA_WORLD.spawn.y, d: 'right', m: true });
+    sendJson(b, { t: 'say', k: 'hello' });
+    await waitFor(b, (m) => m.t === 'said');
+    await new Promise((r) => setTimeout(r, 80));
+    expect(a.inbox.filter((m) => ['join', 'moves', 'said'].includes(m.t))).toEqual([]);
+  });
+});

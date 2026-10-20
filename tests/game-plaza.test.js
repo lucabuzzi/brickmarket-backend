@@ -90,7 +90,7 @@ describe('move validation', () => {
     room.join(user('a'));
     clock.advance(100);
     expect(room.move('a', { x: PLAZA_WORLD.spawn.x + 5, y: PLAZA_WORLD.spawn.y, d: 'right', m: true })).toBe('ok');
-    expect(room.takeDirtyMoves()).toEqual([{ id: 'a', x: PLAZA_WORLD.spawn.x + 5, y: PLAZA_WORLD.spawn.y, d: 'right', m: true }]);
+    expect(room.takeDirtyMoves()).toEqual([{ id: 'a', map: 'plaza', x: PLAZA_WORLD.spawn.x + 5, y: PLAZA_WORLD.spawn.y, d: 'right', m: true }]);
     expect(room.takeDirtyMoves()).toEqual([]);
   });
 
@@ -172,5 +172,52 @@ describe('chat (fixed phrases only)', () => {
   test('every phrase id and emoji id is distinct', () => {
     const ids = [...PLAZA_PHRASES.phrases, ...Object.keys(PLAZA_PHRASES.emojis)];
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('maps and travel', () => {
+  const { PLAZA_MAPS } = require('../src/services/gamePlaza');
+  const castleFront = PLAZA_MAPS.maps.plaza.spawns.castle;
+
+  test('join starts in a known map at a known spawn, anything else falls back to the plaza start / map default', () => {
+    const { room } = setup();
+    expect(room.join(user('a'), { map: 'market', spawn: 'funko' })).toMatchObject({ map: 'market', ...PLAZA_MAPS.maps.market.spawns.funko });
+    expect(room.join(user('b'), { map: 'market', spawn: 'vault' })).toMatchObject({ map: 'market', ...PLAZA_MAPS.maps.market.spawns.gate });
+    expect(room.join(user('c'), { map: 'dungeon' })).toMatchObject({ map: 'plaza', x: PLAZA_WORLD.spawn.x, y: PLAZA_WORLD.spawn.y });
+  });
+
+  test('travel works only from the linking door, and lands on the link spawn', () => {
+    const { room } = setup();
+    room.join(user('far'));
+    expect(room.travel('far', 'market')).toBeNull();
+    expect(room.get('far').map).toBe('plaza');
+
+    room.join(user('a'), { spawn: 'castle' });
+    expect(room.travel('a', 'dungeon')).toBeNull();
+    expect(room.travel('a', 'market')).toEqual({ from: 'plaza', to: 'market' });
+    expect(room.get('a')).toMatchObject({ map: 'market', ...PLAZA_MAPS.maps.market.spawns.gate });
+    expect(room.travel('a', 'market')).toBeNull(); // no link from the market to itself
+  });
+
+  test('from the market gate back to the plaza, in front of the castle', () => {
+    const { room, clock } = setup();
+    room.join(user('a'), { map: 'market' });
+    const gate = PLAZA_MAPS.links.find((l) => l.from === 'market').door;
+    clock.advance(1000);
+    expect(room.move('a', { x: 240, y: gate.y + gate.h, d: 'down', m: false })).toBe('ok');
+    expect(room.travel('a', 'plaza')).toEqual({ from: 'market', to: 'plaza' });
+    expect(room.get('a')).toMatchObject({ map: 'plaza', x: castleFront.x, y: castleFront.y });
+  });
+
+  test('others are listed and moves are batched per map', () => {
+    const { room, clock } = setup();
+    room.join(user('a'));
+    room.join(user('b'), { map: 'market' });
+    expect(room.visiblePlayers('x', 'plaza').map((p) => p.id)).toEqual(['a']);
+    expect(room.visiblePlayers('x', 'market').map((p) => p.id)).toEqual(['b']);
+    expect(room.visibleCount('market')).toBe(1);
+    clock.advance(200);
+    room.move('b', { x: 242, y: 266, d: 'right', m: true });
+    expect(room.takeDirtyMoves()).toEqual([{ id: 'b', map: 'market', x: 242, y: 266, d: 'right', m: true }]);
   });
 });
