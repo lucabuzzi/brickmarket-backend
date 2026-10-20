@@ -141,3 +141,36 @@ describe('move validation', () => {
     expect(room.move('ghost', { x: 1, y: 1, d: 'down' })).toBe('ignored');
   });
 });
+
+describe('chat (fixed phrases only)', () => {
+  const { PLAZA_PHRASES } = require('../src/services/gamePlaza');
+
+  test('a visible player can say a known phrase or emoji, then must wait for the cooldown', () => {
+    const { room, clock } = setup();
+    room.join(user('a'));
+    expect(room.say('a', 'hello')).toBe('ok');
+    expect(room.say('a', 'fire')).toBe('cooldown');
+    clock.advance(PLAZA_PHRASES.cooldownMs);
+    expect(room.say('a', 'fire')).toBe('ok');
+  });
+
+  test('free text, unknown ids and non-strings are refused', () => {
+    const { room } = setup();
+    room.join(user('a'));
+    for (const bad of ['ciao a tutti, scrivimi su whatsapp', 'http://spam.example', '', null, 42, { k: 'hello' }, '__proto__', 'constructor']) {
+      expect(room.say('a', bad)).toBe('ignored');
+    }
+  });
+
+  test('a hidden player cannot speak (it would reveal them), nor can an unknown one', () => {
+    const { room } = setup();
+    room.join(user('a'), { visible: false });
+    expect(room.say('a', 'hello')).toBe('ignored');
+    expect(room.say('ghost', 'hello')).toBe('ignored');
+  });
+
+  test('every phrase id and emoji id is distinct', () => {
+    const ids = [...PLAZA_PHRASES.phrases, ...Object.keys(PLAZA_PHRASES.emojis)];
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});

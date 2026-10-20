@@ -54,6 +54,8 @@ export function connectPlaza({ visible, onMessage, onStatus }) {
   return {
     sendMove(move) { sendJson({ t: 'move', ...move }); },
     setVisible(v) { isVisible = Boolean(v); sendJson({ t: 'visible', v: isVisible }); },
+    /** Says one of the fixed phrases / emojis (client/src/config/plazaPhrases.json). */
+    say(k) { sendJson({ t: 'say', k }); },
     close() { closed = true; clearTimeout(timer); if (ws) ws.close(); },
   };
 }

@@ -2620,7 +2620,9 @@
       "back": "Volver a la plaza",
       "full_profile": "Perfil completo",
       "not_found": "Este jugador ya no existe.",
-      "error": "No se pudo cargar el inventario. Inténtalo de nuevo en breve."
+      "error": "No se pudo cargar el inventario. Inténtalo de nuevo en breve.",
+      "panel_empty": "Toca a un jugador de la plaza para ver su inventario.",
+      "panel_full": "Abrir inventario completo"
     },
     "places_info": {
       "listings": {
@@ -2654,6 +2656,39 @@
       "slab_left_lore": "💎 Carta gradada 10: centrado, esquinas, bordes y superficie perfectos.",
       "slab_right_lore": "🧱 Leyenda de la plaza: un ladrillo 2x4 de oro macizo. Nadie lo ha visto nunca.",
       "duel_west_lore": "⚔️ Mesa de torneo: ¡aquí se decidió un top deck en el tercer turno extra!"
+    },
+    "chat": {
+      "title": "Chat de la plaza",
+      "say": "Frases rápidas",
+      "empty": "Aún no hay mensajes. ¡Saluda a la plaza!",
+      "hidden_note": "Estás oculto: haz visible tu personaje para hablar en la plaza.",
+      "phrases": {
+        "hello": "¡Hola! 👋",
+        "nice_collection": "¡Bonita colección!",
+        "see_my_listings": "Mira mis anuncios",
+        "good_luck": "¡Mucha suerte!",
+        "gg": "¡Bien jugado!",
+        "thanks": "¡Gracias!",
+        "wow": "¡Guau!",
+        "bye": "¡Hasta pronto!"
+      },
+      "emoji": {
+        "thumbs_up": "Pulgar arriba",
+        "fire": "Fuego",
+        "star": "Estrella",
+        "dragon": "Dragón",
+        "cards": "Cartas",
+        "brick": "Ladrillo",
+        "laugh": "Risa",
+        "heart": "Corazón"
+      }
+    },
+    "dpad": {
+      "label": "Controles de movimiento",
+      "up": "Arriba",
+      "down": "Abajo",
+      "left": "Izquierda",
+      "right": "Derecha"
     }
   }
 }

@@ -7,6 +7,10 @@
 // several instances the plaza would need a shared store (e.g. Redis pub/sub).
 const WORLD = require('../../client/src/config/gameWorld.json');
 const { normalizeAvatarConfig, defaultAvatarConfig } = require('./avatarConfig');
+const PHRASES = require('../../client/src/config/plazaPhrases.json');
+
+// Everything a player may say: the fixed phrase ids and emoji ids (no free text, see plazaPhrases.json).
+const SAYABLE = new Set([...PHRASES.phrases, ...Object.keys(PHRASES.emojis)]);
 
 const DIRS = ['down', 'up', 'right', 'left'];
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -38,6 +42,7 @@ class PlazaRoom {
       m: false,
       visible: Boolean(visible),
       lastMoveAt: this.now(),
+      lastSayAt: existing ? existing.lastSayAt : -Infinity,
       dirty: false,
     };
     this.players.set(user.id, p);
@@ -102,6 +107,21 @@ class PlazaRoom {
     return 'ok';
   }
 
+  /**
+   * A player says one of the fixed phrases/emojis. Returns:
+   *  - 'ok'        accepted: broadcast it
+   *  - 'ignored'   unknown phrase, unknown player, or a hidden player (speaking would reveal them)
+   *  - 'cooldown'  too soon after their previous message
+   */
+  say(id, key) {
+    const p = this.players.get(id);
+    if (!p || !p.visible || typeof key !== 'string' || !SAYABLE.has(key)) return 'ignored';
+    const now = this.now();
+    if (now - p.lastSayAt < PHRASES.cooldownMs) return 'cooldown';
+    p.lastSayAt = now;
+    return 'ok';
+  }
+
   /** Every visible player except `exceptId`, as public views. */
   visiblePlayers(exceptId) {
     const out = [];
@@ -127,4 +147,4 @@ class PlazaRoom {
   }
 }
 
-module.exports = { PlazaRoom, PLAZA_DIRS: DIRS, PLAZA_WORLD: WORLD };
+module.exports = { PlazaRoom, PLAZA_DIRS: DIRS, PLAZA_WORLD: WORLD, PLAZA_PHRASES: PHRASES };

@@ -2684,7 +2684,9 @@
       "back": "Torna in piazza",
       "full_profile": "Profilo completo",
       "not_found": "Questo giocatore non esiste più.",
-      "error": "Non riesco a caricare l'inventario. Riprova tra poco."
+      "error": "Non riesco a caricare l'inventario. Riprova tra poco.",
+      "panel_empty": "Tocca un giocatore in piazza per vedere il suo inventario.",
+      "panel_full": "Apri inventario completo"
     },
     "places_info": {
       "listings": {
@@ -2718,6 +2720,39 @@
       "slab_left_lore": "💎 Lastra gradata 10: centratura, angoli, bordi e superficie perfetti.",
       "slab_right_lore": "🧱 Leggenda della piazza: un mattoncino 2x4 d'oro massiccio. Nessuno l'ha mai visto.",
       "duel_west_lore": "⚔️ Tavolo da torneo: qui si è deciso un top deck al terzo turno supplementare!"
+    },
+    "chat": {
+      "title": "Chat della piazza",
+      "say": "Frasi veloci",
+      "empty": "Nessun messaggio. Saluta chi è in piazza!",
+      "hidden_note": "Sei nascosto: rendi visibile il personaggio per parlare in piazza.",
+      "phrases": {
+        "hello": "Ciao! 👋",
+        "nice_collection": "Bella collezione!",
+        "see_my_listings": "Guarda i miei annunci",
+        "good_luck": "In bocca al lupo!",
+        "gg": "Ben giocato!",
+        "thanks": "Grazie!",
+        "wow": "Wow!",
+        "bye": "A presto!"
+      },
+      "emoji": {
+        "thumbs_up": "Pollice in su",
+        "fire": "Fuoco",
+        "star": "Stella",
+        "dragon": "Drago",
+        "cards": "Carte",
+        "brick": "Mattoncino",
+        "laugh": "Risata",
+        "heart": "Cuore"
+      }
+    },
+    "dpad": {
+      "label": "Comandi di movimento",
+      "up": "Su",
+      "down": "Giù",
+      "left": "Sinistra",
+      "right": "Destra"
     }
   }
 }

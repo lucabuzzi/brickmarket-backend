@@ -2628,7 +2628,9 @@
       "back": "Retour sur la place",
       "full_profile": "Profil complet",
       "not_found": "Ce joueur n'existe plus.",
-      "error": "Impossible de charger l'inventaire. Réessayez dans un instant."
+      "error": "Impossible de charger l'inventaire. Réessayez dans un instant.",
+      "panel_empty": "Touchez un joueur sur la place pour voir son inventaire.",
+      "panel_full": "Ouvrir l'inventaire complet"
     },
     "places_info": {
       "listings": {
@@ -2662,6 +2664,39 @@
       "slab_left_lore": "💎 Carte gradée 10 : centrage, coins, bords et surface parfaits.",
       "slab_right_lore": "🧱 Légende de la place : une brique 2x4 en or massif. Personne ne l'a jamais vue.",
       "duel_west_lore": "⚔️ Table de tournoi : un top deck au troisième tour supplémentaire s'est joué ici !"
+    },
+    "chat": {
+      "title": "Chat de la place",
+      "say": "Phrases rapides",
+      "empty": "Pas encore de messages. Dites bonjour à la place !",
+      "hidden_note": "Vous êtes caché : rendez votre personnage visible pour parler sur la place.",
+      "phrases": {
+        "hello": "Salut ! 👋",
+        "nice_collection": "Belle collection !",
+        "see_my_listings": "Regardez mes annonces",
+        "good_luck": "Bonne chance !",
+        "gg": "Bien joué !",
+        "thanks": "Merci !",
+        "wow": "Waouh !",
+        "bye": "À bientôt !"
+      },
+      "emoji": {
+        "thumbs_up": "Pouce levé",
+        "fire": "Feu",
+        "star": "Étoile",
+        "dragon": "Dragon",
+        "cards": "Cartes",
+        "brick": "Brique",
+        "laugh": "Rire",
+        "heart": "Cœur"
+      }
+    },
+    "dpad": {
+      "label": "Commandes de déplacement",
+      "up": "Haut",
+      "down": "Bas",
+      "left": "Gauche",
+      "right": "Droite"
     }
   }
 }

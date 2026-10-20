@@ -1,0 +1,6 @@
+{
+  "_comment": "What players can say in the plaza of CardBrix the game: only these fixed phrases and emojis, no free text (no moderation needed, no off-site contacts). Read by the client (labels: game.chat.phrases.<id>) AND by the server (src/services/gamePlaza.js), which refuses anything else. Emojis are shown as they are, in every language.",
+  "phrases": ["hello", "nice_collection", "see_my_listings", "good_luck", "gg", "thanks", "wow", "bye"],
+  "emojis": { "thumbs_up": "👍", "fire": "🔥", "star": "⭐", "dragon": "🐉", "cards": "🃏", "brick": "🧱", "laugh": "😄", "heart": "❤️" },
+  "cooldownMs": 2500
+}
