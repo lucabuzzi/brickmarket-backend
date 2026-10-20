@@ -2681,6 +2681,39 @@
       "full_profile": "Profilo completo",
       "not_found": "Questo giocatore non esiste più.",
       "error": "Non riesco a caricare l'inventario. Riprova tra poco."
+    },
+    "places_info": {
+      "listings": {
+        "title": "Bazaar TCG & Bricks",
+        "subtitle": "Mint · Sigillati",
+        "flavour": "Compra e vendi carte singole, box sigillati e set rari."
+      },
+      "auctions": {
+        "title": "Arena delle Aste",
+        "subtitle": "Anti-sniping: +2 minuti",
+        "flavour": "Un rilancio negli ultimi 2 minuti allunga l'asta di altri 2: niente colpi all'ultimo secondo."
+      },
+      "arena": {
+        "title": "Skill Zone Arcade",
+        "subtitle": "Puzzle da 16 pezzi",
+        "flavour": "Ricomponi il puzzle il più in fretta possibile e scala la classifica."
+      },
+      "catalog": {
+        "title": "Grande Archivio",
+        "subtitle": "Carte e set LEGO",
+        "flavour": "Schede di carte e set LEGO per riconoscere quello che collezioni."
+      },
+      "credits": {
+        "title": "Sorgente dei Crediti",
+        "subtitle": "Drago custode",
+        "flavour": "I crediti servono per partecipare ai puzzle della Skill Zone."
+      }
+    },
+    "easter_eggs": {
+      "pond_secret": "✨ Qualcosa luccica sul fondo del laghetto… una carta Secret Rare?",
+      "slab_left_lore": "💎 Lastra gradata 10: centratura, angoli, bordi e superficie perfetti.",
+      "slab_right_lore": "🧱 Leggenda della piazza: un mattoncino 2x4 d'oro massiccio. Nessuno l'ha mai visto.",
+      "duel_west_lore": "⚔️ Tavolo da torneo: qui si è deciso un top deck al terzo turno supplementare!"
     }
   }
 }

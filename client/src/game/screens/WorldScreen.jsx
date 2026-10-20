@@ -82,6 +82,7 @@ export default function WorldScreen({ avatar, onEdit }) {
   const [door, setDoor] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [selected, setSelected] = useState(null); // public info of the tapped player
+  const [egg, setEgg] = useState(null); // easter egg message currently shown (id)
   const plaza = usePlaza({ gameRef, ready: status === 'ready' });
   // the scene is created once; it reaches the (stable) plaza callbacks through refs
   const plazaRef = useRef(plaza);
@@ -123,6 +124,7 @@ export default function WorldScreen({ avatar, onEdit }) {
           onEnterRequest: (id) => { const p = placeById(id); if (p) goSite(p); },
           onLocalMove: (move) => plazaRef.current.reportMove(move),
           onPlayerTap: (id) => setSelected(plazaRef.current.playerInfo(id)),
+          onEasterEgg: (id) => { if (id) setEgg(id); },
         });
         if (cancelled) { game.destroy(); return; }
         gameRef.current = game;
@@ -141,6 +143,13 @@ export default function WorldScreen({ avatar, onEdit }) {
     // The scene restarts only when the character itself changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar, user?.username]);
+
+  // an easter egg message stays up for a few seconds
+  useEffect(() => {
+    if (!egg) return undefined;
+    const id = setTimeout(() => setEgg(null), 4500);
+    return () => clearTimeout(id);
+  }, [egg]);
 
   // keep the scene in sync with the tutorial: guide arrow + frozen while a card is open
   useEffect(() => {
@@ -203,10 +212,21 @@ export default function WorldScreen({ avatar, onEdit }) {
           />
         )}
 
+        {egg && (
+          <div className="cbg-card-enter absolute left-1/2 top-9 z-20 w-[min(92%,360px)] -translate-x-1/2 border-2 border-black bg-[#14111f]/95 px-3 py-2 text-center text-xs leading-snug text-white sm:top-14 sm:border-4 sm:text-sm" role="status">
+            {t(`game.easter_eggs.${egg}`)}
+          </div>
+        )}
+
         {near?.path && !(tut.active && tut.phase === 'explain') && (
-          <button type="button" onClick={() => gameRef.current?.enter()} className="cbg-btn absolute bottom-4 left-1/2 z-10 -translate-x-1/2" style={{ background: near.color }}>
-            {t('game.world.enter', { place: labels[near.id] })} ▶
-          </button>
+          <div className="cbg-panel cbg-card-enter absolute bottom-2 left-1/2 z-10 w-[min(94%,380px)] -translate-x-1/2 p-2.5 text-center sm:bottom-3 sm:p-3" style={{ borderColor: near.color }}>
+            <p className="cbg-pixel text-[0.55rem] uppercase sm:text-xs" style={{ color: near.color }}>{t(`game.places_info.${near.id}.title`)}</p>
+            <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55 sm:text-[0.7rem]">{t(`game.places_info.${near.id}.subtitle`)}</p>
+            <p className="mt-1.5 hidden text-sm leading-snug text-white/80 sm:block">{t(`game.places_info.${near.id}.flavour`)}</p>
+            <button type="button" onClick={() => gameRef.current?.enter()} className="cbg-btn mt-2 w-full" style={{ background: near.color }}>
+              {t('game.world.enter', { place: labels[near.id] })} ▶
+            </button>
+          </div>
         )}
 
       </div>

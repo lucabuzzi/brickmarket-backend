@@ -2625,6 +2625,39 @@
       "full_profile": "Profil complet",
       "not_found": "Ce joueur n'existe plus.",
       "error": "Impossible de charger l'inventaire. Réessayez dans un instant."
+    },
+    "places_info": {
+      "listings": {
+        "title": "Bazar TCG & Bricks",
+        "subtitle": "Mint · Scellés",
+        "flavour": "Achetez et vendez cartes à l'unité, boîtes scellées et sets rares."
+      },
+      "auctions": {
+        "title": "Arène des Enchères",
+        "subtitle": "Anti-sniping : +2 minutes",
+        "flavour": "Une offre dans les 2 dernières minutes prolonge l'enchère de 2 minutes : pas de coup de dernière seconde."
+      },
+      "arena": {
+        "title": "Skill Zone Arcade",
+        "subtitle": "Puzzles de 16 pièces",
+        "flavour": "Reconstituez le puzzle le plus vite possible et grimpez au classement."
+      },
+      "catalog": {
+        "title": "Grandes Archives",
+        "subtitle": "Cartes et sets LEGO",
+        "flavour": "Des fiches de cartes et de sets LEGO pour reconnaître ce que vous collectionnez."
+      },
+      "credits": {
+        "title": "Source des Crédits",
+        "subtitle": "Dragon gardien",
+        "flavour": "Les crédits servent à participer aux puzzles de la Skill Zone."
+      }
+    },
+    "easter_eggs": {
+      "pond_secret": "✨ Quelque chose brille au fond de l'étang… une carte Secret Rare ?",
+      "slab_left_lore": "💎 Carte gradée 10 : centrage, coins, bords et surface parfaits.",
+      "slab_right_lore": "🧱 Légende de la place : une brique 2x4 en or massif. Personne ne l'a jamais vue.",
+      "duel_west_lore": "⚔️ Table de tournoi : un top deck au troisième tour supplémentaire s'est joué ici !"
     }
   }
 }

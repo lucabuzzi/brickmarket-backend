@@ -1,11 +1,16 @@
 // "CardBrix the game" ground painter (client/src/lib/game/groundSprite.js): deterministic decorations that stay
 // off the paths/obstacles/stalls, and a paint pass that never draws outside the world.
 const { WORLD, PATHS, BLOCKED, BUILDINGS, PLACES, overlaps } = require('../client/src/lib/game/gameMap');
-const { brickDecor, flowers, paintGround, buildGroundCanvas, BRICK_COLORS } = require('../client/src/lib/game/groundSprite');
+const { brickDecor, flowers, paintGround, buildGroundCanvas, BRICK_COLORS, PATH_STYLES } = require('../client/src/lib/game/groundSprite');
 
 const inside = (x, y) => PATHS.some((p) => x >= p.x && x < p.x + p.w && y >= p.y && y < p.y + p.h);
 
 describe('paths', () => {
+  test('every path has a style the painter knows (road, carpets, play mat, mosaic, runway)', () => {
+    for (const p of PATHS) expect(PATH_STYLES).toContain(p.style);
+    expect(PATHS.filter((p) => p.style === 'pillar_carpet').every((p) => /^#[0-9a-f]{6}$/.test(p.tint))).toBe(true);
+  });
+
   test('every place door is on a paved path', () => {
     for (const place of PLACES) {
       expect(inside(place.door.x + place.door.w / 2, place.door.y + place.door.h / 2)).toBe(true);
