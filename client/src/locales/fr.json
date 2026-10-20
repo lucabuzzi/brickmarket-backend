@@ -2134,6 +2134,15 @@
       "cta_login": "Se connecter",
       "cta_sell": "Vendre un objet",
       "cta_auction": "Lancer une enchère"
+    },
+    "game_banner": {
+      "kicker": "Nouveau · Jeu gratuit",
+      "title": "Entrez dans CardBrix the Game !",
+      "text": "Créez votre personnage, promenez-vous entre annonces, enchères et Puzzle Arena et découvrez avec un tutoriel guidé tout ce que vous pouvez faire sur le site.",
+      "cta": "Entrer dans le jeu",
+      "chip_character": "Personnage personnalisable",
+      "chip_tutorial": "Tutoriel guidé",
+      "chip_mobile": "Aussi sur smartphone"
     }
   },
   "market": {
@@ -2485,5 +2494,114 @@
     "follow_facebook": "CardBrix sur Facebook",
     "follow_instagram": "CardBrix sur Instagram",
     "accessibility": "Accessibilité"
+  },
+  "game": {
+    "title": "CardBrix the game!",
+    "tagline": "L'écosystème unifié de la collection",
+    "press_start": "Appuyez sur start",
+    "back_to_site": "Retour au site",
+    "loading": "Chargement…",
+    "access": {
+      "title": "Qui êtes-vous ?",
+      "new_player": "Nouveau joueur",
+      "have_account": "J'ai déjà un compte",
+      "hint": "Le compte est le même que sur le site : utilisez-le des deux côtés."
+    },
+    "login": {
+      "title": "Connexion",
+      "submit": "Entrer dans le jeu",
+      "back": "Retour"
+    },
+    "register": {
+      "step_character": "Créez votre personnage",
+      "step_account": "Créez votre compte",
+      "next": "Suivant",
+      "back": "Retour",
+      "submit": "S'inscrire et entrer",
+      "referral": "Code d'invitation (facultatif)",
+      "same_account": "Ce compte fonctionne aussi sur le site CardBrix. L'adresse et les données de vendeur se complètent ensuite depuis le site.",
+      "hint": "Ce sera votre avatar. Vous pourrez le modifier à tout moment."
+    },
+    "creator": {
+      "title": "Créez votre personnage",
+      "first_hint": "Choisissez votre apparence avant d’entrer. Vous pourrez la modifier à tout moment.",
+      "edit_hint": "Changez votre apparence et enregistrez.",
+      "save": "Enregistrer et entrer",
+      "saving": "Enregistrement…",
+      "cancel": "Annuler",
+      "edit": "Modifier le personnage",
+      "save_error": "Impossible d’enregistrer le personnage. Réessayez.",
+      "preview_label": "Aperçu de votre personnage",
+      "turn": "Tourner",
+      "randomize": "Aléatoire",
+      "skin": "Peau",
+      "hair_color": "Couleur des cheveux",
+      "outfit": "Vêtements",
+      "outfit_color": "Couleur de la veste",
+      "look": "Apparence",
+      "original": "Original",
+      "accent_color": "Détails",
+      "legs_color": "Pantalon",
+      "looks": {
+        "uomo_base": "Homme classique",
+        "uomo_cyber": "Homme cyber",
+        "donna_base": "Femme classique",
+        "donna_cyber": "Femme cyber"
+      }
+    },
+    "places": {
+      "listings": "Annonces",
+      "auctions": "Enchères",
+      "arena": "Puzzle Arena",
+      "catalog": "Catalogue Wiki",
+      "credits": "Dragon des Crédits"
+    },
+    "world": {
+      "loading": "Chargement du jeu…",
+      "error": "Impossible de démarrer le jeu. Utilisez les liens pour accéder aux sections du site.",
+      "canvas_label": "Carte de CardBrix the game : déplacez votre personnage jusqu’aux boutiques",
+      "enter": "Aller à : {{place}}",
+      "hint": "Touchez ou cliquez sur la carte pour marcher, ou utilisez les flèches / WASD. Devant un bâtiment, appuyez sur Entrée.",
+      "tutorial_button": "Tutoriel",
+      "objective": "Objectif : rejoindre {{place}}",
+      "leave": "Retour au site"
+    },
+    "tutorial": {
+      "next": "Suivant",
+      "skip": "Passer le tutoriel",
+      "go_site": "Aller à la section du site",
+      "progress": "Étape {{done}} sur {{total}}",
+      "start": "Allons-y",
+      "finish_btn": "Terminer",
+      "welcome": {
+        "title": "Bienvenue sur CardBrix !",
+        "body": "Un court tour pour découvrir ce que vous pouvez faire sur le site. Marchez en touchant la carte ou avec les flèches : une flèche vous guidera."
+      },
+      "listings": {
+        "title": "Annonces",
+        "body": "Ici vous achetez et vendez des cartes à collectionner, des sets LEGO et des Funko. Vous publiez une annonce avec photos et prix et le paiement se fait dans CardBrix, avec une commission. Publier une annonce ne donne pas de crédits."
+      },
+      "auctions": {
+        "title": "Enchères",
+        "body": "Vous enchérissez sur les objets mis aux enchères : à la fin du minuteur, l'offre la plus haute l'emporte. Vous pouvez aussi mettre vos propres pièces aux enchères."
+      },
+      "arena": {
+        "title": "Puzzle Arena",
+        "body": "C'est la Skill Zone : vous participez aux puzzles avec des crédits et, si vous êtes bon, vous gagnez les prix offerts par CardBrix.com. L'expédition du prix est à la charge du gagnant."
+      },
+      "catalog": {
+        "title": "Catalogue Wiki",
+        "body": "Des fiches de sets LEGO et de cartes (Magic, Pokémon, Yu-Gi-Oh, Lorcana, One Piece, Dragon Ball, Funko) pour identifier et vous renseigner sur ce que vous collectionnez."
+      },
+      "credits": {
+        "title": "Les crédits",
+        "body": "Les crédits n'ont de valeur que dans CardBrix : ils ne s'achètent pas, ne se convertissent pas en argent et ne se transfèrent pas. On les gagne avec une inscription vérifiée, les invitations, et les ventes et achats terminés (après la période de maturation). Ils servent à participer aux puzzles."
+      },
+      "finish": {
+        "title": "Tutoriel terminé !",
+        "body": "Vous pouvez maintenant explorer la carte librement ou passer au site. Vous pouvez revoir le tutoriel à tout moment avec le bouton en haut."
+      },
+      "victory": "VICTOIRE !"
+    }
   }
 }

@@ -2133,6 +2133,15 @@
       "cta_login": "Log in",
       "cta_sell": "Sell an item",
       "cta_auction": "Launch an auction"
+    },
+    "game_banner": {
+      "kicker": "New · Free to play",
+      "title": "Enter CardBrix the Game!",
+      "text": "Create your character, stroll through listings, auctions and the Puzzle Arena, and discover everything you can do on the site with a guided tutorial.",
+      "cta": "Enter the game",
+      "chip_character": "Customisable character",
+      "chip_tutorial": "Guided tutorial",
+      "chip_mobile": "Works on your phone"
     }
   },
   "market": {
@@ -2477,5 +2486,114 @@
     "follow_facebook": "CardBrix on Facebook",
     "follow_instagram": "CardBrix on Instagram",
     "accessibility": "Accessibility"
+  },
+  "game": {
+    "title": "CardBrix the game!",
+    "tagline": "The unified ecosystem of collecting",
+    "press_start": "Press start",
+    "back_to_site": "Back to the site",
+    "loading": "Loading…",
+    "access": {
+      "title": "Who are you?",
+      "new_player": "New player",
+      "have_account": "I already have an account",
+      "hint": "The account is the same as on the site: use it on both."
+    },
+    "login": {
+      "title": "Sign in",
+      "submit": "Enter the game",
+      "back": "Back"
+    },
+    "register": {
+      "step_character": "Create your character",
+      "step_account": "Create your account",
+      "next": "Next",
+      "back": "Back",
+      "submit": "Sign up and enter",
+      "referral": "Invite code (optional)",
+      "same_account": "This account also works on the CardBrix site. Address and seller details can be completed later from the site.",
+      "hint": "This will be your avatar. You can change it any time."
+    },
+    "creator": {
+      "title": "Create your character",
+      "first_hint": "Choose how you look before entering. You can change it any time.",
+      "edit_hint": "Change your look and save.",
+      "save": "Save and enter",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit character",
+      "save_error": "Could not save your character. Please try again.",
+      "preview_label": "Preview of your character",
+      "turn": "Turn",
+      "randomize": "Random",
+      "skin": "Skin",
+      "hair_color": "Hair colour",
+      "outfit": "Clothes",
+      "outfit_color": "Jacket colour",
+      "look": "Look",
+      "original": "Original",
+      "accent_color": "Details",
+      "legs_color": "Trousers",
+      "looks": {
+        "uomo_base": "Man classic",
+        "uomo_cyber": "Man cyber",
+        "donna_base": "Woman classic",
+        "donna_cyber": "Woman cyber"
+      }
+    },
+    "places": {
+      "listings": "Listings",
+      "auctions": "Auctions",
+      "arena": "Puzzle Arena",
+      "catalog": "Wiki Catalog",
+      "credits": "Credits Dragon"
+    },
+    "world": {
+      "loading": "Loading the game…",
+      "error": "Could not start the game. Use the links to reach the site sections.",
+      "canvas_label": "CardBrix the game map: move your character to reach the shops",
+      "enter": "Go to: {{place}}",
+      "hint": "Tap or click the map to walk, or use the arrow keys / WASD. In front of a building press Enter.",
+      "tutorial_button": "Tutorial",
+      "objective": "Goal: reach {{place}}",
+      "leave": "Back to the site"
+    },
+    "tutorial": {
+      "next": "Next",
+      "skip": "Skip the tutorial",
+      "go_site": "Go to the site section",
+      "progress": "Stop {{done}} of {{total}}",
+      "start": "Let's go",
+      "finish_btn": "Done",
+      "welcome": {
+        "title": "Welcome to CardBrix!",
+        "body": "A short tour of what you can do on the site. Walk by tapping the map or with the arrow keys: an arrow will guide you."
+      },
+      "listings": {
+        "title": "Listings",
+        "body": "Here you buy and sell trading cards, LEGO sets and Funko. You post a listing with photos and a price, and payment happens inside CardBrix, with a fee. Posting a listing does not give credits."
+      },
+      "auctions": {
+        "title": "Auctions",
+        "body": "You bid on items up for auction: when the timer runs out the highest bid wins. You can also put your own pieces up for auction."
+      },
+      "arena": {
+        "title": "Puzzle Arena",
+        "body": "This is the Skill Zone: you join puzzles using credits and, if you are good, win the prizes put up by CardBrix.com. Shipping of the prize is paid by the winner."
+      },
+      "catalog": {
+        "title": "Wiki Catalog",
+        "body": "Pages for LEGO sets and cards (Magic, Pokémon, Yu-Gi-Oh, Lorcana, One Piece, Dragon Ball, Funko) to identify and learn about the items you collect."
+      },
+      "credits": {
+        "title": "Credits",
+        "body": "Credits only have value inside CardBrix: they cannot be bought, converted into money or transferred. You earn them with a verified sign-up, invites, and completed sales and purchases (after the maturation period). They are used to join puzzles."
+      },
+      "finish": {
+        "title": "Tutorial complete!",
+        "body": "You can now explore the map freely or move on to the site. You can replay the tutorial any time with the button at the top."
+      },
+      "victory": "VICTORY!"
+    }
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api';
 import LandingHero from '../components/landing/LandingHero';
 import LandingTicker from '../components/landing/LandingTicker';
+import LandingGameBanner from '../components/landing/LandingGameBanner';
 import LandingHow from '../components/landing/LandingHow';
 import LandingPillars from '../components/landing/LandingPillars';
 import LandingListings from '../components/landing/LandingListings';
@@ -95,6 +96,7 @@ export default function Home() {
     <div className="lx-page">
       <LandingHero stackItems={stackItems} stats={stats} statsLoading={loading} />
       <LandingTicker listings={featuredFirst.slice(0, 16)} />
+      <LandingGameBanner />
       <LandingHow />
       <LandingPillars images={pillarImages} stats={stats} statsLoading={loading} />
       <LandingListings listings={listings} loading={loading} />

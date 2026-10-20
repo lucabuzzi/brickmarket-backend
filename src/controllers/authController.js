@@ -58,6 +58,7 @@ async function registerHandler(req, res) {
       idScanUrl,
       businessLicenseUrl,
       referralCode: value.referralCode || null,
+      avatarConfig: value.avatarConfig || null,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });
@@ -128,6 +129,7 @@ async function updateMeHandler(req, res) {
     if (value.zipCode !== undefined) fields.address_zip_code = value.zipCode || null;
     if (value.country !== undefined) fields.address_country = value.country || null;
     if (value.phone !== undefined) fields.phone = value.phone || null;
+    if (value.avatarConfig !== undefined) fields.avatar_config = JSON.stringify(value.avatarConfig);
 
     if (Object.keys(fields).length === 0) {
       return res.status(400).json({ error: 'Nessun dato da aggiornare' });

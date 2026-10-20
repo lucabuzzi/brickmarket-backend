@@ -1,0 +1,89 @@
+/* "CardBrix the game" - retro look. Everything is scoped under .cbg-root so none of it leaks into the site,
+   and the site's own styles do not apply here (the game has its own shell, outside the site Layout). */
+.cbg-root {
+  --cbg-bg: #07060c;
+  --cbg-panel: #14111f;
+  --cbg-line: #000;
+  --cbg-lime: #c6ff3d;
+  --cbg-orange: #ff5a36;
+  --cbg-violet: #8b5cf6;
+  --cbg-cyan: #22d3ee;
+  --cbg-blue: #3b82f6;
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--cbg-bg);
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.cbg-root *, .cbg-root *::before, .cbg-root *::after { box-sizing: border-box; }
+.cbg-pixel { font-family: 'Press Start 2P', ui-monospace, monospace; letter-spacing: 0.02em; line-height: 1.5; }
+
+/* pixel panel: a hard black frame + offset shadow, no soft blur */
+.cbg-panel {
+  background: var(--cbg-panel);
+  border: 4px solid #3a3358;
+  box-shadow: 0 0 0 4px var(--cbg-line), 8px 8px 0 4px var(--cbg-line);
+}
+
+.cbg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+  min-height: 48px; padding: 0.7rem 1.2rem;
+  border: 4px solid var(--cbg-line);
+  background: var(--cbg-lime); color: #10140a;
+  font-family: 'Press Start 2P', ui-monospace, monospace; font-size: 0.7rem; line-height: 1.4; text-transform: uppercase;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 6px 0 0 #5e7a14;
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2), filter 0.1s;
+}
+.cbg-btn:hover { filter: brightness(1.08); }
+.cbg-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 0 #5e7a14; }
+.cbg-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.cbg-btn--ghost { background: #1d1930; color: #fff; box-shadow: 0 6px 0 0 #0b0914; border-color: #3a3358; }
+.cbg-btn--ghost:active { box-shadow: 0 2px 0 0 #0b0914; }
+
+.cbg-input {
+  width: 100%; min-height: 52px; padding: 0.7rem 0.9rem;
+  background: #0b0914; color: #fff; font-size: 1rem;
+  border: 4px solid #3a3358; outline: none;
+}
+.cbg-input:focus { border-color: var(--cbg-lime); }
+.cbg-label { display: block; margin-bottom: 0.5rem; font-family: 'Press Start 2P', ui-monospace, monospace; font-size: 0.6rem; color: #b7b3c9; text-transform: uppercase; }
+
+/* title screen backdrop: drifting bricks made of plain boxes */
+.cbg-bricks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.55; }
+.cbg-brick {
+  position: absolute; width: 56px; height: 28px; border: 3px solid #000;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.3), inset 0 5px 0 rgba(255, 255, 255, 0.18);
+  animation: cbg-float 9s steps(18) infinite;
+}
+.cbg-brick::before, .cbg-brick::after { content: ''; position: absolute; top: -9px; width: 12px; height: 6px; background: inherit; border: 3px solid #000; border-bottom: 0; }
+.cbg-brick::before { left: 8px; }
+.cbg-brick::after { right: 8px; }
+@keyframes cbg-float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--r, 0deg)); } }
+
+.cbg-blink { animation: cbg-blink 1.1s steps(2) infinite; }
+@keyframes cbg-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+/* tutorial card sits over the bottom of the stage */
+.cbg-card-enter { animation: cbg-pop 0.18s steps(3) both; }
+@keyframes cbg-pop { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cbg-brick, .cbg-blink, .cbg-card-enter { animation: none; }
+}
+
+/* title logo + dragon, victory card */
+.cbg-logo { color: #fff; text-shadow: 4px 4px 0 #000, 0 0 28px #3b82f6, 0 0 48px #8b5cf6; }
+.cbg-logo span { color: #c6ff3d; }
+.cbg-dragon-float { animation: cbg-bob 3.2s steps(16) infinite; }
+@keyframes cbg-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.cbg-dragon-glow {
+  position: absolute; inset: 20% 5% 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 210, 63, 0.45), rgba(59, 130, 246, 0.2) 60%, transparent 100%);
+  animation: cbg-glow 2.4s ease-in-out infinite;
+}
+@keyframes cbg-glow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+.cbg-victory { color: #ffd23f; text-shadow: 3px 3px 0 #000, 0 0 18px rgba(255, 210, 63, 0.7); }
+@media (prefers-reduced-motion: reduce) { .cbg-dragon-float, .cbg-dragon-glow { animation: none; } }

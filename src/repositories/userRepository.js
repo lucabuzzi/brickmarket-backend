@@ -8,7 +8,7 @@ const { query } = require('../db');
 const PUBLIC_FIELDS = `id, email, username, full_name, role, city, avatar_url, seller_type, company_name,
        stripe_account_id, stripe_account_status,
        address_street, address_house_number, address_zip_code, address_country, phone,
-       rating_avg, rating_count, sales_count, is_verified, is_active, email_verified, referral_code,
+       rating_avg, rating_count, sales_count, is_verified, is_active, email_verified, referral_code, avatar_config,
        created_at, updated_at`;
 
 function findByEmailOrUsername(email, username) {
@@ -39,19 +39,19 @@ function findByEmail(email) {
 async function createUser({
   email, passwordHash, username, fullName, role = 'user', city,
   fiscalCode, iban, sellerType, companyName, street, houseNumber,
-  zipCode, country, phone, idScanUrl, businessLicenseUrl, referralCode,
+  zipCode, country, phone, idScanUrl, businessLicenseUrl, referralCode, avatarConfig,
 }) {
   const result = await query(`
     INSERT INTO users
       (email, password_hash, username, full_name, role, city, fiscal_code, iban, seller_type,
        company_name, address_street, address_house_number, address_zip_code, address_country, phone,
-       id_scan_url, business_license_url, referral_code)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+       id_scan_url, business_license_url, referral_code, avatar_config)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
     RETURNING id, email, username, role
   `, [
     email.toLowerCase(), passwordHash, username, fullName || null, role, city,
     fiscalCode, iban, sellerType, companyName, street, houseNumber, zipCode, country, phone,
-    idScanUrl, businessLicenseUrl, referralCode,
+    idScanUrl, businessLicenseUrl, referralCode, avatarConfig ? JSON.stringify(avatarConfig) : null,
   ]);
   return result.rows[0];
 }
@@ -114,7 +114,7 @@ async function updateProfile(userId, fields) {
   const result = await query(
     `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${count}
      RETURNING id, email, username, full_name, role, city, avatar_url,
-       address_street, address_house_number, address_zip_code, address_country, phone`,
+       address_street, address_house_number, address_zip_code, address_country, phone, avatar_config`,
     values
   );
   return result.rows[0] || null;

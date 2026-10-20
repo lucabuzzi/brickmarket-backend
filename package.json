@@ -11,7 +11,8 @@
     "client": "npm run dev --prefix client",
     "test": "jest --runInBand --forceExit",
     "seo:audit": "node scripts/seo-audit/index.js",
-    "sitemap:lastmod": "node scripts/update-sitemap-lastmod.js"
+    "sitemap:lastmod": "node scripts/update-sitemap-lastmod.js",
+    "game:skins": "node scripts/build-game-skins.js"
   },
   "jest": {
     "testEnvironment": "node",

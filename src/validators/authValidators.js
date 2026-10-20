@@ -1,11 +1,17 @@
 const Joi = require('joi');
 const { normalizeCountry } = require('../utils/country');
+const { normalizeAvatarConfig } = require('../services/avatarConfig');
 
 // Free text in, ISO alpha-2 uppercase out ('Italia' -> 'IT'); unknown/unsupported countries are rejected
 // instead of stored as-is (that is what used to split the user directory into two "Italia" groups).
 const countryField = Joi.string().trim().max(100).allow('', null)
   .custom((value, helpers) => normalizeCountry(value) || helpers.error('country.unsupported'))
   .messages({ 'country.unsupported': 'Paese non supportato' });
+
+// Object or JSON string (multipart) in, validated plain object out; any invalid avatar is rejected.
+const avatarConfigField = Joi.any()
+  .custom((value, helpers) => normalizeAvatarConfig(value) || helpers.error('avatar.invalid'))
+  .messages({ 'avatar.invalid': 'Personaggio non valido' });
 
 const registerSchema = Joi.object({
   email: Joi.string().trim().email().required(),
@@ -24,6 +30,7 @@ const registerSchema = Joi.object({
   phone: Joi.string().trim().max(30).allow('', null),
   turnstileToken: Joi.string().allow('', null),
   referralCode: Joi.string().trim().max(20).allow('', null),
+  avatarConfig: avatarConfigField,
 }).unknown(false);
 
 const loginSchema = Joi.object({
@@ -57,6 +64,7 @@ const updateProfileSchema = Joi.object({
   zipCode: Joi.string().trim().max(20).allow('', null),
   country: countryField,
   phone: Joi.string().trim().max(30).allow('', null),
+  avatarConfig: avatarConfigField,
 }).unknown(false);
 
 // Google Identity Services restituisce un unico JWT firmato ("credential").

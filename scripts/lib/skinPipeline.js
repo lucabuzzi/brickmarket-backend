@@ -1,0 +1,176 @@
+// Pure image helpers for scripts/build-game-skins.js (no sharp, no file access, so they are unit-tested in
+// tests/game-skin-pipeline.test.js). Everything works on raw RGBA buffers (Uint8Array / Buffer / Uint8ClampedArray).
+
+/** [hue 0..360, saturation 0..1, value 0..1] */
+function rgbToHsv(r, g, b) {
+  const rr = r / 255;
+  const gg = g / 255;
+  const bb = b / 255;
+  const mx = Math.max(rr, gg, bb);
+  const mn = Math.min(rr, gg, bb);
+  const d = mx - mn;
+  let h = 0;
+  if (d) {
+    if (mx === rr) h = ((gg - bb) / d) % 6;
+    else if (mx === gg) h = (bb - rr) / d + 2;
+    else h = (rr - gg) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return [h, mx ? d / mx : 0, mx];
+}
+
+const isWhite = (data, i, t) => data[i] >= t && data[i + 1] >= t && data[i + 2] >= t;
+
+/**
+ * Makes the background transparent. Flood-fills from the image border over near-white pixels (so white socks
+ * or highlights INSIDE the character survive), then also clears small enclosed pockets of pure white (the gap
+ * between an arm and the body). Mutates `data` (alpha = 0) and returns the number of cleared pixels.
+ */
+function removeBackground(data, w, h, { border = 228, pocket = 246, minPocket = 6 } = {}) {
+  const seen = new Uint8Array(w * h);
+  const stack = [];
+  const push = (x, y) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    const k = y * w + x;
+    if (seen[k] || !isWhite(data, k * 4, border)) return;
+    seen[k] = 1;
+    stack.push(k);
+  };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  while (stack.length) {
+    const k = stack.pop();
+    const x = k % w;
+    const y = (k / w) | 0;
+    push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1);
+  }
+
+  // enclosed pockets: connected groups of PURE white that the border fill could not reach
+  const mark = new Uint8Array(w * h);
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || mark[start] || !isWhite(data, start * 4, pocket)) continue;
+    const group = [];
+    const st = [start];
+    mark[start] = 1;
+    while (st.length) {
+      const k = st.pop();
+      group.push(k);
+      const x = k % w;
+      const y = (k / w) | 0;
+      for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const nk = ny * w + nx;
+        if (!seen[nk] && !mark[nk] && isWhite(data, nk * 4, pocket)) { mark[nk] = 1; st.push(nk); }
+      }
+    }
+    if (group.length >= minPocket) for (const k of group) seen[k] = 1;
+  }
+
+  let cleared = 0;
+  for (let k = 0; k < w * h; k++) if (seen[k]) { data[k * 4 + 3] = 0; cleared++; }
+  return cleared;
+}
+
+/** Removes the light, desaturated JPEG halo left on pixels that touch the (now transparent) background. */
+function defringe(data, w, h, passes = 2) {
+  for (let p = 0; p < passes; p++) {
+    const kill = [];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (!data[i + 3]) continue;
+        const edge = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].some(([nx, ny]) => nx < 0 || ny < 0 || nx >= w || ny >= h || !data[(ny * w + nx) * 4 + 3]);
+        if (!edge) continue;
+        const [, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
+        if (v > 0.8 && s < 0.22) kill.push(i);
+      }
+    }
+    for (const i of kill) data[i + 3] = 0;
+  }
+}
+
+/** { left, top, right, bottom } of the opaque pixels (inclusive), or null when the frame is empty. */
+function opaqueBounds(data, w, h) {
+  let left = w; let top = h; let right = -1; let bottom = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3]) {
+        if (x < left) left = x;
+        if (x > right) right = x;
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
+      }
+    }
+  }
+  return right < 0 ? null : { left, top, right, bottom };
+}
+
+/** Horizontal centre of mass of the upper body (rows 15%..55% of the height): a stable anchor while limbs swing. */
+function torsoCentre(data, w, bounds) {
+  const hgt = bounds.bottom - bounds.top + 1;
+  const y0 = bounds.top + Math.floor(hgt * 0.15);
+  const y1 = bounds.top + Math.floor(hgt * 0.55);
+  let sum = 0;
+  let n = 0;
+  for (let y = y0; y <= y1; y++) {
+    for (let x = bounds.left; x <= bounds.right; x++) {
+      if (data[(y * w + x) * 4 + 3]) { sum += x; n++; }
+    }
+  }
+  return n ? sum / n : (bounds.left + bounds.right) / 2;
+}
+
+// ── colour regions ─────────────────────────────────────────────────────────────────────────────
+// What the player can recolour. 0 = left as drawn (outlines, eyes, shoes, glass...).
+const REGION = { none: 0, skin: 1, hair: 2, outfit: 3, accent: 4, legs: 5 };
+
+const between = (x, a, b) => x >= a && x <= b;
+
+/**
+ * Which colour region a pixel belongs to. `ry` is the pixel's height inside the character (0 = top of the
+ * hair, 1 = soles). The artwork is flat pixel art, so hue / saturation / brightness plus the height are
+ * enough to tell hair from shorts (both brown) or jacket from trousers (both navy).
+ */
+function classifyPixel(lookId, h, s, v, ry) {
+  const cyber = lookId.endsWith('cyber');
+  if (cyber) {
+    if (between(h, 165, 200) && s > 0.45 && v > 0.55) return REGION.accent; // cyan glow (visor, tips, gloves, boots)
+    if (between(h, 18, 42) && s > 0.75 && v > 0.75) return REGION.none; // orange trim stays as drawn
+    if (between(h, 195, 245) && s > 0.2 && v < 0.62 && v > 0.08) return ry < 0.52 ? REGION.outfit : REGION.legs;
+    if (between(h, 12, 42) && between(s, 0.2, 0.7) && v > 0.58) return REGION.skin;
+    if (between(h, 8, 40) && s > 0.3 && v < 0.72 && ry < 0.36) return REGION.hair;
+    return REGION.none;
+  }
+  if (between(h, 195, 250) && s > 0.3 && v > 0.25 && ry < 0.74) return REGION.outfit; // blue jacket (not the dark shoes)
+  if (between(h, 18, 42) && s > 0.75 && v > 0.8) return REGION.accent; // orange hood / stripes
+  if (between(h, 12, 42) && between(s, 0.2, 0.65) && v > 0.62) return REGION.skin;
+  if (between(h, 8, 42) && s > 0.35 && v < 0.78) {
+    if (ry < 0.36) return REGION.hair;
+    if (ry > 0.42 && ry < 0.82) return REGION.legs; // brown shorts / skirt
+  }
+  return REGION.none;
+}
+
+/** Mean saturation and value of every region over all frames (the reference the recolouring is relative to). */
+function regionStats(frames) {
+  const acc = {};
+  for (const { data, mask } of frames) {
+    for (let k = 0; k < mask.length; k++) {
+      const r = mask[k];
+      if (!r) continue;
+      const i = k * 4;
+      const [, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
+      if (v < 0.12) continue; // outlines inside a region would drag the reference down
+      const a = acc[r] || (acc[r] = { n: 0, s: 0, v: 0 });
+      a.n++; a.s += s; a.v += v;
+    }
+  }
+  const out = {};
+  for (const [r, a] of Object.entries(acc)) out[r] = { count: a.n, sref: +(a.s / a.n).toFixed(4), vref: +(a.v / a.n).toFixed(4) };
+  return out;
+}
+
+module.exports = {
+  REGION, rgbToHsv, removeBackground, defringe, opaqueBounds, torsoCentre, classifyPixel, regionStats,
+};
