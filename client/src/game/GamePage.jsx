@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
@@ -22,7 +22,10 @@ const AUTH_PHASES = ['access', 'login', 'register'];
 export default function GamePage() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
-  const [rawPhase, setPhase] = useState('title'); // title | access | login | register | creator | world
+  const location = useLocation();
+  // Coming back from a page of the game (e.g. a player's inventory) skips the title screen: 'access' turns into
+  // the world (or the creator) as soon as the signed-in user is known.
+  const [rawPhase, setPhase] = useState(() => (location.state?.resume ? 'access' : 'title')); // title | access | login | register | creator | world
   const [editing, setEditing] = useState(false);
   useGameFont();
 

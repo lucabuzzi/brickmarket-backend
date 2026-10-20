@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Pencil } from 'lucide-react';
+import { Eye, EyeOff, Pencil, Users, X } from 'lucide-react';
 import DragonView from '../components/DragonView';
+import AvatarPreview from '../components/AvatarPreview';
+import usePlaza from '../usePlaza';
 import { buildAvatarSheet } from '../skinLoader';
 import { useAuth } from '../../auth/useAuth';
 import { useLocalizedNav } from '../../routing/useLocalizedNav';
@@ -49,6 +51,26 @@ function TutorialCard({ step, state, place, goSite, dispatch }) {
   );
 }
 
+/** Card of another player of the plaza, shown when their character is tapped. */
+function PlayerCard({ player, onClose, onInventory }) {
+  const { t } = useTranslation();
+  return (
+    <div className="cbg-panel cbg-card-enter absolute left-1/2 top-2 z-20 w-[min(92%,320px)] -translate-x-1/2 p-3 sm:top-14 sm:p-4" role="dialog" aria-label={player.u}>
+      <button type="button" onClick={onClose} aria-label={t('game.plaza.close')} className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center text-white/60 hover:text-white">
+        <X className="h-5 w-5" aria-hidden />
+      </button>
+      <div className="flex items-center gap-3 pr-8">
+        <div className="shrink-0 rounded-lg bg-black/40"><AvatarPreview avatar={player.a} scale={2} /></div>
+        <div className="min-w-0">
+          <p className="cbg-pixel truncate text-xs uppercase text-white">{player.u}</p>
+          <p className="mt-1 text-xs text-white/55">{t('game.plaza.in_plaza')}</p>
+        </div>
+      </div>
+      <button type="button" className="cbg-btn mt-3 w-full sm:mt-4" onClick={onInventory}>{t('game.plaza.view_inventory')} ▶</button>
+    </div>
+  );
+}
+
 /** The map with the guided tutorial on top. Entering a place leaves the game for the matching site page. */
 export default function WorldScreen({ avatar, onEdit }) {
   const { t } = useTranslation();
@@ -59,6 +81,11 @@ export default function WorldScreen({ avatar, onEdit }) {
   const gameRef = useRef(null);
   const [door, setDoor] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
+  const [selected, setSelected] = useState(null); // public info of the tapped player
+  const plaza = usePlaza({ gameRef, ready: status === 'ready' });
+  // the scene is created once; it reaches the (stable) plaza callbacks through refs
+  const plazaRef = useRef(plaza);
+  useEffect(() => { plazaRef.current = plaza; }, [plaza]);
   const [tut, dispatch] = useReducer(tutorialReducer, null, () => {
     let store = null;
     try { store = window.localStorage; } catch { /* blocked */ }
@@ -94,6 +121,8 @@ export default function WorldScreen({ avatar, onEdit }) {
           labels,
           onDoorChange: setDoor,
           onEnterRequest: (id) => { const p = placeById(id); if (p) goSite(p); },
+          onLocalMove: (move) => plazaRef.current.reportMove(move),
+          onPlayerTap: (id) => setSelected(plazaRef.current.playerInfo(id)),
         });
         if (cancelled) { game.destroy(); return; }
         gameRef.current = game;
@@ -152,9 +181,26 @@ export default function WorldScreen({ avatar, onEdit }) {
         {status === 'error' && <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-bold text-white/70">{t('game.world.error')}</div>}
 
         {goal && (
-          <div className="cbg-pixel absolute left-3 top-3 z-10 max-w-[80%] border-4 border-black bg-[#14111f]/95 px-3 py-2 text-[0.6rem] uppercase" style={{ color: goal.color }}>
+          <div className="cbg-pixel absolute left-2 top-2 z-10 max-w-[58%] border-2 border-black bg-[#14111f]/95 px-2 py-1.5 text-[0.5rem] uppercase sm:left-3 sm:top-3 sm:max-w-[70%] sm:border-4 sm:px-3 sm:py-2 sm:text-[0.6rem]" style={{ color: goal.color }}>
             {t('game.world.objective', { place: labels[goal.id] })}
           </div>
+        )}
+
+        {status === 'ready' && (
+          <div className="cbg-pixel absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 border-2 border-black bg-[#14111f]/95 px-1.5 py-1 text-[0.45rem] uppercase text-white sm:right-3 sm:top-3 sm:gap-2 sm:border-4 sm:px-2.5 sm:py-1.5 sm:text-[0.55rem]" aria-live="polite">
+            <Users className="h-3 w-3 text-[#22d3ee] sm:h-3.5 sm:w-3.5" aria-hidden />
+            {plaza.status === 'online' ? t('game.plaza.online', { count: plaza.count })
+              : plaza.status === 'replaced' ? t('game.plaza.replaced')
+                : plaza.status === 'connecting' ? t('game.plaza.connecting') : t('game.plaza.offline')}
+          </div>
+        )}
+
+        {selected && (
+          <PlayerCard
+            player={selected}
+            onClose={() => setSelected(null)}
+            onInventory={() => navigate(`/game/inventario/${encodeURIComponent(selected.u)}`)}
+          />
         )}
 
         {near?.path && !(tut.active && tut.phase === 'explain') && (
@@ -175,6 +221,10 @@ export default function WorldScreen({ avatar, onEdit }) {
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
         <button type="button" className="cbg-btn cbg-btn--ghost" onClick={replay}>{t('game.world.tutorial_button')}</button>
         <button type="button" className="cbg-btn cbg-btn--ghost" onClick={onEdit}><Pencil className="h-4 w-4" aria-hidden /> {t('game.creator.edit')}</button>
+        <button type="button" className="cbg-btn cbg-btn--ghost" aria-pressed={plaza.visible} onClick={() => plaza.setVisible(!plaza.visible)}>
+          {plaza.visible ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
+          {plaza.visible ? t('game.plaza.visible_on') : t('game.plaza.visible_off')}
+        </button>
       </div>
 
       <ul className="mt-5 flex flex-wrap justify-center gap-2" aria-label="CardBrix">

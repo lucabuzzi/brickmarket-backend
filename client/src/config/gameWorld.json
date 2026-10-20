@@ -1,0 +1,7 @@
+{
+  "_comment": "Size of the CardBrix game world, walking speed and spawn point. Read by the client map (client/src/lib/game/gameMap.js) AND by the server plaza (src/services/gamePlaza.js), which checks that the positions players send are possible.",
+  "w": 480,
+  "h": 320,
+  "walkSpeed": 62,
+  "spawn": { "x": 240, "y": 262 }
+}

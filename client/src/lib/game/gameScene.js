@@ -12,6 +12,7 @@ import {
   WORLD, SPAWN, BUILDINGS, PLACES, TREES, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
 } from './gameMap';
+import { approach } from './plazaState';
 
 const VIEW_W = 320;
 const VIEW_H = 240;
@@ -42,8 +43,14 @@ const CLOUDS = [{ x: 60, y: 90, rx: 60, ry: 18, sp: 5 }, { x: 300, y: 200, rx: 8
  * - labels: { listings, auctions, arena, catalog, credits } place names (already translated)
  * - onDoorChange(id | null): fired when the character steps in/out of a place's door zone
  * - onEnterRequest(id): fired when the player presses Enter/Space on a door
+ * - onLocalMove({ x, y, d, m }): every frame, our own position (the plaza client throttles what it sends)
+ * - onPlayerTap(id): another player's character was tapped/clicked
+ * The returned handle also manages the OTHER players of the plaza: addRemote / moveRemote / removeRemote,
+ * and setPosition (server correction).
  */
-export async function startGame({ canvas, sheet, username, labels, onDoorChange, onEnterRequest }) {
+export async function startGame({
+  canvas, sheet, username, labels, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
+}) {
   const { default: kaplay } = await import('kaplay');
   const k = kaplay({
     canvas,
@@ -216,6 +223,38 @@ export async function startGame({ canvas, sheet, username, labels, onDoorChange,
   let target = null;
   const player = k.add([k.sprite('me', { anim: currentAnim }), k.pos(pos.x, pos.y), k.anchor('bot'), k.scale(CHAR_SCALE), k.z(pos.y)]);
 
+  // ── other players (the plaza) ────────────────────────────────────────────────
+  let alive = true;
+  const remotes = new Map(); // id -> { obj, avatarKey, username, x, y, tx, ty, d, m, anim }
+  const remoteSprites = new Map(); // avatar key -> Promise<sprite name>: players with the same look share it
+  const spriteFor = (avatarKey, sheetCanvas) => {
+    if (!remoteSprites.has(avatarKey)) {
+      const name = `r${remoteSprites.size + 1}`;
+      remoteSprites.set(avatarKey, k.loadSprite(name, sheetCanvas.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims }).then(() => name));
+    }
+    return remoteSprites.get(avatarKey);
+  };
+  const removeRemote = (id) => {
+    const r = remotes.get(id);
+    if (r && r.obj) r.obj.destroy();
+    remotes.delete(id);
+  };
+  const addRemote = async ({ id, username: name, avatarKey, sheet: remoteSheet, x, y, d = 'down' }) => {
+    const existing = remotes.get(id);
+    if (existing && existing.avatarKey === avatarKey) { Object.assign(existing, { username: name, tx: x, ty: y }); return; }
+    if (existing) removeRemote(id);
+    const entry = { obj: null, avatarKey, username: name, x, y, tx: x, ty: y, d, m: false, anim: `${d}-idle` };
+    remotes.set(id, entry);
+    const spriteName = await spriteFor(avatarKey, remoteSheet);
+    if (!alive || remotes.get(id) !== entry) return; // left (or changed look) while loading
+    entry.obj = k.add([k.sprite(spriteName, { anim: entry.anim }), k.pos(entry.x, entry.y), k.anchor('bot'), k.scale(CHAR_SCALE), k.z(entry.y)]);
+  };
+  const moveRemote = (id, { x, y, d, m }) => {
+    const r = remotes.get(id);
+    if (!r) return;
+    Object.assign(r, { tx: x, ty: y, d: d || r.d, m: Boolean(m) });
+  };
+
   // overlay on top of everything: name tag + the guide arrow orbiting the player toward the tutorial target
   k.add([k.pos(0, 0), k.z(9999), {
     draw() {
@@ -223,6 +262,13 @@ export async function startGame({ canvas, sheet, username, labels, onDoorChange,
       const w = ft.width + 6;
       k.drawRect({ pos: k.vec2(pos.x - w / 2, pos.y + 3), width: w, height: 11, color: col('#000000'), opacity: 0.6, radius: 2 });
       k.drawText({ font: FONT, text: username, size: 8, pos: k.vec2(pos.x, pos.y + 8.5), anchor: 'center', color: col('#ffffff') });
+      // other players: smaller, dimmer name tags
+      for (const r of remotes.values()) {
+        if (!r.obj) continue;
+        const rw = k.formatText({ font: FONT, text: r.username, size: 6 }).width + 4;
+        k.drawRect({ pos: k.vec2(r.x - rw / 2, r.y + 3), width: rw, height: 8, color: col('#000000'), opacity: 0.45, radius: 2 });
+        k.drawText({ font: FONT, text: r.username, size: 6, pos: k.vec2(r.x, r.y + 7), anchor: 'center', color: col('#e5e7eb') });
+      }
 
       const place = state.guide ? placeById(state.guide) : null;
       if (place && state.activeDoor !== place.id) {
@@ -248,11 +294,24 @@ export async function startGame({ canvas, sheet, username, labels, onDoorChange,
 
   // ── input ────────────────────────────────────────────────────────────────────
   const down = (...keys) => keys.some((key) => k.isKeyDown(key));
-  k.onMousePress(() => {
+  // Taps / clicks are read from the DOM event itself: Kaplay only refreshes its mouse position on mousemove,
+  // so a click with no movement before it (some touch screens, stylus, assistive tools) would land on a stale
+  // spot. The view is letterboxed (VIEW_W x VIEW_H scaled to fit, centred), so undo that mapping by hand.
+  const onPointerDown = (e) => {
     if (state.frozen) return;
-    const p = k.toWorld(k.mousePos());
+    const rect = canvas.getBoundingClientRect();
+    const scale = Math.min(rect.width / VIEW_W, rect.height / VIEW_H);
+    const lx = (e.clientX - rect.left - (rect.width - VIEW_W * scale) / 2) / scale;
+    const ly = (e.clientY - rect.top - (rect.height - VIEW_H * scale) / 2) / scale;
+    if (lx < 0 || ly < 0 || lx > VIEW_W || ly > VIEW_H) return; // on a letterbox bar
+    const p = k.toWorld(k.vec2(lx, ly));
+    // tapping another player opens their card instead of walking there
+    for (const [id, r] of remotes) {
+      if (r.obj && Math.abs(p.x - r.x) <= 9 && p.y >= r.y - 32 && p.y <= r.y + 4) { onPlayerTap(id); return; }
+    }
     target = { x: Math.min(WORLD.w - 8, Math.max(8, p.x)), y: Math.min(WORLD.h - 4, Math.max(14, p.y)) };
-  });
+  };
+  canvas.addEventListener('pointerdown', onPointerDown);
   const requestEnter = () => { if (!state.frozen && state.activeDoor) onEnterRequest(state.activeDoor); };
   k.onKeyPress('enter', requestEnter);
   k.onKeyPress('space', requestEnter);
@@ -295,6 +354,22 @@ export async function startGame({ canvas, sheet, username, labels, onDoorChange,
     const door = doorAt(pos);
     const id = door ? door.id : null;
     if (id !== state.activeDoor) { state.activeDoor = id; onDoorChange(id); }
+
+    onLocalMove({ x: Math.round(pos.x * 10) / 10, y: Math.round(pos.y * 10) / 10, d: row, m: moved });
+
+    // other players walk smoothly toward their latest reported position
+    for (const r of remotes.values()) {
+      if (!r.obj) continue;
+      const s = approach(r, dt);
+      r.x = s.x;
+      r.y = s.y;
+      const walking = s.moving || r.m;
+      const ranim = `${r.d}-${walking ? 'walk' : 'idle'}`;
+      if (ranim !== r.anim) { r.anim = ranim; r.obj.play(ranim); }
+      const rbob = walking ? Math.abs(Math.sin(k.time() * 11)) * 1.2 : 0;
+      r.obj.pos = k.vec2(r.x, r.y - rbob);
+      r.obj.z = r.y;
+    }
   });
 
   return {
@@ -303,7 +378,16 @@ export async function startGame({ canvas, sheet, username, labels, onDoorChange,
     setGuide(id) { state.guide = id || null; },
     /** While frozen (a tutorial card is open) the character ignores input. */
     setFrozen(v) { state.frozen = Boolean(v); if (v) target = null; },
-    destroy() { try { k.quit(); } catch { /* already gone */ } },
+    addRemote,
+    moveRemote,
+    removeRemote,
+    /** The server refused a move: snap back to where it says we are. */
+    setPosition(x, y) { pos = { x, y }; target = null; },
+    destroy() {
+      alive = false;
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      try { k.quit(); } catch { /* already gone */ }
+    },
   };
 }
 

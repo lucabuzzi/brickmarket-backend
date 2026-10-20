@@ -2594,6 +2594,29 @@
         "body": "Du kannst die Karte jetzt frei erkunden oder zur Seite wechseln. Das Tutorial kannst du jederzeit über die Schaltfläche oben wiederholen."
       },
       "victory": "SIEG!"
+    },
+    "plaza": {
+      "online": "{{count}} auf dem Platz",
+      "connecting": "Verbinde …",
+      "offline": "Platz offline",
+      "replaced": "In einem anderen Tab geöffnet",
+      "visible_on": "Sichtbar auf dem Platz",
+      "visible_off": "Versteckt auf dem Platz",
+      "view_inventory": "Inventar ansehen",
+      "in_plaza": "Gerade auf dem Platz",
+      "close": "Schließen"
+    },
+    "inventory": {
+      "kicker": "Inventar",
+      "title": "Inventar von {{username}}",
+      "selling": "Zum Verkauf",
+      "empty": "Derzeit keine aktiven Anzeigen.",
+      "auction": "Auktion",
+      "current_bid": "Gebot:",
+      "back": "Zurück zum Platz",
+      "full_profile": "Ganzes Profil",
+      "not_found": "Diesen Spieler gibt es nicht mehr.",
+      "error": "Das Inventar konnte nicht geladen werden. Bitte versuche es gleich noch einmal."
     }
   }
 }

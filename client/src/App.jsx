@@ -63,6 +63,7 @@ const TcgCardPage = lazy(() => import('./pages/TcgCardPage'));
 const Archive = lazy(() => import('./pages/Archive'));
 const SkillZone = lazy(() => import('./pages/SkillZone'));
 const GamePage = lazy(() => import('./game/GamePage'));
+const GameInventory = lazy(() => import('./game/InventoryPage'));
 const WalletInfo = lazy(() => import('./pages/WalletInfo'));
 const StripeOnboardingStatus = lazy(() => import('./pages/StripeOnboardingStatus'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
@@ -160,6 +161,7 @@ export default function App() {
         <Routes location={location} key={location.pathname}>
           {/* "CardBrix the game!": its own full-screen shell, deliberately outside the site Layout. */}
           <Route path="game" element={<GamePage />} />
+          <Route path="game/inventario/:username" element={<GameInventory />} />
           <Route element={<Layout />}>
           <Route index element={<Home />} />
 

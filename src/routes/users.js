@@ -34,7 +34,7 @@ router.get('/profile/:username', async (req, res) => {
     // 1. Fetch user data (expose id so frontend can call /api/reviews/user/:id)
     const userRes = await query(
       `SELECT id, username, avatar_url, rating_avg, rating_count, address_country, city,
-              is_verified, is_pro, bio, created_at, seller_type, company_name
+              is_verified, is_pro, bio, created_at, seller_type, company_name, avatar_config
        FROM users
        WHERE username = $1`,
       [username]

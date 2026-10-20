@@ -2602,6 +2602,29 @@
         "body": "Vous pouvez maintenant explorer la carte librement ou passer au site. Vous pouvez revoir le tutoriel à tout moment avec le bouton en haut."
       },
       "victory": "VICTOIRE !"
+    },
+    "plaza": {
+      "online": "{{count}} sur la place",
+      "connecting": "Connexion…",
+      "offline": "Place hors ligne",
+      "replaced": "Ouvert dans un autre onglet",
+      "visible_on": "Visible sur la place",
+      "visible_off": "Caché sur la place",
+      "view_inventory": "Voir l'inventaire",
+      "in_plaza": "Sur la place maintenant",
+      "close": "Fermer"
+    },
+    "inventory": {
+      "kicker": "Inventaire",
+      "title": "Inventaire de {{username}}",
+      "selling": "En vente",
+      "empty": "Aucune annonce active pour le moment.",
+      "auction": "Enchère",
+      "current_bid": "Offre :",
+      "back": "Retour sur la place",
+      "full_profile": "Profil complet",
+      "not_found": "Ce joueur n'existe plus.",
+      "error": "Impossible de charger l'inventaire. Réessayez dans un instant."
     }
   }
 }
