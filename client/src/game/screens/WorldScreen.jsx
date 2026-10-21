@@ -14,6 +14,8 @@ import { useLocalizedNav } from '../../routing/useLocalizedNav';
 import { ALL_PLACES } from '../../lib/game/maps';
 import { NPCS, npcById, npcNameKey, npcRoleKey, startNode, chooseOption } from '../../lib/game/npcs';
 import { panelReducer, EMPTY_PANEL, currentView } from '../../lib/game/contextPanel';
+import { MAP_INTROS, hasSeen, markSeen, clearSeen } from '../../lib/game/firstVisit';
+import NpcPortrait from '../panel/NpcPortrait';
 import { auctionsUrl, nextEndingAuction } from '../../lib/game/marketQueries';
 import { apiFetch } from '../../api';
 import {
@@ -75,12 +77,19 @@ function useMedia(query) {
   );
 }
 
+/** Local storage, or null when the browser blocks it. */
+function storage() {
+  try { return window.localStorage; } catch { return null; }
+}
+
+/** A tour card, told by the NPC who keeps that stop (the guide opens and closes the tour). */
 function TutorialCard({ step, state, place, goSite, dispatch }) {
   const { t } = useTranslation();
   const { done, total } = progress(state);
   const isPlace = Boolean(step.place);
   const last = step.id === 'finish';
   const color = place?.color || '#c6ff3d';
+  const speaker = step.speaker ? npcById(step.speaker) : null;
   return (
     <div className="cbg-panel cbg-card-enter relative z-10 mx-auto mt-4 max-w-xl p-4 sm:absolute sm:inset-x-3 sm:bottom-3 sm:mt-0 sm:p-5" style={{ borderColor: color }} role="dialog" aria-live="polite" aria-label={t(`game.tutorial.${step.id}.title`)}>
       {last && (
@@ -89,9 +98,15 @@ function TutorialCard({ step, state, place, goSite, dispatch }) {
           <p className="cbg-pixel cbg-victory text-xl uppercase sm:text-2xl">{t('game.tutorial.victory')}</p>
         </div>
       )}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="cbg-pixel text-sm uppercase sm:text-base" style={{ color }}>{t(`game.tutorial.${step.id}.title`)}</h3>
-        {isPlace && <span className="cbg-pixel shrink-0 text-[0.55rem] text-white/50">{t('game.tutorial.progress', { done, total })}</span>}
+      <div className="flex items-center gap-3">
+        {speaker && !last && <NpcPortrait npc={speaker} color={speaker.color} />}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="cbg-pixel text-sm uppercase sm:text-base" style={{ color }}>{t(`game.tutorial.${step.id}.title`)}</h3>
+            {isPlace && <span className="cbg-pixel shrink-0 text-[0.55rem] text-white/50">{t('game.tutorial.progress', { done, total })}</span>}
+          </div>
+          {speaker && <p className="mt-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-white/50">{t(npcNameKey(speaker.id))} · {t(npcRoleKey(speaker.id))}</p>}
+        </div>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-white/80 sm:text-base">{t(`game.tutorial.${step.id}.body`)}</p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -107,6 +122,18 @@ function TutorialCard({ step, state, place, goSite, dispatch }) {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+/** First visit of a map: one short card about what is there (never shown again for this account). */
+function AreaIntro({ mapId, onClose }) {
+  const { t } = useTranslation();
+  return (
+    <div className="cbg-panel cbg-card-enter absolute inset-x-2 top-10 z-20 mx-auto max-w-md p-3 sm:top-14 sm:p-4" role="dialog" aria-live="polite" aria-labelledby="cbg-area-intro">
+      <h3 id="cbg-area-intro" className="cbg-pixel text-[0.6rem] uppercase text-[#c6ff3d] sm:text-xs">{t(`game.intro.${mapId}.title`)}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-white/80">{t(`game.intro.${mapId}.body`)}</p>
+      <button type="button" className="cbg-btn mt-3 w-full" onClick={onClose}>{t('game.intro.ok')} ▶</button>
     </div>
   );
 }
@@ -196,13 +223,13 @@ export default function WorldScreen({ avatar, onEdit }) {
   // A door leads to another map (castle gate, market gate) or to whoever keeps the place: their dialogue opens in
   // the side panel, and the real page of the site is one answer away. A place with nobody falls back to its page.
   const enterPlace = (place) => {
+    // during the tour, reaching the current stop opens its explanation card instead (even at the castle gate)
+    if (tutRef.current.active && guideTarget(tutRef.current) === place.id) return;
     if (place.travel) {
       plazaRef.current.travel(place.travel.to);
       gameRef.current?.travel(place.travel.to, place.travel.spawn);
       return;
     }
-    // during the tour, reaching the current stop opens its explanation card instead
-    if (tutRef.current.active && guideTarget(tutRef.current) === place.id) return;
     const npc = npcAt(place);
     if (npc) panelDispatch({ type: 'open', view: { kind: 'dialog', npc: npc.id, node: startNode(npc.id) } });
     else if (place.path) goSite(place);
@@ -311,6 +338,22 @@ export default function WorldScreen({ avatar, onEdit }) {
     if (door && door === target) dispatch({ type: 'arrive', placeId: door });
   }, [door, target]);
 
+  // First visits: a map gets a short intro card, a keeper / merchant greets the player once (speech bubble).
+  const [, setSeenTick] = useState(0); // re-render once an intro is dismissed (the "seen" list lives in storage)
+  const seenStore = storage();
+  const intro = status === 'ready' && seenStore && MAP_INTROS.includes(mapId) && !hasSeen(seenStore, user?.id, `map:${mapId}`) ? mapId : null;
+  const closeIntro = () => {
+    if (seenStore && intro) markSeen(seenStore, user?.id, `map:${intro}`);
+    setSeenTick((n) => n + 1);
+  };
+  useEffect(() => {
+    const npc = npcAt(placeById(door));
+    const store = storage();
+    if (!npc || !npc.avatar || !store || hasSeen(store, user?.id, `greet:${npc.id}`)) return;
+    gameRef.current?.showBubble(`npc:${npc.id}`, t(`game.npcs.${npc.id}.greet`));
+    markSeen(store, user?.id, `greet:${npc.id}`);
+  }, [door, t, user?.id]);
+
   // the first time the tour ends (finished or skipped) it stops auto-starting for this account
   const wasActive = useRef(tut.active);
   useEffect(() => {
@@ -342,6 +385,9 @@ export default function WorldScreen({ avatar, onEdit }) {
 
   function replay() {
     try { clearDone(window.localStorage, user?.id); } catch { /* blocked */ }
+    const store = storage();
+    if (store) clearSeen(store, user?.id); // the whole tour of the world starts over: intros and greetings too
+    setSeenTick((n) => n + 1);
     dispatch({ type: 'restart' });
   }
 
@@ -377,6 +423,8 @@ export default function WorldScreen({ avatar, onEdit }) {
       )}
 
       {status === 'ready' && !wide && toolbar}
+
+      {intro && !(tut.active && tut.phase === 'explain') && <AreaIntro mapId={intro} onClose={closeIntro} />}
 
       {near && (near.path || near.travel || nearNpc) && !(tut.active && tut.phase === 'explain') && !(nearNpc && view?.npc === nearNpc.id) && (
         <div className="cbg-panel cbg-card-enter absolute bottom-2 left-1/2 z-10 w-[min(94%,380px)] -translate-x-1/2 p-2.5 text-center sm:bottom-3 sm:p-3" style={{ borderColor: near.color }}>

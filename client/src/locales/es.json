@@ -2850,26 +2850,30 @@
         "role": "Guía de la plaza",
         "hello": "¡Hola, soy Brix! Bienvenido a la plaza de CardBrix: cada edificio es una parte del marketplace, con anuncios, subastas y desafíos reales. ¿Qué necesitas?",
         "where": "El castillo de la izquierda guarda el mercado de anuncios. Luego están la casa de subastas, la arena de la Skill Zone y el gran archivo del catálogo. ¿Te acompaño?",
-        "controls": "Toca el mapa para caminar, o usa las flechas, WASD o el D-pad. Si tocas un personaje o un edificio, vas tú solo. Cuando veas un «!» sobre alguien, puedes hablar con él."
+        "controls": "Toca el mapa para caminar, o usa las flechas, WASD o el D-pad. Si tocas un personaje o un edificio, vas tú solo. Cuando veas un «!» sobre alguien, puedes hablar con él.",
+        "greet": "¿Necesitas ayuda? ¡Habla conmigo!"
       },
       "auctioneer": {
         "name": "Gaspare",
         "role": "Subastador",
         "hello": "¡Adelante, adelante! Soy Gaspare y dirijo las subastas de CardBrix. En mi tablón están las subastas en curso, con el precio actual y el tiempo que queda.",
-        "how": "Cada subasta tiene un temporizador: al terminar gana la puja más alta. Una puja en los últimos 2 minutos alarga la subasta otros 2, así que nada de golpes en el último segundo. Para pujar, abre la subasta en el sitio."
+        "how": "Cada subasta tiene un temporizador: al terminar gana la puja más alta. Una puja en los últimos 2 minutos alarga la subasta otros 2, así que nada de golpes en el último segundo. Para pujar, abre la subasta en el sitio.",
+        "greet": "¡Subastas reales, tiempo real!"
       },
       "referee": {
         "name": "Vera",
         "role": "Árbitra de la Skill Zone",
         "hello": "¡Bienvenido a la arena! Soy Vera y arbitro los desafíos de la Skill Zone: puzles contrarreloj para ganar los premios que ofrece CardBrix.com.",
         "how": "Cada desafío tiene plazas limitadas. Reservas una con créditos y luego resuelves el puzle de 16 piezas lo más rápido que puedas: el mejor tiempo gana el premio. El envío corre a cargo del ganador.",
-        "credits": "Los créditos solo valen dentro de CardBrix: no se compran, no se convierten en dinero y no se transfieren a otros usuarios. El dragón del centro de la plaza te explica cómo ganarlos."
+        "credits": "Los créditos solo valen dentro de CardBrix: no se compran, no se convierten en dinero y no se transfieren a otros usuarios. El dragón del centro de la plaza te explica cómo ganarlos.",
+        "greet": "¿Listo para un desafío?"
       },
       "archivist": {
         "name": "Ottone",
         "role": "Archivero del catálogo",
         "hello": "Chsss, estamos en el archivo. Soy Ottone: aquí guardo las fichas de sets LEGO, Funko Pop y cartas de muchos juegos, para reconocer lo que coleccionas.",
-        "how": "Buscas un set o una carta, abres su ficha y encuentras los detalles para identificarla. Las fichas sirven para documentarse: para comprar o vender, pasa por el mercado del castillo."
+        "how": "Buscas un set o una carta, abres su ficha y encuentras los detalles para identificarla. Las fichas sirven para documentarse: para comprar o vender, pasa por el mercado del castillo.",
+        "greet": "Chsss... fichas en el archivo"
       },
       "dragon": {
         "name": "Dragón de los Créditos",
@@ -2882,20 +2886,23 @@
         "name": "Mattia",
         "role": "Mercader LEGO",
         "hello": "¡Bienvenido, coleccionista! Soy Mattia: en mi puesto encontrarás los anuncios LEGO publicados por los usuarios de CardBrix, sets y minifiguras. ¡Echa un vistazo!",
-        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige un objeto, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix."
+        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige un objeto, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix.",
+        "greet": "¡Ladrillos en el mostrador!"
       },
       "cards_merchant": {
         "name": "Selene",
         "role": "Mercader de cartas",
         "hello": "¡Hola! Soy Selene, la mercader de cartas: Pokémon, Magic, Yu-Gi-Oh!, One Piece y otros juegos. Te enseño las cartas en venta ahora mismo.",
         "games": "¿De qué juego te interesan las cartas?",
-        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige una carta, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix."
+        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige una carta, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix.",
+        "greet": "¡Cartas de todos los juegos!"
       },
       "funko_merchant": {
         "name": "Fausto",
         "role": "Mercader de Funko Pop",
         "hello": "¡Qué tal! Soy Fausto. En mi puesto están los Funko Pop que ponen a la venta los usuarios, desde exclusivos hasta piezas raras.",
-        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige un Funko, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix."
+        "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige un Funko, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix.",
+        "greet": "¡Funko Pop en el escaparate!"
       }
     },
     "panel": {
@@ -2951,6 +2958,13 @@
       "contests_unavailable": "Los desafíos no están disponibles en este momento.",
       "arena_rules": "La reserva y la partida se hacen en la Skill Zone. Los premios los ofrece CardBrix.com; el envío corre a cargo del ganador.",
       "open_arena": "Ir a la Skill Zone"
+    },
+    "intro": {
+      "ok": "Entendido",
+      "market": {
+        "title": "El mercado del castillo",
+        "body": "Cada puesto tiene su mercader: toca a quien tenga un «!» para ver los anuncios reales publicados por los usuarios. La puerta del sur te devuelve a la plaza."
+      }
     }
   },
   "privacy": {
@@ -2997,7 +3011,7 @@
     "s2_title": "2. Herramientas técnicas de CardBrix (siempre activas, sin consentimiento)",
     "s2_body": "• bm_cookie_consent (cookie propia, 6 meses): recuerda tu elección sobre cookies.\n• cardbrix_token (localStorage, hasta cerrar sesión): mantiene el inicio de sesión.\n• cardbrix_cart (localStorage, hasta que lo vacíes): conserva el carrito antes de iniciar sesión.\n• i18nextLng (localStorage, persistente): recuerda el idioma elegido.\n• bm_geo_lang_checked (localStorage, persistente): recuerda que la sugerencia de idioma ya se mostró.\n• cardbrix_intro_seen (localStorage, persistente): evita repetir la animación inicial el mismo día.\n• cardbrix_sell_draft_v1:<id>, cardbrix_auction_draft_v1:<id>, cardbrix_sell_guide_seen, cardbrix_auction_guide_seen (localStorage, persistentes): borrador del anuncio o subasta que estás escribiendo y guías ya leídas.",
     "s3_title": "3. CardBrix the game: preferencias en tu dispositivo",
-    "s3_body": "Son tecnologías de funcionalidad que guardamos solo porque usas el juego y que no te identifican ante terceros. No requieren consentimiento.\n• cardbrix_game_visible (localStorage, persistente): si elegiste ser visible para otros jugadores.\n• cardbrix_game_tutorial_done:<id> (localStorage, persistente): si ya completaste el tutorial.\n• cardbrix_game_return (sessionStorage, hasta cerrar la pestaña): recuerda dónde estabas en el mapa cuando vuelves del sitio.\n• cardbrix_game_rotate_dismissed (sessionStorage, hasta cerrar la pestaña): recuerda que cerraste la sugerencia “gira el teléfono”.\nLas fuentes del juego y del sitio están alojadas en nuestros servidores: no contactamos con Google Fonts ni con otros servicios externos para cargarlas.",
+    "s3_body": "Son tecnologías de funcionalidad que guardamos solo porque usas el juego y que no te identifican ante terceros. No requieren consentimiento.\n• cardbrix_game_visible (localStorage, persistente): si elegiste ser visible para otros jugadores.\n• cardbrix_game_tutorial_done:<id> (localStorage, persistente): si ya completaste el tutorial.\n• cardbrix_game_seen:<id> (localStorage, persistente): qué explicaciones del juego (presentaciones de las zonas, saludos de los personajes) ya has visto, para no repetirlas.\n• cardbrix_game_return (sessionStorage, hasta cerrar la pestaña): recuerda dónde estabas en el mapa cuando vuelves del sitio.\n• cardbrix_game_rotate_dismissed (sessionStorage, hasta cerrar la pestaña): recuerda que cerraste la sugerencia “gira el teléfono”.\nLas fuentes del juego y del sitio están alojadas en nuestros servidores: no contactamos con Google Fonts ni con otros servicios externos para cargarlas.",
     "s4_title": "4. Herramientas de terceros necesarias",
     "s4_body": "Estos servicios son imprescindibles para la seguridad y los pagos. Pueden establecer sus propias cookies y tratar datos técnicos (como la IP) según sus políticas.\n• Cloudflare Turnstile (Cloudflare, Inc., Estados Unidos): protección antibots en acceso y registro. Base jurídica: interés legítimo. Transferencia: EU-US Data Privacy Framework. [DA VERIFICARE: duración, a inspeccionar en producción]\n• Stripe.js (Stripe Payments Europe Ltd, Irlanda; Stripe, Inc., Estados Unidos): pago seguro y prevención del fraude. Base jurídica: contrato e interés legítimo. [DA VERIFICARE: duración, a inspeccionar en producción]\n• PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., Luxemburgo): pago, si lo eliges. Base jurídica: contrato.\n• Acceder con Google (Google Ireland Limited) y Acceder con Apple (Apple Inc.): el botón, cuando aparece en las páginas de acceso y registro, carga un script del proveedor. Base jurídica: contrato. Detalles en sus políticas. [DA VERIFICARE: si la carga debe hacerse solo al hacer clic]",
     "s5_title": "5. Herramientas estadísticas (solo con tu consentimiento)",

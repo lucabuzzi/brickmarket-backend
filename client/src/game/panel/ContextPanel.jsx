@@ -1,22 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, X } from 'lucide-react';
-import AvatarPreview from '../components/AvatarPreview';
-import DragonView from '../components/DragonView';
 import { npcById, npcNameKey, npcRoleKey } from '../../lib/game/npcs';
 import { currentView, canGoBack } from '../../lib/game/contextPanel';
 import DialogView from './DialogView';
+import NpcPortrait from './NpcPortrait';
 import { GoodsView, ProductView, AuctionsView, ArenaView, PlayerView } from './Views';
 
 const DEFAULT_COLOR = '#c6ff3d';
-
-/** Pixel portrait of the NPC (or the player) the panel is talking about. */
-function Portrait({ npc, avatar, color }) {
-  return (
-    <span className="cbg-portrait" style={{ borderColor: color }}>
-      {npc?.portrait === 'dragon' ? <DragonView scale={1} /> : <AvatarPreview avatar={npc ? npc.avatar : avatar} scale={1} />}
-    </span>
-  );
-}
 
 /**
  * The side panel of the game, in RPG style: what it shows depends on what the player interacts with (see
@@ -57,7 +47,7 @@ export default function ContextPanel({ panel, dispatch, onChoose, emptyHint, cla
             <ChevronLeft className="h-5 w-5" aria-hidden />
           </button>
         ) : null}
-        <Portrait npc={npc} avatar={view.player?.a} color={color} />
+        <NpcPortrait npc={npc} avatar={view.player?.a} color={color} />
         <div className="min-w-0 flex-1">
           <p className="cbg-pixel truncate text-[0.6rem] uppercase" style={{ color }}>{name}</p>
           <p className="mt-1 truncate text-[0.7rem] font-bold uppercase tracking-[0.12em] text-white/50">{role}</p>

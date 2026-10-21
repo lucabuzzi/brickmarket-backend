@@ -128,7 +128,7 @@ export async function startGame({
   const add = (comps) => k.add([...comps, 'map']);
   // on-screen D-pad (touch): held directions, merged with the keyboard every frame
   const virtualKeys = { up: false, down: false, left: false, right: false };
-  // speech bubbles over the heads: id ('me' or a player id) -> { text, until }
+  // speech bubbles over the heads: id ('me', a player id or 'npc:<npc id>') -> { text, until }
   const bubbles = new Map();
   const BUBBLE_MS = 4000;
   const placeById = (id) => current.places.find((p) => p.id === id) || null;
@@ -572,7 +572,11 @@ export async function startGame({
       for (const [bid, b] of bubbles) {
         if (b.until < nowMs) { bubbles.delete(bid); continue; }
         if (bid === 'me') drawBubble(pos.x, pos.y, b.text);
-        else { const r = remotes.get(bid); if (r && r.obj) drawBubble(r.x, r.y, b.text); }
+        else if (bid.startsWith('npc:')) {
+          // NPCs: above their name tag; only while they stand on the map on screen
+          const n = npcsHere.find((x) => `npc:${x.id}` === bid);
+          if (n) drawBubble(n.x, n.y - 12, b.text);
+        } else { const r = remotes.get(bid); if (r && r.obj) drawBubble(r.x, r.y, b.text); }
       }
       // other players: smaller, dimmer name tags
       for (const r of remotes.values()) {
@@ -785,7 +789,7 @@ export async function startGame({
     setVirtualKeys(keys) {
       for (const dir of ['up', 'down', 'left', 'right']) virtualKeys[dir] = Boolean(keys && keys[dir]);
     },
-    /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character). */
+    /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character, 'npc:<id>' an NPC). */
     showBubble(id, text) { bubbles.set(id, { text: String(text), until: k.time() * 1000 + BUBBLE_MS }); },
     /** The server refused a move: snap back to where it says we are (switching map first if it says so). */
     setPosition(x, y, mapId) {
