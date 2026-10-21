@@ -6,6 +6,7 @@
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService } = require('./cardSets');
 const { mapOnePieceCard, variantOf, rarityLabel } = require('./onepieceCards');
+const { fetchPrintsByCode } = require('./onepiecePrints');
 
 const OPTCG_BASE = 'https://optcgapi.com/api';
 
@@ -90,9 +91,9 @@ async function lookupCard(externalId) {
   if (cached) return cached;
 
   // optcgapi's per-card endpoint is keyed on the base card_set_id (no parallel suffix)
-  const baseId = externalId.replace(/_p\d+$/, '');
-  const data = await fetchJson(`${OPTCG_BASE}/sets/card/${encodeURIComponent(baseId)}/`);
-  const variants = Array.isArray(data) ? data : [];
+  // (starter-deck and promo codes live in their own lists, which fetchPrintsByCode asks too)
+  const baseId = externalId.replace(/_[pr]\d+$/i, '');
+  const variants = await fetchPrintsByCode(baseId);
   const card = variants.find((v) => v.card_image_id === externalId) || variants[0];
   if (!card) return null;
 
@@ -110,8 +111,20 @@ async function searchCardsExternal(q, limit = 10) {
   return cardCatalog.bulkUpsertCards('onepiece', mapped);
 }
 
+/**
+ * Stores the prints a card recognition offered (master_cards-shaped, see cardRecognition.js), so the catalog page of
+ * the print the seller picks is served from the cache. Never fails the recognition: a DB error is only logged.
+ */
+async function cachePrints(prints) {
+  try {
+    await cardCatalog.bulkUpsertCards(GAME, prints);
+  } catch (err) {
+    console.error('[OPTCG] Caching recognised prints failed:', err.message);
+  }
+}
+
 module.exports = {
-  lookupCard, searchCardsExternal, listSets, getSet, ensureSets, refreshSets, sets,
+  lookupCard, searchCardsExternal, cachePrints, listSets, getSet, ensureSets, refreshSets, sets,
   // exported for tests
   mapOnePieceSets, mapOnePieceCard, variantOf, seriesOf, rarityLabel, SERIES,
 };

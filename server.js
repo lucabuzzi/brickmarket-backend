@@ -164,6 +164,7 @@ app.use('/api/catalog/onepiece', require('./src/routes/catalogOnepiece'));
 app.use('/api/catalog/dragonball', require('./src/routes/catalogDragonball'));
 app.use('/api/catalog/funko', require('./src/routes/catalogFunko'));
 app.use('/api/catalog', require('./src/routes/catalog'));
+app.use('/api/cards', require('./src/routes/cardRecognize')); // photo -> One Piece card prints
 
 // ClutchVault specific integrations
 const cvDb = require('./src/db/clutchvault-db');

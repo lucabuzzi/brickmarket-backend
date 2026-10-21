@@ -123,7 +123,8 @@ function geminiReader({ apiKey = process.env.GEMINI_API_KEY, model = process.env
  *   status: 'matched'     the code exists: `prints` holds every print of it (the seller picks one)
  *         | 'not_found'   a code or a name was read but no card has that code: search by `reading.name`
  *         | 'unreadable'  no card, or nothing legible on it: retake the photo
- *   reading: what was read (code normalised), nameMatches: the name read agrees with the catalog (null = no name read),
+ *   reading: what was read (code normalised), nameMatches: the name read agrees with the catalog (null = no name
+ *   read, or one in a non-Latin script),
  *   prints: master_cards-shaped rows (onepieceCards.mapOnePieceCard), usage
  * }
  */
@@ -138,12 +139,16 @@ async function recognizeOnePiece(buffer, { reader = geminiReader(), fetchPrints 
   const rows = code ? await fetchPrints(code) : [];
   if (!rows.length) return { status: 'not_found', reading: read, nameMatches: null, prints: [], usage };
   const prints = rows.map(mapOnePieceCard);
-  const nameMatches = reading.name ? prints.some((p) => namesMatch(reading.name, p.name)) : null;
+  // the catalog names are English: a name read in another script (a Japanese card) cannot be compared
+  const comparable = Boolean(reading.name) && /[a-z]/i.test(reading.name);
+  const nameMatches = comparable ? prints.some((p) => namesMatch(reading.name, p.name)) : null;
   return { status: 'matched', reading: read, nameMatches, prints, usage };
 }
 
 const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
+// opened to sellers only on purpose (CARD_RECOGNITION_ENABLED=1): on Gemini's free tier Google may use the photos
+const isEnabled = () => isConfigured() && process.env.CARD_RECOGNITION_ENABLED === '1';
 
 module.exports = {
-  recognizeOnePiece, geminiReader, prepareImage, parseReading, isConfigured, RecognitionError, DEFAULT_MODEL, MAX_SIDE,
+  recognizeOnePiece, geminiReader, prepareImage, parseReading, isConfigured, isEnabled, RecognitionError, DEFAULT_MODEL, MAX_SIDE,
 };

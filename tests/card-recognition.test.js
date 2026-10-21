@@ -93,6 +93,12 @@ describe('recognition', () => {
     expect(r.nameMatches).toBe(false);
   });
 
+  test('a Japanese name cannot be compared with the English catalog: no verdict instead of a false alarm', async () => {
+    const r = await recognizeOnePiece(await jpeg(), { reader: reader({ isCard: true, code: 'OP01-077', name: 'ペローナ', language: 'ja' }), fetchPrints: prints });
+    expect(r.status).toBe('matched');
+    expect(r.nameMatches).toBeNull();
+  });
+
   test('an invented or unknown code never becomes a result', async () => {
     const r = await recognizeOnePiece(await jpeg(), { reader: reader({ isCard: true, code: 'OP99-999', name: 'Perona' }), fetchPrints: prints });
     expect(r).toMatchObject({ status: 'not_found', prints: [] });
