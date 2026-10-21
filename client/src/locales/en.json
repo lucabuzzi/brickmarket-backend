@@ -2750,12 +2750,8 @@
         "heart": "Heart"
       }
     },
-    "dpad": {
-      "label": "Movement controls",
-      "up": "Up",
-      "down": "Down",
-      "left": "Left",
-      "right": "Right"
+    "joystick": {
+      "label": "Movement joystick: drag the knob to walk"
     },
     "age_note": "You need an account and must be 18 or over to play.",
     "classes": {

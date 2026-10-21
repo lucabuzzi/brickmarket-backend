@@ -2750,12 +2750,8 @@
         "heart": "Herz"
       }
     },
-    "dpad": {
-      "label": "Bewegungssteuerung",
-      "up": "Hoch",
-      "down": "Runter",
-      "left": "Links",
-      "right": "Rechts"
+    "joystick": {
+      "label": "Bewegungs-Joystick: Knopf ziehen, um zu laufen"
     },
     "age_note": "Zum Spielen brauchst du ein Konto und musst mindestens 18 sein.",
     "classes": {

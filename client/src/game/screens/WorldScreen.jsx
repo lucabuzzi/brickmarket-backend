@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, GraduationCap, Pencil, Smartphone, Users } from 'lucide-react';
 import DragonView from '../components/DragonView';
-import DPad from '../components/DPad';
+import VirtualJoystick from '../components/VirtualJoystick';
 import ChatPanel from '../components/ChatPanel';
 import { chatText } from '../chatText';
 import ContextPanel from '../panel/ContextPanel';
@@ -366,7 +366,7 @@ export default function WorldScreen({ avatar, onEdit }) {
   const near = !tut.active || tut.phase === 'walk' ? placeById(door) : null;
   const nearNpc = near && !near.travel ? npcAt(near) : null;
   const goal = tut.active && tut.phase === 'walk' ? placeById(target) : null;
-  const setVirtualKeys = useCallback((keys) => gameRef.current?.setVirtualKeys(keys), []);
+  const setVirtualStick = useCallback((v) => gameRef.current?.setVirtualStick(v), []);
   const drawer = !(wide && panelColumn);
 
   // Esc closes the panel; when it closes, the keyboard goes back to the map
@@ -469,7 +469,7 @@ export default function WorldScreen({ avatar, onEdit }) {
         <aside className="cbg-wide-left">
           <div className="cbg-wide-left-spacer" aria-hidden />
           {status === 'ready' && toolbar}
-          <DPad onChange={setVirtualKeys} />
+          <VirtualJoystick onChange={setVirtualStick} />
         </aside>
         <main className="cbg-wide-center">
           <div className="cbg-wide-column">
@@ -496,7 +496,7 @@ export default function WorldScreen({ avatar, onEdit }) {
       </div>
 
       <div className="cbg-stage-wrap mx-auto mt-3 flex items-stretch gap-2">
-        <DPad onChange={setVirtualKeys} className="shrink-0" />
+        <VirtualJoystick onChange={setVirtualStick} className="self-center" />
         <div className="min-w-0 flex-1">{chat}</div>
       </div>
 
