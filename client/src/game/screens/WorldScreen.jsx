@@ -103,7 +103,7 @@ function RotateHint({ onDismiss }) {
         <Smartphone className="cbg-rotate-phone mx-auto h-12 w-12 text-[#22d3ee]" aria-hidden />
         <h2 id="cbg-rotate-title" className="cbg-pixel mt-4 text-sm uppercase text-white">{t('game.world.rotate_title')}</h2>
         <p className="mt-3 text-sm leading-relaxed text-white/75">{t('game.world.rotate_text')}</p>
-        <button type="button" className="cbg-btn cbg-btn--ghost mt-5 w-full" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", textTransform: 'none', fontSize: '0.95rem', fontWeight: 800 }} onClick={onDismiss}>{t('game.world.rotate_dismiss')}</button>
+        <button type="button" className="cbg-btn cbg-btn--ghost mt-5 w-full" style={{ fontFamily: "'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif", textTransform: 'none', fontSize: '0.95rem', fontWeight: 800 }} onClick={onDismiss}>{t('game.world.rotate_dismiss')}</button>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ const locale = (lang) => JSON.parse(fs.readFileSync(path.join(ROOT, 'client/src/
 const strip = (html) => html.replace(/<[^>]+>/g, ' ');
 
 describe('policy pages in the server-rendered shell', () => {
-  test.each([['/privacy', 13], ['/cookie-policy', 6], ['/accessibilita', 7]])('%s renders every section of the locale text', (p, sections) => {
+  test.each([['/privacy', 16], ['/cookie-policy', 9], ['/accessibilita', 7]])('%s renders every section of the locale text', (p, sections) => {
     const d = pageFor(p);
     expect(d.h1).toBeTruthy();
     expect(d.lead).toBeTruthy();
@@ -79,10 +79,13 @@ describe('policy pages in the server-rendered shell', () => {
     expect(banner).toMatch(/legalPages\.published \? '\/cookie-policy' : '\/norme-legali'/);
   });
 
-  test('flag stays off while placeholders remain in the texts', () => {
+  test('flag stays off while placeholders remain in the texts (any language)', () => {
+    for (const lang of LOCALES) {
+      const l = locale(lang);
+      const text = JSON.stringify([l.privacy, l.cookie_policy, l.legal]);
+      if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL PRIVACY\]/.test(text)) expect(legalPages.published).toBe(false);
+    }
     const it = locale('it');
-    const text = JSON.stringify([it.privacy, it.cookie_policy]);
-    if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL PRIVACY\]/.test(text)) expect(legalPages.published).toBe(false);
     if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL ACCESSIBILIT/.test(JSON.stringify(it.accessibility))) expect(legalPages.accessibilityPublished).toBe(false);
   });
 

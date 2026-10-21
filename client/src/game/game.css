@@ -15,7 +15,7 @@
   overflow-y: auto;
   background: var(--cbg-bg);
   color: #fff;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 .cbg-root *, .cbg-root *::before, .cbg-root *::after { box-sizing: border-box; }
 .cbg-pixel { font-family: 'Press Start 2P', ui-monospace, monospace; letter-spacing: 0.02em; line-height: 1.5; }

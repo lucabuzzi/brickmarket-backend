@@ -44,7 +44,7 @@
   --accent-hover: #e9cd6f; /* Brighter champagne gold on hover */
   --radius-bento: 24px; /* Larger rounded corners for bento style */
   --radius: 16px;
-  --font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
 
   /* Deep soft shadows and gold glow */
   --shadow-bento: 0 10px 30px -10px rgba(0, 0, 0, 0.85), 0 1px 1px rgba(212,175,55, 0.05) inset;

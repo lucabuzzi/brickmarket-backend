@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import DragonView from '../components/DragonView';
+import legalPages from '../../config/legalPages.json';
+import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
 const BRICKS = [
   { left: '6%', top: '14%', c: '#3b82f6', r: '-8deg', d: '0s' },
@@ -15,6 +18,7 @@ const BRICKS = [
 /** "PREMI START" screen. Enter / Space also start, like an arcade cabinet. */
 export default function TitleScreen({ onStart, busy }) {
   const { t } = useTranslation();
+  const navTo = useLocalizedNav();
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStart(); } };
@@ -44,6 +48,14 @@ export default function TitleScreen({ onStart, busy }) {
         <button type="button" onClick={onStart} disabled={busy} className="cbg-btn mt-12 px-8">
           <span className="cbg-blink" aria-hidden>▶</span> {t('game.press_start')}
         </button>
+
+        <p className="mt-8 text-xs text-white/50">{t('game.age_note')}</p>
+        {legalPages.published && (
+          <p className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-white/60">
+            <Link to={navTo('/privacy')} className="underline hover:text-white">{t('footer.privacy')}</Link>
+            <Link to={navTo('/cookie-policy')} className="underline hover:text-white">{t('footer.cookie_policy')}</Link>
+          </p>
+        )}
       </div>
     </div>
   );

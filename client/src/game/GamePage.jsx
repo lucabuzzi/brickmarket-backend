@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { sanitizeAvatar } from '../lib/game/skins';
-import useGameFont from './useGameFont';
+import '@fontsource/press-start-2p/latin-400.css';
+import '@fontsource/press-start-2p/latin-ext-400.css';
 import TitleScreen from './screens/TitleScreen';
 import { AccessMenu, LoginScreen } from './screens/AccessScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -27,7 +28,6 @@ export default function GamePage() {
   // the world (or the creator) as soon as the signed-in user is known.
   const [rawPhase, setPhase] = useState(() => (location.state?.resume ? 'access' : 'title')); // title | access | login | register | creator | world
   const [editing, setEditing] = useState(false);
-  useGameFont();
 
   // metadata for this page only: it is a game screen, not a page to index
   useEffect(() => {

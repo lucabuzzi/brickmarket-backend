@@ -363,10 +363,19 @@
   },
   "cookies": {
     "banner_title": "Cookie usage",
-    "banner_text": "We use technical cookies and, with your consent, analytics cookies to understand how the site is used (pages visited, visit duration, registrations). You can accept or reject at any time.",
-    "learn_more": "Learn more",
-    "accept": "Accept",
-    "reject": "Reject"
+    "banner_text": "We use technical cookies and similar technologies that the site needs to work. Only with your consent do we also use statistics cookies to understand how the site is used. You can accept, reject or choose, and change your mind at any time from “Manage cookies”.",
+    "learn_more": "Cookie Policy",
+    "accept": "Accept all",
+    "reject": "Reject all",
+    "customize": "Customise",
+    "save": "Save choices",
+    "close": "Close and continue without accepting",
+    "necessary_title": "Necessary",
+    "always_on": "Always on",
+    "necessary_desc": "Login, cart, language, remembering your cookie choice, anti-bot protection and secure payments, and CardBrix the game preferences. The site cannot work without them, so they need no consent.",
+    "stats_title": "Statistics",
+    "stats_desc": "Pages visited, visit duration, clicks on links and buttons, country derived from the IP. Our own data, never shared with advertising networks.",
+    "gpc_notice": "Your browser sends the Global Privacy Control signal: we treat it as a rejection until you choose otherwise."
   },
   "hubs": {
     "catalog": {
@@ -1757,7 +1766,7 @@
   },
   "legal": {
     "title": "Legal Rules",
-    "subtitle": "Terms of use for the LEGO Marketplace platform",
+    "subtitle": "Rules of use for the CardBrix platform (marketplace, auctions, CardBrix the game)",
     "art1_title": "Art. 1 – Purpose",
     "art1_body": "1.1 These rules govern access to and use of the online marketplace platform operated by [Company Name / Owner].\n1.2 The Platform allows third parties to sell and/or purchase LEGO products, new or used, including via online auctions.\n1.3 Access implies full acceptance of these Rules.",
     "art2_title": "Art. 2 – Roles of the parties",
@@ -1781,7 +1790,11 @@
     "art12_title": "Art. 12 – Amendments to the Rules",
     "art12_body": "12.1 The Operator may amend the Rules at any time, subject to publication.",
     "art13_title": "Art. 13 – Governing law and jurisdiction",
-    "art13_body": "13.1 These Rules are governed by Italian law.\n13.2 Competent court: [City]."
+    "art13_body": "13.1 These Rules are governed by Italian law.\n13.2 Competent court: [City].\n13.3 If you are a consumer living in the European Union, the mandatory consumer-protection rules of your country of residence still apply and you may bring proceedings before the courts of your country. The European Commission no longer runs an ODR platform for online disputes: you can turn to the alternative dispute resolution bodies of your country.",
+    "art14_title": "Art. 14 – CardBrix the game",
+    "art14_body": "14.1 CardBrix the game is reserved for registered users aged 18 or over. No sums of money are bought or won in the game, and credits remain subject to the platform rules (not purchasable, not convertible, not transferable).\n14.2 Your username and character are visible to the other players present, unless you choose not to be visible. You may not use names that imitate other people or brands, or that are offensive or unlawful.\n14.3 Using automated programs, manipulating position or speed, exploiting game errors, harassing other players or circumventing restrictions is forbidden. The server rejects implausible movements.\n14.4 In case of breach we may limit or suspend access to the game, giving the reasons as provided in Art. 15. The game is offered “as is” and may be changed, interrupted or updated.\n14.5 For data processing see the Privacy Policy and the Cookie Policy.",
+    "art15_title": "Art. 15 – Reports and suspensions",
+    "art15_body": "15.1 Anyone can report content they believe to be illegal (a listing, profile, username) to [EMAIL PRIVACY], saying where it is and why it is illegal [DA VERIFICARE: dedicated reporting channel and form].\n15.2 We assess reports carefully and without undue delay, and tell the reporter the outcome.\n15.3 If we remove content or suspend an account, we tell the user the reason, the consequences and how to contest the decision, including with human review.\n15.4 Professional sellers must provide and keep up to date their identification data, which we show on the profile."
   },
   "wallet": {
     "page_title": "CardBrix Credits - How It Works",
@@ -2710,6 +2723,65 @@
       "down": "Down",
       "left": "Left",
       "right": "Right"
-    }
+    },
+    "age_note": "You need an account and must be 18 or over to play."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "Last updated: [DATA]. How CardBrix processes your personal data, under Articles 13 and 14 of Regulation (EU) 2016/679 (GDPR). It applies to all users in the European Economic Area.",
+    "s1_title": "1. Data controller",
+    "s1_body": "[DA COMPILARE: company name or full name, registered office, VAT no. / tax code, privacy contact email]\nWebsite: https://cardbrix.com\n[DA VERIFICARE: DPO and contact, if appointed]\n[DA VERIFICARE: if the controller is not established in the European Economic Area, the EU representative under Art. 27 GDPR]",
+    "s2_title": "2. Data you give us",
+    "s2_body": "• Account: email, username, password (stored only in encrypted form) and preferred language.\n• Sign-in with Google or Apple: the identifier and email returned by the provider you choose.\n• Public profile: avatar, city and country, an optional bio and the reviews you receive. For professional sellers, also the business identification data that the law requires us to show to consumers.\n• Listings and auctions: titles, descriptions, photos, prices and bids.\n• Shipping: name, address and contact details needed for delivery.\n• Payments: full card or bank details are handled by Stripe and PayPal and never pass through or stay with CardBrix. We see amounts, order status and transaction identifiers.\n• Seller verification: the identity data required by Stripe Connect is given directly to Stripe.\n• Support: the content of the requests you send us and the questions you ask the Help Center’s automated assistant.\n[DA VERIFICARE: other data collected, for example messages between users, phone, documents]",
+    "s3_title": "3. Data we collect automatically",
+    "s3_body": "• Technical data: IP address, browser, country derived from the IP and security logs.\n• Credits and Skill Zone: the credit ledger (date and reason) and puzzle entries.\n• Anti-abuse signals: irreversible fingerprints (SHA-256 hashes) of IP, device, payment method and shipping address. For this purpose we do not keep the plain value.\n• Usage statistics, only with your consent: pages visited, duration, clicks on links and buttons, random session and visitor identifiers. Details in the Cookie Policy.\n• Consent record: your cookie choice, the date, the policy version, an encrypted fingerprint of the IP (never the IP itself) and the browser, so we can prove consent or refusal.",
+    "s4_title": "4. CardBrix the game",
+    "s4_body": "CardBrix the game is CardBrix’s interactive world, reached with the same account as the website. This is what it processes.\n• Character: the look you choose (skin, hair, clothes, accessories) is saved on your account.\n• Plaza and maps: while you are in the game, the other players present see in real time your username, your character, where you are and which way you are walking. This data stays only in the server’s memory while you are connected: it is not saved or logged.\n• Phrase chat: you can only say preset phrases and emoji, not free text. They are not saved.\n• Visibility: from the game you can choose not to be visible to others; if you do, we send you to nobody.\n• Inventory: clicking a player opens their public profile (listings, ratings, city and country). This is data already public on the website.\n• Preferences on your device: your visibility choice, the tutorial already seen and a few minimal settings are stored in your browser (see the Cookie Policy), not on our servers.\n• The game uses no advertising cookies, does not profile players and awards no cash prizes. You need an account and must be at least 18 to play.",
+    "s5_title": "5. Why we process it and on what legal basis",
+    "s5_body": "• Creating and managing your account, authenticating you, verifying your email: performance of a contract (Art. 6.1.b GDPR).\n• Enabling listings, auctions, purchases, shipping, payments, reviews and disputes: performance of a contract.\n• Managing credits (crediting, maturation, use in puzzles, ledger): performance of a contract.\n• Providing CardBrix the game (character, plaza, maps): performance of a contract; visibility to other players can always be switched off.\n• Sending service emails (verification, orders, security): performance of a contract.\n• Preventing fraud and bonus abuse, including caps and checks on shared signals: legitimate interest (Art. 6.1.f) in protecting the platform and users.\n• Information security and bot prevention (Cloudflare Turnstile): legitimate interest.\n• Answering Help Center questions, also through the automated assistant: legitimate interest in providing support; for email requests, performance of a contract.\n• Keeping proof of cookie consent: legal obligation and legitimate interest in demonstrating compliance (Arts. 6.1.c, 6.1.f and 7.1).\n• Tax and accounting duties, traceability of professional sellers and requests from authorities: legal obligation (Art. 6.1.c).\n• Usage statistics: consent (Art. 6.1.a), which you can withdraw at any time at no cost.\n• Promotional communications [DA VERIFICARE: if planned]: consent.\n• Defence of legal claims: legitimate interest.",
+    "s6_title": "6. Automated decisions",
+    "s6_body": "The system may refuse or suspend the crediting of bonus credits when it detects signs of abuse, for example the same IP, device, payment method or address shared by seller and buyer. The Help Center’s automated assistant answers general questions but makes no decisions about your account.\nYou can ask for human intervention, express your view and contest the decision by writing to [EMAIL PRIVACY].",
+    "s7_title": "7. Who we share data with",
+    "s7_body": "We share data with providers that process it on our behalf (processors) or as independent controllers:\n• Supabase: database and infrastructure.\n• Render: hosting of the website and server.\n• Stripe and PayPal: payments; Stripe also for seller verification.\n• Cloudinary: image storage and optimisation.\n• SendGrid: sending emails.\n• Cloudflare Turnstile: anti-bot protection.\n• Google (Gemini): the Help Center’s automated assistant, which receives the question you write. Do not put personal data in the message.\n• Google and Apple: only if you choose to sign in with their account.\n• Carriers and shipping services [DA VERIFICARE: names, for example Sendcloud].\n• Advisers, accountants and competent authorities, where the law requires.\nOther users see only the data they need: the buyer sees the seller’s username, the seller sees the order’s shipping address, plaza players see your username and character. We do not sell your data.",
+    "s8_title": "8. Transfers outside the European Economic Area",
+    "s8_body": "Some providers may process data in the United States or other non-EU countries. In that case the transfer relies on an adequacy decision (for example the EU-US Data Privacy Framework for certified providers) or the European Commission’s Standard Contractual Clauses. You can ask for a copy of the safeguards by writing to [EMAIL PRIVACY]. [DA VERIFICARE: confirmation for each provider]",
+    "s9_title": "9. How long we keep data",
+    "s9_body": "• Account and profile: until the account is deleted [DA VERIFICARE: proposal, deletion within 30 days of the request].\n• Orders, invoices and accounting documents: 10 years, for tax obligations.\n• Credit ledger: [DA VERIFICARE: proposal, 10 years like accounting documents].\n• Anti-abuse signals (hashes): [DA VERIFICARE: proposal, 24 months from the last signal].\n• Usage statistics: [DA VERIFICARE: proposal, 14 months]; the visitor cookie lasts up to 400 days.\n• Consent record: [DA VERIFICARE: proposal, 3 years from the choice].\n• Position and phrases in the CardBrix the game plaza: not kept; they exist only while you are connected.\n• Support requests: [DA VERIFICARE: proposal, 24 months after closing].\nWhen the period ends the data is deleted or anonymised.",
+    "s10_title": "10. Your rights",
+    "s10_body": "You can ask for access to your data, rectification, erasure, restriction, portability in a structured format, and object to processing based on legitimate interest. You can withdraw consent at any time from the “Manage cookies” link at the foot of every page: withdrawal does not affect processing already carried out.\nWrite to [EMAIL PRIVACY]: we reply within one month, extendable by two in complex cases. Exercising your rights is free of charge.\nYou also have the right to lodge a complaint with the supervisory authority of the country where you live, work or where you believe the infringement took place (Art. 77 GDPR). List of European authorities: https://www.edpb.europa.eu. In Italy: Garante per la protezione dei dati personali, www.garanteprivacy.it.",
+    "s11_title": "11. Providing your data",
+    "s11_body": "Account, shipping and payment data are needed to use the marketplace: without them we cannot conclude the contract. Statistics and non-essential cookies are optional: refusing them does not limit use of the website or the game.",
+    "s12_title": "12. Security",
+    "s12_body": "We use encrypted connections (HTTPS), passwords stored only as hashes, administrator access checked on every request and attempt limits. No system is risk-free: if a breach affects you we will inform you, and the supervisory authority, as the law requires.",
+    "s13_title": "13. Minors",
+    "s13_body": "The service, including CardBrix the game, is for people aged 18 or over. We do not knowingly collect minors’ data; if we find out, we close the account and delete the data. If you think a minor has registered, write to [EMAIL PRIVACY].",
+    "s14_title": "14. Credits",
+    "s14_body": "Credits are an internal CardBrix tool: they cannot be bought with money, converted into money or transferred between users. The ledger exists to ensure correctness, prevent abuse and support users.",
+    "s15_title": "15. Professional sellers and transparency duties",
+    "s15_body": "To comply with European rules on digital services and consumer protection, professional sellers show their business identification data on their profile (name, address, contacts, VAT number). This data is public because the law requires it. You can report illegal content by writing to [EMAIL PRIVACY] [DA VERIFICARE: dedicated reporting channel].",
+    "s16_title": "16. Changes to this policy",
+    "s16_body": "We publish every update here with the new date. For significant changes we will notify you by email or on the website. If a change affects processing based on consent, we will ask for it again."
+  },
+  "cookie_policy": {
+    "title": "Cookie Policy",
+    "subtitle": "Last updated: [DATA]. How CardBrix uses cookies and similar tracking tools, in line with the ePrivacy Directive (2002/58/EC) and the GDPR.",
+    "s1_title": "1. What they are and how consent works",
+    "s1_body": "Cookies, localStorage and sessionStorage are small pieces of data the site saves on your device. In this document we call them “tracking tools”.\nTechnical tools, needed for the site to work, are always on and need no consent. Statistics tools switch on only if you accept them.\nOn your first visit we ask you to accept, reject or choose. Rejecting is as easy as accepting and does not limit use of the site. Until you choose, and if you reject, we switch on no statistical tracking. Closing the banner without choosing counts as a rejection.\nIf your browser sends the Global Privacy Control signal, we treat it as a rejection until you choose.\nYour choice lasts 6 months, then we ask again. To prove we respected it we keep a record: date, choice, version of this document, an encrypted fingerprint of the IP and the browser.\nYou can change your mind at any time from the “Manage cookies” link at the foot of every page. For personal data in general see the Privacy Policy.",
+    "s2_title": "2. CardBrix technical tools (always on, no consent)",
+    "s2_body": "• bm_cookie_consent (first-party cookie, 6 months): remembers your cookie choice.\n• cardbrix_token (localStorage, until logout): keeps you signed in.\n• cardbrix_cart (localStorage, until you empty it): keeps the cart before sign-in.\n• i18nextLng (localStorage, persistent): remembers the language you chose.\n• bm_geo_lang_checked (localStorage, persistent): remembers that the language suggestion was already shown.\n• cardbrix_intro_seen (localStorage, persistent): avoids replaying the opening animation on the same day.\n• cardbrix_sell_draft_v1:<id>, cardbrix_auction_draft_v1:<id>, cardbrix_sell_guide_seen, cardbrix_auction_guide_seen (localStorage, persistent): the draft listing or auction you are writing and guides already read.",
+    "s3_title": "3. CardBrix the game: preferences on your device",
+    "s3_body": "These are functionality technologies we store only because you use the game, and they do not identify you to third parties. They need no consent.\n• cardbrix_game_visible (localStorage, persistent): whether you chose to be visible to other players.\n• cardbrix_game_tutorial_done:<id> (localStorage, persistent): whether you already completed the tutorial.\n• cardbrix_game_return (sessionStorage, until the tab is closed): remembers where you were on the map when you come back from the website.\n• cardbrix_game_rotate_dismissed (sessionStorage, until the tab is closed): remembers that you closed the “rotate your phone” hint.\nThe game and site fonts are hosted on our own servers: we do not contact Google Fonts or other external services to load them.",
+    "s4_title": "4. Necessary third-party tools",
+    "s4_body": "These services are essential for security and payments. They may set their own cookies and process technical data (such as the IP) under their own policies.\n• Cloudflare Turnstile (Cloudflare, Inc., United States): anti-bot protection on sign-in and registration. Legal basis: legitimate interest. Transfer: EU-US Data Privacy Framework. [DA VERIFICARE: duration, to inspect in production]\n• Stripe.js (Stripe Payments Europe Ltd, Ireland; Stripe, Inc., United States): secure payment and fraud prevention. Legal basis: contract and legitimate interest. [DA VERIFICARE: duration, to inspect in production]\n• PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., Luxembourg): payment, if you choose it. Legal basis: contract.\n• Sign in with Google (Google Ireland Limited) and Sign in with Apple (Apple Inc.): the button, where shown on the sign-in and registration pages, loads a script from the provider. Legal basis: contract. See their policies for details. [DA VERIFICARE: whether loading should happen only on click]",
+    "s5_title": "5. Statistics tools (only with your consent)",
+    "s5_body": "These are first-party: the data stays on CardBrix and we do not share it with advertising networks.\n• bm_visitor_id (first-party cookie, HttpOnly, 400 days): random visitor identifier to count unique visits.\n• bm_session_id (sessionStorage, until the tab is closed): random session identifier.\nWith consent we record pages visited, visit duration (a periodic signal every 30 seconds), clicks on links and buttons (label, type and destination), events such as registration or sign-in, and the country derived from the IP. Legal basis: consent (Art. 6.1.a GDPR). We do not use this data for advertising profiling. If you withdraw consent, collection stops at once.",
+    "s6_title": "6. Marketing or profiling cookies",
+    "s6_body": "We use no marketing cookies, social-network pixels or third-party profiling tools. [DA VERIFICARE prima della pubblicazione]",
+    "s7_title": "7. How to manage, withdraw or delete cookies",
+    "s7_body": "• From CardBrix: use the “Manage cookies” link at the foot of the page; withdrawing is as easy as giving consent.\n• From your browser: settings, privacy, cookies and site data (Chrome, Firefox, Safari, Edge). Deleting bm_cookie_consent brings the banner back.\n• Global Privacy Control signal: turn it on in your browser or with an extension and we will respect it.\nBlocking technical tools may prevent sign-in, the cart or the game from working.",
+    "s8_title": "8. Consequences of refusing",
+    "s8_body": "If you reject statistics tools nothing changes in using the marketplace or the game. If you block technical ones, some features such as sign-in, cart and payments may not work.",
+    "s9_title": "9. Controller and contacts",
+    "s9_body": "[DA COMPILARE: as in the Privacy Policy]. To exercise your rights write to [EMAIL PRIVACY]. You can lodge a complaint with the supervisory authority of your country: see the Privacy Policy."
   }
 }

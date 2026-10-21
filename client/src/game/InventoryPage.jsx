@@ -5,7 +5,8 @@ import { ArrowLeft, ExternalLink, Gavel, Star } from 'lucide-react';
 import { apiFetch } from '../api';
 import { listingImage, formatEUR } from '../components/landing/landingUtils';
 import AvatarPreview from './components/AvatarPreview';
-import useGameFont from './useGameFont';
+import '@fontsource/press-start-2p/latin-400.css';
+import '@fontsource/press-start-2p/latin-ext-400.css';
 import './game.css';
 
 /** One listing as a pixel-framed card; it opens the real product page of the site. */
@@ -44,7 +45,6 @@ export default function InventoryPage() {
   const { username } = useParams();
   const navigate = useNavigate();
   const [state, setState] = useState({ status: 'loading', data: null });
-  useGameFont();
 
   useEffect(() => {
     const prevTitle = document.title;

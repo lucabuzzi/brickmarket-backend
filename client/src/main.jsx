@@ -5,6 +5,8 @@ import { AuthProvider } from './auth/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import App from './App.jsx';
+import '@fontsource-variable/plus-jakarta-sans/wght.css';
+import '@fontsource-variable/plus-jakarta-sans/wght-italic.css';
 import './index.css';
 import 'flag-icons/css/flag-icons.min.css';
 import './i18n';

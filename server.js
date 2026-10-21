@@ -154,6 +154,7 @@ app.use('/api/support', require('./src/routes/support'));
 app.use('/api/admin', require('./src/routes/admin'));
 app.use('/api/admin', require('./src/routes/adminBadges'));
 app.use('/api/analytics', require('./src/routes/analyticsTrack'));
+app.use('/api/consent', require('./src/routes/consent'));
 app.use('/api/geo', require('./src/routes/geo'));
 app.use('/api/catalog/magic', require('./src/routes/catalogMagic'));
 app.use('/api/catalog/yugioh', require('./src/routes/catalogYugioh'));

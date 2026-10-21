@@ -1,4 +1,5 @@
 import { apiFetch } from './api';
+import legalPages from './config/legalPages.json';
 
 const CONSENT_COOKIE = 'bm_cookie_consent';
 // Fired by the footer's "Gestisci cookie" link so the visitor can change an earlier choice.
@@ -9,12 +10,33 @@ const HEARTBEAT_INTERVAL_MS = 30000;
 let heartbeatTimer = null;
 let listenersRegistered = false;
 
-export function hasConsent() {
-  return document.cookie.split('; ').some(c => c === `${CONSENT_COOKIE}=accepted`);
+// The choice is remembered for 6 months, then the banner asks again (EU data-protection authorities'
+// recommended maximum).
+export const CONSENT_MAX_AGE_SECONDS = 180 * 24 * 60 * 60;
+
+export function getConsentChoice() {
+  const c = document.cookie.split('; ').find((x) => x.startsWith(`${CONSENT_COOKIE}=`));
+  const v = c ? c.slice(CONSENT_COOKIE.length + 1) : null;
+  return v === 'accepted' || v === 'rejected' ? v : null;
 }
 
-export function setConsent(value) {
-  document.cookie = `${CONSENT_COOKIE}=${value}; max-age=31536000; path=/; samesite=lax`;
+export function hasConsent() {
+  return getConsentChoice() === 'accepted';
+}
+
+/** Global Privacy Control: the browser itself says "do not track me". Treated as a rejection until the visitor chooses. */
+export function gpcEnabled() {
+  return typeof navigator !== 'undefined' && navigator.globalPrivacyControl === true;
+}
+
+/** Stores the choice in the consent cookie and records it server-side as proof of consent (fire and forget). */
+export function setConsent(value, source = 'banner') {
+  document.cookie = `${CONSENT_COOKIE}=${value}; max-age=${CONSENT_MAX_AGE_SECONDS}; path=/; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
+  if (value !== 'accepted') stopAnalytics();
+  apiFetch('/api/consent', {
+    method: 'POST',
+    body: { choice: value, source, policy_version: legalPages.policyVersion },
+  }).catch(() => {});
 }
 
 function getSessionId() {
@@ -55,6 +77,14 @@ function handleGlobalClick(e) {
       target_href: isLink ? el.getAttribute('href') : null,
     },
   }).catch(() => {});
+}
+
+/** Withdrawal of consent takes effect at once: the periodic heartbeat stops (click/pageview calls already check the cookie). */
+export function stopAnalytics() {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
 }
 
 export function initAnalytics() {
