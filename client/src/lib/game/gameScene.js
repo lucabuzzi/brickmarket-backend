@@ -18,6 +18,8 @@ import {
 import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
 import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
+// The pixel font of the game UI (self-hosted, so the production CSP needs nothing new), drawn into the canvas too.
+import PIXEL_FONT_URL from '@fontsource/press-start-2p/files/press-start-2p-latin-400-normal.woff2?url';
 
 const VIEW_W = 320;
 const VIEW_H = 240;
@@ -28,9 +30,17 @@ const FADE_S = 0.22; // each half of the fade when changing map
 
 // Kaplay caches its text glyph atlases in a module-level object keyed by font name, so a second scene in the same
 // page (creator -> world, edit character) would reuse an atlas whose WebGL texture was destroyed with the first
-// one and draw no text at all. A font name that is unique per scene sidesteps the stale cache (the extra family
-// is just ignored by the browser, text still renders in the system monospace font).
+// one and draw no text at all. The pixel font is loaded under a name that is unique per scene to sidestep that.
 let sceneCounter = 0;
+
+// Render resolution: the 320x240 view is drawn into an offscreen buffer of VIEW x density, then stretched onto
+// the canvas. 2 looked soft on big screens; matching the canvas' real pixels (capped, for phones' memory) keeps
+// sprites and text sharp.
+function renderDensity(canvas) {
+  const cssW = canvas.getBoundingClientRect().width || VIEW_W * 2;
+  const devicePx = cssW * (window.devicePixelRatio || 1);
+  return Math.min(3, Math.max(2, Math.ceil(devicePx / VIEW_W)));
+}
 
 // Gold coins hovering above the roads and around the dragon (decor only, deterministic).
 const COINS = [
@@ -72,9 +82,22 @@ export async function startGame({
     crisp: true,
     touchToMouse: true,
     debug: false,
-    pixelDensity: Math.min(window.devicePixelRatio || 1, 2),
+    pixelDensity: renderDensity(canvas),
   });
-  const FONT = `monospace, "cbg-${++sceneCounter}"`;
+  const FONT = `cbg-pixel-${Date.now().toString(36)}-${++sceneCounter}`; // unique even after a hot reload of this module
+  // Text size that fits `maxW` world px (the pixel font is wide: long names and labels shrink instead of spilling).
+  const fitCache = new Map();
+  const fit = (text, size, maxW) => {
+    const key = `${size}|${maxW}|${text}`;
+    let v = fitCache.get(key);
+    if (v === undefined) {
+      const w = k.formatText({ font: FONT, text, size }).width;
+      v = w > maxW ? Math.max(3, (size * maxW) / w) : size;
+      if (fitCache.size > 500) fitCache.clear();
+      fitCache.set(key, v);
+    }
+    return v;
+  };
   const col = (hex) => k.Color.fromHex(hex);
   const rect = (x, y, w, h, hex, opacity = 1) => k.drawRect({ pos: k.vec2(x, y), width: w, height: h, color: col(hex), opacity });
 
@@ -85,6 +108,7 @@ export async function startGame({
     anims[`${dir}-walk`] = { from: row * COLS, to: row * COLS + COLS - 1, loop: true, speed: 7 };
   });
   await Promise.all([
+    k.loadFont(FONT, PIXEL_FONT_URL, { filter: 'linear' }),
     k.loadSprite('me', sheet.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims }),
     k.loadSprite('ground', buildGroundCanvas().toDataURL()),
     k.loadSprite('ground-market', buildMarketGroundCanvas().toDataURL()),
@@ -163,10 +187,11 @@ export async function startGame({
           }
         });
         const creditsText = String(labels.credits || '').toUpperCase();
-        const lw = k.formatText({ font: FONT, text: creditsText, size: 8 }).width + 8;
+        const cs = fit(creditsText, 7, 150);
+        const lw = k.formatText({ font: FONT, text: creditsText, size: cs }).width + 8;
         const ly = statueBottom - DRAGON_H * STATUE_SCALE - 12;
         k.drawRect({ pos: k.vec2(statueX - lw / 2, ly - 7), width: lw, height: 14, color: col('#07130b'), opacity: 0.75, radius: 2 });
-        k.drawText({ font: FONT, text: creditsText, size: 8, pos: k.vec2(statueX, ly), anchor: 'center', color: col(CREDITS_PLACE.color) });
+        k.drawText({ font: FONT, text: creditsText, size: cs, pos: k.vec2(statueX, ly), anchor: 'center', color: col(CREDITS_PLACE.color) });
         drawDoorHints(CREDITS_PLACE, 0, 0);
       },
     }]);
@@ -288,14 +313,12 @@ export async function startGame({
       add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
       add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
         draw() {
-          k.drawText({ font: FONT, text: label, size: 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
+          k.drawText({ font: FONT, text: label, size: fit(label, 8, b.style === 'castle' ? b.w - 46 : b.w - 18), pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
           if (b.id === 'auctions') {
             // decorative countdown (not a real auction)
-            const total = 6000 - (Math.floor(k.time()) % 6000);
-            const hh = String(Math.floor(total / 3600)).padStart(2, '0');
-            const mm = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
-            const ss = String(total % 60).padStart(2, '0');
-            k.drawText({ font: FONT, text: `${hh}:${mm}:${ss}`, size: 6, pos: k.vec2(AUCTION_TIMER_BOX.x + AUCTION_TIMER_BOX.w / 2, AUCTION_TIMER_BOX.y + AUCTION_TIMER_BOX.h / 2), anchor: 'center', color: col('#7dffa0') });
+            const total = 3600 - (Math.floor(k.time()) % 3600);
+            const timer = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+            k.drawText({ font: FONT, text: timer, size: fit(timer, 6, AUCTION_TIMER_BOX.w - 3), pos: k.vec2(AUCTION_TIMER_BOX.x + AUCTION_TIMER_BOX.w / 2, AUCTION_TIMER_BOX.y + AUCTION_TIMER_BOX.h / 2), anchor: 'center', color: col('#7dffa0') });
           }
           drawDoorHints(b, b.x, b.y);
         },
@@ -395,7 +418,7 @@ export async function startGame({
       add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
       add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
         draw() {
-          k.drawText({ font: FONT, text: label, size: label.length > 9 ? 6 : 8, pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
+          k.drawText({ font: FONT, text: label, size: fit(label, 8, b.w - 18), pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
           drawDoorHints(b, b.x, b.y);
         },
       }]);
@@ -427,9 +450,10 @@ export async function startGame({
     add([k.pos(0, 0), k.z(EXIT_GATE.y + EXIT_GATE.h + 1), {
       draw() {
         const cx = EXIT_GATE.x + EXIT_GATE.w / 2;
-        const lw = k.formatText({ font: FONT, text: gateLabel, size: 8 }).width + 8;
+        const gs = fit(gateLabel, 8, 90);
+        const lw = k.formatText({ font: FONT, text: gateLabel, size: gs }).width + 8;
         k.drawRect({ pos: k.vec2(cx - lw / 2, EXIT_GATE.y - 4), width: lw, height: 13, color: col('#2a1a0e'), outline: { width: 1, color: col('#c08a3e') } });
-        k.drawText({ font: FONT, text: gateLabel, size: 8, pos: k.vec2(cx, EXIT_GATE.y + 2.5), anchor: 'center', color: col(EXIT_GATE.color) });
+        k.drawText({ font: FONT, text: gateLabel, size: gs, pos: k.vec2(cx, EXIT_GATE.y + 2.5), anchor: 'center', color: col(EXIT_GATE.color) });
         drawDoorHints(EXIT_GATE, 0, 0);
       },
     }]);
@@ -484,18 +508,20 @@ export async function startGame({
   // overlay on top of everything: name tag + the guide arrow orbiting the player toward the tutorial target
   k.add([k.pos(0, 0), k.z(9999), {
     draw() {
-      const ft = k.formatText({ font: FONT, text: username, size: 8 });
+      const ns = fit(username, 7, 96);
+      const ft = k.formatText({ font: FONT, text: username, size: ns });
       const w = ft.width + 6;
       k.drawRect({ pos: k.vec2(pos.x - w / 2, pos.y + 3), width: w, height: 11, color: col('#000000'), opacity: 0.6, radius: 2 });
-      k.drawText({ font: FONT, text: username, size: 8, pos: k.vec2(pos.x, pos.y + 8.5), anchor: 'center', color: col('#ffffff') });
+      k.drawText({ font: FONT, text: username, size: ns, pos: k.vec2(pos.x, pos.y + 8.5), anchor: 'center', color: col('#ffffff') });
       // speech bubbles (fixed phrases / emojis from the plaza chat) above the heads
       const nowMs = k.time() * 1000;
       const drawBubble = (x, footY, text) => {
-        const bw = k.formatText({ font: FONT, text, size: 7 }).width + 8;
+        const bs = fit(text, 6, 150);
+        const bw = k.formatText({ font: FONT, text, size: bs }).width + 8;
         const by = footY - FRAME.h * CHAR_SCALE - 14;
         k.drawRect({ pos: k.vec2(x - bw / 2, by), width: bw, height: 11, color: col('#0b0914'), opacity: 0.88, radius: 3 });
         k.drawTriangle({ p1: k.vec2(x - 3, by + 11), p2: k.vec2(x + 3, by + 11), p3: k.vec2(x, by + 14), color: col('#0b0914'), opacity: 0.88 });
-        k.drawText({ font: FONT, text, size: 7, pos: k.vec2(x, by + 5.5), anchor: 'center', color: col('#ffffff') });
+        k.drawText({ font: FONT, text, size: bs, pos: k.vec2(x, by + 5.5), anchor: 'center', color: col('#ffffff') });
       };
       for (const [bid, b] of bubbles) {
         if (b.until < nowMs) { bubbles.delete(bid); continue; }
@@ -505,9 +531,10 @@ export async function startGame({
       // other players: smaller, dimmer name tags
       for (const r of remotes.values()) {
         if (!r.obj) continue;
-        const rw = k.formatText({ font: FONT, text: r.username, size: 6 }).width + 4;
+        const rs = fit(r.username, 5, 80);
+        const rw = k.formatText({ font: FONT, text: r.username, size: rs }).width + 4;
         k.drawRect({ pos: k.vec2(r.x - rw / 2, r.y + 3), width: rw, height: 8, color: col('#000000'), opacity: 0.45, radius: 2 });
-        k.drawText({ font: FONT, text: r.username, size: 6, pos: k.vec2(r.x, r.y + 7), anchor: 'center', color: col('#e5e7eb') });
+        k.drawText({ font: FONT, text: r.username, size: rs, pos: k.vec2(r.x, r.y + 7), anchor: 'center', color: col('#e5e7eb') });
       }
 
       // the tutorial stops are in the plaza: from the market the arrow points at the gate back
