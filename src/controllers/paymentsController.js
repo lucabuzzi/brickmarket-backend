@@ -19,14 +19,7 @@ function shippingGroupKey(listing) {
   return `${listing.seller_id}::${macroCategory(listing)}`;
 }
 
-const PLATFORM_FEE_RATE = 0.05;
-
-function computeFees(itemPrice) {
-  const platformFee = Math.round(itemPrice * PLATFORM_FEE_RATE * 100) / 100;
-  const sellerFee = platformFee;
-  const sellerPayout = itemPrice - sellerFee;
-  return { platformFee, sellerFee, sellerPayout };
-}
+const { computeFees } = require('../utils/fees');
 
 // Resolves the checkout-time shipping address into a plain snapshot object,
 // whichever way the buyer supplied it (a saved address, or typed ad hoc).

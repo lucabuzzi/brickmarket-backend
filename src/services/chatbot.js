@@ -31,7 +31,7 @@ D: Come funzionano le aste? R: Il venditore imposta un prezzo di partenza e una 
 D: Cos'è il prezzo di riserva? R: È l'importo minimo che il venditore è disposto ad accettare; se le offerte non lo raggiungono, l'oggetto non viene venduto.
 D: Si può comprare subito ("Buy It Now")? R: Se il venditore lo abilita, si può acquistare subito al prezzo indicato, chiudendo l'asta.
 D: Come funzionano i pagamenti? R: Tramite metodi sicuri supportati dalla piattaforma (es. Stripe, PayPal).
-D: Il marketplace applica una commissione? R: Sì, una commissione viene trattenuta su ogni vendita ed è visibile al venditore prima della pubblicazione.
+D: Il marketplace applica una commissione? R: Sì, una commissione a carico dell'acquirente, già inclusa nel prezzo mostrato in ogni annuncio. Il venditore riceve l'intero prezzo che ha indicato.
 D: Chi si occupa della spedizione? R: La spedizione è responsabilità del venditore; l'acquirente riceve un tracking se disponibile.
 D: Cosa fare se il prodotto arriva danneggiato? R: Contattare subito il venditore tramite la piattaforma; se non si trova un accordo, aprire una segnalazione scrivendo a ${SUPPORT_EMAIL}.
 D: Si possono lasciare recensioni? R: Sì, dopo ogni transazione si può lasciare una recensione veritiera e rispettosa del venditore.
@@ -45,7 +45,7 @@ D: Come vengono trattati i dati personali? R: Secondo la Privacy Policy della pi
 - Il venditore garantisce la provenienza legittima dei prodotti, indica se sono originali o compatibili e fornisce descrizioni veritiere; sono vietati prodotti contraffatti e account multipli per manipolare le aste.
 - L'acquirente deve leggere le descrizioni, agire in buona fede e fornire dati di spedizione corretti.
 - Le offerte d'asta sono vincolanti; è vietato lo "shill bidding" (offerte fittizie proprie).
-- I pagamenti avvengono tramite sistemi integrati; il gestore trattiene una commissione visibile prima della pubblicazione.
+- I pagamenti avvengono tramite sistemi integrati; il gestore applica una commissione a carico dell'acquirente, già inclusa nel prezzo mostrato nell'annuncio; il venditore riceve l'intero prezzo indicato.
 - Il venditore è responsabile della spedizione; il gestore non risponde di danni o ritardi imputabili al corriere.
 - In caso di controversie tra utenti, le parti devono cercare una soluzione bonaria; il gestore può mediare senza assumersene la responsabilità.
 - Il regolamento è disciplinato dalla legge italiana e può essere modificato dal gestore previa pubblicazione.

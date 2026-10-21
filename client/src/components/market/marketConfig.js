@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '../../api';
 import { ANNUNCI_CARD_GAMES } from '../../config/annunciCategories';
 import { PILLARS } from '../../config/pillars';
+import { buyerPriceFor } from '../../lib/fees';
 
 // Two faces of the same marketplace UI: fixed-price listings and live auctions.
 // Colours come from the shared pillar tokens (config/pillars.js / index.css --color-pillar-*).
@@ -44,9 +45,9 @@ export function isLiveAuction(item, now = Date.now()) {
   return item.status === 'active' && (!item.auction_end || new Date(item.auction_end).getTime() > now);
 }
 
-/** The price a buyer would currently pay/bid against. */
+/** The price a buyer would currently pay/bid against (fixed price: CardBrix commission included). */
 export function displayPrice(item) {
-  if (!item.is_auction) return item.price;
+  if (!item.is_auction) return buyerPriceFor(item.price);
   return item.current_bid ?? item.starting_price ?? item.price;
 }
 

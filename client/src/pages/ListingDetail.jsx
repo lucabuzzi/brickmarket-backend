@@ -19,6 +19,7 @@ import { MARKET_CARD_GAMES, MARKET_MODES, useMarketItems } from '../components/m
 import { useLocalizedNav } from '../routing/useLocalizedNav';
 import { GAME_NAMES, cldImage, formatEUR, pad2, useCountdown } from '../components/landing/landingUtils';
 import { languageName, listingGradeLabel } from '../lib/sell/cards';
+import { BUYER_FEE_PERCENT, buyerFeeFor, buyerPriceFor } from '../lib/fees';
 import { findSet, hasCatalog, setDisplayName } from '../lib/sell/catalog';
 import useCardSets from '../components/market/useCardSets';
 
@@ -576,7 +577,7 @@ export default function ListingDetail() {
   useEffect(() => {
     if (!listing) return;
 
-    const effectivePrice = listing.type === 'auction' ? (listing.current_bid ?? listing.auction_start) : listing.price;
+    const effectivePrice = listing.type === 'auction' ? (listing.current_bid ?? listing.auction_start) : buyerPriceFor(listing.price);
     const priceText = effectivePrice != null ? formatPrice(effectivePrice) : '';
     const title = `${listing.title} | CardBrix`;
     const description = (
@@ -801,7 +802,12 @@ export default function ListingDetail() {
                       <div>
                         <p className="text-[11px] font-black uppercase tracking-[0.22em] text-white/50">{t('product.price')}</p>
                         <p className="mt-1 break-words text-[clamp(2.6rem,6.5vw,3.8rem)] font-black leading-none tracking-[-0.045em]" style={{ color: accent }}>
-                          {fmt(listing.price)}
+                          {fmt(buyerPriceFor(listing.price))}
+                        </p>
+                        <p className="mt-2 text-xs font-medium leading-relaxed text-white/50">
+                          {t('product.fee_included_note', { percent: BUYER_FEE_PERCENT })}
+                          {/* a cheap item's 5% can round to 0,00 €: say nothing rather than "(0,00 €)" */}
+                          {buyerFeeFor(listing.price) > 0 ? `: ${fmt(buyerFeeFor(listing.price))}` : ''}.
                         </p>
                         <p className="mt-2 text-sm font-semibold text-white/60">
                           {hasShippingFee ? t('product.shipping_plus', { price: fmt(shippingCostNum) }) : (
@@ -913,7 +919,7 @@ export default function ListingDetail() {
                 {isAuction ? (listing.bids_count > 0 ? t('auction.current_bid') : t('product.starting_price')) : t('product.price')}
               </p>
               <p className="truncate text-xl font-black leading-tight text-white">
-                {isAuction ? fmt(listing.bids_count > 0 ? listing.current_bid : (listing.starting_price ?? listing.auction_start)) : fmt(listing.price)}
+                {isAuction ? fmt(listing.bids_count > 0 ? listing.current_bid : (listing.starting_price ?? listing.auction_start)) : fmt(buyerPriceFor(listing.price))}
               </p>
             </div>
             {isAuction ? (

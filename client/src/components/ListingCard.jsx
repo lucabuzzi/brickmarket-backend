@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { normalizeImageUrl } from '../api';
 import { altForListing } from '../utils/altText';
+import { buyerPriceFor } from '../lib/fees';
 import { Star } from 'lucide-react';
 import AuctionTimer from './AuctionTimer';
 import SellerTypeBadge from './SellerTypeBadge';
@@ -148,7 +149,7 @@ export default function ListingCard({ l, isFeatured = false, isCompact = false, 
               </span>
             )}
             <p className={`font-black text-lg leading-none ${pillarText}`}>
-              {formatPrice(isAuction ? l.current_bid : l.price, i18n.language)}
+              {formatPrice(isAuction ? l.current_bid : buyerPriceFor(l.price), i18n.language)}
             </p>
           </div>
 

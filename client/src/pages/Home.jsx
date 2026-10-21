@@ -10,6 +10,7 @@ import LandingAuctions from '../components/landing/LandingAuctions';
 import LandingArena from '../components/landing/LandingArena';
 import LandingClosing from '../components/landing/LandingClosing';
 import { cldImage, listingImage } from '../components/landing/landingUtils';
+import { buyerPriceFor } from '../lib/fees';
 import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 const asArray = (result) => (result.status === 'fulfilled' && Array.isArray(result.value) ? result.value : []);
@@ -63,7 +64,7 @@ export default function Home() {
   // Hero fan: real items from all three worlds, interleaved so every pillar is represented.
   const stackItems = useMemo(() => {
     const fromListings = featuredFirst.filter((l) => l.images?.length).slice(0, 3).map((l) => ({
-      key: `l-${l.id}`, kind: 'listing', title: l.title, value: l.price, image: listingImage(l, 480), href: `/product/${l.id}`,
+      key: `l-${l.id}`, kind: 'listing', title: l.title, value: buyerPriceFor(l.price), image: listingImage(l, 480), href: `/product/${l.id}`,
     }));
     const fromAuctions = auctions.filter((a) => a.images?.length).slice(0, 1).map((a) => ({
       key: `a-${a.id}`, kind: 'auction', title: a.title, value: a.current_bid ?? a.starting_price ?? a.price, image: listingImage(a, 480), href: `/product/${a.id}`,

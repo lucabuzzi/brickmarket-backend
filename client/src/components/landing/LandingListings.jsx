@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BadgeCheck, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ANNUNCI_ROUTES, GAME_NAMES, formatEUR, listingImage } from './landingUtils';
+import { buyerPriceFor } from '../../lib/fees';
 
 const TABS = ['all', 'lego', 'tcg', 'funko'];
 
@@ -40,7 +41,7 @@ function ListingTile({ l }) {
         {subtitle ? <p className="mt-1 truncate text-xs font-medium text-white/40">{subtitle}</p> : null}
         <div className="mt-auto flex items-end justify-between gap-2 pt-4">
           <span className="font-mono text-xl font-black tabular-nums tracking-tight text-white">
-            {formatEUR(l.price, i18n.language)}
+            {formatEUR(buyerPriceFor(l.price), i18n.language)}
           </span>
           <span className="flex min-w-0 items-center gap-1 text-xs font-semibold text-white/45">
             <span className="truncate">{l.seller?.username}</span>

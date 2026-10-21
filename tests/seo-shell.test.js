@@ -174,7 +174,7 @@ describe('listing blocks (Phase B: live data)', () => {
     const html = await listingsBlock(block);
     expect(html).toContain('<h2>Annunci LEGO</h2>');
     expect(html).toContain('<a href="/product/id-1">Annuncio 1</a> – ');
-    expect(html).toMatch(/12,50\s€ · Nuovo/);
+    expect(html).toMatch(/13,13\s€ · Nuovo/); // 12,50 € + 5% CardBrix commission
     expect(html).toMatch(/30,00\s€ · Usato/);
     await listingsBlock(block);
     expect(query).toHaveBeenCalledTimes(1);
@@ -197,7 +197,7 @@ describe('listing blocks (Phase B: live data)', () => {
     query.mockResolvedValue({ rows: [row(1), { ...row(2), id: 'abc' }, row(3)] });
     const d = await productPage({ ...PRODUCT, description: 'Bello <script>x</script>\nSecondo paragrafo' }, [`${BASE}/uploads/a.webp`]);
     expect(d.h1).toBe('LEGO Icons Fiori');
-    expect(d.lead).toMatch(/^Prezzo: 45,50\s€$/);
+    expect(d.lead).toMatch(/^Prezzo: 47,78\s€$/); // 45,50 € + 5% CardBrix commission
     expect(d.body).toContain('<p>Bello &lt;script&gt;x&lt;/script&gt;</p><p>Secondo paragrafo</p>');
     expect(d.body).toContain('<dt>Numero set</dt><dd>10280</dd>');
     expect(d.body).toContain('<dt>Condizione</dt><dd>Nuovo</dd>');

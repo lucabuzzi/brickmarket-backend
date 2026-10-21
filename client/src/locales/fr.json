@@ -739,6 +739,7 @@
     "order_summary": "Récapitulatif de la Commande",
     "items_count_label": "Articles ({{count}}) :",
     "platform_fee_label": "Commission CardBrix",
+    "platform_fee_included": "dont commission CardBrix ({{percent}}, à la charge de l'acheteur)",
     "total_label": "Total :",
     "remove_unavailable_notice": "Retirez les articles épuisés pour pouvoir procéder à l'achat.",
     "processing": "Traitement en cours...",
@@ -1199,7 +1200,8 @@
         "not_found_hint": "Vous ne trouvez pas la carte ? Passez cette étape et remplissez titre et détails à la main.",
         "variant": "Variante {{n}}"
       }
-    }
+    },
+    "listing_fee_note": "Vous recevez le prix intégral. L'acheteur verra {{buyerPrice}} € : la commission CardBrix de {{percent}} est à sa charge et déjà incluse."
   },
   "create_auction": {
     "error_title_condition_required": "Le titre et l'état sont obligatoires.",
@@ -1752,7 +1754,7 @@
     "q6_question": "Comment fonctionnent les paiements ?",
     "q6_answer": "Les paiements sont gérés via des méthodes sécurisées prises en charge par la plateforme (par ex. Stripe, PayPal).",
     "q7_question": "La marketplace prélève-t-elle une commission ?",
-    "q7_answer": "Oui, une commission est prélevée sur chaque vente, visible par le vendeur avant la publication de l'annonce.",
+    "q7_answer": "Oui, une commission à la charge de l'acheteur, déjà incluse dans le prix affiché sur chaque annonce. Le vendeur reçoit l'intégralité du prix qu'il a fixé.",
     "q8_question": "Qui s'occupe de l'expédition ?",
     "q8_answer": "L'expédition est de la responsabilité du vendeur. L'acheteur recevra les informations de suivi, si disponibles.",
     "q9_question": "Que dois-je faire si le produit arrive endommagé ?",
@@ -1780,7 +1782,7 @@
     "art6_title": "Art. 6 – Système d'enchères",
     "art6_body": "6.1 Les enchères sont contraignantes. L'enchère se termine à l'expiration du délai. En cas de prix de réserve, la vente n'est conclue qu'une fois celui-ci atteint.\n6.2 Le « shill bidding » (fausses enchères) est interdit.",
     "art7_title": "Art. 7 – Paiements et commissions",
-    "art7_body": "7.1 Les paiements sont effectués via des systèmes intégrés (par ex. Stripe, PayPal).\n7.2 L'Exploitant retient une commission visible avant la publication de l'annonce.",
+    "art7_body": "7.1 Les paiements sont effectués via des systèmes intégrés (par ex. Stripe, PayPal).\n7.2 L'Exploitant applique une commission à la charge de l'acheteur, déjà incluse dans le prix affiché sur l'annonce. Le vendeur reçoit l'intégralité du prix qu'il a fixé.",
     "art8_title": "Art. 8 – Expédition et livraison",
     "art8_body": "8.1 Le Vendeur est responsable de l'expédition.\n8.2 L'Exploitant n'est pas responsable des dommages ou retards imputables au transporteur.",
     "art10_title": "Art. 10 – Litiges entre Utilisateurs",
@@ -2296,6 +2298,7 @@
     "kicker_auction": "Enchère",
     "kicker_live": "En direct",
     "price": "Prix",
+    "fee_included_note": "Inclut la commission CardBrix de {{percent}} à la charge de l'acheteur",
     "shipping_plus": "+ {{price}} de livraison",
     "starting_price": "Mise à prix",
     "closes_in": "Se termine dans",

@@ -89,7 +89,7 @@ CREATE TABLE orders (
   item_price      DECIMAL(10,2) NOT NULL,
   shipping_cost   DECIMAL(10,2) DEFAULT 0,
   platform_fee    DECIMAL(10,2) NOT NULL,    -- 5% a carico acquirente
-  seller_fee      DECIMAL(10,2) NOT NULL,    -- 5% detratto al venditore
+  seller_fee      DECIMAL(10,2) NOT NULL,    -- 0: la commissione è solo a carico acquirente (ordini storici: 5%)
   total_buyer     DECIMAL(10,2) NOT NULL,    -- quanto paga l'acquirente
   seller_payout   DECIMAL(10,2) NOT NULL,    -- quanto riceve il venditore
 
