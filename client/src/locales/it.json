@@ -2628,6 +2628,38 @@
         "uomo_cyber": "Uomo cyber",
         "donna_base": "Donna base",
         "donna_cyber": "Donna cyber"
+      },
+      "class": "Classe",
+      "gender": "Personaggio",
+      "gender_male": "Uomo",
+      "gender_female": "Donna",
+      "regions": {
+        "skin": "Pelle",
+        "hair": "Capelli",
+        "outfit": "Giacca",
+        "details": "Dettagli",
+        "trousers": "Pantaloni",
+        "blocks_primary": "Blocchi principali",
+        "blocks_secondary": "Blocchi secondari",
+        "greaves_helmet": "Gambali ed elmo",
+        "ponytail": "Coda di cavallo",
+        "tactical_vest": "Gilet tattico",
+        "cap_satchel": "Cappellino e tracolla",
+        "jeans": "Jeans",
+        "denim_shorts": "Shorts di jeans",
+        "long_coat": "Soprabito lungo",
+        "lining_trim": "Fodera e bordi",
+        "trousers_boots": "Pantaloni e stivali",
+        "robe_hat": "Tunica e cappello",
+        "runes_crystal": "Rune e cristallo",
+        "underrobe_boots": "Sottoveste e stivali",
+        "beard_hair": "Barba e capelli",
+        "braid": "Treccia",
+        "captain_coat": "Giubba da capitano",
+        "sash_brass": "Fascia e bottoni",
+        "cyber_armor": "Corazza cyber",
+        "visor_scarf_blade": "Visore, sciarpa e lama",
+        "armored_greaves": "Schinieri"
       }
     },
     "places": {
@@ -2800,6 +2832,58 @@
       "left": "Sinistra",
       "right": "Destra"
     },
-    "age_note": "Per giocare serve un account e almeno 18 anni."
+    "age_note": "Per giocare serve un account e almeno 18 anni.",
+    "classes": {
+      "builder_block": {
+        "name": "Costruttori",
+        "tagline": "Corazza di blocchi colorati e un martello per ogni progetto."
+      },
+      "monster_explorer": {
+        "name": "Esploratori",
+        "tagline": "Zaino in spalla, a caccia di pezzi rari in ogni angolo."
+      },
+      "card_duelist": {
+        "name": "Maestri delle carte",
+        "tagline": "Uno sguardo, un mazzo e la carta giusta al momento giusto."
+      },
+      "arcane_mage": {
+        "name": "Arcanisti",
+        "tagline": "Rune antiche e un cristallo che non si spegne mai."
+      },
+      "sea_pirate": {
+        "name": "Corsari",
+        "tagline": "Mappe, forzieri e mari ancora da esplorare."
+      },
+      "cyber_knight": {
+        "name": "Cavalieri neon",
+        "tagline": "Corazza scura e lama di luce: il collezionismo del futuro."
+      },
+      "classic": {
+        "name": "Classici",
+        "tagline": "Lo stile di sempre di CardBrix."
+      },
+      "cyber_classic": {
+        "name": "Cyber",
+        "tagline": "Neon, visori e passo svelto."
+      }
+    },
+    "characters": {
+      "costruttore_blocchi": "Costruttore a blocchi",
+      "costruttrice_blocchi": "Costruttrice a blocchi",
+      "esploratore_collezionista": "Esploratore collezionista",
+      "esploratrice_collezionista": "Esploratrice collezionista",
+      "maestro_carte": "Maestro delle carte",
+      "maestra_carte": "Maestra delle carte",
+      "arcanista": "Arcanista",
+      "arcanista_donna": "Arcanista",
+      "corsaro": "Capitano corsaro",
+      "corsara": "Capitana corsara",
+      "cavaliere_neon": "Cavaliere neon",
+      "cavaliera_neon": "Cavaliera neon",
+      "uomo_base": "Uomo base",
+      "donna_base": "Donna base",
+      "uomo_cyber": "Uomo cyber",
+      "donna_cyber": "Donna cyber"
+    }
   }
 }

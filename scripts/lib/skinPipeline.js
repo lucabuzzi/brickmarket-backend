@@ -171,6 +171,81 @@ function regionStats(frames) {
   return out;
 }
 
+// ── magenta sheets (the characters of gameCharacters.json) ─────────────────────────────────────
+
+const hexToRgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+
+/**
+ * Makes a flat chroma-key background transparent: every pixel within `tolerance` (per channel) of `rgb`, then,
+ * on the character's edge, the magenta-tinted pixels left by anti-aliasing / JPEG ("spill"). The prompt forbids
+ * magenta in the characters themselves, so the key colour is cleared everywhere (also between an arm and the body).
+ * Mutates `data`; returns the number of cleared pixels.
+ */
+function removeChromaKey(data, w, h, { rgb = [255, 0, 255], tolerance = 35, spillPasses = 2 } = {}) {
+  let cleared = 0;
+  for (let k = 0; k < w * h; k++) {
+    const i = k * 4;
+    if (!data[i + 3]) continue;
+    if (Math.abs(data[i] - rgb[0]) <= tolerance && Math.abs(data[i + 1] - rgb[1]) <= tolerance && Math.abs(data[i + 2] - rgb[2]) <= tolerance) {
+      data[i + 3] = 0;
+      cleared++;
+    }
+  }
+  for (let p = 0; p < spillPasses; p++) {
+    const kill = [];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (!data[i + 3]) continue;
+        const edge = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].some(([nx, ny]) => nx < 0 || ny < 0 || nx >= w || ny >= h || !data[(ny * w + nx) * 4 + 3]);
+        if (!edge) continue;
+        const [hh, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
+        if (hh >= 285 && hh <= 330 && s > 0.45 && v > 0.45) kill.push(i);
+      }
+    }
+    for (const i of kill) { data[i + 3] = 0; cleared++; }
+  }
+  return cleared;
+}
+
+/** Perceptual-ish distance between two RGB colours ("redmean"), 0..~765. */
+function colorDistance(a, b) {
+  const rm = (a[0] + b[0]) / 2;
+  const dr = a[0] - b[0];
+  const dg = a[1] - b[1];
+  const db = a[2] - b[2];
+  return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
+}
+
+const PART_REGION = { skin: REGION.skin, hairColor: REGION.hair, outfitColor: REGION.outfit, accentColor: REGION.accent, legsColor: REGION.legs };
+
+/** gameCharacters.json `regions` -> [{ region, refs: [[r,g,b]...], band: [from, to] }] for classifyByRefs. */
+function prepareRefs(regions) {
+  return Object.entries(regions || {})
+    .filter(([part, r]) => r && PART_REGION[part])
+    .map(([part, r]) => ({ region: PART_REGION[part], refs: r.ref.map(hexToRgb), band: r.band || [0, 1] }));
+}
+
+/**
+ * Colour region of a pixel of a gameCharacters.json character: the zone whose reference colour is closest,
+ * among the zones allowed at this height (`ry`, 0 = top, 1 = soles), if close enough; 0 (as drawn) otherwise.
+ * Outlines (near black) always stay as drawn.
+ */
+function classifyByRefs(rgb, ry, prepared, maxDistance = 110) {
+  if (Math.max(rgb[0], rgb[1], rgb[2]) < 26) return REGION.none;
+  let best = REGION.none;
+  let bestD = maxDistance;
+  for (const z of prepared) {
+    if (ry < z.band[0] || ry > z.band[1]) continue;
+    for (const ref of z.refs) {
+      const d = colorDistance(rgb, ref);
+      if (d <= bestD) { bestD = d; best = z.region; }
+    }
+  }
+  return best;
+}
+
 module.exports = {
   REGION, rgbToHsv, removeBackground, defringe, opaqueBounds, torsoCentre, classifyPixel, regionStats,
+  hexToRgb, removeChromaKey, colorDistance, prepareRefs, classifyByRefs,
 };

@@ -2560,6 +2560,38 @@
         "uomo_cyber": "Homme cyber",
         "donna_base": "Femme classique",
         "donna_cyber": "Femme cyber"
+      },
+      "class": "Classe",
+      "gender": "Personnage",
+      "gender_male": "Homme",
+      "gender_female": "Femme",
+      "regions": {
+        "skin": "Peau",
+        "hair": "Cheveux",
+        "outfit": "Veste",
+        "details": "Détails",
+        "trousers": "Pantalon",
+        "blocks_primary": "Blocs principaux",
+        "blocks_secondary": "Blocs secondaires",
+        "greaves_helmet": "Jambières et casque",
+        "ponytail": "Queue de cheval",
+        "tactical_vest": "Gilet tactique",
+        "cap_satchel": "Casquette et besace",
+        "jeans": "Jean",
+        "denim_shorts": "Short en jean",
+        "long_coat": "Long manteau",
+        "lining_trim": "Doublure et liserés",
+        "trousers_boots": "Pantalon et bottes",
+        "robe_hat": "Robe et chapeau",
+        "runes_crystal": "Runes et cristal",
+        "underrobe_boots": "Sous-robe et bottes",
+        "beard_hair": "Barbe et cheveux",
+        "braid": "Tresse",
+        "captain_coat": "Veste de capitaine",
+        "sash_brass": "Ceinture et boutons",
+        "cyber_armor": "Armure cyber",
+        "visor_scarf_blade": "Visière, écharpe et lame",
+        "armored_greaves": "Jambières"
       }
     },
     "places": {
@@ -2732,7 +2764,59 @@
       "left": "Gauche",
       "right": "Droite"
     },
-    "age_note": "Pour jouer il faut un compte et avoir au moins 18 ans."
+    "age_note": "Pour jouer il faut un compte et avoir au moins 18 ans.",
+    "classes": {
+      "builder_block": {
+        "name": "Bâtisseurs",
+        "tagline": "Une armure de blocs colorés et un maillet pour chaque projet."
+      },
+      "monster_explorer": {
+        "name": "Explorateurs",
+        "tagline": "Sac sur le dos, à la chasse aux pièces rares dans chaque recoin."
+      },
+      "card_duelist": {
+        "name": "Maîtres des cartes",
+        "tagline": "Un regard, un deck et la bonne carte au bon moment."
+      },
+      "arcane_mage": {
+        "name": "Arcanistes",
+        "tagline": "Des runes anciennes et un cristal qui ne s'éteint jamais."
+      },
+      "sea_pirate": {
+        "name": "Corsaires",
+        "tagline": "Cartes, coffres et mers encore à explorer."
+      },
+      "cyber_knight": {
+        "name": "Chevaliers néon",
+        "tagline": "Armure sombre et lame de lumière : la collection du futur."
+      },
+      "classic": {
+        "name": "Classiques",
+        "tagline": "Le style de toujours de CardBrix."
+      },
+      "cyber_classic": {
+        "name": "Cyber",
+        "tagline": "Néons, visières et pas rapide."
+      }
+    },
+    "characters": {
+      "costruttore_blocchi": "Bâtisseur de blocs",
+      "costruttrice_blocchi": "Bâtisseuse de blocs",
+      "esploratore_collezionista": "Explorateur collectionneur",
+      "esploratrice_collezionista": "Exploratrice collectionneuse",
+      "maestro_carte": "Maître des cartes",
+      "maestra_carte": "Maîtresse des cartes",
+      "arcanista": "Arcaniste",
+      "arcanista_donna": "Arcaniste",
+      "corsaro": "Capitaine corsaire",
+      "corsara": "Capitaine corsaire",
+      "cavaliere_neon": "Chevalier néon",
+      "cavaliera_neon": "Chevalière néon",
+      "uomo_base": "Homme classique",
+      "donna_base": "Femme classique",
+      "uomo_cyber": "Homme cyber",
+      "donna_cyber": "Femme cyber"
+    }
   },
   "privacy": {
     "title": "Politique de confidentialité",
