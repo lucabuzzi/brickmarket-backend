@@ -138,5 +138,13 @@
   "/norme-legali": {
     "hash": "c23192920fecc68d",
     "date": "2026-10-21"
+  },
+  "/privacy": {
+    "hash": "7d11e03eb7351f1e",
+    "date": "2026-10-21"
+  },
+  "/cookie-policy": {
+    "hash": "239f563ec02ed29d",
+    "date": "2026-10-21"
   }
 }

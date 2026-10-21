@@ -79,12 +79,9 @@ describe('policy pages in the server-rendered shell', () => {
     expect(banner).toMatch(/legalPages\.published \? '\/cookie-policy' : '\/norme-legali'/);
   });
 
-  test('flag stays off while placeholders remain in the texts (any language)', () => {
-    for (const lang of LOCALES) {
-      const l = locale(lang);
-      const text = JSON.stringify([l.privacy, l.cookie_policy, l.legal]);
-      if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL PRIVACY\]/.test(text)) expect(legalPages.published).toBe(false);
-    }
+  // privacy/cookie_policy were published on purpose with placeholders still in the text (owner's call, 2026-10-21):
+  // no guard here until they are filled in. The accessibility statement keeps its guard.
+  test('accessibility flag stays off while its placeholders remain', () => {
     const it = locale('it');
     if (/\[DA (COMPILARE|VERIFICARE)|\[DATA\]|\[EMAIL ACCESSIBILIT/.test(JSON.stringify(it.accessibility))) expect(legalPages.accessibilityPublished).toBe(false);
   });
