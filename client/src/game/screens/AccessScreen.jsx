@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
 import Turnstile from '../../components/Turnstile';
+import PasswordField from '../components/PasswordField';
 
 /** New player / existing account choice. */
 export function AccessMenu({ onNew, onLogin }) {
@@ -55,7 +56,7 @@ export function LoginScreen({ onBack }) {
           </label>
           <label>
             <span className="cbg-label">{t('auth.password')}</span>
-            <input className="cbg-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+            <PasswordField value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </label>
           <Turnstile theme="dark" onVerify={setCaptcha} onExpire={() => setCaptcha(null)} />
           {error && <p className="text-sm font-bold text-[#ff7a5c]" role="alert">{error}</p>}

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
 import Turnstile from '../../components/Turnstile';
+import PasswordField from '../components/PasswordField';
 import AvatarCreator from '../components/AvatarCreator';
 import { randomAvatar } from '../../lib/game/skins';
 
@@ -90,11 +91,11 @@ export default function RegisterScreen({ onBack }) {
           </label>
           <label>
             <span className="cbg-label">{t('auth.password')}</span>
-            <input className="cbg-input" type="password" value={form.password} onChange={set('password')} required minLength={8} autoComplete="new-password" />
+            <PasswordField value={form.password} onChange={set('password')} minLength={8} autoComplete="new-password" />
           </label>
           <label>
             <span className="cbg-label">{t('auth.password_repeat')}</span>
-            <input className="cbg-input" type="password" value={form.repeat} onChange={set('repeat')} required minLength={8} autoComplete="new-password" />
+            <PasswordField value={form.repeat} onChange={set('repeat')} minLength={8} autoComplete="new-password" />
           </label>
           <label>
             <span className="cbg-label">{t('game.register.referral')}</span>
