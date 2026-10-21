@@ -1,5 +1,6 @@
 // "CardBrix the game" characters (client/src/lib/game/skins.js): catalogue, palettes, the pure recolouring maths,
 // agreement with the server validator, and the integrity of the generated sheets (client/src/assets/game/skins).
+const CHARS = require('../client/src/config/gameCharacters.json');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
@@ -114,7 +115,8 @@ describe('generated sheets (node scripts/build-game-skins.js)', () => {
     expect(manifest.cols).toBe(COLS);
     expect(manifest.rows).toEqual(ROWS);
     expect(manifest.idle).toEqual(IDLE_COL);
-    expect(Object.keys(manifest.looks)).toEqual(SPEC.looks);
+    // every playable look is built (retired legacy looks may still be in the manifest, unused)
+    for (const look of SPEC.looks) expect(manifest.looks[look]).toBeDefined();
   });
 
   test.each(SPEC.looks)('%s: sheet and mask have the right size, a sane mask, and stats for all five regions', async (look) => {
@@ -136,7 +138,11 @@ describe('generated sheets (node scripts/build-game-skins.js)', () => {
       else expect(region).toBe(0); // no region outside the character
     }
     expect(opaque).toBeGreaterThan(W * H * 0.08); // the characters are really there
-    for (let r = 1; r <= 5; r++) {
+    // every zone this look can recolour was found in the drawing (all five for the legacy looks)
+    const character = CHARS.characters.find((c) => c.id === look);
+    const PART_REGION = { skin: 1, hairColor: 2, outfitColor: 3, accentColor: 4, legsColor: 5 };
+    const regions = character ? Object.keys(PART_REGION).filter((p) => character.regions[p]).map((p) => PART_REGION[p]) : [1, 2, 3, 4, 5];
+    for (const r of regions) {
       expect(manifest.looks[look].regions[r].count).toBeGreaterThan(40);
       expect(manifest.looks[look].regions[r].vref).toBeGreaterThan(0);
     }

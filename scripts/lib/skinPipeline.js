@@ -186,7 +186,12 @@ function removeChromaKey(data, w, h, { rgb = [255, 0, 255], tolerance = 35, spil
   for (let k = 0; k < w * h; k++) {
     const i = k * 4;
     if (!data[i + 3]) continue;
-    if (Math.abs(data[i] - rgb[0]) <= tolerance && Math.abs(data[i + 1] - rgb[1]) <= tolerance && Math.abs(data[i + 2] - rgb[2]) <= tolerance) {
+    const near = Math.abs(data[i] - rgb[0]) <= tolerance && Math.abs(data[i + 1] - rgb[1]) <= tolerance && Math.abs(data[i + 2] - rgb[2]) <= tolerance;
+    // JPEG darkens the key in enclosed pockets (between an arm and the body): strongly magenta pixels go too.
+    // Purple robes (red barely above green) and pinks (blue barely above green) are far from this.
+    const g = data[i + 1];
+    const strong = data[i] > g + 90 && data[i + 2] > g + 90 && Math.abs(data[i] - data[i + 2]) < 60;
+    if (near || strong) {
       data[i + 3] = 0;
       cleared++;
     }
@@ -205,7 +210,41 @@ function removeChromaKey(data, w, h, { rgb = [255, 0, 255], tolerance = 35, spil
     }
     for (const i of kill) { data[i + 3] = 0; cleared++; }
   }
+  despill(data, w, h, 5);
   return cleared;
+}
+
+/**
+ * Takes the magenta tint out of the outer `depth` pixels of the character (JPEG sheets blend the key colour into the
+ * outline and edges): red and blue are pulled down to green by the amount they both exceed it. Only magenta-ish
+ * hues (275..345) are touched, so purple robes or pink details further inside keep their colour.
+ */
+function despill(data, w, h, depth = 2) {
+  const opaque = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3];
+  const ring = new Uint8Array(w * h); // n = n pixels in from the background (0 = deeper or transparent)
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (opaque(x, y) && [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].some(([nx, ny]) => !opaque(nx, ny))) ring[y * w + x] = 1;
+    }
+  }
+  for (let d = 2; d <= depth; d++) {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const k = y * w + x;
+        if (!ring[k] && opaque(x, y) && [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].some(([nx, ny]) => nx >= 0 && ny >= 0 && nx < w && ny < h && ring[ny * w + nx] === d - 1)) ring[k] = d;
+      }
+    }
+  }
+  for (let k = 0; k < w * h; k++) {
+    if (!ring[k]) continue;
+    const i = k * 4;
+    const [hh, s] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
+    if (hh < 275 || hh > 345 || s < 0.2) continue;
+    const excess = Math.min(data[i], data[i + 2]) - data[i + 1];
+    if (excess <= 0) continue;
+    data[i] -= excess;
+    data[i + 2] -= excess;
+  }
 }
 
 /** Perceptual-ish distance between two RGB colours ("redmean"), 0..~765. */
@@ -219,26 +258,38 @@ function colorDistance(a, b) {
 
 const PART_REGION = { skin: REGION.skin, hairColor: REGION.hair, outfitColor: REGION.outfit, accentColor: REGION.accent, legsColor: REGION.legs };
 
-/** gameCharacters.json `regions` -> [{ region, refs: [[r,g,b]...], band: [from, to] }] for classifyByRefs. */
+/**
+ * gameCharacters.json `regions` -> [{ region, refs: [{ rgb, band }] }] for classifyByRefs. A reference is a hex
+ * colour (valid in the zone's `band`) or { hex, band } when one zone has colours at different heights (a navy
+ * cap at the top and a brown satchel at the waist, both "details").
+ */
 function prepareRefs(regions) {
   return Object.entries(regions || {})
     .filter(([part, r]) => r && PART_REGION[part])
-    .map(([part, r]) => ({ region: PART_REGION[part], refs: r.ref.map(hexToRgb), band: r.band || [0, 1] }));
+    .map(([part, r]) => ({
+      region: PART_REGION[part],
+      refs: r.ref.map((ref) => (typeof ref === 'string'
+        ? { rgb: hexToRgb(ref), band: r.band || [0, 1] }
+        : { rgb: hexToRgb(ref.hex), band: ref.band || r.band || [0, 1] })),
+    }));
 }
 
 /**
  * Colour region of a pixel of a gameCharacters.json character: the zone whose reference colour is closest,
  * among the zones allowed at this height (`ry`, 0 = top, 1 = soles), if close enough; 0 (as drawn) otherwise.
- * Outlines (near black) always stay as drawn.
+ * Outlines (near black, also when tinted by the background in JPEG sheets) always stay as drawn.
  */
 function classifyByRefs(rgb, ry, prepared, maxDistance = 110) {
-  if (Math.max(rgb[0], rgb[1], rgb[2]) < 26) return REGION.none;
+  const [r, g, b] = rgb;
+  if (Math.max(r, g, b) < 26) return REGION.none;
+  // dark outline pixels blended with the magenta background (JPEG sheets): red and blue well above green
+  if (Math.max(r, g, b) < 110 && r > g + 18 && b > g + 18 && Math.abs(r - b) < 40) return REGION.none;
   let best = REGION.none;
   let bestD = maxDistance;
   for (const z of prepared) {
-    if (ry < z.band[0] || ry > z.band[1]) continue;
     for (const ref of z.refs) {
-      const d = colorDistance(rgb, ref);
+      if (ry < ref.band[0] || ry > ref.band[1]) continue;
+      const d = colorDistance(rgb, ref.rgb);
       if (d <= bestD) { bestD = d; best = z.region; }
     }
   }
@@ -247,5 +298,5 @@ function classifyByRefs(rgb, ry, prepared, maxDistance = 110) {
 
 module.exports = {
   REGION, rgbToHsv, removeBackground, defringe, opaqueBounds, torsoCentre, classifyPixel, regionStats,
-  hexToRgb, removeChromaKey, colorDistance, prepareRefs, classifyByRefs,
+  hexToRgb, removeChromaKey, despill, colorDistance, prepareRefs, classifyByRefs,
 };

@@ -36,7 +36,7 @@ describe('gameCharacters.json (cleaned design brief)', () => {
       expect(PARTS.some((p) => c.regions[p])).toBe(true);
       for (const r of Object.values(c.regions).filter(Boolean)) {
         expect(typeof r.label).toBe('string');
-        for (const hex of r.ref) expect(hex).toMatch(/^#[0-9A-Fa-f]{6}$/);
+        for (const ref of r.ref) expect(typeof ref === 'string' ? ref : ref.hex).toMatch(/^#[0-9A-Fa-f]{6}$/);
         expect(r.band[0]).toBeGreaterThanOrEqual(0);
         expect(r.band[1]).toBeLessThanOrEqual(1);
         expect(r.band[0]).toBeLessThan(r.band[1]);
@@ -74,26 +74,37 @@ describe.each(LANGS)('%s texts', (lang) => {
   });
 });
 
-describe('with today\'s sheets (only the legacy looks are built)', () => {
+describe('with the sheets built today (avatarSpec.json)', () => {
   const C = require('../client/src/lib/game/characters');
 
   test('the playable looks are the ones in avatarSpec.json', () => {
     expect(C.AVAILABLE_LOOKS).toEqual(SPEC.looks);
   });
 
-  test('legacy looks resolve to themselves while their replacement has no sheet; unknown looks to null', () => {
+  test('playable looks resolve to themselves, retired legacy looks to their replacement, the rest to null', () => {
     for (const id of SPEC.looks) expect(C.resolveLook(id)).toBe(id);
-    expect(C.resolveLook('corsaro')).toBeNull();
+    for (const l of CHARS.legacyLooks) {
+      if (!SPEC.looks.includes(l.id)) expect(C.resolveLook(l.id)).toBe(l.replacedBy);
+    }
+    for (const c of CHARS.characters) if (!SPEC.looks.includes(c.id)) expect(C.resolveLook(c.id)).toBeNull();
     expect(C.resolveLook('nope')).toBeNull();
   });
 
-  test('the creator shows the legacy looks as two classes (man first) with every zone editable', () => {
-    expect(C.creatorClasses()).toEqual([
-      { pair: 'classic', members: ['uomo_base', 'donna_base'] },
-      { pair: 'cyber_classic', members: ['uomo_cyber', 'donna_cyber'] },
-    ]);
-    expect(C.editableParts('uomo_cyber').map((e) => e.part)).toEqual(PARTS);
-    expect(C.memberOf('classic', 'female')).toBe('donna_base');
+  test('the creator shows every playable look exactly once, grouped by class, man first', () => {
+    const classes = C.creatorClasses();
+    expect(classes.flatMap((c) => c.members).sort()).toEqual([...SPEC.looks].sort());
+    for (const c of classes) {
+      for (const id of c.members) expect(C.CHARACTER_INFO[id].pair).toBe(c.pair);
+      if (c.members.length === 2) expect(C.CHARACTER_INFO[c.members[0]].gender).toBe('male');
+    }
+  });
+
+  test('the explorers (first Gemini sheets) are playable and replace the classic looks', () => {
+    expect(SPEC.looks).toEqual(expect.arrayContaining(['esploratore_collezionista', 'esploratrice_collezionista']));
+    expect(SPEC.looks).not.toContain('uomo_base');
+    expect(C.resolveLook('uomo_base')).toBe('esploratore_collezionista');
+    expect(C.memberOf('monster_explorer', 'female')).toBe('esploratrice_collezionista');
+    expect(C.editableParts('esploratore_collezionista').map((e) => e.part)).toEqual(PARTS);
   });
 });
 
