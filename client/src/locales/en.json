@@ -2552,6 +2552,38 @@
         "uomo_cyber": "Man cyber",
         "donna_base": "Woman classic",
         "donna_cyber": "Woman cyber"
+      },
+      "class": "Class",
+      "gender": "Character",
+      "gender_male": "Man",
+      "gender_female": "Woman",
+      "regions": {
+        "skin": "Skin",
+        "hair": "Hair",
+        "outfit": "Jacket",
+        "details": "Details",
+        "trousers": "Trousers",
+        "blocks_primary": "Main blocks",
+        "blocks_secondary": "Secondary blocks",
+        "greaves_helmet": "Greaves and helmet",
+        "ponytail": "Ponytail",
+        "tactical_vest": "Tactical vest",
+        "cap_satchel": "Cap and satchel",
+        "jeans": "Jeans",
+        "denim_shorts": "Denim shorts",
+        "long_coat": "Long coat",
+        "lining_trim": "Lining and trim",
+        "trousers_boots": "Trousers and boots",
+        "robe_hat": "Robe and hat",
+        "runes_crystal": "Runes and crystal",
+        "underrobe_boots": "Under-robe and boots",
+        "beard_hair": "Beard and hair",
+        "braid": "Braid",
+        "captain_coat": "Captain coat",
+        "sash_brass": "Sash and buttons",
+        "cyber_armor": "Cyber armour",
+        "visor_scarf_blade": "Visor, scarf and blade",
+        "armored_greaves": "Greaves"
       }
     },
     "places": {
@@ -2724,7 +2756,59 @@
       "left": "Left",
       "right": "Right"
     },
-    "age_note": "You need an account and must be 18 or over to play."
+    "age_note": "You need an account and must be 18 or over to play.",
+    "classes": {
+      "builder_block": {
+        "name": "Builders",
+        "tagline": "Armour of colourful blocks and a mallet for every project."
+      },
+      "monster_explorer": {
+        "name": "Explorers",
+        "tagline": "Backpack on, hunting rare pieces in every corner."
+      },
+      "card_duelist": {
+        "name": "Card masters",
+        "tagline": "One look, one deck and the right card at the right time."
+      },
+      "arcane_mage": {
+        "name": "Arcanists",
+        "tagline": "Ancient runes and a crystal that never fades."
+      },
+      "sea_pirate": {
+        "name": "Corsairs",
+        "tagline": "Maps, chests and seas still to explore."
+      },
+      "cyber_knight": {
+        "name": "Neon knights",
+        "tagline": "Dark armour and a blade of light: collecting of the future."
+      },
+      "classic": {
+        "name": "Classics",
+        "tagline": "The timeless CardBrix style."
+      },
+      "cyber_classic": {
+        "name": "Cyber",
+        "tagline": "Neon, visors and a quick step."
+      }
+    },
+    "characters": {
+      "costruttore_blocchi": "Block builder",
+      "costruttrice_blocchi": "Block builder",
+      "esploratore_collezionista": "Collector explorer",
+      "esploratrice_collezionista": "Collector explorer",
+      "maestro_carte": "Card master",
+      "maestra_carte": "Card mistress",
+      "arcanista": "Arcanist",
+      "arcanista_donna": "Arcanist",
+      "corsaro": "Corsair captain",
+      "corsara": "Corsair captain",
+      "cavaliere_neon": "Neon knight",
+      "cavaliera_neon": "Neon knight",
+      "uomo_base": "Classic man",
+      "donna_base": "Classic woman",
+      "uomo_cyber": "Cyber man",
+      "donna_cyber": "Cyber woman"
+    }
   },
   "privacy": {
     "title": "Privacy Policy",

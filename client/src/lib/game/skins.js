@@ -5,22 +5,24 @@
 // A sheet has 4 rows (down, up, right, left) x 4 walk-frame columns of 48x56 pixels, built by
 // scripts/build-game-skins.js, which also writes a mask: each pixel's R value is the colour region it belongs to.
 import SPEC from '../../config/avatarSpec.json';
+import { resolveLook, isPartEnabled, AVAILABLE_LOOKS } from './characters';
 
 export const FRAME = { w: 48, h: 56 };
 export const COLS = 4;
 export const ROWS = ['down', 'up', 'right', 'left'];
 export const IDLE_COL = { down: 1, up: 0, right: 1, left: 1 };
 
-/** The looks a player can pick. `access` is ready for the paid skins of a later phase ('free' for now). */
-export const LOOKS = SPEC.looks.map((id) => ({ id, access: 'free' }));
+/** The looks a player can pick (built sheets, see characters.js). All free. */
+export const LOOKS = AVAILABLE_LOOKS.map((id) => ({ id, access: 'free' }));
 
-// Index 0 of every list is "as drawn" (no recolouring), so the originals are always one tap away.
+// Index 0 of every list is "as drawn" (no recolouring), so the originals are always one tap away. New colours
+// are only ever appended: saved avatars store the index, so reordering would change how they look.
 export const PALETTES = {
   skin: [null, '#ffdbb4', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#5c3a21'],
   hairColor: [null, '#1b1b1f', '#4a2c17', '#8b5a2b', '#d9a441', '#c0392b', '#e8e8e8', '#3b82f6', '#a855f7'],
   // Gold is reserved for the site chrome (see CLAUDE.md colour system), so no gold among the outfit colours.
-  outfitColor: [null, '#c6ff3d', '#ff5a36', '#8b5cf6', '#22d3ee', '#3b82f6', '#f1f5f9', '#374151', '#f472b6'],
-  accentColor: [null, '#ff8a2a', '#ffe14d', '#22d3ee', '#c6ff3d', '#ff5a36', '#f472b6', '#8b5cf6', '#f1f5f9'],
+  outfitColor: [null, '#c6ff3d', '#ff5a36', '#8b5cf6', '#22d3ee', '#3b82f6', '#f1f5f9', '#374151', '#f472b6', '#ef4444', '#1e3a8a', '#4c1d95', '#4d7c0f'],
+  accentColor: [null, '#ff8a2a', '#ffe14d', '#22d3ee', '#c6ff3d', '#ff5a36', '#f472b6', '#8b5cf6', '#f1f5f9', '#dc2626', '#38bdf8'],
   legsColor: [null, '#7a4a22', '#374151', '#1f2a44', '#4b5320', '#8b1e2d', '#6b7280', '#c2b280', '#111827'],
 };
 export const COLOR_PARTS = Object.keys(PALETTES);
@@ -40,7 +42,13 @@ function fromV1(cfg) {
     const v = cfg[part];
     if (!Number.isInteger(v) || v < 0 || v >= count) return null;
   }
-  return { v: 2, look: LOOKS[0].id, skin: cfg.skin + 1, hairColor: cfg.hairColor + 1, outfitColor: cfg.outfitColor + 1, accentColor: 0, legsColor: 0 };
+  return withEnabledParts({ v: 2, look: LOOKS[0].id, skin: cfg.skin + 1, hairColor: cfg.hairColor + 1, outfitColor: cfg.outfitColor + 1, accentColor: 0, legsColor: 0 });
+}
+
+/** Parts the look cannot recolour (e.g. the skin of an armoured knight) are always "as drawn". */
+function withEnabledParts(avatar) {
+  for (const p of COLOR_PARTS) if (!isPartEnabled(avatar.look, p)) avatar[p] = 0;
+  return avatar;
 }
 
 /** Always returns a full, in-range v2 avatar (null / partial / out-of-range input falls back piece by piece). */
@@ -48,18 +56,19 @@ export function sanitizeAvatar(cfg) {
   const out = defaultAvatar();
   if (!cfg || typeof cfg !== 'object') return out;
   if (cfg.v === undefined) return fromV1(cfg) || out;
-  if (LOOKS.some((l) => l.id === cfg.look)) out.look = cfg.look;
+  const look = resolveLook(cfg.look); // a retired legacy look becomes the character that replaced it
+  if (look) out.look = look;
   for (const p of COLOR_PARTS) {
     const v = cfg[p];
     if (Number.isInteger(v) && v >= 0 && v < PALETTES[p].length) out[p] = v;
   }
-  return out;
+  return withEnabledParts(out);
 }
 
 export function randomAvatar(rand = Math.random) {
   const out = { v: 2, look: LOOKS[Math.floor(rand() * LOOKS.length)].id };
   for (const p of COLOR_PARTS) out[p] = Math.floor(rand() * PALETTES[p].length);
-  return out;
+  return withEnabledParts(out);
 }
 
 /** Where a frame lives in the sheet. `dir` is 'down' | 'up' | 'right' | 'left'. */
