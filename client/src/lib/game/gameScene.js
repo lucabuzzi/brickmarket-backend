@@ -10,7 +10,7 @@ import { FRAME, COLS, ROWS, IDLE_COL } from './skins';
 import { buildGroundCanvas } from './groundSprite';
 import { buildMarketGroundCanvas } from './marketGround';
 import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from './buildingSprite';
-import { buildDragonCanvas, DRAGON_H } from './dragonSprite';
+import { buildDragonCanvas, DRAGON_W, DRAGON_H } from './dragonSprite';
 import {
   WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
@@ -18,6 +18,9 @@ import {
 import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
 import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
+import { drawnNpcs, npcHitBox } from './npcs';
+import { findPath } from './pathfind';
+import { timeLeft, clockText } from './marketQueries';
 // The pixel font of the game UI (self-hosted, so the production CSP needs nothing new), drawn into the canvas too.
 import PIXEL_FONT_URL from '@fontsource/press-start-2p/files/press-start-2p-latin-400-normal.woff2?url';
 
@@ -62,13 +65,15 @@ const CLOUDS = [{ x: 60, y: 90, rx: 60, ry: 18, sp: 5 }, { x: 300, y: 200, rx: 8
  * - onEnterRequest(id): fired when the player presses Enter/Space on a door
  * - onLocalMove({ x, y, d, m }): every frame, our own position (the plaza client throttles what it sends)
  * - onPlayerTap(id): another player's character was tapped/clicked
+ * - npcSheets: NPC id -> its recoloured character sheet (canvas); npcNames: NPC id -> name (translated).
+ *   Tapping an NPC or a building walks the character to its door (around obstacles) and then enters it.
  * - onMapChange(mapId): the scene switched map (after travel() or a server correction to another map)
  * The returned handle also manages the OTHER players of the plaza: addRemote / moveRemote / removeRemote,
  * and setPosition (server correction).
  */
 export async function startGame({
   canvas, sheet, username, labels, start = {}, onDoorChange, onEnterRequest, onLocalMove = () => {}, onPlayerTap = () => {},
-  onMapChange = () => {},
+  onMapChange = () => {}, npcSheets = {}, npcNames = {}, clockUnits = { d: 'd', h: 'h' },
 }) {
   const { default: kaplay } = await import('kaplay');
   const k = kaplay({
@@ -114,15 +119,16 @@ export async function startGame({
     k.loadSprite('ground-market', buildMarketGroundCanvas().toDataURL()),
     k.loadSprite('dragon', buildDragonCanvas().toDataURL()),
     ...[...BUILDINGS, ...MARKET_STALLS].map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
+    ...Object.entries(npcSheets).map(([id, c]) => k.loadSprite(`npc-${id}`, c.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims })),
   ]);
 
-  const state = { activeDoor: null, guide: null, frozen: false, fade: null };
+  const state = { activeDoor: null, guide: null, frozen: false, fade: null, auctionEnd: null };
   let current = mapById(start.map);
   // everything drawn for the current map carries the 'map' tag, so a map switch can clear it in one go
   const add = (comps) => k.add([...comps, 'map']);
   // on-screen D-pad (touch): held directions, merged with the keyboard every frame
   const virtualKeys = { up: false, down: false, left: false, right: false };
-  // speech bubbles over the heads: id ('me' or a player id) -> { text, until }
+  // speech bubbles over the heads: id ('me', a player id or 'npc:<npc id>') -> { text, until }
   const bubbles = new Map();
   const BUBBLE_MS = 4000;
   const placeById = (id) => current.places.find((p) => p.id === id) || null;
@@ -315,9 +321,8 @@ export async function startGame({
         draw() {
           k.drawText({ font: FONT, text: label, size: fit(label, 8, b.style === 'castle' ? b.w - 46 : b.w - 18), pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
           if (b.id === 'auctions') {
-            // decorative countdown (not a real auction)
-            const total = 3600 - (Math.floor(k.time()) % 3600);
-            const timer = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+            // the real time left of the auction that ends first ('--:--' when none is running or it is unknown)
+            const timer = clockText(timeLeft(state.auctionEnd), clockUnits);
             k.drawText({ font: FONT, text: timer, size: fit(timer, 6, AUCTION_TIMER_BOX.w - 3), pos: k.vec2(AUCTION_TIMER_BOX.x + AUCTION_TIMER_BOX.w / 2, AUCTION_TIMER_BOX.y + AUCTION_TIMER_BOX.h / 2), anchor: 'center', color: col('#7dffa0') });
           }
           drawDoorHints(b, b.x, b.y);
@@ -459,11 +464,47 @@ export async function startGame({
     }]);
   }
 
+  // ── NPCs: keepers, merchants and the guide, drawn like players, with a name tag and a "!" over the head ──
+  let npcsHere = [];
+  function buildNpcs() {
+    npcsHere = drawnNpcs(current.id).filter((n) => npcSheets[n.id]);
+    for (const n of npcsHere) {
+      add([k.sprite(`npc-${n.id}`, { anim: 'down-idle' }), k.pos(n.x, n.y), k.anchor('bot'), k.scale(CHAR_SCALE), k.z(n.y)]);
+    }
+  }
+  /** The place whose door talks to NPC `n`: its building, or the NPC itself when it stands alone. */
+  const npcPlaceId = (n) => n.place || n.id;
+  function drawNpcTags() {
+    const t = k.time();
+    for (const n of npcsHere) {
+      // the name sits over the head (the feet are where players' name tags go), with the "!" of someone to talk
+      // to on its left; both pulse while the player stands in front of them
+      const near = state.activeDoor === npcPlaceId(n);
+      const s = near ? 1.2 + 0.1 * Math.sin(t * 8) : 1;
+      const top = n.y - FRAME.h * CHAR_SCALE - 2;
+      const name = String(npcNames[n.id] || '');
+      const ns = name ? fit(name, 5, 80) : 0;
+      const nw = name ? k.formatText({ font: FONT, text: name, size: ns }).width + 4 : 0;
+      const bw = 8 * s;
+      const total = nw + bw + (name ? 2 : 0);
+      const left = n.x - total / 2;
+      const by = top - 10 * s + Math.sin(t * 3 + n.x) * 1;
+      k.drawRect({ pos: k.vec2(left, by), width: bw, height: 10 * s, color: col('#0b0914'), opacity: 0.85, radius: 2 });
+      k.drawText({ font: FONT, text: '!', size: 7 * s, pos: k.vec2(left + bw / 2 + 0.5, by + 5.4 * s), anchor: 'center', color: col(near ? '#ffffff' : n.color) });
+      if (name) {
+        const nx = left + bw + 2;
+        k.drawRect({ pos: k.vec2(nx, by + 5 * s - 4), width: nw, height: 8, color: col('#000000'), opacity: 0.65, radius: 2 });
+        k.drawText({ font: FONT, text: name, size: ns, pos: k.vec2(nx + nw / 2, by + 5 * s), anchor: 'center', color: col(n.color) });
+      }
+    }
+  }
+
   /** Clears whatever map is on screen and builds the current one. */
   function buildMap() {
     k.destroyAll('map');
     if (current.id === 'market') buildMarket();
     else buildPlaza();
+    buildNpcs();
   }
 
   // ── player ───────────────────────────────────────────────────────────────────
@@ -471,6 +512,10 @@ export async function startGame({
   let facing = { dir: 'down', flip: false };
   let currentAnim = 'down-idle';
   let target = null;
+  // walking to a place (tap on an NPC / building, or "take me there" in a dialogue): waypoints around the
+  // obstacles, then "enter" once the character stands at the door
+  let route = null;
+  let pendingEnter = null;
   const player = k.add([k.sprite('me', { anim: currentAnim }), k.pos(pos.x, pos.y), k.anchor('bot'), k.scale(CHAR_SCALE), k.z(pos.y)]);
 
   // ── other players (the plaza) ────────────────────────────────────────────────
@@ -508,6 +553,7 @@ export async function startGame({
   // overlay on top of everything: name tag + the guide arrow orbiting the player toward the tutorial target
   k.add([k.pos(0, 0), k.z(9999), {
     draw() {
+      drawNpcTags();
       const ns = fit(username, 7, 96);
       const ft = k.formatText({ font: FONT, text: username, size: ns });
       const w = ft.width + 6;
@@ -526,7 +572,11 @@ export async function startGame({
       for (const [bid, b] of bubbles) {
         if (b.until < nowMs) { bubbles.delete(bid); continue; }
         if (bid === 'me') drawBubble(pos.x, pos.y, b.text);
-        else { const r = remotes.get(bid); if (r && r.obj) drawBubble(r.x, r.y, b.text); }
+        else if (bid.startsWith('npc:')) {
+          // NPCs: above their name tag; only while they stand on the map on screen
+          const n = npcsHere.find((x) => `npc:${x.id}` === bid);
+          if (n) drawBubble(n.x, n.y - 12, b.text);
+        } else { const r = remotes.get(bid); if (r && r.obj) drawBubble(r.x, r.y, b.text); }
       }
       // other players: smaller, dimmer name tags
       for (const r of remotes.values()) {
@@ -577,10 +627,40 @@ export async function startGame({
     for (const [id, r] of remotes) {
       if (r.obj && Math.abs(p.x - r.x) <= 9 && p.y >= r.y - 32 && p.y <= r.y + 4) { onPlayerTap(id); return; }
     }
+    // tapping an NPC, a building or a stall walks there and talks to / enters it
+    const inBox = (b) => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
+    const npc = npcsHere.find((n) => inBox(npcHitBox(n)));
+    const tapped = npc ? placeById(npcPlaceId(npc)) : current.places.find((pl) => pl.kind !== 'npc' && (inBox(drawnBox(pl)) || inBox(pl.door)));
+    if (tapped && walkTo(tapped.id)) return;
+    route = null;
+    pendingEnter = null;
     target = { x: Math.min(current.world.w - 8, Math.max(8, p.x)), y: Math.min(current.world.h - 4, Math.max(14, p.y)) };
   };
   canvas.addEventListener('pointerdown', onPointerDown);
   const requestEnter = () => { if (!state.frozen && !state.fade && state.activeDoor) onEnterRequest(state.activeDoor); };
+  /** What a place looks like on screen (roofs and the dragon rise above their collision box): its tap area. */
+  function drawnBox(pl) {
+    if (pl.id === CREDITS_PLACE.id) {
+      const w = DRAGON_W * STATUE_SCALE;
+      const h = DRAGON_H * STATUE_SCALE;
+      return { x: pl.x + pl.w / 2 - w / 2, y: pl.y + pl.h - h, w, h };
+    }
+    return { x: pl.x, y: pl.y - ROOF_EXTRA, w: pl.w, h: pl.h + ROOF_EXTRA };
+  }
+  /** Walks to the door of `placeId` (current map) around obstacles and enters it on arrival. false = no way there. */
+  function walkTo(placeId) {
+    const place = placeById(placeId);
+    if (!place || state.frozen || state.fade) return false;
+    route = null;
+    target = null;
+    if (state.activeDoor === place.id) { pendingEnter = null; requestEnter(); return true; }
+    const path = findPath(pos, doorCentre(place), current.blocked, current.world);
+    if (!path.length) { pendingEnter = null; return false; }
+    pendingEnter = place.id;
+    route = path;
+    target = route.shift();
+    return true;
+  }
   k.onKeyPress('enter', requestEnter);
   k.onKeyPress('space', requestEnter);
 
@@ -590,6 +670,8 @@ export async function startGame({
     buildMap();
     pos = { x: at.x, y: at.y };
     target = null;
+    route = null;
+    pendingEnter = null;
     player.pos = k.vec2(pos.x, pos.y);
     state.activeDoor = null;
     onDoorChange(null);
@@ -630,18 +712,21 @@ export async function startGame({
     let dy = 0;
     if (keys.dx !== 0 || keys.dy !== 0) {
       target = null;
+      route = null;
+      pendingEnter = null;
       dx = keys.dx * WALK_SPEED * dt;
       dy = keys.dy * WALK_SPEED * dt;
     } else if (target && !state.frozen && !state.fade) {
       const s = stepToward(pos, target, WALK_SPEED, dt);
       dx = s.dx;
       dy = s.dy;
-      if (s.arrived) target = null;
+      if (s.arrived) target = route && route.length ? route.shift() : null;
     }
 
     const next = dx || dy ? moveWithCollision(pos, dx, dy, current.blocked, current.world) : pos;
     const moved = next.x !== pos.x || next.y !== pos.y;
-    if (target && !moved) target = null; // walked into a wall: stop instead of pushing forever
+    // walked into a wall: stop instead of pushing forever (a frame spent reaching a waypoint does not count)
+    if (target && !moved && (dx || dy)) { target = null; route = null; }
     pos = next;
     if (dx || dy) facing = facingFor(dx, dy, facing);
 
@@ -659,6 +744,14 @@ export async function startGame({
     const door = state.fade ? null : doorAt(pos, current.places);
     const id = door ? door.id : null;
     if (id !== state.activeDoor) { state.activeDoor = id; onDoorChange(id); }
+    if (pendingEnter && id === pendingEnter) {
+      pendingEnter = null;
+      route = null;
+      target = null;
+      requestEnter();
+    } else if (pendingEnter && !target) {
+      pendingEnter = null; // stopped before the door (blocked, or the player took over)
+    }
 
     onLocalMove({ x: Math.round(pos.x * 10) / 10, y: Math.round(pos.y * 10) / 10, d: row, m: moved });
 
@@ -684,7 +777,11 @@ export async function startGame({
     /** Place id the guide arrow should point at (null hides it). */
     setGuide(id) { state.guide = id || null; },
     /** While frozen (a tutorial card is open) the character ignores input. */
-    setFrozen(v) { state.frozen = Boolean(v); if (v) target = null; },
+    setFrozen(v) { state.frozen = Boolean(v); if (v) { target = null; route = null; pendingEnter = null; } },
+    /** Walks to the door of a place of the current map and enters it ("take me there" in a dialogue). */
+    walkTo,
+    /** End (ISO date) of the real auction that ends first, shown on the auction house clock; null = none. */
+    setAuctionClock(endIso) { state.auctionEnd = endIso || null; },
     addRemote,
     moveRemote,
     removeRemote,
@@ -692,19 +789,22 @@ export async function startGame({
     setVirtualKeys(keys) {
       for (const dir of ['up', 'down', 'left', 'right']) virtualKeys[dir] = Boolean(keys && keys[dir]);
     },
-    /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character). */
+    /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character, 'npc:<id>' an NPC). */
     showBubble(id, text) { bubbles.set(id, { text: String(text), until: k.time() * 1000 + BUBBLE_MS }); },
     /** The server refused a move: snap back to where it says we are (switching map first if it says so). */
     setPosition(x, y, mapId) {
       if (mapId && mapId !== current.id) { switchMap(mapId, { x, y }); return; }
       pos = { x, y };
       target = null;
+      route = null;
     },
     /** Walks through a linking door: fades out, rebuilds `mapId` and puts the character at `spawnId`. */
     travel(mapId, spawnId) {
       if (state.fade) return;
       state.fade = { phase: 'out', t: 0, mapId, at: spawnPoint(mapId, spawnId) };
       target = null;
+      route = null;
+      pendingEnter = null;
     },
     /** The current map id and the spawn closest to the character (to come back here after a visit to the site). */
     whereAmI() { return { map: current.id, spawn: nearestSpawn(current.id, pos) }; },

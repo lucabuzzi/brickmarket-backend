@@ -10,6 +10,11 @@ function listOpenContests() {
   ).then((r) => r.rows);
 }
 
+/** True while clutchvault-db runs on its in-memory mock (no real database reachable): the data is not real. */
+function isMockDb() {
+  return Boolean(db.isMock);
+}
+
 function getSlotCost(contestId) {
   return db.query('SELECT slot_cost_credits FROM public.contests WHERE id = $1', [contestId])
     .then((r) => r.rows[0] || null);
@@ -254,6 +259,7 @@ async function createContestProduct({
 
 module.exports = {
   listOpenContests,
+  isMockDb,
   getSlotCost,
   buySlot,
   getLeaderboard,

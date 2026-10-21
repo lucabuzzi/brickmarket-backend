@@ -5,14 +5,16 @@
 // Flow: a welcome card -> for each place: the guide arrow points at it ('walk'), and when the character
 // reaches its door the explanation card opens ('explain') -> a closing card.
 
+// `speaker` is the NPC (config/gameNpcs.json) who tells that step: the guide opens and closes the tour, every
+// stop is explained by whoever keeps the place.
 export const TUTORIAL_STEPS = [
-  { id: 'welcome', place: null },
-  { id: 'listings', place: 'listings' },
-  { id: 'auctions', place: 'auctions' },
-  { id: 'arena', place: 'arena' },
-  { id: 'catalog', place: 'catalog' },
-  { id: 'credits', place: 'credits' },
-  { id: 'finish', place: null },
+  { id: 'welcome', place: null, speaker: 'guide' },
+  { id: 'listings', place: 'listings', speaker: 'guide' },
+  { id: 'auctions', place: 'auctions', speaker: 'auctioneer' },
+  { id: 'arena', place: 'arena', speaker: 'referee' },
+  { id: 'catalog', place: 'catalog', speaker: 'archivist' },
+  { id: 'credits', place: 'credits', speaker: 'dragon' },
+  { id: 'finish', place: null, speaker: 'guide' },
 ];
 
 export const PLACE_STEP_COUNT = TUTORIAL_STEPS.filter((s) => s.place).length;

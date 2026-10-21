@@ -2611,7 +2611,8 @@
       "rotate_dismiss": "Keep it like this",
       "toolbar_label": "Game controls",
       "travel_market": "Enter the market",
-      "travel_plaza": "Back to the plaza"
+      "travel_plaza": "Back to the plaza",
+      "talk": "Talk to {{name}}"
     },
     "tutorial": {
       "next": "Next",
@@ -2808,6 +2809,162 @@
       "donna_base": "Classic woman",
       "uomo_cyber": "Cyber man",
       "donna_cyber": "Cyber woman"
+    },
+    "dialog": {
+      "answers": "Answers",
+      "opt": {
+        "tour": "Give me the guided tour",
+        "where": "Where do I find things?",
+        "controls": "How do I move?",
+        "bye": "Goodbye",
+        "go_listings": "Take me to the listings castle",
+        "go_auctions": "Take me to the auctions",
+        "go_arena": "Take me to the arena",
+        "go_catalog": "Take me to the archive",
+        "back": "Go back",
+        "show_auctions": "Show me the running auctions",
+        "how": "How does it work?",
+        "open_auctions": "Open the auctions page",
+        "show_contests": "Which challenges are there?",
+        "credits": "What about credits?",
+        "open_arena": "Open the Skill Zone",
+        "open_credits": "Open the credits page",
+        "open_catalog": "Open the catalogue",
+        "earn": "How do I earn them?",
+        "spend": "What are they for?",
+        "show_products": "Show me the products",
+        "how_market": "How does the market work?",
+        "to_plaza": "Back to the plaza",
+        "categories": "Which categories can I explore?",
+        "game_pokemon": "Pokémon",
+        "game_magic": "Magic: The Gathering",
+        "game_yugioh": "Yu-Gi-Oh!",
+        "game_onepiece": "One Piece",
+        "game_lorcana": "Lorcana",
+        "game_dragonball": "Dragon Ball"
+      }
+    },
+    "npcs": {
+      "guide": {
+        "name": "Brix",
+        "role": "Plaza guide",
+        "hello": "Hi, I'm Brix! Welcome to the CardBrix plaza: every building is a part of the marketplace, with real listings, auctions and challenges. What do you need?",
+        "where": "The castle on the left holds the listings market. Then come the auction house, the Skill Zone arena and the great catalogue archive. Shall I walk you there?",
+        "controls": "Tap the map to walk, or use the arrows, WASD or the D-pad. Tap a character or a building and you'll walk there by yourself. When you see a «!» over someone, you can talk to them.",
+        "greet": "Need help? Talk to me!"
+      },
+      "auctioneer": {
+        "name": "Gaspare",
+        "role": "Auctioneer",
+        "hello": "Step right up! I'm Gaspare and I run the CardBrix auctions. On my board you'll find the running auctions, with the current price and the time left.",
+        "how": "Every auction has a timer: when it runs out, the highest bid wins. A bid in the last 2 minutes extends the auction by 2 more, so no last-second sniping. To bid, open the auction on the site.",
+        "greet": "Real auctions, real time!"
+      },
+      "referee": {
+        "name": "Vera",
+        "role": "Skill Zone referee",
+        "hello": "Welcome to the arena! I'm Vera and I referee the Skill Zone challenges: timed puzzles to win the prizes offered by CardBrix.com.",
+        "how": "Every challenge has a limited number of slots. You book one with credits, then solve the 16-piece puzzle as fast as you can: the best time wins the prize. Shipping is paid by the winner.",
+        "credits": "Credits only count inside CardBrix: they cannot be bought, turned into money or transferred to other users. The dragon in the middle of the plaza will tell you how to earn them.",
+        "greet": "Ready for a challenge?"
+      },
+      "archivist": {
+        "name": "Ottone",
+        "role": "Catalogue archivist",
+        "hello": "Shhh, this is the archive. I'm Ottone: I keep the records of LEGO sets, Funko Pops and cards from many games, to help you recognise what you collect.",
+        "how": "Look up a set or a card, open its record and you get the details to identify it. Records are for reference: to buy or sell, go to the market in the castle.",
+        "greet": "Shhh... records inside!"
+      },
+      "dragon": {
+        "name": "Credits Dragon",
+        "role": "Keeper of credits",
+        "hello": "GRRR... relax, I don't bite. I keep the CardBrix credits: they only count in here and they let you take part in the Skill Zone puzzles.",
+        "earn": "You earn them by signing up (once your email is verified), by inviting friends who sign up, and with completed sales and purchases, after the maturation period. Publishing listings gives no credits. They can't be bought or turned into money.",
+        "spend": "You use them in the Skill Zone arena to book a slot in the challenges. The prizes are offered by CardBrix.com."
+      },
+      "lego_merchant": {
+        "name": "Mattia",
+        "role": "LEGO merchant",
+        "hello": "Welcome, collector! I'm Mattia: on my stall you'll find the LEGO listings published by CardBrix users, sets and minifigures. Have a look!",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick an item, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Bricks on the counter!"
+      },
+      "cards_merchant": {
+        "name": "Selene",
+        "role": "Card merchant",
+        "hello": "Hi! I'm Selene, the card merchant: Pokémon, Magic, Yu-Gi-Oh!, One Piece and other games. I'll show you the cards on sale right now.",
+        "games": "Which game are you after?",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Cards from every game!"
+      },
+      "funko_merchant": {
+        "name": "Fausto",
+        "role": "Funko Pop merchant",
+        "hello": "Hey there! I'm Fausto. My stall has the Funko Pops put on sale by users, from exclusives to rare pieces.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a Funko, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Funko Pops on show!"
+      }
+    },
+    "panel": {
+      "label": "Panel",
+      "empty": "Walk up to a character with a «!», a building or another player: you'll see here what they have for you.",
+      "back": "Back",
+      "error": "I can't fetch the data. Try again shortly.",
+      "retry": "Try again",
+      "goods": {
+        "all": "Listings",
+        "lego": "LEGO listings",
+        "tcg": "Trading cards",
+        "funko": "Funko Pop",
+        "tcg_pokemon": "Pokémon cards",
+        "tcg_magic": "Magic cards",
+        "tcg_yugioh": "Yu-Gi-Oh! cards",
+        "tcg_onepiece": "One Piece cards",
+        "tcg_lorcana": "Lorcana cards",
+        "tcg_dragonball": "Dragon Ball cards"
+      },
+      "goods_empty": "The stall is empty: no active listings in this category right now.",
+      "see_all": "See them all on the site",
+      "unit_d": "d",
+      "unit_h": "h",
+      "unit_m": "m",
+      "unit_s": "s",
+      "auction": "Auction",
+      "bids_one": "{{count}} bid",
+      "bids_other": "{{count}} bids",
+      "yours": "Yours",
+      "yours_long": "Your listing",
+      "price_price": "Price",
+      "price_bid": "Current bid",
+      "price_start": "Starting price",
+      "time_left": "Time left",
+      "ended": "Ended",
+      "bids_label": "Bids",
+      "condition": "Condition",
+      "seller": "Seller:",
+      "open_listing": "Open the listing",
+      "open_auction": "Open the auction",
+      "auctions_title": "Running auctions",
+      "auctions_empty": "No auctions running right now.",
+      "all_auctions": "All auctions on the site",
+      "arena_intro": "Timed challenges: book a slot with credits and solve the puzzle faster than everyone.",
+      "your_credits_one": "You have {{count}} credit",
+      "your_credits_other": "You have {{count}} credits",
+      "contests_title": "Open challenges",
+      "slots": "Slots {{filled}}/{{total}}",
+      "slot_cost_one": "{{count}} credit per slot",
+      "slot_cost_other": "{{count}} credits per slot",
+      "contests_empty": "No open challenges right now: come back soon!",
+      "contests_unavailable": "Challenges are not available right now.",
+      "arena_rules": "Booking and playing happen in the Skill Zone. Prizes are offered by CardBrix.com; shipping is paid by the winner.",
+      "open_arena": "Go to the Skill Zone"
+    },
+    "intro": {
+      "ok": "Got it",
+      "market": {
+        "title": "The castle market",
+        "body": "Every stall has its merchant: tap whoever has a «!» to see the real listings published by users. The gate to the south takes you back to the plaza."
+      }
     }
   },
   "privacy": {
@@ -2854,7 +3011,7 @@
     "s2_title": "2. CardBrix technical tools (always on, no consent)",
     "s2_body": "• bm_cookie_consent (first-party cookie, 6 months): remembers your cookie choice.\n• cardbrix_token (localStorage, until logout): keeps you signed in.\n• cardbrix_cart (localStorage, until you empty it): keeps the cart before sign-in.\n• i18nextLng (localStorage, persistent): remembers the language you chose.\n• bm_geo_lang_checked (localStorage, persistent): remembers that the language suggestion was already shown.\n• cardbrix_intro_seen (localStorage, persistent): avoids replaying the opening animation on the same day.\n• cardbrix_sell_draft_v1:<id>, cardbrix_auction_draft_v1:<id>, cardbrix_sell_guide_seen, cardbrix_auction_guide_seen (localStorage, persistent): the draft listing or auction you are writing and guides already read.",
     "s3_title": "3. CardBrix the game: preferences on your device",
-    "s3_body": "These are functionality technologies we store only because you use the game, and they do not identify you to third parties. They need no consent.\n• cardbrix_game_visible (localStorage, persistent): whether you chose to be visible to other players.\n• cardbrix_game_tutorial_done:<id> (localStorage, persistent): whether you already completed the tutorial.\n• cardbrix_game_return (sessionStorage, until the tab is closed): remembers where you were on the map when you come back from the website.\n• cardbrix_game_rotate_dismissed (sessionStorage, until the tab is closed): remembers that you closed the “rotate your phone” hint.\nThe game and site fonts are hosted on our own servers: we do not contact Google Fonts or other external services to load them.",
+    "s3_body": "These are functionality technologies we store only because you use the game, and they do not identify you to third parties. They need no consent.\n• cardbrix_game_visible (localStorage, persistent): whether you chose to be visible to other players.\n• cardbrix_game_tutorial_done:<id> (localStorage, persistent): whether you already completed the tutorial.\n• cardbrix_game_seen:<id> (localStorage, persistent): which game explanations (area introductions, characters’ greetings) you have already seen, so they are not repeated.\n• cardbrix_game_return (sessionStorage, until the tab is closed): remembers where you were on the map when you come back from the website.\n• cardbrix_game_rotate_dismissed (sessionStorage, until the tab is closed): remembers that you closed the “rotate your phone” hint.\nThe game and site fonts are hosted on our own servers: we do not contact Google Fonts or other external services to load them.",
     "s4_title": "4. Necessary third-party tools",
     "s4_body": "These services are essential for security and payments. They may set their own cookies and process technical data (such as the IP) under their own policies.\n• Cloudflare Turnstile (Cloudflare, Inc., United States): anti-bot protection on sign-in and registration. Legal basis: legitimate interest. Transfer: EU-US Data Privacy Framework. [DA VERIFICARE: duration, to inspect in production]\n• Stripe.js (Stripe Payments Europe Ltd, Ireland; Stripe, Inc., United States): secure payment and fraud prevention. Legal basis: contract and legitimate interest. [DA VERIFICARE: duration, to inspect in production]\n• PayPal (PayPal (Europe) S.à r.l. et Cie, S.C.A., Luxembourg): payment, if you choose it. Legal basis: contract.\n• Sign in with Google (Google Ireland Limited) and Sign in with Apple (Apple Inc.): the button, where shown on the sign-in and registration pages, loads a script from the provider. Legal basis: contract. See their policies for details. [DA VERIFICARE: whether loading should happen only on click]",
     "s5_title": "5. Statistics tools (only with your consent)",
