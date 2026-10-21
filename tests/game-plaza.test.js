@@ -30,8 +30,8 @@ describe('join / leave', () => {
 
   test('a broken or missing character falls back to the default one', () => {
     const { room } = setup();
-    expect(room.join(user('a', { avatar_config: null })).avatar.look).toBe('uomo_base');
-    expect(room.join(user('b', { avatar_config: { v: 2, look: 'hacker' } })).avatar.look).toBe('uomo_base');
+    expect(room.join(user('a', { avatar_config: null })).avatar.look).toBe(require('../client/src/config/avatarSpec.json').looks[0]);
+    expect(room.join(user('b', { avatar_config: { v: 2, look: 'hacker' } })).avatar.look).toBe(require('../client/src/config/avatarSpec.json').looks[0]);
   });
 
   test('legacy (v1) characters are converted', () => {

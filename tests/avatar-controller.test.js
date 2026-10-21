@@ -57,7 +57,7 @@ describe('POST /api/auth/register (registerHandler)', () => {
     const res = mockRes();
     const v1 = { skin: 1, hairStyle: 0, hairColor: 2, outfit: 3, outfitColor: 4, accessory: 0 };
     await registerHandler(reqWith({ ...signup, avatarConfig: JSON.stringify(v1) }), res);
-    expect(authService.register.mock.calls[0][0].avatarConfig).toMatchObject({ v: 2, look: 'uomo_base', skin: 2, hairColor: 3, outfitColor: 5 });
+    expect(authService.register.mock.calls[0][0].avatarConfig).toMatchObject({ v: 2, look: require('../client/src/config/avatarSpec.json').looks[0], skin: 2, hairColor: 3, outfitColor: 5 });
   });
 
   test('an invalid avatar is refused with 400 and nothing is registered', async () => {

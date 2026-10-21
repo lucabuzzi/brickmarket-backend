@@ -17,6 +17,66 @@
     "left": 1
   },
   "looks": {
+    "esploratore_collezionista": {
+      "scale": 0.1519,
+      "regions": {
+        "1": {
+          "count": 703,
+          "sref": 0.3933,
+          "vref": 0.8958
+        },
+        "2": {
+          "count": 360,
+          "sref": 0.6467,
+          "vref": 0.3125
+        },
+        "3": {
+          "count": 1202,
+          "sref": 0.2804,
+          "vref": 0.4191
+        },
+        "4": {
+          "count": 1449,
+          "sref": 0.5233,
+          "vref": 0.3785
+        },
+        "5": {
+          "count": 1590,
+          "sref": 0.4476,
+          "vref": 0.3235
+        }
+      }
+    },
+    "esploratrice_collezionista": {
+      "scale": 0.1519,
+      "regions": {
+        "1": {
+          "count": 1329,
+          "sref": 0.4362,
+          "vref": 0.9045
+        },
+        "2": {
+          "count": 969,
+          "sref": 0.6546,
+          "vref": 0.3395
+        },
+        "3": {
+          "count": 1127,
+          "sref": 0.2865,
+          "vref": 0.4311
+        },
+        "4": {
+          "count": 1287,
+          "sref": 0.5373,
+          "vref": 0.3872
+        },
+        "5": {
+          "count": 590,
+          "sref": 0.4393,
+          "vref": 0.3157
+        }
+      }
+    },
     "uomo_base": {
       "scale": 0.1424,
       "regions": {
@@ -47,36 +107,6 @@
         }
       }
     },
-    "uomo_cyber": {
-      "scale": 0.1446,
-      "regions": {
-        "1": {
-          "count": 453,
-          "sref": 0.4374,
-          "vref": 0.7745
-        },
-        "2": {
-          "count": 548,
-          "sref": 0.5414,
-          "vref": 0.4042
-        },
-        "3": {
-          "count": 777,
-          "sref": 0.4918,
-          "vref": 0.2971
-        },
-        "4": {
-          "count": 166,
-          "sref": 0.6115,
-          "vref": 0.7824
-        },
-        "5": {
-          "count": 1576,
-          "sref": 0.4093,
-          "vref": 0.266
-        }
-      }
-    },
     "donna_base": {
       "scale": 0.1404,
       "regions": {
@@ -104,6 +134,36 @@
           "count": 852,
           "sref": 0.6043,
           "vref": 0.4261
+        }
+      }
+    },
+    "uomo_cyber": {
+      "scale": 0.1446,
+      "regions": {
+        "1": {
+          "count": 453,
+          "sref": 0.4374,
+          "vref": 0.7745
+        },
+        "2": {
+          "count": 548,
+          "sref": 0.5414,
+          "vref": 0.4042
+        },
+        "3": {
+          "count": 777,
+          "sref": 0.4918,
+          "vref": 0.2971
+        },
+        "4": {
+          "count": 166,
+          "sref": 0.6115,
+          "vref": 0.7824
+        },
+        "5": {
+          "count": 1576,
+          "sref": 0.4093,
+          "vref": 0.266
         }
       }
     },

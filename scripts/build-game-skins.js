@@ -129,6 +129,7 @@ async function buildLook(look, file) {
       .extract({ left: bounds.left, top: bounds.top, width: cw, height: chh })
       .resize({ width: nw, height: nh, kernel: 'nearest' }).raw().toBuffer();
     const small = new Uint8Array(crop);
+    if (character) P.despill(small, nw, nh, 1); // downscaling can bring tinted inner pixels to the edge
     const sb = P.opaqueBounds(small, nw, nh);
     const centre = P.torsoCentre(small, nw, sb);
     let ox = Math.round(FRAME.w / 2 - centre);
