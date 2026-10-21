@@ -2750,12 +2750,8 @@
         "heart": "Corazón"
       }
     },
-    "dpad": {
-      "label": "Controles de movimiento",
-      "up": "Arriba",
-      "down": "Abajo",
-      "left": "Izquierda",
-      "right": "Derecha"
+    "joystick": {
+      "label": "Joystick de movimiento: arrastra el mando para caminar"
     },
     "age_note": "Para jugar necesitas una cuenta y tener al menos 18 años.",
     "classes": {

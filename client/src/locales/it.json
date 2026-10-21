@@ -2826,12 +2826,8 @@
         "heart": "Cuore"
       }
     },
-    "dpad": {
-      "label": "Comandi di movimento",
-      "up": "Su",
-      "down": "Giù",
-      "left": "Sinistra",
-      "right": "Destra"
+    "joystick": {
+      "label": "Joystick di movimento: trascina il pomello per camminare"
     },
     "age_note": "Per giocare serve un account e almeno 18 anni.",
     "classes": {

@@ -2758,12 +2758,8 @@
         "heart": "Cœur"
       }
     },
-    "dpad": {
-      "label": "Commandes de déplacement",
-      "up": "Haut",
-      "down": "Bas",
-      "left": "Gauche",
-      "right": "Droite"
+    "joystick": {
+      "label": "Joystick de déplacement : faites glisser le bouton pour marcher"
     },
     "age_note": "Pour jouer il faut un compte et avoir au moins 18 ans.",
     "classes": {

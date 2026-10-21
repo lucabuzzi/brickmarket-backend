@@ -19,6 +19,7 @@ import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
 import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
 import { drawnNpcs, npcHitBox } from './npcs';
+import { clampStick } from './joystick';
 import { findPath } from './pathfind';
 import { timeLeft, clockText } from './marketQueries';
 // The pixel font of the game UI (self-hosted, so the production CSP needs nothing new), drawn into the canvas too.
@@ -126,8 +127,8 @@ export async function startGame({
   let current = mapById(start.map);
   // everything drawn for the current map carries the 'map' tag, so a map switch can clear it in one go
   const add = (comps) => k.add([...comps, 'map']);
-  // on-screen D-pad (touch): held directions, merged with the keyboard every frame
-  const virtualKeys = { up: false, down: false, left: false, right: false };
+  // on-screen joystick (touch): walking vector of length 0..1, used when no key is held
+  let virtualStick = { x: 0, y: 0 };
   // speech bubbles over the heads: id ('me', a player id or 'npc:<npc id>') -> { text, until }
   const bubbles = new Map();
   const BUBBLE_MS = 4000;
@@ -702,12 +703,13 @@ export async function startGame({
   k.onUpdate(() => {
     const dt = k.dt();
     stepFade(dt);
-    const keys = state.frozen || state.fade ? { dx: 0, dy: 0 } : keyVector({
-      left: down('left', 'a') || virtualKeys.left,
-      right: down('right', 'd') || virtualKeys.right,
-      up: down('up', 'w') || virtualKeys.up,
-      down: down('down', 's') || virtualKeys.down,
+    let keys = state.frozen || state.fade ? { dx: 0, dy: 0 } : keyVector({
+      left: down('left', 'a'),
+      right: down('right', 'd'),
+      up: down('up', 'w'),
+      down: down('down', 's'),
     });
+    if (keys.dx === 0 && keys.dy === 0 && !state.frozen && !state.fade) keys = { dx: virtualStick.x, dy: virtualStick.y };
     let dx = 0;
     let dy = 0;
     if (keys.dx !== 0 || keys.dy !== 0) {
@@ -785,10 +787,8 @@ export async function startGame({
     addRemote,
     moveRemote,
     removeRemote,
-    /** Directions held on the on-screen D-pad: { up, down, left, right } (missing = released). */
-    setVirtualKeys(keys) {
-      for (const dir of ['up', 'down', 'left', 'right']) virtualKeys[dir] = Boolean(keys && keys[dir]);
-    },
+    /** Walking vector of the on-screen joystick: { x, y } of length 0..1 (proportional speed); zeros = released. */
+    setVirtualStick(v) { virtualStick = clampStick(v); },
     /** Shows `text` in a bubble above a character for a few seconds ('me' = our own character, 'npc:<id>' an NPC). */
     showBubble(id, text) { bubbles.set(id, { text: String(text), until: k.time() * 1000 + BUBBLE_MS }); },
     /** The server refused a move: snap back to where it says we are (switching map first if it says so). */
