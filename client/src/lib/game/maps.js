@@ -1,18 +1,24 @@
 // "CardBrix the game": the registry of maps (the plaza and the market inside the castle) with what the scene
-// needs to run either of them: world size, places with doors, obstacles and spawn points. Pure, unit-tested in
+// needs to run either of them: world size, places with doors and obstacles (NPCs included) and spawn points. Pure, unit-tested in
 // tests/game-market.test.js. Which doors link which maps is in config/gameMaps.json (shared with the server).
 import CONFIG from '../../config/gameMaps.json';
 import { WORLD, PLACES, BLOCKED } from './gameMap';
 import { MARKET_WORLD, MARKET_PLACES, MARKET_BLOCKED } from './marketMap';
+import { npcPlaces, npcBlocked } from './npcs';
 
 export const MAPS = {
-  plaza: { id: 'plaza', world: WORLD, places: PLACES, blocked: BLOCKED, ...CONFIG.maps.plaza },
-  market: { id: 'market', world: MARKET_WORLD, places: MARKET_PLACES, blocked: MARKET_BLOCKED, ...CONFIG.maps.market },
+  plaza: {
+    id: 'plaza', world: WORLD, places: [...PLACES, ...npcPlaces('plaza')], blocked: [...BLOCKED, ...npcBlocked('plaza')], ...CONFIG.maps.plaza,
+  },
+  market: {
+    id: 'market', world: MARKET_WORLD, places: [...MARKET_PLACES, ...npcPlaces('market')], blocked: [...MARKET_BLOCKED, ...npcBlocked('market')],
+    ...CONFIG.maps.market,
+  },
 };
 export const MAP_IDS = Object.keys(MAPS);
 export const MAP_LINKS = CONFIG.links;
 
-/** Every place of every map (for labels and the UI around the canvas). */
+/** Every place of every map (for labels and the UI around the canvas), standalone NPCs included (kind 'npc'). */
 export const ALL_PLACES = MAP_IDS.flatMap((id) => MAPS[id].places);
 
 export function mapById(id) {

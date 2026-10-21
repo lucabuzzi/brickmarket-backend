@@ -29,6 +29,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'clutchvault_secret_key_1337';
 async function listContestsHandler(req, res) {
   try {
     const rows = await contestRepository.listOpenContests();
+    // In-memory fallback (no real ClutchVault DB reachable): its contests are placeholders, not real prizes.
+    // Callers that present prizes as real (the game) must not show them; the Skill Zone page ignores the flag.
+    const mock = contestRepository.isMockDb();
     const contests = rows.map((row) => ({
       id: row.id,
       productId: row.product_id,
@@ -44,7 +47,7 @@ async function listContestsHandler(req, res) {
       status: row.status,
       winnerId: row.winner_id,
     }));
-    return res.json({ contests });
+    return res.json({ contests, mock });
   } catch (error) {
     console.error('Fetch contests error:', error);
     return res.status(500).json({ error: 'Database error fetching contests' });

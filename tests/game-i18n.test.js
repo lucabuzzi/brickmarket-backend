@@ -9,7 +9,8 @@ describe.each(LANGS)('%s', (lang) => {
   const game = locales[lang].game;
 
   test('every place has a title, a subtitle and a flavour line', () => {
-    for (const p of PLACES) {
+    // NPCs standing alone are places too: their name / role / lines are checked in game-npcs.test.js
+    for (const p of PLACES.filter((x) => x.kind !== 'npc')) {
       for (const field of ['title', 'subtitle', 'flavour']) {
         expect(typeof game.places_info[p.id][field]).toBe('string');
         expect(game.places_info[p.id][field].trim().length).toBeGreaterThan(2);

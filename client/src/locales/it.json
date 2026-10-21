@@ -2687,7 +2687,8 @@
       "rotate_dismiss": "Continua così",
       "toolbar_label": "Comandi del gioco",
       "travel_market": "Entra nel mercato",
-      "travel_plaza": "Torna in piazza"
+      "travel_plaza": "Torna in piazza",
+      "talk": "Parla con {{name}}"
     },
     "tutorial": {
       "next": "Avanti",
@@ -2884,6 +2885,148 @@
       "donna_base": "Donna base",
       "uomo_cyber": "Uomo cyber",
       "donna_cyber": "Donna cyber"
+    },
+    "dialog": {
+      "answers": "Risposte",
+      "opt": {
+        "tour": "Fammi fare il giro guidato",
+        "where": "Dove trovo le cose?",
+        "controls": "Come mi muovo?",
+        "bye": "Arrivederci",
+        "go_listings": "Portami al castello degli annunci",
+        "go_auctions": "Portami alle aste",
+        "go_arena": "Portami all'arena",
+        "go_catalog": "Portami all'archivio",
+        "back": "Torna indietro",
+        "show_auctions": "Mostrami le aste in corso",
+        "how": "Come funziona?",
+        "open_auctions": "Apri la pagina delle aste",
+        "show_contests": "Quali sfide ci sono?",
+        "credits": "E i crediti?",
+        "open_arena": "Apri la Skill Zone",
+        "open_credits": "Apri la pagina dei crediti",
+        "open_catalog": "Apri il catalogo",
+        "earn": "Come si guadagnano?",
+        "spend": "A cosa servono?",
+        "show_products": "Mostrami i prodotti",
+        "how_market": "Come funziona il mercato?",
+        "to_plaza": "Torno alla piazza",
+        "categories": "Quali categorie posso esplorare?",
+        "game_pokemon": "Pokémon",
+        "game_magic": "Magic: The Gathering",
+        "game_yugioh": "Yu-Gi-Oh!",
+        "game_onepiece": "One Piece",
+        "game_lorcana": "Lorcana",
+        "game_dragonball": "Dragon Ball"
+      }
+    },
+    "npcs": {
+      "guide": {
+        "name": "Brix",
+        "role": "Guida della piazza",
+        "hello": "Ciao, sono Brix! Benvenuto nella piazza di CardBrix: ogni edificio è una parte del marketplace, con annunci, aste e sfide vere. Cosa ti serve?",
+        "where": "Il castello a sinistra custodisce il mercato degli annunci. Poi ci sono la casa delle aste, l'arena della Skill Zone e il grande archivio del catalogo. Vuoi che ti accompagni?",
+        "controls": "Tocca la mappa per camminare, oppure usa frecce, WASD o il D-pad. Se tocchi un personaggio o un edificio ci vai da solo. Quando vedi il «!» sopra qualcuno, puoi parlarci."
+      },
+      "auctioneer": {
+        "name": "Gaspare",
+        "role": "Banditore delle aste",
+        "hello": "Avanti, avanti! Sono Gaspare e batto le aste di CardBrix. Sul mio tabellone trovi le aste in corso, con il prezzo attuale e il tempo che resta.",
+        "how": "Ogni asta ha un timer: allo scadere vince l'offerta più alta. Un rilancio negli ultimi 2 minuti allunga l'asta di altri 2, così niente colpi all'ultimo secondo. Per rilanciare apri l'asta sul sito."
+      },
+      "referee": {
+        "name": "Vera",
+        "role": "Arbitra della Skill Zone",
+        "hello": "Benvenuto nell'arena! Sono Vera e arbitro le sfide della Skill Zone: puzzle a tempo per vincere i premi messi in palio da CardBrix.com.",
+        "how": "Ogni sfida ha un numero limitato di posti. Ne prenoti uno con i crediti, poi ricomponi il puzzle da 16 pezzi più in fretta che puoi: il tempo migliore vince il premio. La spedizione è a carico del vincitore.",
+        "credits": "I crediti valgono solo dentro CardBrix: non si comprano, non si convertono in denaro e non si trasferiscono ad altri utenti. Il drago al centro della piazza ti spiega come guadagnarli."
+      },
+      "archivist": {
+        "name": "Ottone",
+        "role": "Archivista del catalogo",
+        "hello": "Sssh, siamo in archivio. Sono Ottone: qui custodisco le schede di set LEGO, Funko Pop e carte di tanti giochi, per riconoscere quello che collezioni.",
+        "how": "Cerchi un set o una carta, apri la sua scheda e trovi i dettagli per identificarla. Le schede servono a documentarsi: per comprare o vendere passa dal mercato nel castello."
+      },
+      "dragon": {
+        "name": "Drago dei Crediti",
+        "role": "Custode dei crediti",
+        "hello": "GRRR... tranquillo, non mordo. Custodisco i crediti di CardBrix: valgono solo qui dentro e servono per partecipare ai puzzle della Skill Zone.",
+        "earn": "Si guadagnano con la registrazione (dopo aver verificato l’email), invitando amici che si registrano, e con vendite e acquisti completati, dopo il periodo di maturazione. Pubblicare annunci non dà crediti. Non si comprano e non si convertono in denaro.",
+        "spend": "Li usi nell'arena della Skill Zone per prenotare un posto nelle sfide. I premi li mette in palio CardBrix.com."
+      },
+      "lego_merchant": {
+        "name": "Mattia",
+        "role": "Mercante LEGO",
+        "hello": "Benvenuto, collezionista! Sono Mattia: sul mio banco trovi gli annunci LEGO pubblicati dagli utenti di CardBrix, set e minifigure. Dai un’occhiata!",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli un oggetto, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix."
+      },
+      "cards_merchant": {
+        "name": "Selene",
+        "role": "Mercante di carte",
+        "hello": "Ciao! Sono Selene, la mercante di carte: Pokémon, Magic, Yu-Gi-Oh!, One Piece e altri giochi. Ti mostro le carte in vendita adesso.",
+        "games": "Di quale gioco ti interessano le carte?",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix."
+      },
+      "funko_merchant": {
+        "name": "Fausto",
+        "role": "Mercante Funko Pop",
+        "hello": "Ehilà! Sono Fausto. Sul mio banco ci sono i Funko Pop messi in vendita dagli utenti, dalle esclusive ai pezzi rari.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli un Funko, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix."
+      }
+    },
+    "panel": {
+      "label": "Pannello",
+      "empty": "Avvicinati a un personaggio con il «!», a un edificio o a un altro giocatore: qui vedrai cosa ha da offrirti.",
+      "back": "Indietro",
+      "error": "Non riesco a recuperare i dati. Riprova tra poco.",
+      "retry": "Riprova",
+      "goods": {
+        "all": "Annunci",
+        "lego": "Annunci LEGO",
+        "tcg": "Carte collezionabili",
+        "funko": "Funko Pop",
+        "tcg_pokemon": "Carte Pokémon",
+        "tcg_magic": "Carte Magic",
+        "tcg_yugioh": "Carte Yu-Gi-Oh!",
+        "tcg_onepiece": "Carte One Piece",
+        "tcg_lorcana": "Carte Lorcana",
+        "tcg_dragonball": "Carte Dragon Ball"
+      },
+      "goods_empty": "Il banco è vuoto: nessun annuncio attivo in questa categoria in questo momento.",
+      "see_all": "Vedi tutti sul sito",
+      "unit_d": "g",
+      "unit_h": "h",
+      "unit_m": "m",
+      "unit_s": "s",
+      "auction": "Asta",
+      "bids_one": "{{count}} offerta",
+      "bids_other": "{{count}} offerte",
+      "yours": "Tuo",
+      "yours_long": "Il tuo annuncio",
+      "price_price": "Prezzo",
+      "price_bid": "Offerta attuale",
+      "price_start": "Base d'asta",
+      "time_left": "Tempo rimasto",
+      "ended": "Terminata",
+      "bids_label": "Offerte",
+      "condition": "Condizione",
+      "seller": "Venditore:",
+      "open_listing": "Apri l'annuncio",
+      "open_auction": "Apri l'asta",
+      "auctions_title": "Aste in corso",
+      "auctions_empty": "Nessuna asta in corso in questo momento.",
+      "all_auctions": "Tutte le aste sul sito",
+      "arena_intro": "Sfide a tempo: prenoti un posto con i crediti e ricomponi il puzzle più in fretta di tutti.",
+      "your_credits_one": "Hai {{count}} credito",
+      "your_credits_other": "Hai {{count}} crediti",
+      "contests_title": "Sfide aperte",
+      "slots": "Posti {{filled}}/{{total}}",
+      "slot_cost_one": "{{count}} credito a posto",
+      "slot_cost_other": "{{count}} crediti a posto",
+      "contests_empty": "Nessuna sfida aperta in questo momento: torna presto!",
+      "contests_unavailable": "Le sfide non sono disponibili in questo momento.",
+      "arena_rules": "Prenotazione e partita si fanno nella Skill Zone. I premi li mette in palio CardBrix.com; la spedizione è a carico del vincitore.",
+      "open_arena": "Vai alla Skill Zone"
     }
   }
 }

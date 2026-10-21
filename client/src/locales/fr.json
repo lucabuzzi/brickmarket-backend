@@ -2619,7 +2619,8 @@
       "rotate_dismiss": "Continuer ainsi",
       "toolbar_label": "Commandes du jeu",
       "travel_market": "Entrer dans le marché",
-      "travel_plaza": "Retour sur la place"
+      "travel_plaza": "Retour sur la place",
+      "talk": "Parler à {{name}}"
     },
     "tutorial": {
       "next": "Suivant",
@@ -2816,6 +2817,148 @@
       "donna_base": "Femme classique",
       "uomo_cyber": "Homme cyber",
       "donna_cyber": "Femme cyber"
+    },
+    "dialog": {
+      "answers": "Réponses",
+      "opt": {
+        "tour": "Fais-moi faire la visite guidée",
+        "where": "Où trouver les choses ?",
+        "controls": "Comment je me déplace ?",
+        "bye": "Au revoir",
+        "go_listings": "Emmène-moi au château des annonces",
+        "go_auctions": "Emmène-moi aux enchères",
+        "go_arena": "Emmène-moi à l'arène",
+        "go_catalog": "Emmène-moi aux archives",
+        "back": "Revenir",
+        "show_auctions": "Montre-moi les enchères en cours",
+        "how": "Comment ça marche ?",
+        "open_auctions": "Ouvrir la page des enchères",
+        "show_contests": "Quels défis y a-t-il ?",
+        "credits": "Et les crédits ?",
+        "open_arena": "Ouvrir la Skill Zone",
+        "open_credits": "Ouvrir la page des crédits",
+        "open_catalog": "Ouvrir le catalogue",
+        "earn": "Comment les gagner ?",
+        "spend": "À quoi servent-ils ?",
+        "show_products": "Montre-moi les produits",
+        "how_market": "Comment fonctionne le marché ?",
+        "to_plaza": "Je retourne sur la place",
+        "categories": "Quelles catégories puis-je explorer ?",
+        "game_pokemon": "Pokémon",
+        "game_magic": "Magic: The Gathering",
+        "game_yugioh": "Yu-Gi-Oh!",
+        "game_onepiece": "One Piece",
+        "game_lorcana": "Lorcana",
+        "game_dragonball": "Dragon Ball"
+      }
+    },
+    "npcs": {
+      "guide": {
+        "name": "Brix",
+        "role": "Guide de la place",
+        "hello": "Salut, je suis Brix ! Bienvenue sur la place de CardBrix : chaque bâtiment est une partie du marketplace, avec de vraies annonces, enchères et défis. De quoi as-tu besoin ?",
+        "where": "Le château à gauche abrite le marché des annonces. Ensuite viennent la maison des enchères, l'arène de la Skill Zone et les grandes archives du catalogue. Je t'accompagne ?",
+        "controls": "Touche la carte pour marcher, ou utilise les flèches, WASD ou le D-pad. Touche un personnage ou un bâtiment et tu y vas tout seul. Quand tu vois un « ! » au-dessus de quelqu'un, tu peux lui parler."
+      },
+      "auctioneer": {
+        "name": "Gaspare",
+        "role": "Commissaire-priseur",
+        "hello": "Approchez, approchez ! Je suis Gaspare et je mène les enchères de CardBrix. Sur mon tableau, tu trouves les enchères en cours, avec le prix actuel et le temps restant.",
+        "how": "Chaque enchère a un minuteur : à la fin, l'offre la plus haute gagne. Une offre dans les 2 dernières minutes prolonge l'enchère de 2 minutes, donc pas de coup de dernière seconde. Pour enchérir, ouvre l'enchère sur le site."
+      },
+      "referee": {
+        "name": "Vera",
+        "role": "Arbitre de la Skill Zone",
+        "hello": "Bienvenue dans l'arène ! Je suis Vera et j'arbitre les défis de la Skill Zone : des puzzles chronométrés pour gagner les prix offerts par CardBrix.com.",
+        "how": "Chaque défi a un nombre limité de places. Tu en réserves une avec des crédits, puis tu reconstitues le puzzle de 16 pièces le plus vite possible : le meilleur temps gagne le prix. L'expédition est à la charge du gagnant.",
+        "credits": "Les crédits n'ont de valeur que dans CardBrix : ils ne s'achètent pas, ne se convertissent pas en argent et ne se transfèrent pas à d'autres utilisateurs. Le dragon au centre de la place t'explique comment les gagner."
+      },
+      "archivist": {
+        "name": "Ottone",
+        "role": "Archiviste du catalogue",
+        "hello": "Chut, nous sommes aux archives. Je suis Ottone : je garde les fiches des sets LEGO, des Funko Pop et des cartes de nombreux jeux, pour reconnaître ce que tu collectionnes.",
+        "how": "Tu cherches un set ou une carte, tu ouvres sa fiche et tu trouves les détails pour l'identifier. Les fiches servent à se documenter : pour acheter ou vendre, passe par le marché du château."
+      },
+      "dragon": {
+        "name": "Dragon des Crédits",
+        "role": "Gardien des crédits",
+        "hello": "GRRR... du calme, je ne mords pas. Je garde les crédits de CardBrix : ils n'ont de valeur qu'ici et servent à participer aux puzzles de la Skill Zone.",
+        "earn": "On les gagne avec l'inscription (après vérification de l'e-mail), en invitant des amis qui s'inscrivent, et avec des ventes et achats finalisés, après la période de maturation. Publier des annonces ne donne pas de crédits. Ils ne s'achètent pas et ne se convertissent pas en argent.",
+        "spend": "Tu les utilises dans l'arène de la Skill Zone pour réserver une place dans les défis. Les prix sont offerts par CardBrix.com."
+      },
+      "lego_merchant": {
+        "name": "Mattia",
+        "role": "Marchand LEGO",
+        "hello": "Bienvenue, collectionneur ! Je suis Mattia : sur mon étal, tu trouves les annonces LEGO publiées par les utilisateurs de CardBrix, sets et minifigurines. Jette un œil !",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis un objet, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix."
+      },
+      "cards_merchant": {
+        "name": "Selene",
+        "role": "Marchande de cartes",
+        "hello": "Salut ! Je suis Selene, la marchande de cartes : Pokémon, Magic, Yu-Gi-Oh!, One Piece et d’autres jeux. Je te montre les cartes en vente en ce moment.",
+        "games": "Les cartes de quel jeu t’intéressent ?",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix."
+      },
+      "funko_merchant": {
+        "name": "Fausto",
+        "role": "Marchand de Funko Pop",
+        "hello": "Salut ! Je suis Fausto. Sur mon étal, il y a les Funko Pop mis en vente par les utilisateurs, des exclusivités aux pièces rares.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis un Funko, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix."
+      }
+    },
+    "panel": {
+      "label": "Panneau",
+      "empty": "Approche-toi d'un personnage avec un « ! », d'un bâtiment ou d'un autre joueur : tu verras ici ce qu'il a pour toi.",
+      "back": "Retour",
+      "error": "Impossible de récupérer les données. Réessaie dans un instant.",
+      "retry": "Réessayer",
+      "goods": {
+        "all": "Annonces",
+        "lego": "Annonces LEGO",
+        "tcg": "Cartes à collectionner",
+        "funko": "Funko Pop",
+        "tcg_pokemon": "Cartes Pokémon",
+        "tcg_magic": "Cartes Magic",
+        "tcg_yugioh": "Cartes Yu-Gi-Oh!",
+        "tcg_onepiece": "Cartes One Piece",
+        "tcg_lorcana": "Cartes Lorcana",
+        "tcg_dragonball": "Cartes Dragon Ball"
+      },
+      "goods_empty": "L'étal est vide : aucune annonce active dans cette catégorie pour le moment.",
+      "see_all": "Tout voir sur le site",
+      "unit_d": "j",
+      "unit_h": "h",
+      "unit_m": "m",
+      "unit_s": "s",
+      "auction": "Enchère",
+      "bids_one": "{{count}} offre",
+      "bids_other": "{{count}} offres",
+      "yours": "À toi",
+      "yours_long": "Ton annonce",
+      "price_price": "Prix",
+      "price_bid": "Offre actuelle",
+      "price_start": "Mise à prix",
+      "time_left": "Temps restant",
+      "ended": "Terminée",
+      "bids_label": "Offres",
+      "condition": "État",
+      "seller": "Vendeur :",
+      "open_listing": "Ouvrir l'annonce",
+      "open_auction": "Ouvrir l'enchère",
+      "auctions_title": "Enchères en cours",
+      "auctions_empty": "Aucune enchère en cours pour le moment.",
+      "all_auctions": "Toutes les enchères sur le site",
+      "arena_intro": "Défis chronométrés : réserve une place avec des crédits et reconstitue le puzzle plus vite que tout le monde.",
+      "your_credits_one": "Tu as {{count}} crédit",
+      "your_credits_other": "Tu as {{count}} crédits",
+      "contests_title": "Défis ouverts",
+      "slots": "Places {{filled}}/{{total}}",
+      "slot_cost_one": "{{count}} crédit par place",
+      "slot_cost_other": "{{count}} crédits par place",
+      "contests_empty": "Aucun défi ouvert pour le moment : reviens bientôt !",
+      "contests_unavailable": "Les défis ne sont pas disponibles pour le moment.",
+      "arena_rules": "La réservation et la partie se font dans la Skill Zone. Les prix sont offerts par CardBrix.com ; l'expédition est à la charge du gagnant.",
+      "open_arena": "Aller à la Skill Zone"
     }
   },
   "privacy": {
