@@ -739,6 +739,7 @@
     "order_summary": "Riepilogo Ordine",
     "items_count_label": "Articoli ({{count}}):",
     "platform_fee_label": "Commissione CardBrix",
+    "platform_fee_included": "di cui commissione CardBrix ({{percent}}, a carico dell'acquirente)",
     "total_label": "Totale:",
     "remove_unavailable_notice": "Rimuovi gli articoli esauriti per poter procedere con l'acquisto.",
     "processing": "Elaborazione...",
@@ -1199,7 +1200,8 @@
         "not_found_hint": "Non trovi la carta? Salta questo passaggio e compila titolo e dettagli a mano.",
         "variant": "Variante {{n}}"
       }
-    }
+    },
+    "listing_fee_note": "Riceverai l'intero prezzo. Il compratore vedrà € {{buyerPrice}}: la commissione CardBrix del {{percent}} è a suo carico ed è già inclusa."
   },
   "create_auction": {
     "error_title_condition_required": "Titolo e Condizione sono obbligatori.",
@@ -1752,7 +1754,7 @@
     "q6_question": "Come funzionano i pagamenti?",
     "q6_answer": "I pagamenti vengono gestiti tramite metodi sicuri supportati dalla piattaforma (es. Stripe, PayPal).",
     "q7_question": "Il marketplace applica una commissione?",
-    "q7_answer": "Sì, viene trattenuta una commissione su ogni vendita, visibile al venditore prima della pubblicazione dell'annuncio.",
+    "q7_answer": "Sì, una commissione a carico dell'acquirente, già inclusa nel prezzo mostrato in ogni annuncio. Il venditore riceve l'intero prezzo che ha indicato.",
     "q8_question": "Chi si occupa della spedizione?",
     "q8_answer": "La spedizione è responsabilità del venditore. L'acquirente riceverà le informazioni di tracciamento, se disponibili.",
     "q9_question": "Cosa devo fare se il prodotto arriva danneggiato?",
@@ -1780,7 +1782,7 @@
     "art6_title": "Art. 6 – Sistema di aste",
     "art6_body": "6.1 Le offerte sono vincolanti. L'asta si conclude allo scadere del termine. Se presente un prezzo di riserva, la vendita si perfeziona solo al suo raggiungimento.\n6.2 È vietato lo \"shill bidding\" (offerte fittizie).",
     "art7_title": "Art. 7 – Pagamenti e commissioni",
-    "art7_body": "7.1 I pagamenti avvengono tramite sistemi integrati (es. Stripe, PayPal).\n7.2 Il Gestore trattiene una commissione visibile prima della pubblicazione.",
+    "art7_body": "7.1 I pagamenti avvengono tramite sistemi integrati (es. Stripe, PayPal).\n7.2 Il Gestore applica una commissione a carico dell'acquirente, già inclusa nel prezzo mostrato nell'annuncio. Il venditore riceve l'intero prezzo da lui indicato.",
     "art8_title": "Art. 8 – Spedizioni e consegna",
     "art8_body": "8.1 Il Venditore è responsabile della spedizione.\n8.2 Il Gestore non risponde di danni o ritardi imputabili al vettore.",
     "art10_title": "Art. 10 – Controversie tra Utenti",
@@ -2291,6 +2293,7 @@
     "kicker_auction": "Asta",
     "kicker_live": "Live",
     "price": "Prezzo",
+    "fee_included_note": "Include la commissione CardBrix del {{percent}} a carico dell'acquirente",
     "shipping_plus": "+ {{price}} di spedizione",
     "starting_price": "Base d'asta",
     "closes_in": "Chiude tra",

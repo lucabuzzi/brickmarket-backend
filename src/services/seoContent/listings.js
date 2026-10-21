@@ -7,6 +7,7 @@ const { cached } = require('./cache');
 const { esc, link, paragraphs, list, section } = require('./html');
 const { t } = require('./copy');
 const { eur, conditionLabel, TYPE_LABELS } = require('../listingText');
+const { shownListingPrice } = require('../../utils/fees');
 const { fetchSetData } = require('./setData');
 const { CATALOG_GAME_SLUGS } = require('../seoSetPages');
 const { SHORT } = require('../pageMeta');
@@ -15,7 +16,7 @@ const { formatSetDate } = require('./pages');
 
 const TTL_MS = 5 * 60 * 1000;
 
-const priceOf = (l) => eur(l.type === 'auction' ? l.current_bid ?? l.auction_start : l.price);
+const priceOf = (l) => eur(shownListingPrice(l));
 
 /** Same visibility rules as the public API: active, and auctions that have not already ended. */
 async function fetchListings({ auction, productType, game, cardSetId, limit = 12 }) {

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink, Gavel, Star } from 'lucide-react';
 import { apiFetch } from '../api';
 import { listingImage, formatEUR } from '../components/landing/landingUtils';
+import { buyerPriceFor } from '../lib/fees';
 import AvatarPreview from './components/AvatarPreview';
 import '@fontsource/press-start-2p/latin-400.css';
 import '@fontsource/press-start-2p/latin-ext-400.css';
@@ -13,7 +14,7 @@ import './game.css';
 function ItemCard({ item, lang }) {
   const { t } = useTranslation();
   const img = listingImage(item, 400);
-  const price = item.is_auction ? (item.current_bid || item.starting_price) : item.price;
+  const price = item.is_auction ? (item.current_bid || item.starting_price) : buyerPriceFor(item.price);
   return (
     <li className="min-w-0">
       <Link to={`/product/${item.id}`} className="cbg-panel flex h-full flex-col overflow-hidden transition hover:brightness-110">

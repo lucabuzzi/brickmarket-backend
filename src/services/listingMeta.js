@@ -6,6 +6,7 @@
 // facts the page already states (what it is, sale type, price, condition). Nothing is invented.
 // Pure module: no DB, no network. Targets: title 30-65 chars, description 70-160 (what the SEO audit checks).
 const { eur, conditionLabel, descriptorFor } = require('./listingText');
+const { shownListingPrice } = require('../utils/fees');
 
 const SUFFIX = ' | CardBrix';
 const TITLE_MIN = 30;
@@ -52,7 +53,7 @@ function buildListingDescription(listing) {
   const isAuction = listing.type === 'auction';
   const descriptor = descriptorFor(listing);
   const condition = conditionLabel(listing.condition);
-  const price = eur(isAuction ? listing.current_bid ?? listing.auction_start : listing.price);
+  const price = eur(shownListingPrice(listing));
   // fixed price reads "... su CardBrix a 3,00 €"; an auction "... all'asta su CardBrix, offerta attuale 77,00 €"
   const head = `${name}: ${descriptor ? `${descriptor} ` : ''}${isAuction ? "all'asta" : 'in vendita'} su CardBrix${price && !isAuction ? ` a ${price}` : ''}`;
   const facts = [

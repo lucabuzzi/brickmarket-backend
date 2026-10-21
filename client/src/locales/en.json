@@ -739,6 +739,7 @@
     "order_summary": "Order Summary",
     "items_count_label": "Items ({{count}}):",
     "platform_fee_label": "CardBrix fee",
+    "platform_fee_included": "of which CardBrix fee ({{percent}}, paid by the buyer)",
     "total_label": "Total:",
     "remove_unavailable_notice": "Remove the sold-out items to proceed with your purchase.",
     "processing": "Processing...",
@@ -1199,7 +1200,8 @@
         "not_found_hint": "Can't find the card? Skip this and fill in title and details by hand.",
         "variant": "Variant {{n}}"
       }
-    }
+    },
+    "listing_fee_note": "You receive the full price. Buyers will see € {{buyerPrice}}: the {{percent}} CardBrix fee is paid by them and already included."
   },
   "create_auction": {
     "error_title_condition_required": "Title and Condition are required.",
@@ -1752,7 +1754,7 @@
     "q6_question": "How do payments work?",
     "q6_answer": "Payments are handled through secure methods supported by the platform (e.g., Stripe, PayPal).",
     "q7_question": "Does the marketplace charge a commission?",
-    "q7_answer": "Yes, a commission is deducted from each sale, which is visible to the seller before publishing the listing.",
+    "q7_answer": "Yes, a fee paid by the buyer, already included in the price shown on every listing. The seller receives the full price they set.",
     "q8_question": "Who handles shipping?",
     "q8_answer": "Shipping is the seller's responsibility. The buyer will receive tracking information, if available.",
     "q9_question": "What should I do if the product arrives damaged?",
@@ -1780,7 +1782,7 @@
     "art6_title": "Art. 6 – Auction system",
     "art6_body": "6.1 Bids are binding. The auction ends when the timer expires. If a reserve price is set, the sale is finalized only once it is reached.\n6.2 \"Shill bidding\" (fake bids) is prohibited.",
     "art7_title": "Art. 7 – Payments and fees",
-    "art7_body": "7.1 Payments are made through integrated systems (e.g. Stripe, PayPal).\n7.2 The Operator retains a commission, shown before the listing is published.",
+    "art7_body": "7.1 Payments are made through integrated systems (e.g. Stripe, PayPal).\n7.2 The Operator charges a fee paid by the buyer, already included in the price shown on the listing. The seller receives the full price they set.",
     "art8_title": "Art. 8 – Shipping and delivery",
     "art8_body": "8.1 The Seller is responsible for shipping.\n8.2 The Operator is not liable for damage or delays caused by the carrier.",
     "art10_title": "Art. 10 – Disputes between Users",
@@ -2291,6 +2293,7 @@
     "kicker_auction": "Auction",
     "kicker_live": "Live",
     "price": "Price",
+    "fee_included_note": "Includes the {{percent}} CardBrix fee paid by the buyer",
     "shipping_plus": "+ {{price}} shipping",
     "starting_price": "Starting price",
     "closes_in": "Closes in",

@@ -3,6 +3,8 @@
 // nothing here invents data: a field the API does not return is reported as missing, never filled in.
 // Pure, unit-tested in tests/game-market-queries.test.js.
 
+import { buyerPriceFor } from '../fees';
+
 export const PRODUCT_TYPES = ['lego', 'tcg', 'funko'];
 export const CARD_GAMES = ['pokemon', 'magic', 'yugioh', 'onepiece', 'lorcana', 'dragonball'];
 export const PANEL_LIMIT = 12;
@@ -58,7 +60,7 @@ export function isAuction(item) {
  * bid) or 'start' (auction without bids: starting price). amount null = the API gave none.
  */
 export function displayPrice(item) {
-  if (!isAuction(item)) return { amount: num(item && item.price), kind: 'price' };
+  if (!isAuction(item)) return { amount: buyerPriceFor(num(item && item.price)), kind: 'price' };
   const bid = num(item.current_bid);
   if (bid !== null) return { amount: bid, kind: 'bid' };
   return { amount: num(item.starting_price) ?? num(item.price), kind: 'start' };

@@ -88,7 +88,8 @@ describe('buildListingDescription', () => {
 
   test('a very short description is completed with what the page states: kind, sale type, price, condition', () => {
     const d = desc(L());
-    expect(d.replace(/\s/g, ' ')).toBe('Froakie: carta Pokémon in vendita su CardBrix a 3,00 €, condizione: near mint.');
+    // fixed price as the buyer pays it: 3 € + 5% CardBrix commission
+    expect(d.replace(/\s/g, ' ')).toBe('Froakie: carta Pokémon in vendita su CardBrix a 3,15 €, condizione: near mint.');
   });
 
   test('a few characters of seller text ("ok") are not appended; a real note is', () => {
@@ -136,7 +137,7 @@ describe('on the rendered listing page', () => {
   test('a bare "Froakie" listing gets a full title, description, og:title and JSON-LD description', async () => {
     const { html, parsed } = await page(L());
     expect(parsed.title).toBe('Froakie – carta Pokémon | CardBrix');
-    expect(parsed.description.replace(/\s/g, ' ')).toBe('Froakie: carta Pokémon in vendita su CardBrix a 3,00 €, condizione: near mint.');
+    expect(parsed.description.replace(/\s/g, ' ')).toBe('Froakie: carta Pokémon in vendita su CardBrix a 3,15 €, condizione: near mint.');
     expect(parsed.og.title).toBe(parsed.title);
     expect(html).toContain('<meta name="twitter:title" content="Froakie – carta Pokémon | CardBrix">');
     const product = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1])).find((b) => b['@type'] === 'Product');

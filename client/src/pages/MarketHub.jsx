@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_CATEGORIES, MARKET_MODES, displayPrice, useMarketItems } from '../components/market/marketConfig';
 import { formatEUR, listingImage } from '../components/landing/landingUtils';
+import { buyerPriceFor } from '../lib/fees';
 import { useLocalizedNav } from '../routing/useLocalizedNav';
 
 const WALL_MIN = 8;
@@ -170,7 +171,7 @@ export default function MarketHub({ modeKey = 'listings' }) {
         { value: soon, label: t('market.hub.stat_closing') },
       ];
     }
-    const prices = items.map((i) => parseFloat(i.price)).filter((n) => !Number.isNaN(n));
+    const prices = items.map((i) => buyerPriceFor(i.price)).filter((n) => n != null);
     return [
       { value: items.length, label: t('market.hub.stat_listings') },
       { value: new Set(items.map((i) => i.seller_id)).size, label: t('market.hub.stat_sellers') },

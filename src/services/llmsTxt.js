@@ -4,6 +4,8 @@
 // Copy stays factual and limited to what the public site already says about itself. In particular it
 // makes no statement about credits, prices or legal terms: those live on the pages it links to.
 
+const { shownListingPrice } = require('../utils/fees');
+
 const SECTIONS = [
   ['Annunci', '/annunci', 'Annunci a prezzo fisso di LEGO, carte collezionabili e Funko.'],
   ['Aste', '/aste', 'Aste live: fai un\'offerta sul pezzo che ti interessa.'],
@@ -59,7 +61,7 @@ function buildLlmsTxt({ baseUrl }) {
 }
 
 function priceLabel(l) {
-  const raw = l.type === 'auction' ? l.current_bid ?? l.auction_start : l.price;
+  const raw = shownListingPrice(l);
   const n = raw == null || raw === '' ? NaN : Number(raw);
   return Number.isFinite(n) ? `${n.toFixed(2).replace('.', ',')} €` : null;
 }

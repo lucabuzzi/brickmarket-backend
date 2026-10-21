@@ -18,7 +18,7 @@ import ReviewStep from '../components/sell/ReviewStep';
 import Celebration from '../components/sell/Celebration';
 import { PreviewBar, PreviewPanel } from '../components/sell/ListingPreview';
 import { ANNUNCI_CARD_GAMES } from '../config/annunciCategories';
-import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, selectGame } from '../lib/sell/form';
+import { INITIAL_FORM, MAX_PHOTOS, TCG_CONDITIONS, changeProductType, defaultImageOrientation, parseDecimal, selectGame } from '../lib/sell/form';
 import OrientationPicker from '../components/sell/OrientationPicker';
 import CropEditor from '../components/sell/CropEditor';
 import CardDetails from '../components/sell/CardDetails';
@@ -28,12 +28,13 @@ import CardShotGuide from '../components/sell/CardShotGuide';
 import { cardSummaryParts, languageName } from '../lib/sell/cards';
 import { FIELD_STEP, STEP_IDS, firstErrorField, validateAll, validateStep } from '../lib/sell/validate';
 import { buildListingFields } from '../lib/sell/payload';
+import { BUYER_FEE_PERCENT, buyerPriceFor } from '../lib/fees';
 import { completeness } from '../lib/sell/score';
 import { draftKey, isDraftWorthSaving, parseDraft, serializeDraft } from '../lib/sell/draft';
 import { buildPreviewListing } from '../lib/sell/preview';
 import { mergePhotos, movePhoto, removePhotoAt } from '../lib/sell/photos';
 import { shotListFor } from '../lib/sell/shots';
-import { chosenCarrierIds, publishBlockers, publishedPath } from '../lib/sell/review';
+import { chosenCarrierIds, formatPrice as formatSellPrice, publishBlockers, publishedPath } from '../lib/sell/review';
 
 const CATEGORIES = [
   { value: '', label: '— Seleziona categoria —' },
@@ -193,6 +194,9 @@ export default function Sell({ cardsMode = false }) {
       condition: conditionOf(form.condition),
       conditionExtras,
       price: form.price,
+      priceNote: formatSellPrice(form.price)
+        ? t('sell.listing_fee_note', { buyerPrice: formatSellPrice(buyerPriceFor(parseDecimal(form.price))), percent: BUYER_FEE_PERCENT })
+        : '',
       carriers: chosenCarrierIds(form.shippingOptions, carrierIds).map((id) => names[id]),
       description: form.description,
     };

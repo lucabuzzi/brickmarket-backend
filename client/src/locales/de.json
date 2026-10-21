@@ -739,6 +739,7 @@
     "order_summary": "Bestellübersicht",
     "items_count_label": "Artikel ({{count}}):",
     "platform_fee_label": "CardBrix-Gebühr",
+    "platform_fee_included": "davon CardBrix-Gebühr ({{percent}}, zahlt der Käufer)",
     "total_label": "Gesamt:",
     "remove_unavailable_notice": "Entferne die nicht verfügbaren Artikel, um mit dem Kauf fortzufahren.",
     "processing": "Wird verarbeitet...",
@@ -1199,7 +1200,8 @@
         "not_found_hint": "Karte nicht gefunden? Überspringe das und trage Titel und Details von Hand ein.",
         "variant": "Variante {{n}}"
       }
-    }
+    },
+    "listing_fee_note": "Du erhältst den vollen Preis. Käufer sehen {{buyerPrice}} €: Die CardBrix-Gebühr von {{percent}} zahlen sie, sie ist bereits enthalten."
   },
   "create_auction": {
     "error_title_condition_required": "Titel und Zustand sind erforderlich.",
@@ -1752,7 +1754,7 @@
     "q6_question": "Wie funktionieren Zahlungen?",
     "q6_answer": "Zahlungen werden über sichere, von der Plattform unterstützte Methoden abgewickelt (z. B. Stripe, PayPal).",
     "q7_question": "Erhebt der Marktplatz eine Provision?",
-    "q7_answer": "Ja, bei jedem Verkauf wird eine Provision einbehalten, die der Verkäufer vor der Veröffentlichung des Angebots sehen kann.",
+    "q7_answer": "Ja, eine Gebühr, die der Käufer zahlt und die bereits im Preis jedes Angebots enthalten ist. Der Verkäufer erhält den vollen von ihm festgelegten Preis.",
     "q8_question": "Wer kümmert sich um den Versand?",
     "q8_answer": "Der Versand liegt in der Verantwortung des Verkäufers. Der Käufer erhält Sendungsverfolgungsinformationen, sofern verfügbar.",
     "q9_question": "Was soll ich tun, wenn das Produkt beschädigt ankommt?",
@@ -1780,7 +1782,7 @@
     "art6_title": "Art. 6 – Auktionssystem",
     "art6_body": "6.1 Gebote sind verbindlich. Die Auktion endet mit Ablauf der Frist. Ist ein Mindestpreis festgelegt, kommt der Verkauf erst bei dessen Erreichen zustande.\n6.2 „Shill Bidding“ (Scheingebote) ist untersagt.",
     "art7_title": "Art. 7 – Zahlungen und Gebühren",
-    "art7_body": "7.1 Zahlungen erfolgen über integrierte Systeme (z. B. Stripe, PayPal).\n7.2 Der Betreiber behält eine Provision ein, die vor Veröffentlichung des Angebots angezeigt wird.",
+    "art7_body": "7.1 Zahlungen erfolgen über integrierte Systeme (z. B. Stripe, PayPal).\n7.2 Der Betreiber erhebt eine Gebühr, die der Käufer zahlt und die bereits im angezeigten Angebotspreis enthalten ist. Der Verkäufer erhält den vollen von ihm festgelegten Preis.",
     "art8_title": "Art. 8 – Versand und Lieferung",
     "art8_body": "8.1 Der Verkäufer ist für den Versand verantwortlich.\n8.2 Der Betreiber haftet nicht für Schäden oder Verzögerungen, die dem Transportunternehmen zuzurechnen sind.",
     "art10_title": "Art. 10 – Streitigkeiten zwischen Nutzern",
@@ -2291,6 +2293,7 @@
     "kicker_auction": "Auktion",
     "kicker_live": "Live",
     "price": "Preis",
+    "fee_included_note": "Inklusive {{percent}} CardBrix-Gebühr, die der Käufer zahlt",
     "shipping_plus": "+ {{price}} Versand",
     "starting_price": "Startpreis",
     "closes_in": "Endet in",

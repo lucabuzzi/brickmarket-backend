@@ -16,19 +16,13 @@ import { CARRIERS } from './Sell';
 import MarketCard from '../components/market/MarketCard';
 import { MARKET_MODES, useMarketItems } from '../components/market/marketConfig';
 import { cldImage, formatEUR, listingImage } from '../components/landing/landingUtils';
+import { BUYER_FEE_PERCENT, buyerFeeFor, buyerPriceFor } from '../lib/fees';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 const LIME = '#c6ff3d';
 
-// Mirror of src/controllers/paymentsController.js computeFees — display only;
-// the server computes (and actually charges) the authoritative total at
-// checkout. Keep this in sync with PLATFORM_FEE_RATE there.
-const PLATFORM_FEE_RATE = 0.05;
-function platformFeeFor(price) {
-  return Math.round(price * PLATFORM_FEE_RATE * 100) / 100;
-}
 
 const cardElementOptions = {
   style: {
@@ -284,11 +278,11 @@ function CheckoutSidebar({
         <dl className="mt-5 space-y-2.5 text-sm">
           <div className="flex justify-between gap-4 text-white/70">
             <dt>{t('cart.items_count_label', { count: itemCount }).replace(/:$/, '')}</dt>
-            <dd className="font-mono font-bold tabular-nums text-white">{formatPrice(itemsSubtotal)}</dd>
+            <dd className="font-mono font-bold tabular-nums text-white">{formatPrice(itemsSubtotal + platformFeeTotal)}</dd>
           </div>
-          <div className="flex justify-between gap-4 text-white/70">
-            <dt>{t('cart.platform_fee_label')}</dt>
-            <dd className="font-mono font-bold tabular-nums text-white">{formatPrice(platformFeeTotal)}</dd>
+          <div className="flex justify-between gap-4 pl-3 text-xs text-white/45">
+            <dt>{t('cart.platform_fee_included', { percent: BUYER_FEE_PERCENT })}</dt>
+            <dd className="font-mono tabular-nums">{formatPrice(platformFeeTotal)}</dd>
           </div>
           {groups.map((g) => (
             <div key={g.key} className="flex justify-between gap-4 text-white/55">
@@ -608,7 +602,7 @@ export default function Cart() {
   }, 0);
   const platformFeeTotal = activeItems.reduce((acc, curr) => {
     const price = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price;
-    return acc + (isNaN(price) ? 0 : platformFeeFor(price));
+    return acc + (isNaN(price) ? 0 : buyerFeeFor(price));
   }, 0);
 
   const handlePurchaseSuccess = () => {
@@ -661,7 +655,7 @@ export default function Cart() {
               <AlertTriangle className="h-3.5 w-3.5" /> {t('cart.item_unavailable')}
             </span>
           ) : <span />}
-          <span className="font-mono text-xl font-black tabular-nums text-white">{formatEUR(item.price, i18n.language)}</span>
+          <span className="font-mono text-xl font-black tabular-nums text-white">{formatEUR(buyerPriceFor(item.price), i18n.language)}</span>
         </div>
       </div>
     </motion.li>
@@ -851,7 +845,7 @@ export default function Cart() {
                   </span>
                   <p className="mt-4 text-xl font-black text-white">{t('cart_page.login_title')}</p>
                   <p className="mt-2 text-sm text-white/55">{t('cart_page.login_desc')}</p>
-                  <p className="mt-5 font-mono text-3xl font-black tabular-nums" style={{ color: LIME }}>{formatPrice(itemsSubtotal)}</p>
+                  <p className="mt-5 font-mono text-3xl font-black tabular-nums" style={{ color: LIME }}>{formatPrice(itemsSubtotal + platformFeeTotal)}</p>
                   <Link
                     to="/login"
                     state={{ from: location }}

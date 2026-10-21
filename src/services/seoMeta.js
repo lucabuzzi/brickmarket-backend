@@ -3,6 +3,7 @@ const { buildProductJsonLd, breadcrumbForListing } = require('./seoJsonLd');
 const { getRouteMeta } = require('./pageMeta');
 const { isKnownRoute } = require('./knownRoutes');
 const { buildListingTitle, buildListingDescription } = require('./listingMeta');
+const { shownListingPrice } = require('../utils/fees');
 const { shellForRoute, shellForListing, shellForNotFound, injectShell } = require('./seoContent');
 const { parseSetPath, fetchSetPageMeta } = require('./seoSetPages');
 const { URL_LOCALES, DEFAULT_URL_LOCALE, matchLocalizedRoute, resolveLocalizedPath, fillCanonicalPath } = require('./localizedRoutes');
@@ -197,8 +198,7 @@ async function renderPage(reqPath, baseHtml) {
     if (rows.length === 0) return notFoundPage(baseHtml, canonical);
 
     const listing = rows[0];
-    const isAuction = listing.type === 'auction';
-    const effectivePrice = isAuction ? (listing.current_bid ?? listing.auction_start) : listing.price;
+    const effectivePrice = shownListingPrice(listing);
 
     // Sellers' own words when they are enough; short titles/descriptions are completed with facts from
     // the listing (see listingMeta.js), so search results and link previews are never a bare "Froakie".

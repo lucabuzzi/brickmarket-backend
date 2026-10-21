@@ -103,7 +103,8 @@ describe('llms.txt', () => {
       { id: 'b', title: 'Asta B', type: 'auction', current_bid: '30', auction_start: '10' },
       { id: 'c', title: 'Senza prezzo', type: 'auction', current_bid: null, auction_start: null },
     ] });
-    expect(t).toContain(`- [Set A](${BASE}/product/a): annuncio, 12,50 €`);
+    // fixed price as the buyer pays it: 12,50 € + 5% CardBrix commission
+    expect(t).toContain(`- [Set A](${BASE}/product/a): annuncio, 13,13 €`);
     expect(t).toContain(`- [Asta B](${BASE}/product/b): asta, 30,00 €`);
     expect(t).toContain(`- [Senza prezzo](${BASE}/product/c): asta\n`);
     expect(t).not.toContain('llms-full.txt');

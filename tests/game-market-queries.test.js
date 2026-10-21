@@ -37,8 +37,8 @@ test('every card game a merchant can show has a page in App.jsx', () => {
   for (const g of CARD_GAMES) expect(app).toContain(`'annunci/carte-collezionabili/${g}'`);
 });
 
-test('displayPrice: fixed price, current bid, else the starting price; null when the API has none', () => {
-  expect(displayPrice({ price: '12.50' })).toEqual({ amount: 12.5, kind: 'price' });
+test('displayPrice: fixed price (CardBrix commission included), current bid, else the starting price; null when the API has none', () => {
+  expect(displayPrice({ price: '12.50' })).toEqual({ amount: 13.13, kind: 'price' });
   expect(displayPrice({ price: null })).toEqual({ amount: null, kind: 'price' });
   expect(displayPrice({ is_auction: true, current_bid: '30', starting_price: '10' })).toEqual({ amount: 30, kind: 'bid' });
   expect(displayPrice({ type: 'auction', current_bid: null, starting_price: '10' })).toEqual({ amount: 10, kind: 'start' });
