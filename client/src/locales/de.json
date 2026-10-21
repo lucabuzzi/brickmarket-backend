@@ -1201,7 +1201,48 @@
         "variant": "Variante {{n}}"
       }
     },
-    "listing_fee_note": "Du erhältst den vollen Preis. Käufer sehen {{buyerPrice}} €: Die CardBrix-Gebühr von {{percent}} zahlen sie, sie ist bereits enthalten."
+    "listing_fee_note": "Du erhältst den vollen Preis. Käufer sehen {{buyerPrice}} €: Die CardBrix-Gebühr von {{percent}} zahlen sie, sie ist bereits enthalten.",
+    "recognize": {
+      "button": "Karte fotografieren",
+      "hint": "Fotografiere die ganze Karte, mit lesbarem Code unten rechts: Wir finden die Karte und ihre Version für dich.",
+      "privacy": "Zum Erkennen wird das Foto von Google Gemini gelesen.",
+      "busy": "Karte wird gelesen…",
+      "code_read": "Gelesener Code: {{code}}",
+      "retake": "Neu aufnehmen",
+      "none": "Keine davon: von Hand suchen",
+      "search_by_hand": "Karte von Hand suchen",
+      "replace_photo": "Foto ersetzen",
+      "added": "Fertig: Daten aus dem Katalog übernommen und Foto als erstes Foto der Anzeige hinzugefügt. Im Schritt Fotos kannst du es zuschneiden oder weitere hinzufügen.",
+      "chosen": "Fertig: Daten aus dem Katalog übernommen.",
+      "kind": {
+        "base": "Basis",
+        "alt": "Alternate Art {{n}}",
+        "reprint": "Nachdruck {{n}}"
+      },
+      "result": {
+        "matched": "Wähle die Version, die du hast, und vergleiche das Bild mit deiner Karte: Titel, Nummer und Seltenheit kommen aus dem Katalog.",
+        "check_name": "Der gelesene Name passt nicht zu diesem Code: Prüfe die Karte genau, bevor du wählst.",
+        "not_found": "Den gelesenen Code gibt es im Katalog nicht.",
+        "unreadable": "Ich kann den Code der Karte nicht lesen.",
+        "check_photo": "Das Foto ist unscharf: Vergleiche das Bild genau mit der Karte in deiner Hand, bevor du wählst."
+      },
+      "better": {
+        "title": "Ein besseres Foto wird gebraucht",
+        "tips": "Lege die Karte auf einen dunklen, einfarbigen Untergrund, vermeide Spiegelungen und glänzende Hüllen, nimm die ganze Karte auf und halte das Handy ruhig.",
+        "blurry": "Das Foto der Anzeige ist unscharf: Es ist das Erste, was Käufer sehen.",
+        "small": "Das Foto der Anzeige ist klein: Es ist das Erste, was Käufer sehen."
+      },
+      "error": {
+        "login": "Melde dich an, um die Kartenerkennung zu nutzen.",
+        "limit": "Du hast vorerst alle Erkennungen genutzt: Versuche es später erneut oder suche die Karte von Hand.",
+        "too_large": "Das Foto ist größer als 10 MB: Nimm ein kleineres auf.",
+        "bad_image": "Diese Datei ist kein lesbares Foto.",
+        "generic": "Erkennung fehlgeschlagen: Versuche es erneut oder suche die Karte von Hand.",
+        "too_small": "Das Foto ist zu klein, um den Code zu lesen: Nimm es näher auf, sodass die Karte das Bild ausfüllt.",
+        "too_blurry": "Das Foto ist unscharf und der Code könnte falsch gelesen werden: Nimm ein schärferes auf."
+      },
+      "try_anyway": "Trotzdem mit diesem Foto versuchen"
+    }
   },
   "create_auction": {
     "error_title_condition_required": "Titel und Zustand sind erforderlich.",
@@ -2982,7 +3023,7 @@
     "s6_title": "6. Automatisierte Entscheidungen",
     "s6_body": "Das System kann die Gutschrift von Bonus-Credits verweigern oder aussetzen, wenn es Missbrauchssignale erkennt, etwa dieselbe IP, dasselbe Gerät, Zahlungsmittel oder dieselbe Adresse bei Verkäufer und Käufer. Der automatische Assistent des Hilfecenters beantwortet allgemeine Fragen, trifft aber keine Entscheidungen zu Ihrem Konto.\nSie können das Eingreifen einer Person verlangen, Ihren Standpunkt darlegen und die Entscheidung anfechten, indem Sie an [EMAIL PRIVACY] schreiben.",
     "s7_title": "7. An wen wir Daten weitergeben",
-    "s7_body": "Wir geben Daten an Dienstleister weiter, die sie in unserem Auftrag (Auftragsverarbeiter) oder als eigenständig Verantwortliche verarbeiten:\n• Supabase: Datenbank und Infrastruktur.\n• Render: Hosting von Website und Server.\n• Stripe und PayPal: Zahlungen; Stripe auch für die Verkäuferprüfung.\n• Cloudinary: Speicherung und Optimierung von Bildern.\n• SendGrid: E-Mail-Versand.\n• Cloudflare Turnstile: Bot-Schutz.\n• Google (Gemini): automatischer Assistent des Hilfecenters, der Ihre geschriebene Frage erhält. Geben Sie keine personenbezogenen Daten in die Nachricht ein.\n• Google und Apple: nur wenn Sie sich mit deren Konto anmelden.\n• Zusteller und Versanddienste [DA VERIFICARE: Namen, z. B. Sendcloud].\n• Berater, Steuerberater und zuständige Behörden, soweit gesetzlich vorgesehen.\nAndere Nutzer sehen nur die nötigen Daten: der Käufer den Benutzernamen des Verkäufers, der Verkäufer die Lieferadresse der Bestellung, Spieler auf dem Platz Ihren Benutzernamen und Ihre Figur. Wir verkaufen Ihre Daten nicht.",
+    "s7_body": "Wir geben Daten an Dienstleister weiter, die sie in unserem Auftrag (Auftragsverarbeiter) oder als eigenständig Verantwortliche verarbeiten:\n• Supabase: Datenbank und Infrastruktur.\n• Render: Hosting von Website und Server.\n• Stripe und PayPal: Zahlungen; Stripe auch für die Verkäuferprüfung.\n• Cloudinary: Speicherung und Optimierung von Bildern.\n• SendGrid: E-Mail-Versand.\n• Cloudflare Turnstile: Bot-Schutz.\n• Google (Gemini): automatischer Assistent des Hilfecenters, der Ihre geschriebene Frage erhält. Geben Sie keine personenbezogenen Daten in die Nachricht ein. Außerdem die Kartenerkennung auf den Verkaufsseiten, die das Foto der Karte, das Sie aufnehmen, nur zum Lesen ihres Codes erhält: Fotografieren Sie nur die Karte.\n• Google und Apple: nur wenn Sie sich mit deren Konto anmelden.\n• Zusteller und Versanddienste [DA VERIFICARE: Namen, z. B. Sendcloud].\n• Berater, Steuerberater und zuständige Behörden, soweit gesetzlich vorgesehen.\nAndere Nutzer sehen nur die nötigen Daten: der Käufer den Benutzernamen des Verkäufers, der Verkäufer die Lieferadresse der Bestellung, Spieler auf dem Platz Ihren Benutzernamen und Ihre Figur. Wir verkaufen Ihre Daten nicht.",
     "s8_title": "8. Übermittlungen außerhalb des Europäischen Wirtschaftsraums",
     "s8_body": "Einige Anbieter können Daten in den USA oder anderen Nicht-EU-Ländern verarbeiten. Die Übermittlung stützt sich dann auf einen Angemessenheitsbeschluss (z. B. das EU-US Data Privacy Framework für zertifizierte Anbieter) oder auf die Standardvertragsklauseln der Europäischen Kommission. Eine Kopie der Garantien erhalten Sie auf Anfrage an [EMAIL PRIVACY]. [DA VERIFICARE: Bestätigung je Anbieter]",
     "s9_title": "9. Wie lange wir Daten speichern",

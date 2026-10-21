@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, Loader2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../../api';
+import CardRecognizer from './CardRecognizer';
 import {
   SET_EXAMPLE, cardNumberLabel, clearCardPatch, filterCards, filterSeries, isPrintGame, pickCardPatch, seriesDisplayName, setDisplayName, setLogoSrc, showThumbnails,
 } from '../../lib/sell/catalog';
@@ -13,7 +14,9 @@ const ACCENT = {
 
 // Optional shortcut of the sell wizard for the games that have an expansion catalog (`game`): pick the expansion, then the card, and the form is filled
 // in (title, number, rarity, language). The picture shown is a catalog reference, never saved as the listing photo.
-export default function CardCatalogPicker({ form, patch, game = 'pokemon', accent = 'lime', ns = 'sell', idPrefix = 'sell' }) {
+// For One Piece the card can also be photographed (CardRecognizer): that photo is handed to the page (`onPhoto`) as
+// the listing's first photo.
+export default function CardCatalogPicker({ form, patch, game = 'pokemon', accent = 'lime', ns = 'sell', idPrefix = 'sell', onPhoto }) {
   const { t, i18n } = useTranslation();
   const a = ACCENT[accent] || ACCENT.lime;
   const id = (name) => `${idPrefix}-${name}`;
@@ -87,6 +90,8 @@ export default function CardCatalogPicker({ form, patch, game = 'pokemon', accen
         <h3 id={id('catalog-title')} className="text-sm font-black uppercase tracking-[0.14em] text-white/55">{t(`${ns}.ui.catalog.title`)}</h3>
         <p className="mt-1 text-[13px] text-white/50">{t(`${ns}.ui.catalog.hint`)}</p>
       </div>
+
+      <CardRecognizer game={game} form={form} patch={patch} onChosen={(p) => setPickedImage(p.img_url || '')} onPhoto={onPhoto} chosenCls={a.chosen} accentText={a.text} />
 
       {unavailable ? <p className="text-sm text-white/55">{t(`${ns}.ui.catalog.unavailable`)}</p> : null}
 

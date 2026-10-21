@@ -1201,7 +1201,48 @@
         "variant": "Variante {{n}}"
       }
     },
-    "listing_fee_note": "Recibirás el precio íntegro. El comprador verá € {{buyerPrice}}: la comisión CardBrix del {{percent}} corre a su cargo y ya está incluida."
+    "listing_fee_note": "Recibirás el precio íntegro. El comprador verá € {{buyerPrice}}: la comisión CardBrix del {{percent}} corre a su cargo y ya está incluida.",
+    "recognize": {
+      "button": "Fotografía la carta",
+      "hint": "Encuadra la carta entera, con el código abajo a la derecha legible: nosotros encontramos la carta y su versión.",
+      "privacy": "Para reconocerla, la foto la lee Google Gemini.",
+      "busy": "Leyendo la carta…",
+      "code_read": "Código leído: {{code}}",
+      "retake": "Hazla de nuevo",
+      "none": "Ninguna de estas: buscar a mano",
+      "search_by_hand": "Buscar la carta a mano",
+      "replace_photo": "Sustituir la foto",
+      "added": "Listo: datos rellenados desde el catálogo y foto añadida como primera foto del anuncio. En el paso Fotos puedes recortarla o añadir más.",
+      "chosen": "Listo: datos rellenados desde el catálogo.",
+      "kind": {
+        "base": "Base",
+        "alt": "Alternate Art {{n}}",
+        "reprint": "Reimpresión {{n}}"
+      },
+      "result": {
+        "matched": "Elige la versión que tienes comparando la imagen con tu carta: título, número y rareza los tomamos del catálogo.",
+        "check_name": "El nombre leído no corresponde a este código: revisa bien la carta antes de elegir.",
+        "not_found": "El código leído no existe en el catálogo.",
+        "unreadable": "No consigo leer el código de la carta.",
+        "check_photo": "La foto está desenfocada: compara bien la imagen con la carta que tienes en la mano antes de elegir."
+      },
+      "better": {
+        "title": "Hace falta una foto mejor",
+        "tips": "Apoya la carta sobre un fondo oscuro y uniforme, evita reflejos y fundas brillantes, encuádrala entera y mantén el móvil quieto.",
+        "blurry": "La foto del anuncio está desenfocada: es lo primero que ven los compradores.",
+        "small": "La foto del anuncio es pequeña: es lo primero que ven los compradores."
+      },
+      "error": {
+        "login": "Inicia sesión para usar el reconocimiento de cartas.",
+        "limit": "Has usado todos los reconocimientos por ahora: vuelve a intentarlo más tarde o busca la carta a mano.",
+        "too_large": "La foto supera los 10 MB: haz una más ligera.",
+        "bad_image": "Este archivo no es una foto legible.",
+        "generic": "El reconocimiento ha fallado: vuelve a intentarlo o busca la carta a mano.",
+        "too_small": "La foto es demasiado pequeña para leer el código: hazla más de cerca, con la carta llenando el encuadre.",
+        "too_blurry": "La foto está desenfocada y el código podría leerse mal: haz una más nítida."
+      },
+      "try_anyway": "Probar de todos modos con esta foto"
+    }
   },
   "create_auction": {
     "error_title_condition_required": "El título y la condición son obligatorios.",
@@ -2982,7 +3023,7 @@
     "s6_title": "6. Decisiones automatizadas",
     "s6_body": "El sistema puede denegar o suspender el abono de créditos bonus cuando detecta señales de abuso, por ejemplo la misma IP, dispositivo, método de pago o dirección entre vendedor y comprador. El asistente automático del Centro de ayuda responde preguntas generales, pero no toma decisiones sobre tu cuenta.\nPuedes pedir la intervención de una persona, expresar tu opinión e impugnar la decisión escribiendo a [EMAIL PRIVACY].",
     "s7_title": "7. A quién comunicamos los datos",
-    "s7_body": "Comunicamos datos a proveedores que los tratan por nuestra cuenta (encargados del tratamiento) o como responsables autónomos:\n• Supabase: base de datos e infraestructura.\n• Render: alojamiento del sitio y del servidor.\n• Stripe y PayPal: pagos; Stripe también para la verificación de vendedores.\n• Cloudinary: almacenamiento y optimización de imágenes.\n• SendGrid: envío de correos.\n• Cloudflare Turnstile: protección antibots.\n• Google (Gemini): asistente automático del Centro de ayuda, que recibe la pregunta que escribes. No incluyas datos personales en el mensaje.\n• Google y Apple: solo si eliges acceder con su cuenta.\n• Transportistas y servicios de envío [DA VERIFICARE: nombres, por ejemplo Sendcloud].\n• Asesores, contables y autoridades competentes, cuando la ley lo prevea.\nLos demás usuarios ven solo los datos necesarios: el comprador el nombre de usuario del vendedor, el vendedor la dirección de envío del pedido, los jugadores de la plaza tu nombre de usuario y personaje. No vendemos tus datos.",
+    "s7_body": "Comunicamos datos a proveedores que los tratan por nuestra cuenta (encargados del tratamiento) o como responsables autónomos:\n• Supabase: base de datos e infraestructura.\n• Render: alojamiento del sitio y del servidor.\n• Stripe y PayPal: pagos; Stripe también para la verificación de vendedores.\n• Cloudinary: almacenamiento y optimización de imágenes.\n• SendGrid: envío de correos.\n• Cloudflare Turnstile: protección antibots.\n• Google (Gemini): asistente automático del Centro de ayuda, que recibe la pregunta que escribes. No incluyas datos personales en el mensaje. Además, el reconocimiento de cartas en las páginas de venta, que recibe la foto de la carta que haces solo para leer su código: fotografía únicamente la carta.\n• Google y Apple: solo si eliges acceder con su cuenta.\n• Transportistas y servicios de envío [DA VERIFICARE: nombres, por ejemplo Sendcloud].\n• Asesores, contables y autoridades competentes, cuando la ley lo prevea.\nLos demás usuarios ven solo los datos necesarios: el comprador el nombre de usuario del vendedor, el vendedor la dirección de envío del pedido, los jugadores de la plaza tu nombre de usuario y personaje. No vendemos tus datos.",
     "s8_title": "8. Transferencias fuera del Espacio Económico Europeo",
     "s8_body": "Algunos proveedores pueden tratar datos en Estados Unidos u otros países fuera de la UE. En ese caso la transferencia se basa en una decisión de adecuación (por ejemplo el EU-US Data Privacy Framework para proveedores certificados) o en las Cláusulas contractuales tipo de la Comisión Europea. Puedes pedirnos copia de las garantías escribiendo a [EMAIL PRIVACY]. [DA VERIFICARE: confirmación de cada proveedor]",
     "s9_title": "9. Cuánto tiempo conservamos los datos",

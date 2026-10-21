@@ -380,6 +380,16 @@ export default function Sell({ cardsMode = false }) {
     if (added.length) setCropQueue((q) => [...q, ...added]);
     setPhotoNotices([r.overflow ? 'limit' : null, r.notImage ? 'not_image' : null].filter(Boolean));
   }
+  // the photo a card was recognised from becomes the first photo; a newer one replaces it (never cropped on the spot)
+  const recognizedPhoto = useRef(null);
+  function setRecognizedPhoto(file) {
+    const previous = recognizedPhoto.current;
+    const rest = files.filter((f) => f !== previous);
+    if (rest.length >= MAX_PHOTOS) { setPhotoNotices(['limit']); return; }
+    recognizedPhoto.current = file;
+    setFiles(mergePhotos([], [file, ...rest], MAX_PHOTOS).files);
+    setCropQueue((q) => q.filter((f) => f !== previous));
+  }
   function movePhotoTo(from, to) {
     setFiles((f) => movePhoto(f, from, to));
   }
@@ -631,7 +641,7 @@ export default function Sell({ cardsMode = false }) {
                       </FieldGroup>
                     )}
 
-                    {form.productType === 'tcg' && hasCatalog(form.game) && <CardCatalogPicker key={form.game} form={form} patch={patch} game={form.game} />}
+                    {form.productType === 'tcg' && hasCatalog(form.game) && <CardCatalogPicker key={form.game} form={form} patch={patch} game={form.game} onPhoto={editId ? undefined : setRecognizedPhoto} />}
 
                     {!editId && isLego && (
                       <div className="rounded-2xl border border-[#c6ff3d]/15 bg-[#c6ff3d]/[0.04] p-4">
