@@ -43,6 +43,11 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'WELCOME', message: 'Connected to Live Hub' }));
 });
 
+// Typed messages in the plaza, checked before anyone sees them; off until an admin switches them on. One repository
+// and one moderator shared by the plaza and the admin page (/api/admin/game-chat), so a change applies at once.
+const gameChatRepo = require('./src/repositories/gameChatRepository').gameChatRepository();
+const gameChatModerator = require('./src/services/chatModeration').createChatModerator({ repo: gameChatRepo });
+
 // Plaza of "CardBrix the game" (/ws/game): unlike the public Live Hub above, every connection must identify
 // itself with the site's JWT, and players only ever see each other's username and character.
 const plaza = require('./src/services/gamePlazaSocket').createPlaza({
@@ -54,6 +59,7 @@ const plaza = require('./src/services/gamePlazaSocket').createPlaza({
     );
     return rows[0] || null;
   },
+  moderator: gameChatModerator,
 });
 
 server.on('upgrade', (request, socket, head) => {
@@ -153,6 +159,9 @@ app.use('/api/reviews', require('./src/routes/reviews'));
 app.use('/api/support', require('./src/routes/support'));
 app.use('/api/admin', require('./src/routes/admin'));
 app.use('/api/admin', require('./src/routes/adminBadges'));
+app.use('/api/admin/game-chat', require('./src/routes/adminGameChat').createAdminGameChatRouter({
+  repo: gameChatRepo, moderator: gameChatModerator, onSettingsChanged: () => plaza.refreshChat(),
+}));
 app.use('/api/analytics', require('./src/routes/analyticsTrack'));
 app.use('/api/consent', require('./src/routes/consent'));
 app.use('/api/geo', require('./src/routes/geo'));

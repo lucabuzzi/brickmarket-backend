@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { apiFetch } from '../api';
-import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound, Award, Trash2, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Users, Activity, Package, DollarSign, Star, ShieldAlert, Download, X, Search, ChevronUp, ChevronDown, Database, Zap, BookOpen, LayoutDashboard, Eye, Wallet, UsersRound, Award, Trash2, Sparkles, SlidersHorizontal, MessageSquareWarning } from 'lucide-react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, flexRender } from '@tanstack/react-table';
 import { StitchCard, AnimateCounter, PulsingGlow, StitchPageTransition, StitchBackground } from '../components/StitchComponents';
 import SellerTypeBadge from '../components/SellerTypeBadge';
@@ -456,6 +456,18 @@ export default function AdminDashboard() {
           <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Prezzi in euro (solo carta) delle messe in evidenza da 7, 14 e 30 giorni.</p>
           <div style={{ marginTop: 'auto' }}>
             <span style={{ color: '#d4af37', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI PREZZI →</span>
+          </div>
+        </StitchCard>
+
+        {/* GAME CHAT MODERATION CARD */}
+        <StitchCard glowColor="purple" onClick={() => navigate('/admin/game-chat')}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px' }}><MessageSquareWarning size={24} color="#8b5cf6" /></div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f5f5f4', fontWeight: '600' }}>Moderazione Chat del Gioco</h2>
+          </div>
+          <p style={{ color: '#78716c', fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>Messaggi scritti nella piazza: accensione, parole vietate, regole per l'AI, giocatori silenziati e messaggi bloccati.</p>
+          <div style={{ marginTop: 'auto' }}>
+            <span style={{ color: '#8b5cf6', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}>APRI MODERAZIONE →</span>
           </div>
         </StitchCard>
 

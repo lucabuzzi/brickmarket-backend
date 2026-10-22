@@ -58,6 +58,12 @@ export function connectPlaza({ visible, where = () => ({}), onMessage, onStatus 
     setVisible(v) { isVisible = Boolean(v); sendJson({ t: 'visible', v: isVisible }); },
     /** Says one of the fixed phrases / emojis (client/src/config/plazaPhrases.json). */
     say(k) { sendJson({ t: 'say', k }); },
+    /** Sends a typed message (n: our number for it, echoed in the answer); false when not connected. */
+    chat(text, n) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+      sendJson({ t: 'chat', text, n });
+      return true;
+    },
     /** Walks through a linking door into map `to` (the server checks we are at the door). */
     travel(to) { sendJson({ t: 'travel', to }); },
     close() { closed = true; clearTimeout(timer); if (ws) ws.close(); },
