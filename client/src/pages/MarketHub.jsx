@@ -205,7 +205,7 @@ export default function MarketHub({ modeKey = 'listings' }) {
               {mode.isAuction ? <Gavel size={15} /> : null}
               {t(`${copy}.kicker`)}
             </motion.p>
-            <h1 className="mt-4 text-[clamp(2.8rem,10vw,6.6rem)] font-black leading-[0.88] tracking-[-0.055em] text-white lg:text-[clamp(3rem,6.4vw,6.6rem)]">
+            <h1 className="mt-4 text-[clamp(2.8rem,min(10vw,13svh),6.6rem)] font-black leading-[0.88] tracking-[-0.055em] text-white lg:text-[clamp(3rem,6.4vw,6.6rem)]">
               {[t(`${copy}.title_1`), t(`${copy}.title_2`)].map((line, i) => (
                 <span key={line} className="block overflow-hidden pb-[0.08em]">
                   <motion.span

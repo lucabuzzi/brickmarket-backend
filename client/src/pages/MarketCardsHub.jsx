@@ -91,7 +91,7 @@ export default function MarketCardsHub({ modeKey = 'listings' }) {
             <ArrowLeft size={16} /> {t(`market.back_hub_${mode.key}`)}
           </Link>
           <motion.h1
-            className="mt-6 text-[clamp(2.8rem,9vw,6.2rem)] font-black leading-[0.88] tracking-[-0.055em] text-white"
+            className="mt-6 text-[clamp(2.8rem,min(9vw,13svh),6.2rem)] font-black leading-[0.88] tracking-[-0.055em] text-white"
             initial={reduceMotion ? false : { y: 24 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}

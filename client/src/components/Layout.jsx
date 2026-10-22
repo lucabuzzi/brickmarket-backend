@@ -272,8 +272,9 @@ export default function Layout() {
           </span>
         </Link>
 
-        {/* Center: Search (Desktop only) */}
-        <form onSubmit={handleTopbarSearch} className="hidden lg:flex flex-1 max-w-[400px] relative mx-8">
+        {/* Center: Search (Desktop only) — stepped aside between xl and 1440px, where the full nav row
+            below needs all the header width there is. */}
+        <form onSubmit={handleTopbarSearch} className="hidden lg:flex xl:max-[1439px]:hidden flex-1 max-w-[400px] relative mx-8">
           <input
             ref={topbarInputRef}
             type="text"
@@ -290,8 +291,10 @@ export default function Layout() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1 min-[350px]:gap-2 md:gap-4">
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 mr-4 border-r border-white/5 pr-6">
+          {/* Desktop Nav Links — only from xl: logged in, the full row needs ~1150px of header, so
+              below that (tablets, 1024 laptops, phones in landscape) the hamburger drawer, which
+              carries every one of these links, takes over instead of wrapping/clipping. */}
+          <nav className="hidden xl:flex items-center gap-6 mr-4 border-r border-white/5 pr-6 whitespace-nowrap">
             <NavLink to="/" end className={({ isActive }) => `text-xs font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-gold-400' : 'text-stone-400 hover:text-white'}`}>
               {t('nav.home')}
             </NavLink>

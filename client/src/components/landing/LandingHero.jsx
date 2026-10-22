@@ -140,7 +140,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
       <div className="pointer-events-none absolute -right-20 top-40 h-[560px] w-[560px] rounded-full bg-[#8b5cf6]/25 blur-[130px]" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-[-200px] left-1/3 h-[420px] w-[420px] rounded-full bg-[#ff5a36]/15 blur-[120px]" aria-hidden="true" />
 
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 gap-10 px-5 pb-16 pt-28 md:px-10 md:pt-36 lg:grid-cols-[1.05fr_0.95fr] lg:gap-x-14 lg:gap-y-8 lg:pb-28">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 gap-10 px-5 pb-16 pt-28 md:px-10 md:pt-36 short:gap-6 short:pb-10 short:pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-x-14 lg:gap-y-8 lg:pb-28">
         {/* On phones: headline + CTAs first, then the product fan, then search, so imagery and the main
             actions land within the first swipe. From lg the fan moves to its own column spanning both rows. */}
         <div className="min-w-0 lg:col-start-1 lg:row-start-1 lg:self-end">
@@ -168,7 +168,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
           </motion.div>
           )}
 
-          <p className="mt-7 flex flex-wrap items-center gap-x-3 text-sm font-black uppercase tracking-[0.18em] md:text-base" aria-hidden="true">
+          <p className="mt-7 flex flex-wrap items-center gap-x-3 text-sm font-black uppercase tracking-[0.18em] md:text-base short:mt-4 short:text-sm" aria-hidden="true">
             {words.map((w, i) => (
               <motion.span
                 key={w.text}
@@ -183,7 +183,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
           </p>
 
           <motion.h1
-            className="mt-4 text-[clamp(2.4rem,8.5vw,4.6rem)] font-black leading-[0.98] tracking-[-0.045em] text-white lg:text-[clamp(2.6rem,4.6vw,4.6rem)]"
+            className="mt-4 text-[clamp(2.4rem,min(8.5vw,11svh),4.6rem)] font-black leading-[0.98] tracking-[-0.045em] text-white lg:text-[clamp(2.6rem,4.6vw,4.6rem)]"
             initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -192,7 +192,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
           </motion.h1>
 
           <motion.p
-            className="mt-6 max-w-[34rem] text-base leading-relaxed text-white/65 md:text-lg"
+            className="mt-6 max-w-[34rem] text-base leading-relaxed text-white/65 md:text-lg short:mt-3 short:text-base"
             initial={reduceMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.55, duration: 0.6 }}
@@ -200,7 +200,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
             {t('landing.hero.subtitle')}
           </motion.p>
 
-          <div className="mt-8 flex flex-col gap-3 min-[430px]:flex-row">
+          <div className="mt-8 flex flex-col gap-3 min-[430px]:flex-row short:mt-5">
             <Link
               to={navTo('/annunci')}
               className="lx-shine group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white px-6 py-4 text-[15px] font-black text-[#07060b] transition-transform hover:-translate-y-0.5"
@@ -256,7 +256,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
             />
           </motion.div>
           {stackItems.length > 0 ? (
-            <div className="relative mx-auto h-[340px] w-full max-w-[640px] [--card-w:170px] [--k:0.55] [perspective:1400px] min-[430px]:[--k:0.62] sm:h-[460px] sm:[--card-w:210px] md:[--k:0.8] lg:h-[540px] lg:[--card-w:220px] lg:[--k:0.6] xl:[--k:0.82] 2xl:[--card-w:240px] 2xl:[--k:1]">
+            <div className="relative mx-auto h-[340px] w-full max-w-[640px] [--card-w:170px] [--k:0.55] [perspective:1400px] min-[430px]:[--k:0.62] sm:h-[460px] sm:[--card-w:210px] md:[--k:0.8] lg:h-[540px] short:h-[340px] short:[--card-w:170px] lg:[--card-w:220px] lg:[--k:0.6] xl:[--k:0.82] 2xl:[--card-w:240px] 2xl:[--k:1]">
               <div className="lx-float h-full w-full">
                 <motion.div
                   className="relative h-full w-full pt-6 [transform-style:preserve-3d]"
@@ -269,7 +269,7 @@ export default function LandingHero({ stackItems, stats, statsLoading }) {
               </div>
             </div>
           ) : (
-            <div className="h-[340px] w-full sm:h-[460px] lg:h-[540px]" />
+            <div className="h-[340px] w-full sm:h-[460px] short:h-[340px] lg:h-[540px]" />
           )}
         </div>
 

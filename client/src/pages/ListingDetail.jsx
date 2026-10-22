@@ -606,7 +606,7 @@ export default function ListingDetail() {
   if (loading) {
     return (
       <div className="lx-page min-h-[80vh]">
-        <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-8 px-4 pb-16 pt-24 md:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pt-28">
+        <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-8 px-4 pb-16 pt-24 md:px-10 short:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pt-28">
           <div className="aspect-[4/5] animate-pulse rounded-[1.75rem] bg-white/[0.05] sm:aspect-[4/3] lg:aspect-[5/6]" />
           <div className="space-y-4">
             <div className="h-4 w-32 animate-pulse rounded-full bg-white/[0.07]" />
@@ -765,7 +765,7 @@ export default function ListingDetail() {
           )}
         </nav>
 
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+        <div className="grid grid-cols-1 items-start gap-8 short:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] short:gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           <motion.div initial={{ y: 24 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="min-w-0">
             <Gallery images={imgs} title={listing.title} accent={accent} badge={badge} portrait={listing.image_orientation === 'portrait'} />
           </motion.div>

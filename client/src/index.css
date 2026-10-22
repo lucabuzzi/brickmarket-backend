@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* `short:` = a phone held in landscape: wide enough to trip md:/lg:, but only ~375-430px tall.
+   Width breakpoints alone can't tell it from a tablet, so height-hungry sections (hero padding,
+   giant headlines) opt into tighter sizing through this variant. */
+@custom-variant short (@media (orientation: landscape) and (max-height: 500px));
+
 /* Gold, exposed as Tailwind utilities (bg-gold-500, text-gold-400, border-gold-600, etc.), is
    reserved for the header/nav chrome and primary CTA buttons only — see --color-pillar-* below
    for everything else. */
