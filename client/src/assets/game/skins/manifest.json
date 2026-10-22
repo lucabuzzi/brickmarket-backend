@@ -77,6 +77,36 @@
         }
       }
     },
+    "allenatore_carte": {
+      "scale": 0.1408,
+      "regions": {
+        "1": {
+          "count": 723,
+          "sref": 0.4965,
+          "vref": 0.9407
+        },
+        "2": {
+          "count": 543,
+          "sref": 0.6592,
+          "vref": 0.3732
+        },
+        "3": {
+          "count": 1082,
+          "sref": 0.3925,
+          "vref": 0.4432
+        },
+        "4": {
+          "count": 1301,
+          "sref": 0.5266,
+          "vref": 0.4613
+        },
+        "5": {
+          "count": 1859,
+          "sref": 0.4562,
+          "vref": 0.3786
+        }
+      }
+    },
     "uomo_base": {
       "scale": 0.1424,
       "regions": {

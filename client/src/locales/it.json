@@ -2914,6 +2914,10 @@
         "name": "Esploratori",
         "tagline": "Zaino in spalla, a caccia di pezzi rari in ogni angolo."
       },
+      "card_trainer": {
+        "name": "Allenatori",
+        "tagline": "Cappellino, guanti e tracolla: sempre pronto per uno scambio."
+      },
       "card_duelist": {
         "name": "Maestri delle carte",
         "tagline": "Uno sguardo, un mazzo e la carta giusta al momento giusto."
@@ -2944,6 +2948,7 @@
       "costruttrice_blocchi": "Costruttrice a blocchi",
       "esploratore_collezionista": "Esploratore collezionista",
       "esploratrice_collezionista": "Esploratrice collezionista",
+      "allenatore_carte": "Allenatore di carte",
       "maestro_carte": "Maestro delle carte",
       "maestra_carte": "Maestra delle carte",
       "arcanista": "Arcanista",

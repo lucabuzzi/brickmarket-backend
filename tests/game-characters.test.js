@@ -20,14 +20,20 @@ describe('gameCharacters.json (cleaned design brief)', () => {
     expect(text.toLowerCase()).not.toContain(SITE_GOLD);
   });
 
-  test('six classes, each a man and a woman, with unique ids', () => {
-    expect(CHARS.pairs).toHaveLength(6);
+  test('the six classes of the brief are a man and a woman, extra classes one of each gender at most; unique ids', () => {
+    const BRIEF = ['builder_block', 'monster_explorer', 'card_duelist', 'arcane_mage', 'sea_pirate', 'cyber_knight'];
+    expect(CHARS.pairs).toEqual(expect.arrayContaining(BRIEF));
     const ids = CHARS.characters.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const pair of CHARS.pairs) {
-      const members = CHARS.characters.filter((c) => c.pair === pair);
-      expect(members.map((c) => c.gender).sort()).toEqual(['female', 'male']);
+      const genders = CHARS.characters.filter((c) => c.pair === pair).map((c) => c.gender).sort();
+      if (BRIEF.includes(pair)) expect(genders).toEqual(['female', 'male']);
+      else {
+        expect(genders.length).toBeGreaterThan(0);
+        expect(new Set(genders).size).toBe(genders.length);
+      }
     }
+    for (const c of CHARS.characters) expect(CHARS.pairs).toContain(c.pair);
   });
 
   test('every character lists the 5 colour parts; enabled ones have valid reference colours and a body band', () => {
@@ -105,6 +111,26 @@ describe('with the sheets built today (avatarSpec.json)', () => {
     expect(C.resolveLook('uomo_base')).toBe('esploratore_collezionista');
     expect(C.memberOf('monster_explorer', 'female')).toBe('esploratrice_collezionista');
     expect(C.editableParts('esploratore_collezionista').map((e) => e.part)).toEqual(PARTS);
+  });
+
+  test('the card trainer is playable as a class of its own, with only a man (no gender switch)', () => {
+    expect(SPEC.looks).toContain('allenatore_carte');
+    expect(C.resolveLook('allenatore_carte')).toBe('allenatore_carte');
+    const cls = C.creatorClasses().find((c) => c.pair === 'card_trainer');
+    expect(cls.members).toEqual(['allenatore_carte']);
+    expect(C.memberOf('card_trainer', 'female')).toBe('allenatore_carte');
+    expect(C.editableParts('allenatore_carte').map((e) => e.part)).toEqual(PARTS);
+  });
+
+  test('every class and character has its name in the 5 languages', () => {
+    for (const l of ['it', 'en', 'es', 'fr', 'de']) {
+      const g = require(`../client/src/locales/${l}.json`).game;
+      for (const pair of CHARS.pairs) {
+        expect(g.classes[pair].name).toBeTruthy();
+        expect(g.classes[pair].tagline).toBeTruthy();
+      }
+      for (const c of CHARS.characters) expect(g.characters[c.id]).toBeTruthy();
+    }
   });
 });
 

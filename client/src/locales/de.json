@@ -2838,6 +2838,10 @@
         "name": "Entdecker",
         "tagline": "Rucksack auf und in jeder Ecke auf der Jagd nach seltenen Stücken."
       },
+      "card_trainer": {
+        "name": "Trainer",
+        "tagline": "Kappe, Handschuhe und Umhängetasche: immer bereit für einen Tausch."
+      },
       "card_duelist": {
         "name": "Kartenmeister",
         "tagline": "Ein Blick, ein Deck und die richtige Karte im richtigen Moment."
@@ -2868,6 +2872,7 @@
       "costruttrice_blocchi": "Blockbaumeisterin",
       "esploratore_collezionista": "Sammler-Entdecker",
       "esploratrice_collezionista": "Sammler-Entdeckerin",
+      "allenatore_carte": "Karten-Trainer",
       "maestro_carte": "Kartenmeister",
       "maestra_carte": "Kartenmeisterin",
       "arcanista": "Arkanist",

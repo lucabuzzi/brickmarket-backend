@@ -2846,6 +2846,10 @@
         "name": "Explorateurs",
         "tagline": "Sac sur le dos, à la chasse aux pièces rares dans chaque recoin."
       },
+      "card_trainer": {
+        "name": "Dresseurs",
+        "tagline": "Casquette, gants et besace : toujours prêt pour un échange."
+      },
       "card_duelist": {
         "name": "Maîtres des cartes",
         "tagline": "Un regard, un deck et la bonne carte au bon moment."
@@ -2876,6 +2880,7 @@
       "costruttrice_blocchi": "Bâtisseuse de blocs",
       "esploratore_collezionista": "Explorateur collectionneur",
       "esploratrice_collezionista": "Exploratrice collectionneuse",
+      "allenatore_carte": "Dresseur de cartes",
       "maestro_carte": "Maître des cartes",
       "maestra_carte": "Maîtresse des cartes",
       "arcanista": "Arcaniste",
