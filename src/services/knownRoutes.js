@@ -25,7 +25,7 @@ const KNOWN_ROUTES = [
   'verifica-email',
   'product/:id', 'user/:username', 'category/:slug',
   'admin', 'admin/analytics', 'admin/analytics/calendar', 'admin/archive', 'admin/credit-config', 'admin/disputes',
-  'admin/featured-pricing', 'admin/flagged-grants', 'admin/interactions', 'admin/listings', 'admin/payouts',
+  'admin/featured-pricing', 'admin/flagged-grants', 'admin/game-chat', 'admin/interactions', 'admin/listings', 'admin/payouts',
   'admin/users', 'admin/users/:id', 'admin/wallet-transactions',
   'catalog/:slug',
   'catalog/lego/:setNum',

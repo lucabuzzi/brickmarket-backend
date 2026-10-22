@@ -121,7 +121,52 @@ function createGameChatRepository({ db = { query }, now = () => Date.now() } = {
     return r.rowCount > 0;
   }
 
-  return { getSettings, setSetting, getTerms, listTerms, addTerm, removeTerm, logBlocked, purgeLog, getMute, setMute, clearMute };
+  /** The settings as stored, with who changed them and when (admin page). */
+  async function listSettingRows() {
+    const r = await db.query('SELECT key, updated_at FROM public.game_chat_settings');
+    return r.rows;
+  }
+
+  /** Blocked messages, newest first: { rows, total }. `userId` keeps one player's only. */
+  async function listLog({ limit = 50, offset = 0, userId = null } = {}) {
+    const where = userId ? 'WHERE user_id = $3' : '';
+    const params = userId ? [limit, offset, userId] : [limit, offset];
+    const [rows, count] = await Promise.all([
+      db.query(
+        `SELECT id, user_id, username, message, category, source, detail, created_at FROM public.game_chat_moderation_log
+         ${where} ORDER BY created_at DESC, id DESC LIMIT $1 OFFSET $2`,
+        params,
+      ),
+      db.query(`SELECT COUNT(*)::int AS n FROM public.game_chat_moderation_log ${userId ? 'WHERE user_id = $1' : ''}`, userId ? [userId] : []),
+    ]);
+    return { rows: rows.rows, total: count.rows[0]?.n ?? 0 };
+  }
+
+  /** Players muted right now, with their username. */
+  async function listMutes() {
+    const r = await db.query(
+      `SELECT m.user_id, u.username, m.muted_until, m.reason, m.created_at
+       FROM public.game_chat_mutes m JOIN public.users u ON u.id = m.user_id
+       WHERE m.muted_until > now() ORDER BY m.muted_until DESC`,
+    );
+    return r.rows;
+  }
+
+  /** A player by username (case does not matter), for muting by name. */
+  async function findUser(username) {
+    const r = await db.query('SELECT id, username FROM public.users WHERE lower(username) = lower($1) LIMIT 1', [String(username ?? '').trim()]);
+    return r.rows[0] || null;
+  }
+
+  return {
+    getSettings, setSetting, listSettingRows, getTerms, listTerms, addTerm, removeTerm, logBlocked, purgeLog, listLog,
+    getMute, setMute, clearMute, listMutes, findUser,
+  };
 }
 
-module.exports = { createGameChatRepository, CACHE_MS };
+// one shared instance: the plaza socket (server.js) and the admin page read the same cache, so an admin change is
+// seen by the plaza at once instead of after the cache expires
+let shared = null;
+const gameChatRepository = () => { shared = shared || createGameChatRepository(); return shared; };
+
+module.exports = { createGameChatRepository, gameChatRepository, CACHE_MS };

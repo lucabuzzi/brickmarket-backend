@@ -43,6 +43,7 @@ const AdminArchive = lazy(() => import('./pages/AdminArchive'));
 const AdminWalletTransactions = lazy(() => import('./pages/AdminWalletTransactions'));
 const AdminCreditConfig = lazy(() => import('./pages/AdminCreditConfig'));
 const AdminFeaturedPricing = lazy(() => import('./pages/AdminFeaturedPricing'));
+const AdminGameChat = lazy(() => import('./pages/AdminGameChat'));
 const AdminDisputes = lazy(() => import('./pages/AdminDisputes'));
 const AdminFlaggedGrants = lazy(() => import('./pages/AdminFlaggedGrants'));
 const AdminPayouts = lazy(() => import('./pages/AdminPayouts'));
@@ -206,6 +207,7 @@ export default function App() {
           <Route path="admin/wallet-transactions" element={<ProtectedRoute adminOnly={true}><AdminWalletTransactions /></ProtectedRoute>} />
           <Route path="admin/credit-config" element={<ProtectedRoute adminOnly={true}><AdminCreditConfig /></ProtectedRoute>} />
           <Route path="admin/featured-pricing" element={<ProtectedRoute adminOnly={true}><AdminFeaturedPricing /></ProtectedRoute>} />
+          <Route path="admin/game-chat" element={<ProtectedRoute adminOnly={true}><AdminGameChat /></ProtectedRoute>} />
           <Route path="admin/disputes" element={<ProtectedRoute adminOnly={true}><AdminDisputes /></ProtectedRoute>} />
           <Route path="admin/flagged-grants" element={<ProtectedRoute adminOnly={true}><AdminFlaggedGrants /></ProtectedRoute>} />
           <Route path="admin/payouts" element={<ProtectedRoute adminOnly={true}><AdminPayouts /></ProtectedRoute>} />

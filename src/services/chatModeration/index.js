@@ -98,13 +98,37 @@ function createChatModerator({ repo, moderate = geminiModerator(), now = () => D
     return { ok: true, text: message };
   }
 
+  /**
+   * The admin's "try a message": the same rules and AI as check(), with nothing logged, no strike, no mute, and also
+   * while typed chat is off (to try the rules before switching it on).
+   * -> { ok: true, text } | { ok: false, reason, category?, source?, detail? }
+   */
+  async function preview(text) {
+    const s = await repo.getSettings();
+    const message = cleanMessage(text);
+    if (!message) return { ok: false, reason: 'empty' };
+    if (message.length > s.max_length) return { ok: false, reason: 'too_long' };
+    const hit = rules.check(message, { terms: await repo.getTerms() });
+    if (hit) return { ok: false, reason: 'blocked', source: 'rule', ...hit };
+    if (!s.ai_enabled) return { ok: true, text: message };
+    let verdict;
+    try {
+      verdict = await moderate(message, { rules: s.custom_rules });
+    } catch (err) {
+      return { ok: false, reason: 'unavailable', detail: err.code || err.message };
+    }
+    if (verdict.allowed) return { ok: true, text: message };
+    const detail = verdict.rule ? `regola ${verdict.rule}: ${s.custom_rules[verdict.rule - 1] || ''}` : null;
+    return { ok: false, reason: 'blocked', source: 'ai', category: verdict.category, detail };
+  }
+
   /** What the game needs to show the text box: { freeText, maxLength }. */
   async function config() {
     const s = await repo.getSettings();
     return { freeText: s.free_text_enabled, maxLength: s.max_length };
   }
 
-  return { check, config, cleanMessage };
+  return { check, preview, config, cleanMessage };
 }
 
 module.exports = { createChatModerator, cleanMessage };
