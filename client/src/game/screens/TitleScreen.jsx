@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import DragonView from '../components/DragonView';
+import DragonStatue from '../components/DragonStatue';
 import legalPages from '../../config/legalPages.json';
 import { useLocalizedNav } from '../../routing/useLocalizedNav';
 
@@ -37,7 +37,7 @@ export default function TitleScreen({ onStart, busy }) {
       <div className="relative z-10 flex flex-col items-center">
         <div className="cbg-dragon-float relative">
           <div className="cbg-dragon-glow" aria-hidden />
-          <DragonView scale={4} />
+          <DragonStatue width={240} className="relative" />
         </div>
         <h1 className="cbg-pixel cbg-logo mt-4 text-[clamp(1.6rem,7vw,3.4rem)] font-normal uppercase">
           Card<span>brix</span>

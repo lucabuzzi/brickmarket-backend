@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { DRAGON_W, DRAGON_H, renderDragon } from '../../lib/game/dragonSprite';
 
-/** The CardBrix dragon as crisp pixel art (integer `scale`), used on the title screen and the victory card. */
+/** The small code-drawn CardBrix dragon as crisp pixel art (integer `scale`): the NPC portrait in dialogues. */
 export default function DragonView({ scale = 4, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
