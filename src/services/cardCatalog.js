@@ -85,6 +85,18 @@ async function bulkUpsertCards(game, cards) {
 }
 
 /**
+ * Stores the prints a card recognition offered (src/routes/cardRecognize.js), so the catalog page of the print the
+ * seller picks is served from the cache. Never fails the recognition: a DB error is only logged.
+ */
+async function cachePrints(game, prints) {
+  try {
+    await bulkUpsertCards(game, prints);
+  } catch (err) {
+    console.error(`[cards] Caching recognised ${game} prints failed:`, err.message);
+  }
+}
+
+/**
  * Fuzzy-searches the local cache for a game. Falls back to plain ILIKE if
  * pg_trgm/similarity() isn't available on this database.
  */
@@ -119,6 +131,7 @@ module.exports = {
   getAnyCard,
   upsertCard,
   bulkUpsertCards,
+  cachePrints,
   searchLocalCards,
   CACHE_TTL_DAYS,
 };

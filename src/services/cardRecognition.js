@@ -160,7 +160,16 @@ const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
 // opened to sellers only on purpose (CARD_RECOGNITION_ENABLED=1): on Gemini's free tier Google may use the photos
 const isEnabled = () => isConfigured() && process.env.CARD_RECOGNITION_ENABLED === '1';
 
+/**
+ * The games offered to sellers: every game with an adapter, or only those listed in CARD_RECOGNITION_GAMES
+ * ("onepiece,pokemon"), so one game can be switched off on Render without a deploy.
+ */
+function enabledGames() {
+  const listed = String(process.env.CARD_RECOGNITION_GAMES || '').split(',').map((g) => g.trim().toLowerCase()).filter(Boolean);
+  return listed.length ? GAMES.filter((g) => listed.includes(g)) : [...GAMES];
+}
+
 module.exports = {
-  recognizeCard, recognizeOnePiece, promptFor, GAMES,
+  recognizeCard, recognizeOnePiece, promptFor, GAMES, enabledGames,
   geminiReader, prepareImage, parseReading, isConfigured, isEnabled, RecognitionError, DEFAULT_MODEL, MAX_SIDE,
 };

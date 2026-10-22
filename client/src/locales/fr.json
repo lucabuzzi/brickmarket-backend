@@ -1204,10 +1204,16 @@
     "listing_fee_note": "Vous recevez le prix intégral. L'acheteur verra {{buyerPrice}} € : la commission CardBrix de {{percent}} est à sa charge et déjà incluse.",
     "recognize": {
       "button": "Photographier la carte",
-      "hint": "Cadrez la carte entière, avec le code en bas à droite lisible : nous trouvons la carte et sa version.",
+      "hint": {
+        "onepiece": "Cadrez la carte entière, avec le code en bas à droite lisible : nous trouvons la carte et sa version.",
+        "magic": "Cadrez la carte entière, avec le nom et la ligne en bas à gauche (code de l'extension et numéro) lisibles : nous trouvons la carte et son impression.",
+        "pokemon": "Cadrez la carte entière, avec le nom et le numéro en bas (ex. 063/198) lisibles : nous trouvons la carte et son extension.",
+        "yugioh": "Cadrez la carte entière, avec le code sous l'illustration à droite (ex. LOB-FR001) lisible : nous trouvons la carte et ses raretés.",
+        "lorcana": "Cadrez la carte entière, avec le nom et le numéro en bas (ex. 123/204) lisibles : nous trouvons la carte et son extension."
+      },
       "privacy": "Pour la reconnaître, la photo est lue par Google Gemini.",
       "busy": "Lecture de la carte…",
-      "code_read": "Code lu : {{code}}",
+      "read": "Lu sur la carte : {{text}}",
       "retake": "Reprendre la photo",
       "none": "Aucune de celles-ci : chercher à la main",
       "search_by_hand": "Chercher la carte à la main",
@@ -1221,9 +1227,10 @@
       },
       "result": {
         "matched": "Choisissez la version que vous avez en comparant l'image avec votre carte : titre, numéro et rareté viennent du catalogue.",
-        "check_name": "Le nom lu ne correspond pas à ce code : vérifiez bien la carte avant de choisir.",
-        "not_found": "Le code lu n'existe pas dans le catalogue.",
-        "unreadable": "Je n'arrive pas à lire le code de la carte.",
+        "matched_by_code": "Choisissez l'impression que vous avez : comparez le code sous l'illustration et la rareté. Titre, numéro et rareté viennent du catalogue.",
+        "check_name": "Le nom lu ne correspond pas à cette carte : vérifiez bien avant de choisir.",
+        "not_found": "La carte lue n'est pas dans le catalogue.",
+        "unreadable": "Je n'arrive pas à lire la carte.",
         "check_photo": "La photo est floue : comparez bien l'image avec la carte que vous avez en main avant de choisir."
       },
       "better": {
@@ -3031,7 +3038,7 @@
     "s6_title": "6. Décisions automatisées",
     "s6_body": "Le système peut refuser ou suspendre l’attribution de crédits bonus lorsqu’il détecte des signaux d’abus, par exemple la même IP, le même appareil, moyen de paiement ou adresse entre vendeur et acheteur. L’assistant automatique du Centre d’aide répond aux questions générales mais ne prend aucune décision sur votre compte.\nVous pouvez demander l’intervention d’une personne, exprimer votre point de vue et contester la décision en écrivant à [EMAIL PRIVACY].",
     "s7_title": "7. À qui nous communiquons les données",
-    "s7_body": "Nous communiquons des données à des prestataires qui les traitent pour notre compte (sous-traitants) ou comme responsables autonomes :\n• Supabase : base de données et infrastructure.\n• Render : hébergement du site et du serveur.\n• Stripe et PayPal : paiements ; Stripe aussi pour la vérification des vendeurs.\n• Cloudinary : stockage et optimisation des images.\n• SendGrid : envoi des e-mails.\n• Cloudflare Turnstile : protection anti-robots.\n• Google (Gemini) : assistant automatique du Centre d’aide, qui reçoit la question que vous écrivez. N’y mettez pas de données personnelles. Également la reconnaissance des cartes sur les pages de vente, qui reçoit la photo de la carte que vous prenez uniquement pour en lire le code : photographiez seulement la carte.\n• Google et Apple : uniquement si vous choisissez de vous connecter avec leur compte.\n• Transporteurs et services d’expédition [DA VERIFICARE : noms, par exemple Sendcloud].\n• Conseillers, comptables et autorités compétentes, lorsque la loi le prévoit.\nLes autres utilisateurs ne voient que les données nécessaires : l’acheteur le nom d’utilisateur du vendeur, le vendeur l’adresse de livraison de la commande, les joueurs de la place votre nom d’utilisateur et votre personnage. Nous ne vendons pas vos données.",
+    "s7_body": "Nous communiquons des données à des prestataires qui les traitent pour notre compte (sous-traitants) ou comme responsables autonomes :\n• Supabase : base de données et infrastructure.\n• Render : hébergement du site et du serveur.\n• Stripe et PayPal : paiements ; Stripe aussi pour la vérification des vendeurs.\n• Cloudinary : stockage et optimisation des images.\n• SendGrid : envoi des e-mails.\n• Cloudflare Turnstile : protection anti-robots.\n• Google (Gemini) : assistant automatique du Centre d’aide, qui reçoit la question que vous écrivez. N’y mettez pas de données personnelles. Également la reconnaissance des cartes sur les pages de vente, qui reçoit la photo de la carte que vous prenez uniquement pour en lire le nom et le code : photographiez seulement la carte.\n• Google et Apple : uniquement si vous choisissez de vous connecter avec leur compte.\n• Transporteurs et services d’expédition [DA VERIFICARE : noms, par exemple Sendcloud].\n• Conseillers, comptables et autorités compétentes, lorsque la loi le prévoit.\nLes autres utilisateurs ne voient que les données nécessaires : l’acheteur le nom d’utilisateur du vendeur, le vendeur l’adresse de livraison de la commande, les joueurs de la place votre nom d’utilisateur et votre personnage. Nous ne vendons pas vos données.",
     "s8_title": "8. Transferts hors de l’Espace économique européen",
     "s8_body": "Certains prestataires peuvent traiter des données aux États-Unis ou dans d’autres pays hors UE. Le transfert repose alors sur une décision d’adéquation (par exemple l’EU-US Data Privacy Framework pour les prestataires certifiés) ou sur les clauses contractuelles types de la Commission européenne. Vous pouvez en demander une copie en écrivant à [EMAIL PRIVACY]. [DA VERIFICARE : confirmation pour chaque prestataire]",
     "s9_title": "9. Combien de temps nous conservons les données",

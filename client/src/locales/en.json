@@ -1204,10 +1204,16 @@
     "listing_fee_note": "You receive the full price. Buyers will see € {{buyerPrice}}: the {{percent}} CardBrix fee is paid by them and already included.",
     "recognize": {
       "button": "Photograph the card",
-      "hint": "Frame the whole card with the code at the bottom right legible: we find the card and its version for you.",
+      "hint": {
+        "onepiece": "Frame the whole card with the code at the bottom right legible: we find the card and its version for you.",
+        "magic": "Frame the whole card with the name and the bottom-left line (set code and number) legible: we find the card and its printing for you.",
+        "pokemon": "Frame the whole card with the name and the number at the bottom (e.g. 063/198) legible: we find the card and its set for you.",
+        "yugioh": "Frame the whole card with the code under the artwork on the right (e.g. LOB-EN001) legible: we find the card and its rarities for you.",
+        "lorcana": "Frame the whole card with the name and the number at the bottom (e.g. 123/204) legible: we find the card and its set for you."
+      },
       "privacy": "To recognise it, the photo is read by Google Gemini.",
       "busy": "Reading the card…",
-      "code_read": "Code read: {{code}}",
+      "read": "Read on the card: {{text}}",
       "retake": "Take it again",
       "none": "None of these: search by hand",
       "search_by_hand": "Search the card by hand",
@@ -1221,9 +1227,10 @@
       },
       "result": {
         "matched": "Pick the version you have, comparing the image with your card: title, number and rarity come from the catalog.",
-        "check_name": "The name read does not match this code: check the card carefully before choosing.",
-        "not_found": "The code read is not in the catalog.",
-        "unreadable": "I can't read the card's code.",
+        "matched_by_code": "Pick the print you have: compare the code under the artwork and the rarity. Title, number and rarity come from the catalog.",
+        "check_name": "The name read does not match this card: check carefully before choosing.",
+        "not_found": "The card read is not in the catalog.",
+        "unreadable": "I can't read the card.",
         "check_photo": "The photo is blurry: compare the image carefully with the card in your hand before choosing."
       },
       "better": {
@@ -3023,7 +3030,7 @@
     "s6_title": "6. Automated decisions",
     "s6_body": "The system may refuse or suspend the crediting of bonus credits when it detects signs of abuse, for example the same IP, device, payment method or address shared by seller and buyer. The Help Center’s automated assistant answers general questions but makes no decisions about your account.\nYou can ask for human intervention, express your view and contest the decision by writing to [EMAIL PRIVACY].",
     "s7_title": "7. Who we share data with",
-    "s7_body": "We share data with providers that process it on our behalf (processors) or as independent controllers:\n• Supabase: database and infrastructure.\n• Render: hosting of the website and server.\n• Stripe and PayPal: payments; Stripe also for seller verification.\n• Cloudinary: image storage and optimisation.\n• SendGrid: sending emails.\n• Cloudflare Turnstile: anti-bot protection.\n• Google (Gemini): the Help Center’s automated assistant, which receives the question you write. Do not put personal data in the message. Also the card recognition on the selling pages, which receives the photo of the card you take only to read its code: photograph the card alone.\n• Google and Apple: only if you choose to sign in with their account.\n• Carriers and shipping services [DA VERIFICARE: names, for example Sendcloud].\n• Advisers, accountants and competent authorities, where the law requires.\nOther users see only the data they need: the buyer sees the seller’s username, the seller sees the order’s shipping address, plaza players see your username and character. We do not sell your data.",
+    "s7_body": "We share data with providers that process it on our behalf (processors) or as independent controllers:\n• Supabase: database and infrastructure.\n• Render: hosting of the website and server.\n• Stripe and PayPal: payments; Stripe also for seller verification.\n• Cloudinary: image storage and optimisation.\n• SendGrid: sending emails.\n• Cloudflare Turnstile: anti-bot protection.\n• Google (Gemini): the Help Center’s automated assistant, which receives the question you write. Do not put personal data in the message. Also the card recognition on the selling pages, which receives the photo of the card you take only to read its name and code: photograph the card alone.\n• Google and Apple: only if you choose to sign in with their account.\n• Carriers and shipping services [DA VERIFICARE: names, for example Sendcloud].\n• Advisers, accountants and competent authorities, where the law requires.\nOther users see only the data they need: the buyer sees the seller’s username, the seller sees the order’s shipping address, plaza players see your username and character. We do not sell your data.",
     "s8_title": "8. Transfers outside the European Economic Area",
     "s8_body": "Some providers may process data in the United States or other non-EU countries. In that case the transfer relies on an adequacy decision (for example the EU-US Data Privacy Framework for certified providers) or the European Commission’s Standard Contractual Clauses. You can ask for a copy of the safeguards by writing to [EMAIL PRIVACY]. [DA VERIFICARE: confirmation for each provider]",
     "s9_title": "9. How long we keep data",

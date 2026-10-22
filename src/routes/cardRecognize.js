@@ -1,9 +1,9 @@
 /**
- * /api/cards/recognize — a seller photographs a One Piece card and gets back the real prints of the code printed on
- * it (src/services/cardRecognition.js); the sell page then lets them pick the exact one.
+ * /api/cards/recognize — a seller photographs a card (One Piece, Magic, Pokémon, Yu-Gi-Oh!, Lorcana) and gets back the
+ * real prints it can be (src/services/cardRecognition.js); the sell page then lets them pick the exact one.
  *
- *   GET  /recognize/status   public: { enabled, games } so the sell page shows the camera button only when it works
- *   POST /recognize          logged in, multipart field "image" (one photo, <= 10 MB)
+ *   GET  /recognize/status   public: { enabled, games } so the sell page shows the camera button only where it works
+ *   POST /recognize          logged in, multipart: "game" (default onepiece) and "image" (one photo, <= 10 MB)
  *
  * The photo stays in memory for the request: it is never written to disk, uploaded or logged. Each seller has an
  * hourly and a daily allowance, and the whole site a daily one, because every photo is a paid call to the reader.
@@ -14,7 +14,7 @@ const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const auth = require('../middleware/auth');
 const recognition = require('../services/cardRecognition');
-const onepieceApi = require('../services/onepieceApi');
+const cardCatalog = require('../services/cardCatalog');
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const HOUR = 60 * 60 * 1000;
@@ -26,12 +26,13 @@ const limitFromEnv = (name, fallback) => {
 };
 
 // RecognitionError code -> HTTP status; the client shows its own message for each `code`
-const ERROR_STATUS = { bad_image: 400, not_configured: 503, rate_limited: 503, timeout: 504, provider_error: 502 };
+const ERROR_STATUS = { bad_image: 400, unsupported_game: 400, not_configured: 503, rate_limited: 503, timeout: 504, provider_error: 502 };
 
 function createCardRecognizeRouter({
-  recognize = recognition.recognizeOnePiece,
+  recognize = recognition.recognizeCard,
   isEnabled = recognition.isEnabled,
-  cachePrints = onepieceApi.cachePrints,
+  enabledGames = recognition.enabledGames,
+  cachePrints = cardCatalog.cachePrints,
   authMiddleware = auth,
   limits = {
     hourly: limitFromEnv('CARD_RECOGNIZE_HOURLY', 20),
@@ -73,30 +74,39 @@ function createCardRecognizeRouter({
   });
 
   router.get('/recognize/status', (req, res) => {
-    res.json({ enabled: isEnabled(), games: ['onepiece'] });
+    res.json({ enabled: isEnabled(), games: enabledGames() });
   });
 
   router.post('/recognize', authMiddleware, enabledOnly, userHourly, userDaily, siteDaily, readPhoto, async (req, res) => {
     const t0 = Date.now();
+    // the sell page sends the game chosen in the form; the One Piece-only client of before sent none
+    const game = String(req.body?.game || 'onepiece').toLowerCase();
+    if (!enabledGames().includes(game)) {
+      return res.status(400).json({ error: 'Il riconoscimento non è disponibile per questo gioco.', code: 'unsupported_game' });
+    }
     try {
-      const result = await recognize(req.file.buffer);
+      const result = await recognize(game, req.file.buffer);
       req.file.buffer = null;
-      if (result.prints.length) await cachePrints(result.prints);
+      if (result.prints.length) await cachePrints(game, result.prints);
       const { reading } = result;
+      const read = [reading?.code, reading?.setCode, reading?.number].filter(Boolean).join(' ') || '-';
       // never the photo: who, what was read and how long it took
-      console.log(`[card-recognize] user=${req.user.userId} status=${result.status} code=${reading?.code || '-'} prints=${result.prints.length} `
+      console.log(`[card-recognize] user=${req.user.userId} game=${game} status=${result.status} read=${read.slice(0, 40)} prints=${result.prints.length} `
         + `ms=${Date.now() - t0} tokens=${result.usage?.inputTokens ?? '?'}/${result.usage?.outputTokens ?? '?'}`);
       return res.json({
-        game: 'onepiece',
+        game,
         status: result.status,
-        reading: reading && { code: reading.code, name: reading.name, rarity: reading.rarity, language: reading.language },
+        reading: reading && {
+          code: reading.code, name: reading.name, number: reading.number ?? null, setCode: reading.setCode ?? null,
+          rarity: reading.rarity, language: reading.language,
+        },
         nameMatches: result.nameMatches,
         prints: result.prints,
       });
     } catch (err) {
       const status = ERROR_STATUS[err && err.code];
       if (!status) console.error('[card-recognize] Unexpected error:', err);
-      else console.warn(`[card-recognize] user=${req.user.userId} error=${err.code} ms=${Date.now() - t0}`);
+      else console.warn(`[card-recognize] user=${req.user.userId} game=${game} error=${err.code} ms=${Date.now() - t0}`);
       return res.status(status || 500).json({ error: 'Riconoscimento non riuscito, riprova o scegli la carta dal catalogo.', code: status ? err.code : 'internal' });
     }
   });

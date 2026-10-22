@@ -1,12 +1,12 @@
-// Pure helpers for the "photograph the card" shortcut of the sell wizard (One Piece only for now): the photo is sent to
-// POST /api/cards/recognize, which answers with every real print of the code printed on the card (see
-// src/routes/cardRecognize.js); the seller picks the exact one and the form is filled from the CATALOG print. What the
-// model read (name, rarity) is only a hint: it was seen to take a name from the card text, the code is what counts.
+// Pure helpers for the "photograph the card" shortcut of the sell wizard: the photo and the game are sent to
+// POST /api/cards/recognize, which answers with every real print the card can be (see src/routes/cardRecognize.js);
+// the seller picks the exact one and the form is filled from the CATALOG print. What the model read (name, rarity) is
+// only a hint: it was seen to take a name from the card text, the code and number are what count.
 import { CARD_LANGUAGES } from './cards.js';
-import { pickCardPatch } from './catalog.js';
+import { cardNumberLabel, pickCardPatch, titleNumber, trimNumber } from './catalog.js';
 
-/** Games the recognition knows (must match `games` of GET /api/cards/recognize/status). */
-export const RECOGNIZE_GAMES = ['onepiece'];
+/** Games the recognition knows (the server's `games` of GET /api/cards/recognize/status say which are switched on). */
+export const RECOGNIZE_GAMES = ['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana'];
 export const canRecognize = (game, status) => !!status?.enabled && RECOGNIZE_GAMES.includes(game) && (status.games || []).includes(game);
 
 /** Server limit on the photo (src/routes/cardRecognize.js). */
@@ -28,9 +28,35 @@ export function printKind(externalId) {
  */
 export function recognizedPatch(print, reading, form, game = 'onepiece') {
   const patch = pickCardPatch(print, null, form, game);
+  // a Pokémon number is written as printed, with the size of its set ("4/102"), as the catalog picker does
+  const count = print.details?.cardCountOfficial;
+  if (game === 'pokemon' && count) {
+    patch.cardNumber = cardNumberLabel(print.details?.localId, count, game);
+    patch.title = `${print.name} ${titleNumber(patch.cardNumber, game)}`;
+  }
   const lang = String(reading?.language || '').toLowerCase();
   if (!form.cardLanguage && CARD_LANGUAGES.includes(lang)) patch.cardLanguage = lang;
   return patch;
+}
+
+/** What was read, as shown to the seller: "OP01-077", "MKM · 0123", "SVI · 063/198", Lorcana "123/204 · 5". */
+export function readingLabel(reading) {
+  if (!reading) return '';
+  if (reading.code) return reading.code;
+  // a set written in letters comes first, as on Magic and Pokémon cards; Lorcana's set number comes after the card's
+  const lettered = /[a-z]/i.test(reading.setCode || '');
+  return (lettered ? [reading.setCode, reading.number] : [reading.number, reading.setCode]).filter(Boolean).join(' · ');
+}
+
+/**
+ * How a print is told apart from the others offered. One Piece: by its kind (base, alternate art n, reprint n), the
+ * rest of a code's prints all share the name. Other games: by its expansion, with rarity and number underneath.
+ * -> { kind?, n?, title?, sub }  (`kind` is a key of sell.recognize.kind.*)
+ */
+export function printLabel(print, game) {
+  if (game === 'onepiece') return { ...printKind(print.external_id), sub: [print.rarity, print.set_name].filter(Boolean).join(' · ') };
+  const number = trimNumber(print.details?.localId);
+  return { title: print.set_name || print.set_code || print.name, sub: [print.rarity, /^\d+$/.test(number) ? `#${number}` : number].filter(Boolean).join(' · ') };
 }
 
 /**
