@@ -2779,16 +2779,13 @@
       "victory": "VITTORIA!"
     },
     "plaza": {
-      "online": "{{count}} in piazza",
-      "connecting": "Connessione…",
       "offline": "Piazza offline",
       "replaced": "Aperto in un'altra scheda",
       "visible_on": "Visibile in piazza",
       "visible_off": "Nascosto in piazza",
       "view_inventory": "Vedi inventario",
       "in_plaza": "In piazza adesso",
-      "close": "Chiudi",
-      "online_market": "{{count}} nel mercato"
+      "close": "Chiudi"
     },
     "inventory": {
       "kicker": "Inventario",

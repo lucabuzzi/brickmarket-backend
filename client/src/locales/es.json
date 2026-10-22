@@ -2703,16 +2703,13 @@
       "victory": "¡VICTORIA!"
     },
     "plaza": {
-      "online": "{{count}} en la plaza",
-      "connecting": "Conectando…",
       "offline": "Plaza sin conexión",
       "replaced": "Abierto en otra pestaña",
       "visible_on": "Visible en la plaza",
       "visible_off": "Oculto en la plaza",
       "view_inventory": "Ver inventario",
       "in_plaza": "En la plaza ahora",
-      "close": "Cerrar",
-      "online_market": "{{count}} en el mercado"
+      "close": "Cerrar"
     },
     "inventory": {
       "kicker": "Inventario",

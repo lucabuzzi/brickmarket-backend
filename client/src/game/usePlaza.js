@@ -22,7 +22,6 @@ function readVisible() {
  */
 export default function usePlaza({ gameRef, ready, onSaid, start = {} }) {
   const [status, setStatus] = useState('connecting');
-  const [count, setCount] = useState(0);
   const [visible, setVisibleState] = useState(readVisible);
   const stateRef = useRef(emptyPlaza());
   const clientRef = useRef(null);
@@ -97,7 +96,6 @@ export default function usePlaza({ gameRef, ready, onSaid, start = {} }) {
             if (p) gameRef.current?.moveRemote(mv.id, { x: mv.x, y: mv.y, d: p.d, m: mv.m });
           }
         }
-        setCount(Object.keys(next.players).length);
       },
     });
     clientRef.current = client;
@@ -140,12 +138,11 @@ export default function usePlaza({ gameRef, ready, onSaid, start = {} }) {
       gameRef.current?.removeRemote(id);
     }
     stateRef.current = { ...emptyPlaza(), you: stateRef.current.you };
-    setCount(0);
     clientRef.current?.travel(to);
   }, [gameRef]);
 
   /** The public info of another player (for the card shown when they are tapped). */
   const playerInfo = useCallback((id) => stateRef.current.players[id] || null, []);
 
-  return { status, count, visible, setVisible, reportMove, playerInfo, messages, say, cooldown, travel };
+  return { status, visible, setVisible, reportMove, playerInfo, messages, say, cooldown, travel };
 }

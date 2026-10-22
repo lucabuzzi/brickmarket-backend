@@ -2703,16 +2703,13 @@
       "victory": "SIEG!"
     },
     "plaza": {
-      "online": "{{count}} auf dem Platz",
-      "connecting": "Verbinde …",
       "offline": "Platz offline",
       "replaced": "In einem anderen Tab geöffnet",
       "visible_on": "Sichtbar auf dem Platz",
       "visible_off": "Versteckt auf dem Platz",
       "view_inventory": "Inventar ansehen",
       "in_plaza": "Gerade auf dem Platz",
-      "close": "Schließen",
-      "online_market": "{{count}} auf dem Markt"
+      "close": "Schließen"
     },
     "inventory": {
       "kicker": "Inventar",

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, GraduationCap, Pencil, Smartphone, Users } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Pencil, Smartphone, WifiOff } from 'lucide-react';
 import DragonStatue from '../components/DragonStatue';
 import VirtualJoystick from '../components/VirtualJoystick';
 import ChatPanel from '../components/ChatPanel';
@@ -413,12 +413,11 @@ export default function WorldScreen({ avatar, onEdit }) {
         </div>
       )}
 
-      {status === 'ready' && (
-        <div className="cbg-pixel absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 border-2 border-black bg-[#14111f]/95 px-1.5 py-1 text-[0.45rem] uppercase text-white sm:right-3 sm:top-3 sm:gap-2 sm:border-4 sm:px-2.5 sm:py-1.5 sm:text-[0.55rem]" aria-live="polite">
-          <Users className="h-3 w-3 text-[#22d3ee] sm:h-3.5 sm:w-3.5" aria-hidden />
-          {plaza.status === 'online' ? t(mapId === 'market' ? 'game.plaza.online_market' : 'game.plaza.online', { count: plaza.count })
-            : plaza.status === 'replaced' ? t('game.plaza.replaced')
-              : plaza.status === 'connecting' ? t('game.plaza.connecting') : t('game.plaza.offline')}
+      {/* no player count: only a notice when the plaza is unreachable (nobody else shows, the chat cannot speak) */}
+      {status === 'ready' && (plaza.status === 'offline' || plaza.status === 'replaced') && (
+        <div className="cbg-pixel absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 border-2 border-black bg-[#14111f]/95 px-1.5 py-1 text-[0.45rem] uppercase text-white sm:right-3 sm:top-3 sm:gap-2 sm:border-4 sm:px-2.5 sm:py-1.5 sm:text-[0.55rem]" role="status">
+          <WifiOff className="h-3 w-3 text-amber-300 sm:h-3.5 sm:w-3.5" aria-hidden />
+          {t(plaza.status === 'replaced' ? 'game.plaza.replaced' : 'game.plaza.offline')}
         </div>
       )}
 

@@ -2711,16 +2711,13 @@
       "victory": "VICTOIRE !"
     },
     "plaza": {
-      "online": "{{count}} sur la place",
-      "connecting": "Connexion…",
       "offline": "Place hors ligne",
       "replaced": "Ouvert dans un autre onglet",
       "visible_on": "Visible sur la place",
       "visible_off": "Caché sur la place",
       "view_inventory": "Voir l'inventaire",
       "in_plaza": "Sur la place maintenant",
-      "close": "Fermer",
-      "online_market": "{{count}} au marché"
+      "close": "Fermer"
     },
     "inventory": {
       "kicker": "Inventaire",
