@@ -1,0 +1,15 @@
+{
+  "_comment": "Starting list of banned terms for the game plaza chat (CardBrix the game). Seeded into game_chat_banned_terms by src/db/migrate_game_chat_moderation.js and used as a fallback when the database cannot be read; after that the admin edits the list from the admin panel. Matching (src/services/chatModeration/normalize.js) ignores case, accents, look-alike digits (0->o, 1->i...), repeated letters and spaces or dots between letters; words must match whole, a trailing * also matches longer words (stronz* -> stronzo, stronzata). Swear words that insult nobody (cazzo, merda...) are NOT here on purpose: the AI moderator lets them through unless aimed at someone.",
+  "terms": [
+    "porco dio", "porcodd*", "dio porco", "dio cane", "dio can", "dio boia", "dio bestia", "dio maiale", "dio merda", "dio ladro",
+    "porca madonna", "madonna puttana", "madonna troia", "madonna maiala", "porco gesu", "gesu cristo porco", "cristo porco", "porco cristo",
+    "stronz*", "coglion*", "vaffanculo", "fanculo", "affanculo", "bastard*", "puttan*", "troia", "troie", "zoccol*", "mignott*",
+    "figlio di puttana", "testa di cazzo", "pezzo di merda", "faccia di merda", "frocio", "froci", "ricchion*", "finocchio di merda",
+    "negro", "negri", "negra", "mongoloide", "handicappato di merda", "idiot*", "imbecill*", "cretin*", "deficient*", "ti ammazzo", "ti uccido",
+    "fuck you", "fuck off", "motherfuck*", "cunt", "bitch*", "asshole", "dickhead", "faggot*", "fag", "nigger*", "nigga", "retard*",
+    "kill yourself", "kys", "son of a bitch",
+    "hijo de puta", "hijoputa", "puta", "putas", "cabron*", "gilipollas", "maricon*", "me cago en dios", "pendej*", "malparido",
+    "connard*", "connasse", "salope", "encule*", "nique ta mere", "fils de pute", "pute", "tapette", "batard*",
+    "arschloch", "hurensohn", "wichser", "fotze", "schlampe", "missgeburt", "spast*", "schwuchtel", "fick dich"
+  ]
+}
