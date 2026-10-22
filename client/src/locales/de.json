@@ -1204,10 +1204,16 @@
     "listing_fee_note": "Du erhältst den vollen Preis. Käufer sehen {{buyerPrice}} €: Die CardBrix-Gebühr von {{percent}} zahlen sie, sie ist bereits enthalten.",
     "recognize": {
       "button": "Karte fotografieren",
-      "hint": "Fotografiere die ganze Karte, mit lesbarem Code unten rechts: Wir finden die Karte und ihre Version für dich.",
+      "hint": {
+        "onepiece": "Fotografiere die ganze Karte, mit lesbarem Code unten rechts: Wir finden die Karte und ihre Version für dich.",
+        "magic": "Fotografiere die ganze Karte, mit lesbarem Namen und lesbarer Zeile unten links (Setkürzel und Nummer): Wir finden die Karte und ihren Druck für dich.",
+        "pokemon": "Fotografiere die ganze Karte, mit lesbarem Namen und lesbarer Nummer unten (z. B. 063/198): Wir finden die Karte und ihre Erweiterung für dich.",
+        "yugioh": "Fotografiere die ganze Karte, mit lesbarem Code unter dem Bild rechts (z. B. LOB-DE001): Wir finden die Karte und ihre Seltenheiten für dich.",
+        "lorcana": "Fotografiere die ganze Karte, mit lesbarem Namen und lesbarer Nummer unten (z. B. 123/204): Wir finden die Karte und ihre Erweiterung für dich."
+      },
       "privacy": "Zum Erkennen wird das Foto von Google Gemini gelesen.",
       "busy": "Karte wird gelesen…",
-      "code_read": "Gelesener Code: {{code}}",
+      "read": "Auf der Karte gelesen: {{text}}",
       "retake": "Neu aufnehmen",
       "none": "Keine davon: von Hand suchen",
       "search_by_hand": "Karte von Hand suchen",
@@ -1221,9 +1227,10 @@
       },
       "result": {
         "matched": "Wähle die Version, die du hast, und vergleiche das Bild mit deiner Karte: Titel, Nummer und Seltenheit kommen aus dem Katalog.",
-        "check_name": "Der gelesene Name passt nicht zu diesem Code: Prüfe die Karte genau, bevor du wählst.",
-        "not_found": "Den gelesenen Code gibt es im Katalog nicht.",
-        "unreadable": "Ich kann den Code der Karte nicht lesen.",
+        "matched_by_code": "Wähle den Druck, den du hast: Vergleiche den Code unter dem Bild und die Seltenheit. Titel, Nummer und Seltenheit kommen aus dem Katalog.",
+        "check_name": "Der gelesene Name passt nicht zu dieser Karte: Prüfe genau, bevor du wählst.",
+        "not_found": "Die gelesene Karte ist nicht im Katalog.",
+        "unreadable": "Ich kann die Karte nicht lesen.",
         "check_photo": "Das Foto ist unscharf: Vergleiche das Bild genau mit der Karte in deiner Hand, bevor du wählst."
       },
       "better": {
@@ -3023,7 +3030,7 @@
     "s6_title": "6. Automatisierte Entscheidungen",
     "s6_body": "Das System kann die Gutschrift von Bonus-Credits verweigern oder aussetzen, wenn es Missbrauchssignale erkennt, etwa dieselbe IP, dasselbe Gerät, Zahlungsmittel oder dieselbe Adresse bei Verkäufer und Käufer. Der automatische Assistent des Hilfecenters beantwortet allgemeine Fragen, trifft aber keine Entscheidungen zu Ihrem Konto.\nSie können das Eingreifen einer Person verlangen, Ihren Standpunkt darlegen und die Entscheidung anfechten, indem Sie an [EMAIL PRIVACY] schreiben.",
     "s7_title": "7. An wen wir Daten weitergeben",
-    "s7_body": "Wir geben Daten an Dienstleister weiter, die sie in unserem Auftrag (Auftragsverarbeiter) oder als eigenständig Verantwortliche verarbeiten:\n• Supabase: Datenbank und Infrastruktur.\n• Render: Hosting von Website und Server.\n• Stripe und PayPal: Zahlungen; Stripe auch für die Verkäuferprüfung.\n• Cloudinary: Speicherung und Optimierung von Bildern.\n• SendGrid: E-Mail-Versand.\n• Cloudflare Turnstile: Bot-Schutz.\n• Google (Gemini): automatischer Assistent des Hilfecenters, der Ihre geschriebene Frage erhält. Geben Sie keine personenbezogenen Daten in die Nachricht ein. Außerdem die Kartenerkennung auf den Verkaufsseiten, die das Foto der Karte, das Sie aufnehmen, nur zum Lesen ihres Codes erhält: Fotografieren Sie nur die Karte.\n• Google und Apple: nur wenn Sie sich mit deren Konto anmelden.\n• Zusteller und Versanddienste [DA VERIFICARE: Namen, z. B. Sendcloud].\n• Berater, Steuerberater und zuständige Behörden, soweit gesetzlich vorgesehen.\nAndere Nutzer sehen nur die nötigen Daten: der Käufer den Benutzernamen des Verkäufers, der Verkäufer die Lieferadresse der Bestellung, Spieler auf dem Platz Ihren Benutzernamen und Ihre Figur. Wir verkaufen Ihre Daten nicht.",
+    "s7_body": "Wir geben Daten an Dienstleister weiter, die sie in unserem Auftrag (Auftragsverarbeiter) oder als eigenständig Verantwortliche verarbeiten:\n• Supabase: Datenbank und Infrastruktur.\n• Render: Hosting von Website und Server.\n• Stripe und PayPal: Zahlungen; Stripe auch für die Verkäuferprüfung.\n• Cloudinary: Speicherung und Optimierung von Bildern.\n• SendGrid: E-Mail-Versand.\n• Cloudflare Turnstile: Bot-Schutz.\n• Google (Gemini): automatischer Assistent des Hilfecenters, der Ihre geschriebene Frage erhält. Geben Sie keine personenbezogenen Daten in die Nachricht ein. Außerdem die Kartenerkennung auf den Verkaufsseiten, die das Foto der Karte, das Sie aufnehmen, nur zum Lesen ihres Namens und Codes erhält: Fotografieren Sie nur die Karte.\n• Google und Apple: nur wenn Sie sich mit deren Konto anmelden.\n• Zusteller und Versanddienste [DA VERIFICARE: Namen, z. B. Sendcloud].\n• Berater, Steuerberater und zuständige Behörden, soweit gesetzlich vorgesehen.\nAndere Nutzer sehen nur die nötigen Daten: der Käufer den Benutzernamen des Verkäufers, der Verkäufer die Lieferadresse der Bestellung, Spieler auf dem Platz Ihren Benutzernamen und Ihre Figur. Wir verkaufen Ihre Daten nicht.",
     "s8_title": "8. Übermittlungen außerhalb des Europäischen Wirtschaftsraums",
     "s8_body": "Einige Anbieter können Daten in den USA oder anderen Nicht-EU-Ländern verarbeiten. Die Übermittlung stützt sich dann auf einen Angemessenheitsbeschluss (z. B. das EU-US Data Privacy Framework für zertifizierte Anbieter) oder auf die Standardvertragsklauseln der Europäischen Kommission. Eine Kopie der Garantien erhalten Sie auf Anfrage an [EMAIL PRIVACY]. [DA VERIFICARE: Bestätigung je Anbieter]",
     "s9_title": "9. Wie lange wir Daten speichern",

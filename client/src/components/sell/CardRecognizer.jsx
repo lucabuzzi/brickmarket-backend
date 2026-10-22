@@ -3,8 +3,9 @@ import { AlertTriangle, Camera, Check, Loader2, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch, apiPostForm } from '../../api';
 import { analyzePhoto } from './analyzePhoto';
+import { showThumbnails } from '../../lib/sell/catalog';
 import {
-  MAX_RECOGNIZE_BYTES, canRecognize, needsBetterPhoto, outcomeOf, printKind, photoProblem, recognizedPatch,
+  MAX_RECOGNIZE_BYTES, canRecognize, needsBetterPhoto, outcomeOf, photoProblem, printLabel, readingLabel, recognizedPatch,
 } from '../../lib/sell/recognize';
 
 let statusRequest = null; // one status call per page load, shared by every picker
@@ -60,6 +61,7 @@ export default function CardRecognizer({ game, form, patch, onChosen, onPhoto, c
       const problem = photoProblem(measured);
       if (problem === 'too_small' || (problem && !anyway)) throw Object.assign(new Error(problem), { data: { code: problem } });
       const fd = new FormData();
+      fd.append('game', game);
       fd.append('image', photo);
       setAnswer(await apiPostForm('/cards/recognize', fd));
     } catch (err) {
@@ -97,6 +99,8 @@ export default function CardRecognizer({ game, form, patch, onChosen, onPhoto, c
   const matched = ['matched', 'check_name', 'check_photo'].includes(outcome?.key);
   const askBetter = outcome && !error && needsBetterPhoto(answer, quality);
   const issue = quality?.blurry ? 'blurry' : quality?.small ? 'small' : null;
+  const read = readingLabel(answer?.reading);
+  const thumbnails = showThumbnails(game); // not for Yu-Gi-Oh!: YGOPRODeck asks not to link its images
 
   // once a card is chosen (here or by hand) only the after-pick notices stay
   if (form.cardExternalId && !picked) return null;
@@ -114,7 +118,7 @@ export default function CardRecognizer({ game, form, patch, onChosen, onPhoto, c
           >
             <Camera size={18} className={accentText} aria-hidden="true" /> {t('sell.recognize.button')}
           </button>
-          <p className="text-[12px] text-white/50">{t('sell.recognize.hint')}</p>
+          <p className="text-[12px] text-white/50">{t(`sell.recognize.hint.${game}`)}</p>
           {error ? <p role="alert" className="text-[13px] text-amber-300">{t(`sell.recognize.error.${outcome.key}`)}</p> : null}
           {outcome?.key === 'too_small' || outcome?.key === 'too_blurry' ? <p className="text-[12px] text-white/60">{t('sell.recognize.better.tips')}</p> : null}
           {outcome?.key === 'too_blurry' && file ? (
@@ -135,15 +139,15 @@ export default function CardRecognizer({ game, form, patch, onChosen, onPhoto, c
       {answer && !picked ? (
         <div className="space-y-3" aria-live="polite">
           <div>
-            {answer.reading?.code ? <p className="font-mono text-xs text-white/45">{t('sell.recognize.code_read', { code: answer.reading.code })}</p> : null}
-            <p className={`text-sm ${outcome.key !== 'matched' ? 'text-amber-300' : 'text-white/80'}`}>{t(`sell.recognize.result.${outcome.key}`)}</p>
+            {read ? <p className="font-mono text-xs text-white/45">{t('sell.recognize.read', { text: read })}</p> : null}
+            <p className={`text-sm ${outcome.key !== 'matched' ? 'text-amber-300' : 'text-white/80'}`}>{t(`sell.recognize.result.${outcome.key === 'matched' && !thumbnails ? 'matched_by_code' : outcome.key}`)}</p>
           </div>
 
           {matched ? (
             <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {answer.prints.map((p) => {
-                const k = printKind(p.external_id);
-                const label = t(`sell.recognize.kind.${k.kind}`, { n: k.n });
+                const l = printLabel(p, game);
+                const label = l.kind ? t(`sell.recognize.kind.${l.kind}`, { n: l.n }) : l.title;
                 return (
                   <li key={p.external_id}>
                     <button
@@ -151,11 +155,11 @@ export default function CardRecognizer({ game, form, patch, onChosen, onPhoto, c
                       onClick={() => choose(p)}
                       className="flex w-full flex-col items-stretch gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-2 text-left transition hover:border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                     >
-                      {p.img_url
+                      {thumbnails ? (p.img_url
                         ? <img src={p.img_url} alt={`${p.name} — ${label}`} loading="lazy" className="aspect-[5/7] w-full rounded-md object-cover" />
-                        : <span className="aspect-[5/7] w-full rounded-md bg-white/5" aria-hidden="true" />}
-                      <span className="block text-[13px] font-bold leading-tight text-white">{label}</span>
-                      <span className="block truncate text-[11px] text-white/45">{[p.rarity, p.set_name].filter(Boolean).join(' · ')}</span>
+                        : <span className="aspect-[5/7] w-full rounded-md bg-white/5" aria-hidden="true" />) : null}
+                      <span className="line-clamp-2 text-[13px] font-bold leading-tight text-white">{label}</span>
+                      <span className="block break-words text-[11px] leading-snug text-white/45">{l.sub}</span>
                     </button>
                   </li>
                 );

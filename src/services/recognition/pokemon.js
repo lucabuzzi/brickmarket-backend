@@ -49,6 +49,22 @@ const abbreviationOf = (raw) => {
   return /^[A-Z][A-Z0-9]{1,4}$/.test(s) ? s : null;
 };
 
+/**
+ * One print as the catalog row (read in Italian, in English when TCGdex has no Italian card). TCGdex has no Italian
+ * pictures of the oldest sets (Base Set...): those take the English picture, the seller compares it with the card.
+ * `cardCountOfficial` lets the sell page write the number as printed ("4/102").
+ */
+async function printOf(id, official, deps) {
+  const path = `/cards/${encodeURIComponent(id)}`;
+  const it = await get(`/it${path}`, deps);
+  const en = !it?.image ? await get(`/en${path}`, deps) : null;
+  const card = it?.id ? { ...it, image: it.image || en?.image } : en;
+  if (!card?.id) return null;
+  const row = mapCardDetail(card);
+  const count = card.set?.cardCount?.official ?? official.get(row.set_code) ?? null;
+  return { ...row, details: { ...row.details, cardCountOfficial: count } };
+}
+
 module.exports = {
   game: 'pokemon',
   title: 'Pokémon Trading Card Game',
@@ -107,8 +123,7 @@ module.exports = {
       if (bySize.length) candidates = bySize;
     }
     const ids = [...new Set(candidates.map((c) => c.id))].slice(0, MAX_PRINTS);
-    const cards = await Promise.all(ids.map(async (id) => (await get(`/it/cards/${encodeURIComponent(id)}`, deps)) || get(`/en/cards/${encodeURIComponent(id)}`, deps)));
-    const prints = cards.filter((c) => c && c.id).map(mapCardDetail);
+    const prints = (await Promise.all(ids.map((id) => printOf(id, official, deps)))).filter(Boolean);
     // the prints are the Italian catalog rows: an Italian name found by the set alone is compared with them
     if (!names && reading.language === 'it') names = prints.map((p) => p.name);
     return { prints, names };

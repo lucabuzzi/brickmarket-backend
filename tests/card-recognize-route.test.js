@@ -33,8 +33,9 @@ async function startApp(options) {
   return { server, base: `http://127.0.0.1:${server.address().port}/api/cards` };
 }
 
-const photo = (bytes = 2048, type = 'image/jpeg', name = 'card.jpg') => {
+const photo = (bytes = 2048, type = 'image/jpeg', name = 'card.jpg', game = null) => {
   const form = new FormData();
+  if (game) form.append('game', game);
   form.append('image', new Blob([Buffer.alloc(bytes, 7)], { type }), name);
   return form;
 };
@@ -47,12 +48,13 @@ describe('POST /api/cards/recognize', () => {
   const recognize = jest.fn();
   const cachePrints = jest.fn(async () => {});
   let enabled = true;
+  let games = ['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana'];
 
   beforeAll(async () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
-    app = await startApp({ recognize, cachePrints, isEnabled: () => enabled, limits: { hourly: 100, daily: 100, siteDaily: 100 } });
+    app = await startApp({ recognize, cachePrints, isEnabled: () => enabled, enabledGames: () => games, limits: { hourly: 100, daily: 100, siteDaily: 100 } });
   });
   afterAll(async () => {
     await new Promise((resolve) => app.server.close(resolve));
@@ -60,13 +62,14 @@ describe('POST /api/cards/recognize', () => {
   });
   beforeEach(() => {
     enabled = true;
+    games = ['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana'];
     recognize.mockReset();
     cachePrints.mockClear();
     console.log.mockClear();
   });
 
   test('status says whether the camera button can be shown', async () => {
-    expect(await (await fetch(`${app.base}/recognize/status`)).json()).toEqual({ enabled: true, games: ['onepiece'] });
+    expect(await (await fetch(`${app.base}/recognize/status`)).json()).toEqual({ enabled: true, games });
     enabled = false;
     expect((await (await fetch(`${app.base}/recognize/status`)).json()).enabled).toBe(false);
   });
@@ -79,13 +82,33 @@ describe('POST /api/cards/recognize', () => {
     expect(body).toEqual({
       game: 'onepiece',
       status: 'matched',
-      reading: { code: 'OP01-077', name: 'Perona', rarity: 'UC', language: 'en' },
+      reading: { code: 'OP01-077', name: 'Perona', number: null, setCode: null, rarity: 'UC', language: 'en' },
       nameMatches: true,
       prints: MATCHED.prints,
     });
-    expect(Buffer.isBuffer(recognize.mock.calls[0][0])).toBe(true);
-    expect(recognize.mock.calls[0][0].length).toBe(2048);
-    expect(cachePrints).toHaveBeenCalledWith(MATCHED.prints);
+    expect(recognize.mock.calls[0][0]).toBe('onepiece'); // no game sent: the One Piece client of before
+    expect(Buffer.isBuffer(recognize.mock.calls[0][1])).toBe(true);
+    expect(recognize.mock.calls[0][1].length).toBe(2048);
+    expect(cachePrints).toHaveBeenCalledWith('onepiece', MATCHED.prints);
+  });
+
+  test('the game sent is the one read and cached', async () => {
+    const prints = [{ external_id: 'sv01-063', name: 'Pikachu' }];
+    recognize.mockResolvedValue({ ...MATCHED, reading: { isCard: true, code: null, name: 'Pikachu', number: '063/198', setCode: 'SVI', language: 'it' }, prints });
+    const body = await (await post(app.base, { body: photo(2048, 'image/jpeg', 'card.jpg', 'pokemon') })).json();
+    expect(body).toMatchObject({ game: 'pokemon', reading: { number: '063/198', setCode: 'SVI' } });
+    expect(recognize.mock.calls[0][0]).toBe('pokemon');
+    expect(cachePrints).toHaveBeenCalledWith('pokemon', prints);
+  });
+
+  test('a game that is not recognised (or switched off) is refused before the reader', async () => {
+    games = ['onepiece', 'magic'];
+    for (const game of ['dragonball', 'pokemon']) {
+      const res = await post(app.base, { body: photo(2048, 'image/jpeg', 'card.jpg', game) });
+      expect(res.status).toBe(400);
+      expect((await res.json()).code).toBe('unsupported_game');
+    }
+    expect(recognize).not.toHaveBeenCalled();
   });
 
   test('the log line says who and what was read, never the photo', async () => {
@@ -93,7 +116,7 @@ describe('POST /api/cards/recognize', () => {
     await post(app.base);
     const lines = console.log.mock.calls.map((c) => c.join(' '));
     expect(lines).toHaveLength(1);
-    expect(lines[0]).toMatch(/user=seller-1 status=matched code=OP01-077 prints=2/);
+    expect(lines[0]).toMatch(/user=seller-1 game=onepiece status=matched read=OP01-077 prints=2/);
     expect(lines[0].length).toBeLessThan(200);
   });
 
@@ -156,7 +179,7 @@ describe('allowances', () => {
     jest.restoreAllMocks();
   });
   const start = async (limits) => {
-    const a = await startApp({ recognize, cachePrints: async () => {}, isEnabled: () => true, limits });
+    const a = await startApp({ recognize, cachePrints: async () => {}, isEnabled: () => true, enabledGames: () => ['onepiece'], limits });
     apps.push(a);
     return a.base;
   };
@@ -203,6 +226,19 @@ describe('isEnabled', () => {
     expect(isEnabled()).toBe(true);
     process.env.GEMINI_API_KEY = '';
     expect(isEnabled()).toBe(false);
+  });
+});
+
+describe('enabledGames', () => {
+  const { enabledGames } = require('../src/services/cardRecognition');
+  const saved = process.env.CARD_RECOGNITION_GAMES;
+  afterEach(() => { process.env.CARD_RECOGNITION_GAMES = saved ?? ''; });
+
+  test('every game with an adapter, unless CARD_RECOGNITION_GAMES lists some', () => {
+    process.env.CARD_RECOGNITION_GAMES = '';
+    expect(enabledGames()).toEqual(['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana']);
+    process.env.CARD_RECOGNITION_GAMES = ' Pokemon, onepiece ,dragonball';
+    expect(enabledGames()).toEqual(['onepiece', 'pokemon']);
   });
 });
 

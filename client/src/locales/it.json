@@ -1204,10 +1204,16 @@
     "listing_fee_note": "Riceverai l'intero prezzo. Il compratore vedrà € {{buyerPrice}}: la commissione CardBrix del {{percent}} è a suo carico ed è già inclusa.",
     "recognize": {
       "button": "Fotografa la carta",
-      "hint": "Inquadra la carta intera, con il codice in basso a destra leggibile: troviamo noi la carta e la sua versione.",
+      "hint": {
+        "onepiece": "Inquadra la carta intera, con il codice in basso a destra leggibile: troviamo noi la carta e la sua versione.",
+        "magic": "Inquadra la carta intera, con il nome e la riga in basso a sinistra (sigla dell'espansione e numero) leggibili: troviamo noi la carta e la sua stampa.",
+        "pokemon": "Inquadra la carta intera, con il nome e il numero in basso (es. 063/198) leggibili: troviamo noi la carta e la sua espansione.",
+        "yugioh": "Inquadra la carta intera, con il codice sotto l'illustrazione a destra (es. LOB-IT001) leggibile: troviamo noi la carta e le sue rarità.",
+        "lorcana": "Inquadra la carta intera, con il nome e il numero in basso (es. 123/204) leggibili: troviamo noi la carta e la sua espansione."
+      },
       "privacy": "Per riconoscerla, la foto viene letta da Google Gemini.",
       "busy": "Sto leggendo la carta…",
-      "code_read": "Codice letto: {{code}}",
+      "read": "Letto sulla carta: {{text}}",
       "retake": "Scatta di nuovo",
       "none": "Nessuna di queste: cerco a mano",
       "search_by_hand": "Cerca la carta a mano",
@@ -1221,9 +1227,10 @@
       },
       "result": {
         "matched": "Scegli la versione che hai in mano, confrontando l'immagine con la tua carta: titolo, numero e rarità li prendiamo dal catalogo.",
-        "check_name": "Il nome letto non corrisponde a questo codice: controlla bene la carta prima di scegliere.",
-        "not_found": "Il codice letto non esiste nel catalogo.",
-        "unreadable": "Non riesco a leggere il codice della carta.",
+        "matched_by_code": "Scegli la stampa che hai in mano: confronta il codice sotto l'illustrazione e la rarità. Titolo, numero e rarità li prendiamo dal catalogo.",
+        "check_name": "Il nome letto non corrisponde a questa carta: controlla bene prima di scegliere.",
+        "not_found": "La carta letta non è nel catalogo.",
+        "unreadable": "Non riesco a leggere la carta.",
         "check_photo": "La foto è sfocata: confronta bene l'immagine con la carta che hai in mano prima di scegliere."
       },
       "better": {
@@ -2560,7 +2567,7 @@
     "s6_title": "6. Decisioni automatizzate",
     "s6_body": "Il sistema può negare o sospendere l’accredito di crediti bonus quando rileva segnali di abuso, ad esempio lo stesso IP, dispositivo, metodo di pagamento o indirizzo tra venditore e compratore. L’assistente automatico del Centro assistenza risponde alle domande generali, ma non prende decisioni sul tuo account.\nPuoi chiedere l’intervento di una persona, esprimere la tua opinione e contestare la decisione scrivendo a [EMAIL PRIVACY].",
     "s7_title": "7. A chi comunichiamo i dati",
-    "s7_body": "Comunichiamo i dati a fornitori che li trattano per nostro conto (responsabili del trattamento) o come titolari autonomi:\n• Supabase: database e infrastruttura.\n• Render: hosting del sito e del server.\n• Stripe e PayPal: pagamenti; Stripe anche per la verifica dei venditori.\n• Cloudinary: archiviazione e ottimizzazione delle immagini.\n• SendGrid: invio delle email.\n• Cloudflare Turnstile: protezione anti-bot.\n• Google (Gemini): assistente automatico del Centro assistenza, che riceve la domanda che scrivi. Non inserire dati personali nel messaggio. Inoltre il riconoscimento delle carte nelle pagine di vendita, che riceve la foto della carta che scatti solo per leggerne il codice: fotografa soltanto la carta.\n• Google e Apple: solo se scegli l’accesso con il loro account.\n• Corrieri e servizi di spedizione [DA VERIFICARE: nomi, ad esempio Sendcloud].\n• Consulenti, commercialisti e autorità competenti, quando previsto dalla legge.\nGli altri utenti vedono solo i dati necessari: l’acquirente il nome utente del venditore, il venditore l’indirizzo di spedizione dell’ordine, i giocatori della piazza il tuo nome utente e personaggio. Non vendiamo i tuoi dati.",
+    "s7_body": "Comunichiamo i dati a fornitori che li trattano per nostro conto (responsabili del trattamento) o come titolari autonomi:\n• Supabase: database e infrastruttura.\n• Render: hosting del sito e del server.\n• Stripe e PayPal: pagamenti; Stripe anche per la verifica dei venditori.\n• Cloudinary: archiviazione e ottimizzazione delle immagini.\n• SendGrid: invio delle email.\n• Cloudflare Turnstile: protezione anti-bot.\n• Google (Gemini): assistente automatico del Centro assistenza, che riceve la domanda che scrivi. Non inserire dati personali nel messaggio. Inoltre il riconoscimento delle carte nelle pagine di vendita, che riceve la foto della carta che scatti solo per leggerne il nome e il codice: fotografa soltanto la carta.\n• Google e Apple: solo se scegli l’accesso con il loro account.\n• Corrieri e servizi di spedizione [DA VERIFICARE: nomi, ad esempio Sendcloud].\n• Consulenti, commercialisti e autorità competenti, quando previsto dalla legge.\nGli altri utenti vedono solo i dati necessari: l’acquirente il nome utente del venditore, il venditore l’indirizzo di spedizione dell’ordine, i giocatori della piazza il tuo nome utente e personaggio. Non vendiamo i tuoi dati.",
     "s8_title": "8. Trasferimenti fuori dallo Spazio economico europeo",
     "s8_body": "Alcuni fornitori possono trattare dati negli Stati Uniti o in altri paesi extra-UE. In tal caso il trasferimento avviene sulla base di una decisione di adeguatezza (ad esempio l’EU-US Data Privacy Framework per i fornitori certificati) o delle Clausole contrattuali standard della Commissione europea. Puoi chiederci copia delle garanzie scrivendo a [EMAIL PRIVACY]. [DA VERIFICARE: conferma per ciascun fornitore]",
     "s9_title": "9. Per quanto tempo conserviamo i dati",

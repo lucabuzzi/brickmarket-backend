@@ -14,7 +14,7 @@ const ACCENT = {
 
 // Optional shortcut of the sell wizard for the games that have an expansion catalog (`game`): pick the expansion, then the card, and the form is filled
 // in (title, number, rarity, language). The picture shown is a catalog reference, never saved as the listing photo.
-// For One Piece the card can also be photographed (CardRecognizer): that photo is handed to the page (`onPhoto`) as
+// The card can also be photographed (CardRecognizer): that photo is handed to the page (`onPhoto`) as
 // the listing's first photo.
 export default function CardCatalogPicker({ form, patch, game = 'pokemon', accent = 'lime', ns = 'sell', idPrefix = 'sell', onPhoto }) {
   const { t, i18n } = useTranslation();

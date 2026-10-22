@@ -164,6 +164,16 @@ describe('Pokémon', () => {
     expect(out.prints.map((p) => p.external_id).sort()).toEqual(['base1-4', 'hgss4-4']);
   });
 
+  test('an old set with no Italian picture takes the English one; the set size goes with the print', async () => {
+    const { out } = await recognize('pokemon', { name: 'Charizard', number: '4/102' }, [
+      ['/en/sets', SETS],
+      ['/en/cards?name=Charizard', [{ id: 'base1-4', localId: '4', name: 'Charizard' }]],
+      ['/it/cards/base1-4', { ...detail('base1-4', 'Charizard'), image: undefined }],
+      ['/en/cards/base1-4', detail('base1-4', 'Charizard')],
+    ]);
+    expect(out.prints[0]).toMatchObject({ img_url: 'https://img/base1-4/high.webp', details: { cardCountOfficial: 102 } });
+  });
+
   test('a name without a number is not searched (hundreds of cards): not found, search by hand', async () => {
     const { out, fetchImpl } = await recognize('pokemon', { name: 'Pikachu' }, []);
     expect(out.status).toBe('not_found');

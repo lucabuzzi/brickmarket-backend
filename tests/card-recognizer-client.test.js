@@ -21,6 +21,38 @@ describe('when the camera button is offered', () => {
     expect(rec.canRecognize('onepiece', null)).toBe(false);
     expect(rec.canRecognize('onepiece', { enabled: true })).toBe(false);
   });
+
+  test('every game with a catalog except Dragon Ball, as far as the server switched it on', () => {
+    const all = { enabled: true, games: ['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana'] };
+    for (const game of ['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana']) expect(rec.canRecognize(game, all)).toBe(true);
+    expect(rec.canRecognize('dragonball', { enabled: true, games: ['dragonball'] })).toBe(false);
+    expect(rec.canRecognize('magic', { enabled: true, games: ['onepiece', 'pokemon'] })).toBe(false);
+  });
+});
+
+describe('what was read, as shown', () => {
+  test.each([
+    [{ code: 'OP01-077' }, 'OP01-077'],
+    [{ code: 'LOB-IT001', number: null }, 'LOB-IT001'],
+    [{ code: null, setCode: 'MKM', number: '0123' }, 'MKM · 0123'],
+    [{ code: null, setCode: '5', number: '123/204' }, '123/204 · 5'],
+    [{ code: null, setCode: null, number: '063/198' }, '063/198'],
+    [{ code: null, setCode: null, number: null, name: 'Pikachu' }, ''],
+    [null, ''],
+  ])('%o -> %s', (reading, label) => expect(rec.readingLabel(reading)).toBe(label));
+});
+
+describe('how the prints offered are told apart', () => {
+  test('One Piece: by kind (the prints of a code share name and expansion)', () => {
+    expect(rec.printLabel({ ...PRINT, external_id: 'OP17-061_p1' }, 'onepiece')).toEqual({ kind: 'alt', n: '1', sub: "Rare · The World's Strongest Warriors" });
+  });
+  test('the other games: by expansion, with rarity and number', () => {
+    const magic = { external_id: 'u1', name: 'Lightning Bolt', set_code: 'lea', set_name: 'Limited Edition Alpha', rarity: 'Common', details: { localId: '161' } };
+    expect(rec.printLabel(magic, 'magic')).toEqual({ title: 'Limited Edition Alpha', sub: 'Common · #161' });
+    const ygo = { external_id: 'x', name: 'Blue-Eyes White Dragon', set_code: 'legend-of-blue-eyes-white-dragon', set_name: 'Legend of Blue Eyes White Dragon', rarity: 'Ultra Rare', details: { localId: 'LOB-EN001' } };
+    expect(rec.printLabel(ygo, 'yugioh')).toEqual({ title: 'Legend of Blue Eyes White Dragon', sub: 'Ultra Rare · LOB-EN001' });
+    expect(rec.printLabel({ external_id: 'y', name: 'Z', set_code: 'z1', details: {} }, 'lorcana')).toEqual({ title: 'z1', sub: '' });
+  });
 });
 
 describe('print kinds', () => {
@@ -57,6 +89,20 @@ describe('the form filled by a recognised print', () => {
 
   test('a rarity typed by hand is kept', () => {
     expect(rec.recognizedPatch(PRINT, READING, F({ cardRarity: 'Secret Rare' })).cardRarity).toBeUndefined();
+  });
+
+  test('a Pokémon number is written with its set size, as printed; the catalog is Italian', () => {
+    const charizard = { external_id: 'base1-4', name: 'Charizard', set_code: 'base1', set_name: 'Set Base', rarity: 'Rara Holo', img_url: 'x', details: { localId: '4', cardCountOfficial: 102 } };
+    const patch = rec.recognizedPatch(charizard, { name: 'Charizard', number: '4/102', language: 'en' }, F({ game: 'pokemon' }), 'pokemon');
+    expect(patch).toMatchObject({ cardExternalId: 'base1-4', cardNumber: '4/102', title: 'Charizard 4/102', cardSetId: 'base1', cardSetName: 'Set Base', cardLanguage: 'en' });
+    const noSize = rec.recognizedPatch({ ...charizard, details: { localId: '4' } }, null, F({ game: 'pokemon' }), 'pokemon');
+    expect(noSize).toMatchObject({ cardNumber: '4', title: 'Charizard 4', cardLanguage: 'it' });
+  });
+
+  test('Magic: the English catalog print, the language printed on the card', () => {
+    const bolt = { external_id: 'u1', name: 'Lightning Bolt', set_code: 'm10', set_name: 'Magic 2010', rarity: 'Common', details: { localId: '146' } };
+    expect(rec.recognizedPatch(bolt, { name: 'Fulmine', language: 'it' }, F({ game: 'magic' }), 'magic'))
+      .toMatchObject({ title: 'Lightning Bolt #146', cardNumber: '146', cardLanguage: 'it' });
   });
 });
 
@@ -120,10 +166,12 @@ describe('strings', () => {
   });
 
   test('every message key the helpers can return exists', () => {
-    for (const k of ['matched', 'check_name', 'check_photo', 'not_found', 'unreadable']) expect(it.result[k]).toBeTruthy();
+    for (const k of ['matched', 'matched_by_code', 'check_name', 'check_photo', 'not_found', 'unreadable']) expect(it.result[k]).toBeTruthy();
     expect(it.try_anyway).toBeTruthy();
     for (const k of ['login', 'limit', 'too_large', 'too_small', 'too_blurry', 'bad_image', 'generic']) expect(it.error[k]).toBeTruthy();
     for (const k of ['base', 'alt', 'reprint']) expect(it.kind[k]).toBeTruthy();
+    for (const game of rec.RECOGNIZE_GAMES) expect(it.hint[game]).toBeTruthy();
+    expect(it.read).toContain('{{text}}');
   });
 
   test.each(LANGS)('%s privacy policy names the card recognition among the Gemini uses', (lang) => {

@@ -111,17 +111,8 @@ async function searchCardsExternal(q, limit = 10) {
   return cardCatalog.bulkUpsertCards('onepiece', mapped);
 }
 
-/**
- * Stores the prints a card recognition offered (master_cards-shaped, see cardRecognition.js), so the catalog page of
- * the print the seller picks is served from the cache. Never fails the recognition: a DB error is only logged.
- */
-async function cachePrints(prints) {
-  try {
-    await cardCatalog.bulkUpsertCards(GAME, prints);
-  } catch (err) {
-    console.error('[OPTCG] Caching recognised prints failed:', err.message);
-  }
-}
+/** Stores the One Piece prints a card recognition offered (see cardCatalog.cachePrints). */
+const cachePrints = (prints) => cardCatalog.cachePrints(GAME, prints);
 
 module.exports = {
   lookupCard, searchCardsExternal, cachePrints, listSets, getSet, ensureSets, refreshSets, sets,
