@@ -98,7 +98,13 @@ function createChatModerator({ repo, moderate = geminiModerator(), now = () => D
     return { ok: true, text: message };
   }
 
-  return { check, cleanMessage };
+  /** What the game needs to show the text box: { freeText, maxLength }. */
+  async function config() {
+    const s = await repo.getSettings();
+    return { freeText: s.free_text_enabled, maxLength: s.max_length };
+  }
+
+  return { check, config, cleanMessage };
 }
 
 module.exports = { createChatModerator, cleanMessage };

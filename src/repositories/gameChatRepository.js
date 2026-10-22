@@ -15,6 +15,7 @@ const CACHE_MS = 30 * 1000;
 function createGameChatRepository({ db = { query }, now = () => Date.now() } = {}) {
   let settingsCache = null; // { at, value }
   let termsCache = null; // { at, value }
+  let settingsErrorAt = -Infinity;
 
   async function getSettings() {
     if (settingsCache && now() - settingsCache.at < CACHE_MS) return settingsCache.value;
@@ -22,7 +23,11 @@ function createGameChatRepository({ db = { query }, now = () => Date.now() } = {
       const r = await db.query('SELECT key, value FROM public.game_chat_settings');
       settingsCache = { at: now(), value: settings.merge(r.rows) };
     } catch (err) {
-      console.error('[game-chat] Reading the settings failed, typed chat stays off:', err.message);
+      // re-read every 30 s: a missing table (migration not run yet) is reported every 10 minutes, not every time
+      if (now() - settingsErrorAt > 10 * 60 * 1000) {
+        settingsErrorAt = now();
+        console.error('[game-chat] Reading the settings failed, typed chat stays off:', err.message);
+      }
       return settings.merge([]);
     }
     return settingsCache.value;

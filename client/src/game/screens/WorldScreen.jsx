@@ -6,6 +6,7 @@ import DragonStatue from '../components/DragonStatue';
 import VirtualJoystick from '../components/VirtualJoystick';
 import ChatPanel from '../components/ChatPanel';
 import { chatText } from '../chatText';
+import { bubbleText } from '../../lib/game/chatInput';
 import ContextPanel from '../panel/ContextPanel';
 import usePlaza from '../usePlaza';
 import { buildAvatarSheet } from '../skinLoader';
@@ -163,7 +164,7 @@ function ToolButton({ label, pressed, onClick, children }) {
 }
 
 /**
- * The plaza: the map with the guided tutorial on top, the other players, the fixed-phrase chat, an on-screen
+ * The plaza: the map with the guided tutorial on top, the other players, the chat (fixed phrases, and typed messages when the admin switches them on), an on-screen
  * D-pad and the inventory of whoever you tap. Entering a place leaves the game for the matching site page; the
  * castle gate (Annunci) leads to the market map instead, and the market gate back to the plaza.
  */
@@ -202,7 +203,7 @@ export default function WorldScreen({ avatar, onEdit }) {
 
   // every chat message (ours too) also shows as a bubble over the speaker's head
   const onSaid = useCallback((m) => {
-    gameRef.current?.showBubble(m.mine ? 'me' : m.id, chatText(t, m.k));
+    gameRef.current?.showBubble(m.mine ? 'me' : m.id, m.x != null ? bubbleText(m.x) : chatText(t, m.k));
   }, [t]);
   const plaza = usePlaza({ gameRef, ready: status === 'ready', onSaid, start });
   // the scene is created once; it reaches the (stable) plaza callbacks through refs
@@ -445,7 +446,7 @@ export default function WorldScreen({ avatar, onEdit }) {
 
   const sideChat = wide && !panelColumn && shortLandscape;
   const chat = (
-    <ChatPanel messages={plaza.messages} onSay={plaza.say} cooldown={plaza.cooldown} canSpeak={plaza.visible && plaza.status === 'online'} className={sideChat ? 'cbg-chat--side' : wide ? 'cbg-chat--wide' : 'cbg-chat--narrow'} />
+    <ChatPanel messages={plaza.messages} onSay={plaza.say} onSend={plaza.sendText} chat={plaza.chat} sending={plaza.sending} cooldown={plaza.cooldown} canSpeak={plaza.visible && plaza.status === 'online'} className={sideChat ? 'cbg-chat--side' : wide ? 'cbg-chat--wide' : 'cbg-chat--narrow'} />
   );
 
   // the side panel as a drawer (from the right in landscape, from the bottom in portrait) when something is open

@@ -54,6 +54,10 @@ const plaza = require('./src/services/gamePlazaSocket').createPlaza({
     );
     return rows[0] || null;
   },
+  // typed messages in the plaza, checked before anyone sees them; off until an admin switches them on
+  moderator: require('./src/services/chatModeration').createChatModerator({
+    repo: require('./src/repositories/gameChatRepository').createGameChatRepository(),
+  }),
 });
 
 server.on('upgrade', (request, socket, head) => {

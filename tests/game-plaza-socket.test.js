@@ -17,7 +17,7 @@ let plaza;
 let url;
 const open = [];
 
-beforeEach(async () => {
+async function start(extra = {}) {
   plaza = createPlaza({
     verifyToken: (token) => { if (!USERS[token]) throw new Error('bad'); return { userId: token }; },
     loadUser: async (token) => USERS[token] || null,
@@ -25,19 +25,27 @@ beforeEach(async () => {
     tickMs: 20,
     helloTimeoutMs: 300,
     heartbeatMs: 60000,
+    ...extra,
   });
   server = http.createServer();
   server.on('upgrade', (req, socket, head) => plaza.handleUpgrade(req, socket, head));
   await new Promise((r) => server.listen(0, r));
   url = `ws://127.0.0.1:${server.address().port}/ws/game`;
-});
-
-afterEach(async () => {
+}
+async function stop() {
   for (const ws of open) try { ws.terminate(); } catch { /* already closed */ }
   open.length = 0;
   plaza.close();
   await new Promise((r) => server.close(r));
-});
+}
+/** The same plaza, with a typed-chat moderator (a fake: see tests/game-chat-moderation.test.js for the real one). */
+async function restart(extra) {
+  await stop();
+  await start(extra);
+}
+
+beforeEach(() => start());
+afterEach(() => stop());
 
 /** A client that records every message; resolves once connected. */
 async function client() {
@@ -220,5 +228,88 @@ describe('maps (plaza and the market inside the castle)', () => {
     await waitFor(b, (m) => m.t === 'said');
     await new Promise((r) => setTimeout(r, 80));
     expect(a.inbox.filter((m) => ['join', 'moves', 'said'].includes(m.t))).toEqual([]);
+  });
+});
+
+describe('typed messages', () => {
+  const fakeModerator = (over = {}) => {
+    const m = {
+      cfg: { freeText: true, maxLength: 140 },
+      config: jest.fn(async () => m.cfg),
+      check: jest.fn(async (user, text) => (/stronzo/.test(text)
+        ? { ok: false, reason: 'blocked', category: 'banned_word', mutedUntil: new Date(Date.UTC(2026, 9, 22, 12, 15)) }
+        : { ok: true, text: text.trim() })),
+      ...over,
+    };
+    return m;
+  };
+  const chatReady = async (moderator) => {
+    await restart({ moderator, room: new PlazaRoom({ minIntervalMs: 0 }) });
+    await new Promise((r) => setTimeout(r, 20)); // the first config read
+  };
+
+  test('the welcome says whether typing is on', async () => {
+    await chatReady(fakeModerator());
+    const ws = await client();
+    sendJson(ws, { t: 'hello', token: 'tok-a', visible: true });
+    expect((await waitFor(ws, (m) => m.t === 'welcome')).chat).toEqual({ freeText: true, maxLength: 140 });
+  });
+
+  test('without a moderator typed messages are off and refused', async () => {
+    const ws = await client();
+    sendJson(ws, { t: 'hello', token: 'tok-a', visible: true });
+    expect((await waitFor(ws, (m) => m.t === 'welcome')).chat).toEqual({ freeText: false, maxLength: 140 });
+    sendJson(ws, { t: 'chat', text: 'ciao', n: 1 });
+    expect(await waitFor(ws, (m) => m.t === 'chat_refused')).toEqual({ t: 'chat_refused', n: 1, reason: 'disabled' });
+  });
+
+  test('an accepted message reaches the map as checked; the copy of the sender carries its number', async () => {
+    const moderator = fakeModerator();
+    await chatReady(moderator);
+    const a = await joined('tok-a');
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'chat', text: '  ciao a tutti ', n: 7 });
+    expect(await waitFor(a, (m) => m.t === 'said')).toEqual({ t: 'said', id: 'b', u: 'bob', x: 'ciao a tutti' });
+    expect(await waitFor(b, (m) => m.t === 'said')).toEqual({ t: 'said', id: 'b', u: 'bob', x: 'ciao a tutti', n: 7 });
+    expect(moderator.check).toHaveBeenCalledWith({ id: 'b', username: 'bob' }, '  ciao a tutti ');
+  });
+
+  test('a refused message reaches nobody; only the sender learns why (and until when they are muted)', async () => {
+    await chatReady(fakeModerator());
+    const a = await joined('tok-a');
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'chat', text: 'sei uno stronzo', n: 3 });
+    expect(await waitFor(b, (m) => m.t === 'chat_refused')).toEqual({ t: 'chat_refused', n: 3, reason: 'blocked', category: 'banned_word', until: '2026-10-22T12:15:00.000Z' });
+    await new Promise((r) => setTimeout(r, 60));
+    expect(a.inbox.some((m) => m.t === 'said' || m.t === 'chat_refused')).toBe(false);
+  });
+
+  test('a moderator that throws counts as unavailable', async () => {
+    await chatReady(fakeModerator({ check: jest.fn(async () => { throw new Error('boom'); }) }));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'chat', text: 'ciao', n: 1 });
+    expect((await waitFor(b, (m) => m.t === 'chat_refused')).reason).toBe('unavailable');
+    console.error.mockRestore();
+  });
+
+  test('the cooldown is shared with the phrases, and a hidden player cannot speak', async () => {
+    await chatReady(fakeModerator());
+    const b = await joined('tok-b');
+    sendJson(b, { t: 'say', k: 'hello' });
+    await waitFor(b, (m) => m.t === 'said');
+    sendJson(b, { t: 'chat', text: 'ciao', n: 2 });
+    expect(await waitFor(b, (m) => m.t === 'chat_refused')).toMatchObject({ n: 2, reason: 'cooldown' });
+    const h = await joined('tok-a', false);
+    sendJson(h, { t: 'chat', text: 'ciao', n: 1 });
+    expect(await waitFor(h, (m) => m.t === 'chat_refused')).toMatchObject({ reason: 'hidden' });
+  });
+
+  test('switching typed messages off reaches everyone connected', async () => {
+    const moderator = fakeModerator();
+    await restart({ moderator, room: new PlazaRoom({ minIntervalMs: 0 }), chatRefreshMs: 30 });
+    const a = await joined('tok-a');
+    moderator.cfg = { freeText: false, maxLength: 140 };
+    expect(await waitFor(a, (m) => m.t === 'chat_config')).toEqual({ t: 'chat_config', freeText: false, maxLength: 140 });
   });
 });

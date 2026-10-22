@@ -160,8 +160,17 @@ class PlazaRoom {
    *  - 'cooldown'  too soon after their previous message
    */
   say(id, key) {
+    if (typeof key !== 'string' || !SAYABLE.has(key)) return 'ignored';
+    return this.speak(id);
+  }
+
+  /**
+   * A player may speak (a fixed phrase, or a typed message that moderation then checks): same answers as say(),
+   * one cooldown for both kinds of message.
+   */
+  speak(id) {
     const p = this.players.get(id);
-    if (!p || !p.visible || typeof key !== 'string' || !SAYABLE.has(key)) return 'ignored';
+    if (!p || !p.visible) return 'ignored';
     const now = this.now();
     if (now - p.lastSayAt < PHRASES.cooldownMs) return 'cooldown';
     p.lastSayAt = now;

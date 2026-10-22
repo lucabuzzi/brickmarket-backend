@@ -213,7 +213,17 @@
 }
 .cbg-chip:hover:not(:disabled) { border-color: #22d3ee; }
 .cbg-chip:disabled { opacity: 0.45; cursor: default; }
-.cbg-chip--emoji { font-size: 16px; padding: 0 6px; min-width: 34px; }
+.cbg-chip--emoji { font-size: 16px; padding: 0 6px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center; }
+/* typed messages: the text box takes the bar; 16px so iOS does not zoom the page on focus */
+.cbg-chat-form { overflow: hidden; }
+.cbg-chat-input {
+  flex: 1; min-width: 0; min-height: 32px; padding: 0 8px;
+  border: 2px solid #3a3358; background: #0b0914; color: #fff;
+  font-size: 16px; line-height: 1.2; border-radius: 0; outline: none;
+}
+.cbg-chat-input:focus { border-color: #22d3ee; }
+.cbg-chat-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.cbg-chat--side .cbg-chat-form { flex-wrap: nowrap; }
 
 /* ── virtual joystick: fixed base, the knob follows the finger ─────────────────────────────────────── */
 .cbg-joystick {
