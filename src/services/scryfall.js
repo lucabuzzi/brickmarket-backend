@@ -6,6 +6,7 @@
 
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService, sleep } = require('./cardSets');
+const { mapScryfallCard, rarityLabel } = require('./scryfallCards');
 
 const SCRYFALL_BASE = 'https://api.scryfall.com';
 const USER_AGENT = 'BrickMarket/1.0 (BrickMarket collectible catalog)';
@@ -46,9 +47,6 @@ const SET_TYPES = Object.freeze({
 const UPCOMING_DAYS = 30; // sets announced further away than this are not listed yet
 const CARD_PAGES_MAX = 5; // 175 cards a page: up to 875 cards of one expansion
 const PAGE_DELAY_MS = 100; // Scryfall asks for 50-100 ms between requests
-
-const RARITY_LABELS = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', mythic: 'Mythic Rare', special: 'Special', bonus: 'Bonus' };
-const rarityLabel = (r) => (r ? RARITY_LABELS[r] || r.charAt(0).toUpperCase() + r.slice(1) : null);
 
 /**
  * Scryfall /sets -> card_sets rows: real products only, oldest first (so sort_order follows the calendar).
@@ -117,32 +115,6 @@ const sets = createCardSetsService({
 const { listSets, getSet, ensureSets, refreshSets } = sets;
 
 // ── Cards ──────────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * Maps a raw Scryfall card object to our generic master_cards row shape.
- */
-function mapScryfallCard(card) {
-  const face = card.card_faces?.[0];
-  const imgUrl = card.image_uris?.normal || face?.image_uris?.normal || null;
-
-  return {
-    external_id: card.id,
-    name: card.name,
-    set_code: card.set ? card.set.toUpperCase() : null,
-    set_name: card.set_name || null,
-    rarity: rarityLabel(card.rarity),
-    img_url: imgUrl,
-    details: {
-      localId: card.collector_number ?? null,
-      detailed: true,
-      mana_cost: card.mana_cost || face?.mana_cost || null,
-      type_line: card.type_line || face?.type_line || null,
-      oracle_text: card.oracle_text || face?.oracle_text || null,
-      cmc: card.cmc ?? null,
-      priceEur: card.prices?.eur || card.prices?.usd || null,
-    },
-  };
-}
 
 /**
  * Looks up a single card by Scryfall ID, using the DB cache as primary source.

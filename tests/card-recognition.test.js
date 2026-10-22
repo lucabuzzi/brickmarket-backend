@@ -155,7 +155,7 @@ describe('Gemini reader', () => {
     const body = JSON.parse(init.body);
     expect(body.contents[0].parts[1].inline_data.mime_type).toBe('image/jpeg');
     expect(body.generationConfig).toMatchObject({ temperature: 0, responseMimeType: 'application/json' });
-    expect(out.reading).toEqual({ isCard: true, code: 'OP01-077', name: 'Perona', rarity: 'UC', language: 'en' });
+    expect(out.reading).toEqual({ isCard: true, code: 'OP01-077', name: 'Perona', number: null, setCode: null, rarity: 'UC', language: 'en' });
     expect(out.usage).toEqual({ inputTokens: 1200, outputTokens: 50 });
   });
 
@@ -171,6 +171,6 @@ describe('Gemini reader', () => {
   test('replies are cleaned: broken JSON is null, "null"/"unknown" strings are null, odd languages dropped', () => {
     expect(parseReading('not json')).toBeNull();
     expect(parseReading('{"isCard":true,"code":"unknown","name":" Perona ","rarity":"null","language":"english"}'))
-      .toEqual({ isCard: true, code: null, name: 'Perona', rarity: null, language: null });
+      .toEqual({ isCard: true, code: null, name: 'Perona', number: null, setCode: null, rarity: null, language: null });
   });
 });

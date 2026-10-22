@@ -5,6 +5,7 @@
 
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService } = require('./cardSets');
+const { mapLorcanaCard } = require('./lorcanaCards');
 
 const LORCANA_BASE = 'https://api.lorcana-api.com';
 
@@ -69,31 +70,6 @@ const sets = createCardSetsService({
 const { listSets, getSet, ensureSets, refreshSets } = sets;
 
 // ── Cards ──────────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * Maps a raw lorcana-api.com card object to our generic master_cards row shape.
- */
-function mapLorcanaCard(card) {
-  return {
-    external_id: card.Unique_ID,
-    name: card.Name,
-    set_code: card.Set_ID || null,
-    set_name: card.Set_Name || null,
-    rarity: card.Rarity || null,
-    img_url: card.Image || null,
-    details: {
-      localId: card.Unique_ID || null,
-      type: card.Type || null,
-      color: card.Color || null,
-      cost: card.Cost ?? null,
-      strength: card.Strength ?? null,
-      willpower: card.Willpower ?? null,
-      lore: card.Lore ?? null,
-      body_text: card.Body_Text || null,
-      flavor_text: card.Flavor_Text || null,
-    },
-  };
-}
 
 /**
  * Looks up a single card by its Unique_ID (e.g. "TFC-041"), using the DB cache as primary source.
