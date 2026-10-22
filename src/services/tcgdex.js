@@ -12,6 +12,7 @@
 const { query } = require('../db');
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService, groupBySeries, compareLocalId, mapLimit } = require('./cardSets');
+const { imageUrl, setIdOfCard, mapCardDetail } = require('./tcgdexCards');
 
 const BASE = 'https://api.tcgdex.net/v2';
 const GAME = 'pokemon';
@@ -40,16 +41,6 @@ const NAME_FIXES = Object.freeze({
   '30th-c': { name: 'Collezione Classica del 30°' }, // TCGdex: "Collzione Classica del 30°"
 });
 const applyNameFix = (row) => (NAME_FIXES[row.id] ? { ...row, ...NAME_FIXES[row.id] } : row);
-
-/** TCGdex gives an image base URL; the actual file is `<base>/high.webp`. */
-const imageUrl = (base) => (base ? `${base}/high.webp` : null);
-
-/** "30th-001" + "001" -> "30th" ; "sv3pt5-12" + "12" -> "sv3pt5". */
-function setIdOfCard(cardId, localId) {
-  const suffix = `-${localId}`;
-  if (localId && cardId.endsWith(suffix)) return cardId.slice(0, -suffix.length);
-  return cardId.replace(/-[^-]*$/, '');
-}
 
 /**
  * Rows for card_sets from one series (Italian + English detail). `startOrder` keeps the global chronology:
@@ -82,26 +73,6 @@ function mapSetListCard(card, set) {
     rarity: null,
     img_url: imageUrl(card.image),
     details: { localId: card.localId ?? null, detailed: false },
-  };
-}
-
-/** A full card (GET /cards/:id) -> master_cards row shape. Prices are not copied. */
-function mapCardDetail(card) {
-  return {
-    external_id: card.id,
-    name: card.name,
-    set_code: card.set?.id || setIdOfCard(card.id, card.localId),
-    set_name: card.set?.name || null,
-    rarity: card.rarity || null,
-    img_url: imageUrl(card.image),
-    details: {
-      localId: card.localId ?? null,
-      category: card.category || null,
-      hp: card.hp ?? null,
-      types: (card.types || []).join(', ') || null,
-      illustrator: card.illustrator || null,
-      detailed: true,
-    },
   };
 }
 
