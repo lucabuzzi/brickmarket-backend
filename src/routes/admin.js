@@ -11,6 +11,7 @@ const { processMaturedGrants, reviewFlaggedGrant } = require('../services/credit
 const orderDisputeService = require('../services/orderDisputeService');
 const { processAutoConfirmations } = require('../services/orderAutoConfirm');
 const creditBonusGrantRepository = require('../repositories/creditBonusGrantRepository');
+const privateDocuments = require('../services/privateDocuments');
 
 /**
  * GET /api/admin/stats
@@ -293,6 +294,46 @@ router.get('/users/:id', adminAuth, async (req, res) => {
     console.error('ADMIN USER DETAIL ERROR:', err.message);
     res.status(500).json({ error: 'Errore nel recupero del profilo utente.' });
   }
+});
+
+/**
+ * GET /api/admin/users/:id/documents
+ * The pro seller's identity documents, as links that expire after a few minutes (see services/privateDocuments.js).
+ * The stored files are never public, so this is the only way to look at them.
+ */
+router.get('/users/:id/documents', adminAuth, async (req, res) => {
+  try {
+    const result = await query('SELECT id_scan_url, business_license_url FROM users WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Utente non trovato.' });
+    }
+    const u = result.rows[0];
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      idScan: privateDocuments.getDocumentUrl(u.id_scan_url),
+      businessLicense: privateDocuments.getDocumentUrl(u.business_license_url),
+      expiresInSeconds: privateDocuments.LINK_TTL_SECONDS,
+    });
+  } catch (err) {
+    console.error('ADMIN USER DOCUMENTS ERROR:', err.message);
+    res.status(500).json({ error: 'Errore nel recupero dei documenti.' });
+  }
+});
+
+/**
+ * GET /api/admin/documents/:filename?exp=&sig=
+ * Serves a document from the local-disk fallback. No bearer token here (it's opened as a plain link), so the
+ * short-lived HMAC signature produced by /users/:id/documents is what authorizes it.
+ */
+router.get('/documents/:filename', (req, res) => {
+  const filePath = privateDocuments.resolveSignedLocalDocument(req.params.filename, req.query.exp, req.query.sig);
+  if (!filePath) {
+    return res.status(403).json({ error: 'Link non valido o scaduto.' });
+  }
+  res.set('Cache-Control', 'no-store');
+  res.sendFile(filePath, (err) => {
+    if (err && !res.headersSent) res.status(404).json({ error: 'Documento non trovato.' });
+  });
 });
 
 /**

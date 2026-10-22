@@ -2,6 +2,7 @@ const authService = require('../services/authService');
 const userRepository = require('../repositories/userRepository');
 const identitySignalRepository = require('../repositories/identitySignalRepository');
 const { uploadOrSaveProcessedImage } = require('../services/image');
+const { savePrivateDocument } = require('../services/privateDocuments');
 const { verifyTurnstile } = require('../services/turnstile');
 const { verifyGoogleIdToken } = require('../services/googleAuth');
 const { verifyAppleIdToken } = require('../services/appleAuth');
@@ -33,10 +34,10 @@ async function registerHandler(req, res) {
   let businessLicenseUrl = null;
 
   if (req.files?.id_scan?.[0]) {
-    idScanUrl = await uploadOrSaveProcessedImage(req.files.id_scan[0].buffer, 'brickmarket_secure');
+    idScanUrl = await savePrivateDocument(req.files.id_scan[0].buffer);
   }
   if (req.files?.business_license?.[0]) {
-    businessLicenseUrl = await uploadOrSaveProcessedImage(req.files.business_license[0].buffer, 'brickmarket_secure');
+    businessLicenseUrl = await savePrivateDocument(req.files.business_license[0].buffer);
   }
 
   try {
