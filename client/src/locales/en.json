@@ -2838,6 +2838,10 @@
         "name": "Explorers",
         "tagline": "Backpack on, hunting rare pieces in every corner."
       },
+      "card_trainer": {
+        "name": "Trainers",
+        "tagline": "Cap, gloves and satchel: always ready for a trade."
+      },
       "card_duelist": {
         "name": "Card masters",
         "tagline": "One look, one deck and the right card at the right time."
@@ -2868,6 +2872,7 @@
       "costruttrice_blocchi": "Block builder",
       "esploratore_collezionista": "Collector explorer",
       "esploratrice_collezionista": "Collector explorer",
+      "allenatore_carte": "Card trainer",
       "maestro_carte": "Card master",
       "maestra_carte": "Card mistress",
       "arcanista": "Arcanist",
