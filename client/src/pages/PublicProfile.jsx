@@ -274,7 +274,7 @@ export default function PublicProfile() {
 
                 <div className="min-w-0">
                   <p className="text-xs font-black uppercase tracking-[0.24em]" style={{ color: LIME }}>{kicker}</p>
-                  <h1 className="mt-2 break-words text-[clamp(2.6rem,7vw,5.5rem)] font-black leading-[0.9] tracking-[-0.05em] text-white">
+                  <h1 className="mt-2 break-words text-[clamp(2.6rem,min(7vw,13svh),5.5rem)] font-black leading-[0.9] tracking-[-0.05em] text-white">
                     {user.username}
                   </h1>
                   {user.company_name && <p className="mt-2 text-lg font-bold text-white/70">{user.company_name}</p>}

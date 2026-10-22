@@ -698,7 +698,7 @@ export default function Cart() {
           <p className="text-xs font-black uppercase tracking-[0.24em]" style={{ color: LIME }}>{t('cart_page.kicker')}</p>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
             <div>
-              <h1 className="text-[clamp(2.8rem,8vw,6rem)] font-black leading-[0.88] tracking-[-0.055em] text-white">
+              <h1 className="text-[clamp(2.8rem,min(8vw,13svh),6rem)] font-black leading-[0.88] tracking-[-0.055em] text-white">
                 {cart.length === 0 ? t('cart.title') : t('cart_page.title')}
               </h1>
               {cart.length > 0 && (

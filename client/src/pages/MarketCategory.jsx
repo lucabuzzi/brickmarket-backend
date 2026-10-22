@@ -130,7 +130,7 @@ export default function MarketCategory({ modeKey = 'listings', productType = 'le
             {gameInfo ? <span className="text-white/40">· {bySet ? gameInfo.name : categoryName}</span> : null}
           </p>
           <motion.h1
-            className="mt-3 max-w-4xl text-[clamp(2.8rem,10vw,7rem)] font-black leading-[0.86] tracking-[-0.055em] text-white"
+            className="mt-3 max-w-4xl text-[clamp(2.8rem,min(10vw,13svh),7rem)] font-black leading-[0.86] tracking-[-0.055em] text-white"
             initial={reduceMotion ? false : { y: 24 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}

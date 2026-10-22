@@ -39,7 +39,7 @@ export function ArenaHero({ contests, user, wallet, spotlight, spotlightLeaderbo
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.22em] text-[#22d3ee]">
             <Swords size={15} /> {t('arena_page.hero.kicker')}
           </p>
-          <h1 className="mt-4 text-[clamp(2.7rem,9.5vw,6.4rem)] font-black leading-[0.88] tracking-[-0.055em] lg:text-[clamp(3rem,6vw,6.4rem)]">
+          <h1 className="mt-4 text-[clamp(2.7rem,min(9.5vw,13svh),6.4rem)] font-black leading-[0.88] tracking-[-0.055em] lg:text-[clamp(3rem,6vw,6.4rem)]">
             {['title_1', 'title_2', 'title_3'].map((k, i) => (
               <span key={k} className="block overflow-hidden pb-[0.08em]">
                 <motion.span
