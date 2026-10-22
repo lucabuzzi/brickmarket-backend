@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import DragonView from '../../game/components/DragonView';
+import dragonStatue from '../../assets/game/dragon-statue.png';
 import uomoBase from '../../assets/game/skins/uomo_base.png';
 import uomoCyber from '../../assets/game/skins/uomo_cyber.png';
 import donnaBase from '../../assets/game/skins/donna_base.png';
@@ -38,9 +38,7 @@ export default function GamePreviewStage() {
 
       <div className="gps-dragon">
         <div className="gps-glow" />
-        <DragonView scale={3} />
-        <span className="gps-flame gps-flame--l1" /><span className="gps-flame gps-flame--l2" />
-        <span className="gps-flame gps-flame--r1" /><span className="gps-flame gps-flame--r2" />
+        <img className="gps-dragon-img" src={dragonStatue} alt="" width="311" height="260" decoding="async" />
       </div>
 
       <div className="gps-hero gps-hero--right"><div className="gps-sprite gps-sprite--right" style={heroStyle} /></div>

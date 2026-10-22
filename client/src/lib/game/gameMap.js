@@ -26,9 +26,9 @@ export const BUILDINGS = [
 // ============================================================================
 // The dragon statue and the pond
 // ============================================================================
-// The dragon statue in the middle of the plaza (base = its pile of coins; the sprite rises above it).
-export const STATUE_SCALE = 1.5; // the 52x48 dragon sprite is shown 1.5x bigger
-const STATUE = { x: 214, y: 168, w: 52, h: 16 };
+// The statue is the dragon artwork on its golden disc (scripts/build-game-dragon.js, about 92 units wide): this
+// box is the disc you cannot walk across, centred on the summoning ring of the plaza.
+const STATUE = { x: 198, y: 168, w: 84, h: 16 };
 const POND = { x: 24, y: 214, w: 76, h: 52 };
 
 // The dragon statue: where the tutorial explains credits. Not a building, but it has a "door" zone like one,

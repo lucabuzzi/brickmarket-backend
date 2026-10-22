@@ -44,12 +44,9 @@
 @container (min-width: 520px) { .gps-dragon { transform: translateX(-50%) scale(1.35); transform-origin: bottom center; } }
 .gps-glow { position: absolute; inset: 30% -20% -6%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 210, 63, 0.55), transparent 100%); animation: gps-pulse 2.4s ease-in-out infinite; z-index: -1; }
 @keyframes gps-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-.gps-flame { position: absolute; bottom: 4px; width: 12px; height: 26px; background: linear-gradient(to top, #3b82f6 0%, #93c5fd 62%, #ffffff 100%); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform-origin: bottom center; animation: gps-flicker 0.5s ease-in-out infinite alternate; }
-.gps-flame--l1 { left: -4px; }
-.gps-flame--l2 { left: 8px; height: 20px; animation-delay: 0.15s; }
-.gps-flame--r1 { right: -4px; animation-delay: 0.1s; }
-.gps-flame--r2 { right: 8px; height: 20px; animation-delay: 0.3s; }
-@keyframes gps-flicker { from { transform: scaleY(0.75) skewX(-6deg); } to { transform: scaleY(1.15) skewX(6deg); } }
+/* the dragon statue artwork (scripts/build-game-dragon.js): its own golden disc and blue flames, gently breathing */
+.gps-dragon-img { display: block; width: calc(70 * var(--u)); height: auto; margin-bottom: calc(-4 * var(--u)); transform-origin: 50% 85%; animation: gps-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.25)); }
+@keyframes gps-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
 
 /* the hero: the sheet is 4x4 cells of 48x56 pixels (rows down, up, right, left); we walk the right row there and the left row back */
 .gps-hero { --u: 3px; position: absolute; left: 10px; bottom: 15%; z-index: 3; line-height: 0; }

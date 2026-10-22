@@ -10,9 +10,11 @@ import { FRAME, COLS, ROWS, IDLE_COL } from './skins';
 import { buildGroundCanvas } from './groundSprite';
 import { buildMarketGroundCanvas } from './marketGround';
 import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from './buildingSprite';
-import { buildDragonCanvas, DRAGON_W, DRAGON_H } from './dragonSprite';
+// The dragon statue artwork (built by scripts/build-game-dragon.js): image + size and centre of its golden disc.
+import DRAGON_STATUE_URL from '../../assets/game/dragon-statue.png';
+import DRAGON_STATUE from '../../assets/game/dragon-statue.json';
 import {
-  WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, STATUE_SCALE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
+  WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
 } from './gameMap';
 import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
@@ -118,7 +120,7 @@ export async function startGame({
     k.loadSprite('me', sheet.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims }),
     k.loadSprite('ground', buildGroundCanvas().toDataURL()),
     k.loadSprite('ground-market', buildMarketGroundCanvas().toDataURL()),
-    k.loadSprite('dragon', buildDragonCanvas().toDataURL()),
+    k.loadSprite('dragon-statue', DRAGON_STATUE_URL),
     ...[...BUILDINGS, ...MARKET_STALLS].map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
     ...Object.entries(npcSheets).map(([id, c]) => k.loadSprite(`npc-${id}`, c.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims })),
   ]);
@@ -154,12 +156,20 @@ export async function startGame({
     }
   };
 
+  /** Where the dragon artwork is drawn: its golden disc centred on the statue's collision box. */
+  function dragonBox() {
+    const cx = CREDITS_PLACE.x + CREDITS_PLACE.w / 2;
+    const cy = CREDITS_PLACE.y + CREDITS_PLACE.h / 2;
+    return { x: cx - DRAGON_STATUE.discX, y: cy - DRAGON_STATUE.discY, w: DRAGON_STATUE.w, h: DRAGON_STATUE.h };
+  }
+
   // ── the plaza ──────────────────────────────────────────────────────────────────
   function buildPlaza() {
     // ground + a soft pulsing golden glow under the statue
     add([k.sprite('ground'), k.pos(0, 0), k.z(0)]);
     const statueX = CREDITS_PLACE.x + CREDITS_PLACE.w / 2;
     const statueBottom = CREDITS_PLACE.y + CREDITS_PLACE.h;
+    const statueBox = dragonBox();
     add([k.pos(0, 0), k.z(1), {
       draw() {
         const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2.2);
@@ -167,26 +177,13 @@ export async function startGame({
       },
     }]);
 
-    // ── the dragon statue (credits) ──────────────────────────────────────────────
-    add([k.sprite('dragon'), k.pos(statueX, statueBottom), k.anchor('bot'), k.scale(STATUE_SCALE), k.z(statueBottom)]);
+    // ── the dragon statue (credits): the artwork stands with its golden disc on the summoning ring ──
+    add([k.sprite('dragon-statue'), k.pos(statueBox.x, statueBox.y), k.scale(DRAGON_STATUE.texScale), k.z(statueBottom)]);
     add([k.pos(0, 0), k.z(statueBottom + 1), {
       draw() {
-        // blue flames licking up on both sides of the statue
         const t = k.time();
-        for (const side of [-1, 1]) {
-          for (let i = 0; i < 4; i++) {
-            const bx = statueX + side * (31 + i * 4);
-            const flick = Math.sin(t * 9 + i * 1.7 + side) * 2.5;
-            const hgt = 13 + i * 2 + flick * 1.4;
-            const half = 4.2 - i * 0.6;
-            const y0 = statueBottom - 3;
-            k.drawTriangle({ p1: k.vec2(bx - half, y0), p2: k.vec2(bx + half, y0), p3: k.vec2(bx + flick * 0.3, y0 - hgt), color: col('#3b82f6') });
-            k.drawTriangle({ p1: k.vec2(bx - half * 0.6, y0), p2: k.vec2(bx + half * 0.6, y0), p3: k.vec2(bx + flick * 0.2, y0 - hgt * 0.7), color: col('#93c5fd') });
-            k.drawTriangle({ p1: k.vec2(bx - half * 0.3, y0), p2: k.vec2(bx + half * 0.3, y0), p3: k.vec2(bx, y0 - hgt * 0.4), color: col('#ffffff') });
-          }
-        }
-        // twinkling sparkles around the statue
-        [[-44, -60], [44, -66], [-14, -78], [20, -76], [-54, -24], [56, -18]].forEach(([dx, dy], i) => {
+        // twinkling sparkles around the statue (its blue flames are part of the artwork)
+        [[-56, -70], [54, -76], [-18, -92], [24, -88], [-62, -30], [62, -24]].forEach(([dx, dy], i) => {
           const a = 0.5 + 0.5 * Math.sin(t * 3 + i * 1.3);
           if (a > 0.55) {
             rect(statueX + dx - 1, statueBottom + dy, 3, 1, '#fff7c2', a);
@@ -196,7 +193,7 @@ export async function startGame({
         const creditsText = String(labels.credits || '').toUpperCase();
         const cs = fit(creditsText, 7, 150);
         const lw = k.formatText({ font: FONT, text: creditsText, size: cs }).width + 8;
-        const ly = statueBottom - DRAGON_H * STATUE_SCALE - 12;
+        const ly = statueBox.y - 4;
         k.drawRect({ pos: k.vec2(statueX - lw / 2, ly - 7), width: lw, height: 14, color: col('#07130b'), opacity: 0.75, radius: 2 });
         k.drawText({ font: FONT, text: creditsText, size: cs, pos: k.vec2(statueX, ly), anchor: 'center', color: col(CREDITS_PLACE.color) });
         drawDoorHints(CREDITS_PLACE, 0, 0);
@@ -641,11 +638,7 @@ export async function startGame({
   const requestEnter = () => { if (!state.frozen && !state.fade && state.activeDoor) onEnterRequest(state.activeDoor); };
   /** What a place looks like on screen (roofs and the dragon rise above their collision box): its tap area. */
   function drawnBox(pl) {
-    if (pl.id === CREDITS_PLACE.id) {
-      const w = DRAGON_W * STATUE_SCALE;
-      const h = DRAGON_H * STATUE_SCALE;
-      return { x: pl.x + pl.w / 2 - w / 2, y: pl.y + pl.h - h, w, h };
-    }
+    if (pl.id === CREDITS_PLACE.id) return dragonBox();
     return { x: pl.x, y: pl.y - ROOF_EXTRA, w: pl.w, h: pl.h + ROOF_EXTRA };
   }
   /** Walks to the door of `placeId` (current map) around obstacles and enters it on arrival. false = no way there. */
