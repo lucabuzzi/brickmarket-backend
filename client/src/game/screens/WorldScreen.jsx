@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncE
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, GraduationCap, Pencil, Smartphone, Users } from 'lucide-react';
-import DragonView from '../components/DragonView';
+import DragonStatue from '../components/DragonStatue';
 import VirtualJoystick from '../components/VirtualJoystick';
 import ChatPanel from '../components/ChatPanel';
 import { chatText } from '../chatText';
@@ -94,7 +94,7 @@ function TutorialCard({ step, state, place, goSite, dispatch }) {
     <div className="cbg-panel cbg-card-enter relative z-10 mx-auto mt-4 max-w-xl p-4 sm:absolute sm:inset-x-3 sm:bottom-3 sm:mt-0 sm:p-5" style={{ borderColor: color }} role="dialog" aria-live="polite" aria-label={t(`game.tutorial.${step.id}.title`)}>
       {last && (
         <div className="mb-3 flex flex-col items-center gap-2 text-center">
-          <DragonView scale={3} className="cbg-dragon-float" />
+          <DragonStatue width={170} className="cbg-dragon-float" />
           <p className="cbg-pixel cbg-victory text-xl uppercase sm:text-2xl">{t('game.tutorial.victory')}</p>
         </div>
       )}
