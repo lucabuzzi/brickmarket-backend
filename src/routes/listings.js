@@ -10,6 +10,7 @@ const { expireEndedAuctions } = require('../services/auctionExpiry');
 const featured = require('../services/featured');
 const { notifyListingChanged } = require('../services/indexnow');
 const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../config/jwtSecret');
 const Joi = require('joi');
 const {
   CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_SET_ID_PATTERN, CARD_NUMBER_MAX, CARD_DETAIL_COLUMNS, checkCardDetails, cardDetailsForDb,
@@ -779,7 +780,7 @@ router.get('/:id', async (req, res) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_di_sviluppo_super_sicuro');
+        const decoded = jwt.verify(token, getJwtSecret());
         if (decoded.userId) {
           const userRes = await query('SELECT address_country FROM users WHERE id = $1', [decoded.userId]);
           if (userRes.rows.length > 0 && userRes.rows[0].address_country) {

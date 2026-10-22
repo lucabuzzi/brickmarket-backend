@@ -24,7 +24,7 @@ const MIN_MS_BETWEEN_PIECE_LOCKS = 50;
 // touch-action: none can't prevent since it's an OS-level reservation.
 const MAX_TOTAL_BLUR_MS = 20000;
 
-const JWT_SECRET = process.env.JWT_SECRET || 'clutchvault_secret_key_1337';
+const { getJwtSecret } = require('../config/jwtSecret');
 
 async function listContestsHandler(req, res) {
   try {
@@ -150,7 +150,7 @@ async function startAttemptHandler(req, res) {
 
     const attemptToken = jwt.sign(
       { userId: req.user.id, contestId, participantId, startedAt },
-      process.env.JWT_SECRET || JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '15m' }
     );
 
@@ -171,7 +171,7 @@ async function startAttemptHandler(req, res) {
 // caller's own in-progress one. Shared by lockPieceHandler and
 // completeAttemptHandler so both apply exactly the same checks.
 function verifyAttemptToken(attemptToken, userId, contestId) {
-  const decoded = jwt.verify(attemptToken, process.env.JWT_SECRET || JWT_SECRET);
+  const decoded = jwt.verify(attemptToken, getJwtSecret());
   if (decoded.userId !== userId || decoded.contestId !== contestId) {
     throw new Error('Attempt token verification mismatch.');
   }
