@@ -269,7 +269,7 @@ describe('routes', () => {
   beforeAll(async () => {
     const app = express();
     app.use('/api/catalog/pokemon', require('../src/routes/catalogPokemon'));
-    app.use('/api/listings', require('../src/routes/listings'));
+    app.use('/api/listings', require('../src/modules/listings/listings.routes'));
     server = http.createServer(app);
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
     base = `http://127.0.0.1:${server.address().port}/api`;

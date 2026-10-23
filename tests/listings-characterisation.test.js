@@ -143,7 +143,7 @@ function startApp(router) {
 }
 
 beforeAll(async () => {
-  server = await startApp(require('../src/routes/listings'));
+  server = await startApp(require('../src/modules/listings/listings.routes'));
   base = `http://127.0.0.1:${server.address().port}/api/listings`;
 });
 afterAll(() => new Promise((resolve) => server.close(resolve)));
@@ -364,7 +364,7 @@ describe('featured', () => {
     let router;
     const saved = process.env.STRIPE_SECRET_KEY;
     delete process.env.STRIPE_SECRET_KEY;
-    jest.isolateModules(() => { router = require('../src/routes/listings'); });
+    jest.isolateModules(() => { router = require('../src/modules/listings/listings.routes'); });
     process.env.STRIPE_SECRET_KEY = saved;
     const s = await startApp(router);
     const url = `http://127.0.0.1:${s.address().port}/api/listings`;
