@@ -1,0 +1,2383 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`DELETE /:id DB error 1`] = `
+{
+  "body": "{"error":"Errore cancellazione"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', updated_at = NOW() WHERE id = $1 AND seller_id = $2 AND status <> 'sold' RETURNING id",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`DELETE /:id not removable 1`] = `
+{
+  "body": "{"error":"Non autorizzato o annuncio non eliminabile"}",
+  "status": 403,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', updated_at = NOW() WHERE id = $1 AND seller_id = $2 AND status <> 'sold' RETURNING id",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`DELETE /:id removed 1`] = `
+{
+  "body": "{"message":"Annuncio rimosso"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', updated_at = NOW() WHERE id = $1 AND seller_id = $2 AND status <> 'sold' RETURNING id",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed DB error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero degli annunci"}",
+  "status": 500,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed auctions, sorted by end 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 AND (l.type = 'auction' OR l.is_auction = true) ORDER BY CASE WHEN l.status = 'active' THEN 0 ELSE 1 END, l.auction_end ASC NULLS LAST, l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed bad limits ignored 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed default 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed every filter 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 AND l.type = $2 AND l.theme ILIKE $3 AND l.category = $4 AND l.product_type = $5 AND l.game = $6 AND l.card_set_id = $7 ORDER BY l.created_at DESC LIMIT $8",
+      [
+        "active",
+        "used",
+        "%Star%",
+        "sets",
+        "tcg",
+        "pokemon",
+        "sv1",
+        12,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed featured only 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 AND l.is_featured = true ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed malformed card_set ignored 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed not auctions 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 AND (l.type <> 'auction' AND (l.is_auction = false OR l.is_auction IS NULL)) ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed not featured 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 AND l.is_featured = false ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed status empty 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed status=all 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status NOT IN ('draft', 'hidden') ORDER BY l.created_at DESC",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed status=draft falls back to active 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed status=sold 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "sold",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET / feed zero limit ignored 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}},{"id":"l2","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":false,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "expireFeaturedListings",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC",
+      [
+        "active",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id DB error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dell'annuncio"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id anonymous visitor 1`] = `
+{
+  "body": "{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":[],"package_size":"M","highest_bidder_username":"luigi","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null,"country":"it"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET views_count = views_count + 1 WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id buyer lookup failing is ignored 1`] = `
+{
+  "body": "{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":[],"package_size":"M","highest_bidder_username":"luigi","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null,"country":"it"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET views_count = views_count + 1 WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT address_country FROM users WHERE id = $1",
+      [
+        "u9",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id buyer without a country 1`] = `
+{
+  "body": "{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":[],"package_size":"M","highest_bidder_username":"luigi","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null,"country":"it"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET views_count = views_count + 1 WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT address_country FROM users WHERE id = $1",
+      [
+        "u9",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id logged-in buyer abroad 1`] = `
+{
+  "body": "{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":[],"package_size":"M","highest_bidder_username":"luigi","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null,"country":"it"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET views_count = views_count + 1 WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT address_country FROM users WHERE id = $1",
+      [
+        "u9",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id not found 1`] = `
+{
+  "body": "{"error":"Non trovato"}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "nope",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /:id view counter failing does not matter 1`] = `
+{
+  "body": "{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":[],"package_size":"M","highest_bidder_username":"luigi","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null,"country":"it"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name, (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET views_count = views_count + 1 WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /archive and /search archive 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"sold","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status IN ('sold', 'expired') ORDER BY l.updated_at DESC, l.created_at DESC",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`GET /archive and /search archive DB error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dell'archivio"}",
+  "status": 500,
+  "trace": [
+    [
+      "expireEndedAuctions",
+    ],
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status IN ('sold', 'expired') ORDER BY l.updated_at DESC, l.created_at DESC",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`GET /archive and /search search 1`] = `
+{
+  "body": "[{"id":"l1","title":"Falcon","status":"active","type":"used","seller_id":"u1","shipping_options":null,"package_size":"M","seller":{"username":"mario","avatar_url":null,"rating_avg":"4.0","is_verified":true,"is_pro":false,"seller_type":"private","company_name":null}}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE (l.title ILIKE $1 OR l.set_number ILIKE $1 OR l.theme ILIKE $1) AND l.status = 'active' ORDER BY l.created_at DESC",
+      [
+        "%fal%con%",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /archive and /search search DB error 1`] = `
+{
+  "body": "{"error":"Errore durante la ricerca"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT l.*, u.username as seller_username, u.avatar_url as seller_avatar, u.rating_avg as seller_rating, u.is_verified as seller_is_verified, u.is_pro as seller_is_pro, u.seller_type as seller_seller_type, u.company_name as seller_company_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE (l.title ILIKE $1 OR l.set_number ILIKE $1 OR l.theme ILIKE $1) AND l.status = 'active' ORDER BY l.created_at DESC",
+      [
+        "%x%",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /archive and /search search without q 1`] = `
+{
+  "body": "[]",
+  "status": 200,
+  "trace": [],
+}
+`;
+
+exports[`GET /user/me DB error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei tuoi annunci"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT * FROM listings WHERE seller_id = $1 AND status <> 'removed' ORDER BY created_at DESC",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /user/me own listings 1`] = `
+{
+  "body": "[{"id":"a"},{"id":"b"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT * FROM listings WHERE seller_id = $1 AND status <> 'removed' ORDER BY created_at DESC",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id UPDATE fails 1`] = `
+{
+  "body": "{"error":"Errore aggiornamento"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET title = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "Nuovo titolo",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id broken shipping JSON and blank shipping options 1`] = `
+{
+  "body": "{"id":"l1","params":3}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET shipping_options = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "[]",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id card details 1`] = `
+{
+  "body": "{"id":"l1","params":7}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET product_type = $1, game = $2, card_language = $3, card_grading_company = $4, card_grade = $5, updated_at = NOW() WHERE id = $6 AND seller_id = $7 RETURNING *",
+      [
+        "tcg",
+        "magic",
+        "en",
+        null,
+        null,
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id draft auction published 1`] = `
+{
+  "body": "{"id":"l1","params":7}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET status = $1, type = $2, auction_start = $3, auction_end = $4, current_bid = $5, updated_at = NOW() WHERE id = $6 AND seller_id = $7 RETURNING *",
+      [
+        "active",
+        "auction",
+        15,
+        "2099-01-01T00:00:00.000Z",
+        15,
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id draft auction published already ended 1`] = `
+{
+  "body": "{"error":"La data di fine asta deve essere nel futuro"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id draft auction published with legacy type 1`] = `
+{
+  "body": "{"id":"l1","params":3}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET type = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "used",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id draft auction published without a bid 1`] = `
+{
+  "body": "{"error":"Per le aste è obbligatorio specificare la base d'asta (auctionStart > 0)"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id draft auction published without an end 1`] = `
+{
+  "body": "{"error":"Per le aste è obbligatoria la data di scadenza (auctionEnd)"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id empty shipping options 1`] = `
+{
+  "body": "{"id":"l1","params":3}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET shipping_options = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "[]",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id half-filled grading 1`] = `
+{
+  "body": "{"error":"Indica insieme la società di gradazione e il voto (oppure nessuno dei due)"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`PATCH /:id live auction terms are dropped 1`] = `
+{
+  "body": "{"id":"l1","params":3}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET title = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "Nuovo titolo",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id new photos replace the old ones 1`] = `
+{
+  "body": "{"id":"l1","params":4}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "uploadImage",
+      30,
+    ],
+    [
+      "uploadImage",
+      40,
+    ],
+    [
+      "query",
+      "UPDATE listings SET title = $1, images = $2, updated_at = NOW() WHERE id = $3 AND seller_id = $4 RETURNING *",
+      [
+        "Nuovo titolo",
+        [
+          "https://img.test/30.webp",
+          "https://img.test/40.webp",
+        ],
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id not the owner 1`] = `
+{
+  "body": "{"error":"Non autorizzato o annuncio inesistente"}",
+  "status": 403,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET title = $1, updated_at = NOW() WHERE id = $2 AND seller_id = $3 RETURNING *",
+      [
+        "Nuovo titolo",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id nothing to update 1`] = `
+{
+  "body": "{"error":"Nessun campo da aggiornare"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id photo processing fails 1`] = `
+{
+  "body": "{"error":"Errore durante l'ottimizzazione delle immagini"}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "uploadImage",
+      13,
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id plain fields, weight drives package size, shipping options 1`] = `
+{
+  "body": "{"id":"l1","params":16}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT status, type, auction_start, auction_end FROM listings WHERE id = $1 AND seller_id = $2",
+      [
+        "l1",
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "UPDATE listings SET title = $1, price = $2, weight_kg = $3, is_complete = $4, product_type = $5, card_language = $6, card_rarity = $7, card_grading_company = $8, card_grade = $9, card_set_id = $10, card_number = $11, card_external_id = $12, package_size = $13, shipping_options = $14, updated_at = NOW() WHERE id = $15 AND seller_id = $16 RETURNING *",
+      [
+        "Nuovo titolo",
+        12,
+        2.5,
+        true,
+        "lego",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "medium",
+        "[{"c":1}]",
+        "l1",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`PATCH /:id validation error 1`] = `
+{
+  "body": "{"error":"\\"title\\" length must be at least 5 characters long"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / draft with every condition alias 1`] = `
+[
+  [
+    "new",
+    201,
+    "new",
+  ],
+  [
+    "used",
+    201,
+    "used",
+  ],
+  [
+    "good",
+    201,
+    "used",
+  ],
+  [
+    "fair",
+    201,
+    "used",
+  ],
+  [
+    "complete",
+    201,
+    "used",
+  ],
+  [
+    "moderately_played",
+    201,
+    "moderately_played",
+  ],
+]
+`;
+
+exports[`POST / image processing fails 1`] = `
+{
+  "body": "{"error":"Errore durante l'ottimizzazione delle immagini"}",
+  "status": 500,
+  "trace": [
+    [
+      "uploadImage",
+      100,
+    ],
+    [
+      "uploadImage",
+      13,
+    ],
+  ],
+}
+`;
+
+exports[`POST / publish a LEGO set with two photos 1`] = `
+{
+  "body": "{"id":"new1","status":"active","title":"Millennium Falcon"}",
+  "status": 201,
+  "trace": [
+    [
+      "uploadImage",
+      100,
+    ],
+    [
+      "uploadImage",
+      200,
+    ],
+    [
+      "query",
+      "INSERT INTO listings ( seller_id, title, description, set_number, theme, year, pieces, type, condition, price, auction_start, auction_end, auction_reserve, current_bid, status, images, shipping_cost, shipping_method, shipping_options, box_condition, instructions, pro_notes, is_complete, category, package_size, product_type, game, weight_kg, length_cm, width_cm, height_cm, image_orientation, card_language, card_rarity, card_grading_company, card_grade, card_set_id, card_number, card_external_id ) VALUES ( $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39 ) RETURNING *",
+      [
+        "u1",
+        "Millennium Falcon",
+        "Bello",
+        "75192",
+        "Star Wars",
+        2017,
+        7541,
+        "used",
+        "used",
+        599.9,
+        null,
+        null,
+        null,
+        null,
+        "active",
+        [
+          "https://img.test/100.webp",
+          "https://img.test/200.webp",
+        ],
+        9.5,
+        "brt",
+        "[{"carrier":"brt","price":9.5}]",
+        "ok",
+        null,
+        null,
+        true,
+        "sets",
+        "small",
+        "lego",
+        null,
+        1.2,
+        40,
+        30,
+        15,
+        "landscape",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+    ],
+    [
+      "indexnow",
+      "new1",
+    ],
+  ],
+}
+`;
+
+exports[`POST / publish a graded Pokémon card with explicit dimensions and orientation 1`] = `
+{
+  "body": "{"id":"new1","status":"active","title":"Millennium Falcon"}",
+  "status": 201,
+  "trace": [
+    [
+      "uploadImage",
+      50,
+    ],
+    [
+      "query",
+      "INSERT INTO listings ( seller_id, title, description, set_number, theme, year, pieces, type, condition, price, auction_start, auction_end, auction_reserve, current_bid, status, images, shipping_cost, shipping_method, shipping_options, box_condition, instructions, pro_notes, is_complete, category, package_size, product_type, game, weight_kg, length_cm, width_cm, height_cm, image_orientation, card_language, card_rarity, card_grading_company, card_grade, card_set_id, card_number, card_external_id ) VALUES ( $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39 ) RETURNING *",
+      [
+        "u1",
+        "Millennium Falcon",
+        "Bello",
+        "75192",
+        "Star Wars",
+        2017,
+        7541,
+        "used",
+        "near_mint",
+        599.9,
+        null,
+        null,
+        null,
+        null,
+        "active",
+        [
+          "https://img.test/50.webp",
+        ],
+        9.5,
+        "brt",
+        "[{"carrier":"brt","price":9.5}]",
+        "ok",
+        null,
+        null,
+        true,
+        "sets",
+        "medium",
+        "tcg",
+        "pokemon",
+        null,
+        null,
+        null,
+        null,
+        "landscape",
+        "it",
+        "Rara",
+        "psa",
+        "10",
+        "sv1",
+        "25",
+        "sv1-25",
+      ],
+    ],
+    [
+      "indexnow",
+      "new1",
+    ],
+  ],
+}
+`;
+
+exports[`POST / publish an auction 1`] = `
+{
+  "body": "{"id":"new1","status":"active","title":"Millennium Falcon"}",
+  "status": 201,
+  "trace": [
+    [
+      "uploadImage",
+      10,
+    ],
+    [
+      "query",
+      "INSERT INTO listings ( seller_id, title, description, set_number, theme, year, pieces, type, condition, price, auction_start, auction_end, auction_reserve, current_bid, status, images, shipping_cost, shipping_method, shipping_options, box_condition, instructions, pro_notes, is_complete, category, package_size, product_type, game, weight_kg, length_cm, width_cm, height_cm, image_orientation, card_language, card_rarity, card_grading_company, card_grade, card_set_id, card_number, card_external_id ) VALUES ( $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39 ) RETURNING *",
+      [
+        "u1",
+        "Millennium Falcon",
+        "Bello",
+        "75192",
+        "Star Wars",
+        2017,
+        7541,
+        "auction",
+        "new",
+        null,
+        20,
+        "2099-01-01T00:00:00.000Z",
+        50,
+        20,
+        "active",
+        [
+          "https://img.test/10.webp",
+        ],
+        9.5,
+        "brt",
+        "[{"carrier":"brt","price":9.5}]",
+        "ok",
+        null,
+        null,
+        true,
+        "sets",
+        "small",
+        "lego",
+        null,
+        1.2,
+        40,
+        30,
+        15,
+        "landscape",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+    ],
+    [
+      "indexnow",
+      "new1",
+    ],
+  ],
+}
+`;
+
+exports[`POST / rejected: auction ending in the past 1`] = `
+{
+  "body": "{"error":"La data di fine asta deve essere nel futuro"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: auction without end date 1`] = `
+{
+  "body": "{"error":"Per le aste è obbligatoria la data di scadenza (auctionEnd)"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: auction without starting bid 1`] = `
+{
+  "body": "{"error":"Per le aste è obbligatorio specificare la base d'asta (auctionStart > 0)"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: draft without title 1`] = `
+{
+  "body": "{"error":"\\"title\\" is required"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: fixed price without price 1`] = `
+{
+  "body": "{"error":"Il prezzo è obbligatorio per gli annunci a prezzo fisso"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: grading company without grade 1`] = `
+{
+  "body": "{"error":"Indica insieme la società di gradazione e il voto (oppure nessuno dei due)"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: publish with a short title 1`] = `
+{
+  "body": "{"error":"\\"title\\" length must be at least 5 characters long"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: publish without category 1`] = `
+{
+  "body": "{"error":"\\"category\\" is required"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: publish without images 1`] = `
+{
+  "body": "{"error":"Almeno un'immagine è obbligatoria per pubblicare"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: tcg without game 1`] = `
+{
+  "body": "{"error":"\\"game\\" is required"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: too many files -> multer error 1`] = `
+{
+  "body": "{"error":"Errore caricamento immagini: Unexpected file field"}",
+  "status": 500,
+  "trace": [],
+}
+`;
+
+exports[`POST / rejected: unknown condition 1`] = `
+{
+  "body": "{"error":"\\"condition\\" must be one of [complete, good, fair, parts, new, used, near_mint, slightly_played, moderately_played, heavy_played, poor_damaged]"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST / save a draft: legacy type, coerced condition, broken shipping JSON, no photos, no IndexNow 1`] = `
+{
+  "body": "{"id":"new1","status":"draft","title":"x"}",
+  "status": 201,
+  "trace": [
+    [
+      "query",
+      "INSERT INTO listings ( seller_id, title, description, set_number, theme, year, pieces, type, condition, price, auction_start, auction_end, auction_reserve, current_bid, status, images, shipping_cost, shipping_method, shipping_options, box_condition, instructions, pro_notes, is_complete, category, package_size, product_type, game, weight_kg, length_cm, width_cm, height_cm, image_orientation, card_language, card_rarity, card_grading_company, card_grade, card_set_id, card_number, card_external_id ) VALUES ( $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39 ) RETURNING *",
+      [
+        "u1",
+        "x",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "used",
+        "used",
+        undefined,
+        null,
+        null,
+        null,
+        null,
+        "draft",
+        null,
+        0,
+        null,
+        "[]",
+        null,
+        null,
+        null,
+        false,
+        "sets",
+        "small",
+        "funko",
+        null,
+        0.35,
+        15,
+        11,
+        10,
+        "landscape",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`POST / the INSERT fails 1`] = `
+{
+  "body": "{"error":"Errore durante la creazione: value too long"}",
+  "status": 500,
+  "trace": [
+    [
+      "uploadImage",
+      100,
+    ],
+    [
+      "query",
+      "INSERT INTO listings ( seller_id, title, description, set_number, theme, year, pieces, type, condition, price, auction_start, auction_end, auction_reserve, current_bid, status, images, shipping_cost, shipping_method, shipping_options, box_condition, instructions, pro_notes, is_complete, category, package_size, product_type, game, weight_kg, length_cm, width_cm, height_cm, image_orientation, card_language, card_rarity, card_grading_company, card_grade, card_set_id, card_number, card_external_id ) VALUES ( $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39 ) RETURNING *",
+      [
+        "u1",
+        "Millennium Falcon",
+        "Bello",
+        "75192",
+        "Star Wars",
+        2017,
+        7541,
+        "used",
+        "used",
+        599.9,
+        null,
+        null,
+        null,
+        null,
+        "active",
+        [
+          "https://img.test/100.webp",
+        ],
+        9.5,
+        "brt",
+        "[{"carrier":"brt","price":9.5}]",
+        "ok",
+        null,
+        null,
+        true,
+        "sets",
+        "small",
+        "lego",
+        null,
+        1.2,
+        40,
+        30,
+        15,
+        "landscape",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`POST / without a user the auth guard answers 1`] = `
+{
+  "body": "{"error":"test: no user"}",
+  "status": 401,
+  "trace": [],
+}
+`;
+
+exports[`POST /:id/bid a DB error rolls back and answers 400 with its message 1`] = `
+{
+  "body": "{"error":"deadlock detected"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "SELECT bidder_id FROM bids WHERE listing_id = $1 ORDER BY amount DESC, created_at ASC LIMIT 1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "INSERT INTO bids (listing_id, bidder_id, amount, created_at) VALUES ($1, $2, $3, NOW())",
+      [
+        "l1",
+        "u1",
+        25,
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid already ended 1`] = `
+{
+  "body": "{"error":"Questa asta è già terminata."}",
+  "status": 410,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid amount not a number 1`] = `
+{
+  "body": "{"error":"Invalid Number"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST /:id/bid amount zero 1`] = `
+{
+  "body": "{"error":"Invalid Number"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`POST /:id/bid below current + 1 1`] = `
+{
+  "body": "{"error":"Offerta troppo bassa. Il minimo richiesto è 21.00€"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid first bid at the starting price 1`] = `
+{
+  "body": "{"id":"l1","current_bid":10}",
+  "status": 200,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "SELECT bidder_id FROM bids WHERE listing_id = $1 ORDER BY amount DESC, created_at ASC LIMIT 1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "INSERT INTO bids (listing_id, bidder_id, amount, created_at) VALUES ($1, $2, $3, NOW())",
+      [
+        "l1",
+        "u1",
+        10,
+      ],
+    ],
+    [
+      "client.query",
+      "UPDATE listings SET current_bid = $1, bids_count = bids_count + 1, updated_at = NOW() WHERE id = $2 RETURNING *",
+      [
+        10,
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "COMMIT",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid first bid below the starting price 1`] = `
+{
+  "body": "{"error":"Offerta troppo bassa. Il minimo richiesto è 15.00€"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid last-two-minutes bid extends the auction; same top bidder gets no notification 1`] = `
+{
+  "body": "{"id":"l1","current_bid":25}",
+  "status": 200,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "SELECT bidder_id FROM bids WHERE listing_id = $1 ORDER BY amount DESC, created_at ASC LIMIT 1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "INSERT INTO bids (listing_id, bidder_id, amount, created_at) VALUES ($1, $2, $3, NOW())",
+      [
+        "l1",
+        "u1",
+        25,
+      ],
+    ],
+    [
+      "client.query",
+      "UPDATE listings SET current_bid = $1, bids_count = bids_count + 1, updated_at = NOW(), auction_end = $3 WHERE id = $2 RETURNING *",
+      [
+        25,
+        "l1",
+        "<now+2min>",
+      ],
+    ],
+    [
+      "client.query",
+      "COMMIT",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid legacy is_auction flag counts 1`] = `
+{
+  "body": "{"id":"l1","current_bid":30}",
+  "status": 200,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "SELECT bidder_id FROM bids WHERE listing_id = $1 ORDER BY amount DESC, created_at ASC LIMIT 1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "INSERT INTO bids (listing_id, bidder_id, amount, created_at) VALUES ($1, $2, $3, NOW())",
+      [
+        "l1",
+        "u1",
+        30,
+      ],
+    ],
+    [
+      "client.query",
+      "UPDATE listings SET current_bid = $1, bids_count = bids_count + 1, updated_at = NOW() WHERE id = $2 RETURNING *",
+      [
+        30,
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "COMMIT",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid not active 1`] = `
+{
+  "body": "{"error":"L'asta non è attiva"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid not an auction 1`] = `
+{
+  "body": "{"error":"Questo articolo non è un'asta"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid outbids someone else 1`] = `
+{
+  "body": "{"id":"l1","current_bid":21}",
+  "status": 200,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "SELECT bidder_id FROM bids WHERE listing_id = $1 ORDER BY amount DESC, created_at ASC LIMIT 1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "INSERT INTO bids (listing_id, bidder_id, amount, created_at) VALUES ($1, $2, $3, NOW())",
+      [
+        "l1",
+        "u1",
+        21,
+      ],
+    ],
+    [
+      "client.query",
+      "UPDATE listings SET current_bid = $1, bids_count = bids_count + 1, updated_at = NOW() WHERE id = $2 RETURNING *",
+      [
+        21,
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "COMMIT",
+      undefined,
+    ],
+    [
+      "client.query",
+      "INSERT INTO notifications (user_id, message_key, listing_id) VALUES ($1, $2, $3)",
+      [
+        "u7",
+        "notifications.outbid",
+        "l1",
+      ],
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid own listing 1`] = `
+{
+  "body": "{"error":"Non puoi fare un'offerta sul tuo annuncio"}",
+  "status": 403,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`POST /:id/bid unknown listing 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato"}",
+  "status": 400,
+  "trace": [
+    [
+      "getClient",
+    ],
+    [
+      "client.query",
+      "BEGIN",
+      undefined,
+    ],
+    [
+      "client.query",
+      "SELECT * FROM listings WHERE id = $1 FOR UPDATE",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "client.query",
+      "ROLLBACK",
+      undefined,
+    ],
+    [
+      "release",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: Stripe error 1`] = `
+{
+  "body": "{"error":"Errore nella conferma della messa in evidenza"}",
+  "status": 500,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_unknown",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: already applied (webhook first) 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":true,"from":"db"}}",
+  "status": 200,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_done",
+    ],
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "purchaseExists",
+      "pi_done",
+    ],
+    [
+      "query",
+      "SELECT * FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: first confirmation applies the feature 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":true}}",
+  "status": 200,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_ok",
+    ],
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "purchaseExists",
+      "pi_ok",
+    ],
+    [
+      "applyFeature",
+      "l1",
+      {
+        "days": 7,
+        "source": "paid",
+      },
+    ],
+    [
+      "recordPurchase",
+      {
+        "amountCents": 250,
+        "days": 7,
+        "listingId": "l1",
+        "method": "card",
+        "paymentRef": "pi_ok",
+        "tariff": "7",
+        "userId": "u1",
+      },
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_FEATURED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: missing intent id 1`] = `
+{
+  "body": "{"error":"paymentIntentId mancante"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: payment not completed 1`] = `
+{
+  "body": "{"error":"Pagamento non completato"}",
+  "status": 400,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_pending",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: someone else's payment 1`] = `
+{
+  "body": "{"error":"Pagamento non associato a questo annuncio"}",
+  "status": 403,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_other",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/confirm-feature: tariff gone 1`] = `
+{
+  "body": "{"error":"Tariffa non valida"}",
+  "status": 400,
+  "trace": [
+    [
+      "stripe.retrieve",
+      "pi_badtariff",
+    ],
+    [
+      "getTariff",
+      "99",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: Stripe fails 1`] = `
+{
+  "body": "{"error":"Errore nella messa in evidenza"}",
+  "status": 500,
+  "trace": [
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "query",
+      "SELECT id, seller_id, status FROM listings WHERE id = $1",
+      [
+        "boom",
+      ],
+    ],
+    [
+      "stripe.create",
+      {
+        "amount": 299,
+        "currency": "eur",
+        "metadata": {
+          "listingId": "boom",
+          "tariff": "7",
+          "type": "featured_listing",
+          "userId": "u1",
+        },
+        "payment_method_types": [
+          "card",
+        ],
+      },
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: no body 1`] = `
+{
+  "body": "{"error":"Metodo di pagamento non valido"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured POST /:id/feature: not active 1`] = `
+{
+  "body": "{"error":"Solo gli annunci attivi possono essere messi in evidenza"}",
+  "status": 400,
+  "trace": [
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "query",
+      "SELECT id, seller_id, status FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: not the owner 1`] = `
+{
+  "body": "{"error":"Non sei il proprietario di questo annuncio"}",
+  "status": 403,
+  "trace": [
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "query",
+      "SELECT id, seller_id, status FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: payment intent created 1`] = `
+{
+  "body": "{"clientSecret":"cs_123","amountCents":299}",
+  "status": 200,
+  "trace": [
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "query",
+      "SELECT id, seller_id, status FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "stripe.create",
+      {
+        "amount": 299,
+        "currency": "eur",
+        "metadata": {
+          "listingId": "l1",
+          "tariff": "7",
+          "type": "featured_listing",
+          "userId": "u1",
+        },
+        "payment_method_types": [
+          "card",
+        ],
+      },
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: unknown listing 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato"}",
+  "status": 404,
+  "trace": [
+    [
+      "getTariff",
+      "7",
+    ],
+    [
+      "query",
+      "SELECT id, seller_id, status FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: unknown tariff 1`] = `
+{
+  "body": "{"error":"Tariffa non valida"}",
+  "status": 400,
+  "trace": [
+    [
+      "getTariff",
+      "99",
+    ],
+  ],
+}
+`;
+
+exports[`featured POST /:id/feature: wallet method refused 1`] = `
+{
+  "body": "{"error":"Metodo di pagamento non valido"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured tariffs 1`] = `
+{
+  "body": "{"tariffs":[{"id":"7","days":7,"priceCents":299},{"id":"30","days":30,"priceCents":999}]}",
+  "status": 200,
+  "trace": [
+    [
+      "getTariffs",
+    ],
+  ],
+}
+`;
+
+exports[`featured without Stripe configured both payment routes answer 503 (after the cheap checks) 1`] = `
+[
+  {
+    "body": "{"error":"Metodo di pagamento non valido"}",
+    "status": 400,
+    "trace": [],
+  },
+  {
+    "body": "{"error":"Pagamenti con carta non configurati"}",
+    "status": 503,
+    "trace": [
+      [
+        "getTariff",
+        "7",
+      ],
+      [
+        "query",
+        "SELECT id, seller_id, status FROM listings WHERE id = $1",
+        [
+          "l1",
+        ],
+      ],
+    ],
+  },
+  {
+    "body": "{"error":"Pagamenti con carta non configurati"}",
+    "status": 503,
+    "trace": [
+      [
+        "getTariff",
+        "7",
+      ],
+      [
+        "query",
+        "SELECT id, seller_id, status FROM listings WHERE id = $1",
+        [
+          "l1",
+        ],
+      ],
+    ],
+  },
+]
+`;

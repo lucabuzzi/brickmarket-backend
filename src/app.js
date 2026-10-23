@@ -105,7 +105,7 @@ function createApp({ broadcast, wss, gameChatRepo, gameChatModerator, onGameChat
   app.use('/uploads', express.static(path.join(ROOT, 'uploads')));
 
   app.use('/api/auth', require('./routes/auth'));
-  app.use('/api/listings', require('./routes/listings'));
+  app.use('/api/listings', require('./modules/listings/listings.routes'));
   app.use('/api/users', require('./routes/users'));
   app.use('/api/payments', payments.router);
   app.use('/api/shipping', require('./routes/shipping'));

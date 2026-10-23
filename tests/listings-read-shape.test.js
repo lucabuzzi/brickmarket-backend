@@ -1,5 +1,5 @@
 // The JSON the public listing reads answer (feed, archive, search, detail), pinned before their seller mapping
-// moved to src/repositories/listingSeller.js: same keys, same order, same defaults. The DB is mocked.
+// moved to src/modules/listings/listings.mapper.js: same keys, same order, same defaults. The DB is mocked.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 jest.mock('../src/middleware/auth', () => (req, res, next) => { req.user = { userId: 'seller-1', role: 'user' }; next(); });
 const http = require('http');
@@ -20,7 +20,7 @@ let base;
 beforeAll(async () => {
   const app = express();
   app.use(express.json());
-  app.use('/api/listings', require('../src/routes/listings'));
+  app.use('/api/listings', require('../src/modules/listings/listings.routes'));
   server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${server.address().port}/api/listings`;
