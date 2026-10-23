@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { query } = require('../db');
 const { lookupCountry } = require('../services/geoip');
+const { optionalUserId: getOptionalUserId } = require('../utils/authToken');
 
 const VISITOR_COOKIE = 'bm_visitor_id';
 const VISITOR_COOKIE_MAX_AGE = 400 * 24 * 60 * 60 * 1000; // ~400 days (Chrome's cap)
@@ -18,18 +18,6 @@ const trackingLimiter = rateLimit({
   message: { error: 'Troppe richieste di tracciamento, riprova tra poco.' }
 });
 router.use(trackingLimiter);
-
-function getOptionalUserId(req) {
-  const authHeader = req.header('Authorization');
-  if (!authHeader) return null;
-  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    return verified.userId || null;
-  } catch {
-    return null;
-  }
-}
 
 function getOrSetVisitorId(req, res) {
   let visitorId = req.cookies?.[VISITOR_COOKIE];

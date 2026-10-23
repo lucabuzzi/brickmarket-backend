@@ -188,7 +188,7 @@ describe('consent log service', () => {
     expect(mig).toContain('ENABLE ROW LEVEL SECURITY');
     expect(mig).toContain("--down");
     expect(mig).toMatch(/DROP TABLE IF EXISTS public\.consent_log/);
-    expect(read('server.js')).toContain("app.use('/api/consent', require('./src/routes/consent'))");
+    expect(read('src/app.js')).toContain("app.use('/api/consent', require('./routes/consent'))");
   });
 });
 

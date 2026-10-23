@@ -44,8 +44,8 @@ describe('/health', () => {
     await request(port, '/other');
     expect(global.__app.locals.limiterSeen).toEqual(['/other']);
   });
-  test('server.js mounts it before express.json and the global rate limiter, once', () => {
-    const src = require('fs').readFileSync(require('path').join(__dirname, '../server.js'), 'utf8');
+  test('src/app.js mounts it before express.json and the global rate limiter, once', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../src/app.js'), 'utf8');
     const mount = src.indexOf("app.get(['/health', '/api/health']");
     expect(mount).toBeGreaterThan(-1);
     expect(mount).toBeLessThan(src.indexOf("app.use(express.json("));

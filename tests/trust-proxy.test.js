@@ -8,8 +8,8 @@ describe('parseTrustProxyHops', () => {
   test('custom fallback', () => expect(parseTrustProxyHops('x', 2)).toBe(2));
 });
 
-describe('server.js wires it before any middleware', () => {
-  const src = require('fs').readFileSync(require('path').join(__dirname, '../server.js'), 'utf8');
+describe('src/app.js wires it before any middleware', () => {
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../src/app.js'), 'utf8');
   test('sets trust proxy right after creating the app', () => {
     const appIdx = src.indexOf('const app = express()');
     const trustIdx = src.indexOf("app.set('trust proxy'");

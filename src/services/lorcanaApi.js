@@ -6,21 +6,12 @@
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService } = require('./cardSets');
 const { mapLorcanaCard } = require('./lorcanaCards');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const LORCANA_BASE = 'https://api.lorcana-api.com';
 
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[Lorcana] Network error:', err.message);
-    return null;
-  }
+  return getJson(url, { label: 'Lorcana' });
 }
 
 // ── Expansions ─────────────────────────────────────────────────────────────────────────────────────

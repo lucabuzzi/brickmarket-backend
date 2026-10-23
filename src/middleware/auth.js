@@ -1,87 +1,50 @@
-const jwt = require('jsonwebtoken');
 const { query } = require('../db');
+const { extractToken, verifyToken } = require('../utils/authToken');
 
 /**
- * Standard auth middleware — verifies the JWT, attaches req.user, and
- * re-checks is_active from the DB so a soft-deleted/disabled account
- * can't keep using a still-valid token issued before deactivation.
+ * Builds a guard that verifies the JWT, attaches req.user (the token payload) and re-checks the account in the
+ * DB on every request, so a disabled account (or, for admins, a demoted one) can't keep using a still-valid token
+ * issued before the change. Answers, in order: 401 no token, 403 invalid token, 403 unknown user, 403 disabled,
+ * 403 not an admin (admin guard only). A DB failure also answers 403 "Token non valido".
  */
-const auth = async (req, res, next) => {
-  const authHeader = req.header('Authorization');
+function requireUser({ admin = false } = {}) {
+  const sql = admin ? 'SELECT role, is_active FROM users WHERE id = $1' : 'SELECT is_active FROM users WHERE id = $1';
+  const logPrefix = admin ? 'Admin JWT verify failed:' : 'JWT verify failed:';
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Accesso negato. Token mancante.' });
-  }
-
-  const token = authHeader.startsWith('Bearer ')
-    ? authHeader.split(' ')[1]
-    : authHeader;
-
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified;
-
-    const result = await query('SELECT is_active FROM users WHERE id = $1', [verified.userId]);
-    const dbUser = result.rows[0];
-
-    if (!dbUser) {
-      return res.status(403).json({ error: 'Utente non trovato.' });
-    }
-    if (dbUser.is_active === false) {
-      return res.status(403).json({ error: 'Account disabilitato.' });
+  return async (req, res, next) => {
+    const token = extractToken(req);
+    if (!token) {
+      return res.status(401).json({ error: 'Accesso negato. Token mancante.' });
     }
 
-    next();
-  } catch (err) {
-    console.error('JWT verify failed:', err.message);
-    res.status(403).json({ error: 'Token non valido' });
-  }
-};
+    try {
+      const verified = verifyToken(token);
+      req.user = verified;
 
-/**
- * Admin auth middleware — verifies the JWT and performs a DB-backed
- * role check to ensure the token owner still has role = 'admin'.
- * This prevents privilege escalation via stale tokens.
- */
-const adminAuth = async (req, res, next) => {
-  const authHeader = req.header('Authorization');
+      const { rows: [dbUser] } = await query(sql, [verified.userId]);
+      if (!dbUser) {
+        return res.status(403).json({ error: 'Utente non trovato.' });
+      }
+      if (dbUser.is_active === false) {
+        return res.status(403).json({ error: 'Account disabilitato.' });
+      }
+      if (admin && dbUser.role !== 'admin') {
+        return res.status(403).json({ error: 'Accesso riservato agli amministratori.' });
+      }
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Accesso negato. Token mancante.' });
-  }
-
-  const token = authHeader.startsWith('Bearer ')
-    ? authHeader.split(' ')[1]
-    : authHeader;
-
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified;
-
-    // DB-backed check: always re-verify the role from the DB, not the token
-    const result = await query(
-      'SELECT role, is_active FROM users WHERE id = $1',
-      [verified.userId]
-    );
-
-    const dbUser = result.rows[0];
-
-    if (!dbUser) {
-      return res.status(403).json({ error: 'Utente non trovato.' });
+      return next();
+    } catch (err) {
+      console.error(logPrefix, err.message);
+      return res.status(403).json({ error: 'Token non valido' });
     }
-    if (dbUser.is_active === false) {
-      return res.status(403).json({ error: 'Account disabilitato.' });
-    }
-    if (dbUser.role !== 'admin') {
-      return res.status(403).json({ error: 'Accesso riservato agli amministratori.' });
-    }
+  };
+}
 
-    next();
-  } catch (err) {
-    console.error('Admin JWT verify failed:', err.message);
-    res.status(403).json({ error: 'Token non valido' });
-  }
-};
+/** Standard guard: any active account. */
+const auth = requireUser();
+
+/** Admin guard: an active account whose role in the DB (not in the token) is still 'admin'. */
+const adminAuth = requireUser({ admin: true });
 
 module.exports = auth;
 module.exports.adminAuth = adminAuth;

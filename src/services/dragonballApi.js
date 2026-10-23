@@ -7,6 +7,7 @@
  */
 
 const cardCatalog = require('./cardCatalog');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const APITCG_BASE = 'https://www.apitcg.com/api';
 const TCG_SLUG = 'dragon-ball-super-fusion-world';
@@ -17,18 +18,7 @@ async function fetchJson(url) {
     console.warn('[DragonBallAPI] APITCG_API_KEY is not set — skipping external lookup.');
     return null;
   }
-
-  try {
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json', 'x-api-key': apiKey },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[DragonBallAPI] Network error:', err.message);
-    return null;
-  }
+  return getJson(url, { label: 'DragonBallAPI', headers: { 'x-api-key': apiKey } });
 }
 
 /**

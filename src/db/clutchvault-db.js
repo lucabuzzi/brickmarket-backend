@@ -1,5 +1,6 @@
 
 const { Pool } = require('pg');
+const { poolOptions, logIdleErrors } = require('./poolConfig');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -128,10 +129,7 @@ function refuseMockInProduction(reason) {
 
 if (connectionString) {
   console.log('Connecting to database: postgresql pool...');
-  pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false }
-  });
+  pool = logIdleErrors(new Pool(poolOptions(connectionString)), 'clutchvault');
 
   // Verify tables exist
   pool.query("SELECT to_regclass('public.contests') AS exists").then(res => {

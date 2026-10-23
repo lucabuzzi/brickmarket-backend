@@ -9,8 +9,8 @@ const { applyDimensionDefaults, packageSizeFromWeight } = require('../services/p
 const { expireEndedAuctions } = require('../services/auctionExpiry');
 const featured = require('../services/featured');
 const { notifyListingChanged } = require('../services/indexnow');
-const jwt = require('jsonwebtoken');
-const { getJwtSecret } = require('../config/jwtSecret');
+const { optionalUserId } = require('../utils/authToken');
+const { SELLER_COLUMNS, withSeller } = require('../repositories/listingSeller');
 const Joi = require('joi');
 const {
   CARD_LANGUAGES, GRADING_COMPANIES, CARD_RARITY_MAX, CARD_GRADE_MAX, CARD_SET_ID_PATTERN, CARD_NUMBER_MAX, CARD_DETAIL_COLUMNS, checkCardDetails, cardDetailsForDb,
@@ -478,13 +478,7 @@ router.get('/', async (req, res) => {
     // JOIN con users per avere i dati del venditore
     const result = await query(
       `SELECT l.*, 
-              u.username as seller_username, 
-              u.avatar_url as seller_avatar,
-              u.rating_avg as seller_rating,
-              u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro,
-              u.seller_type as seller_seller_type,
-              u.company_name as seller_company_name
+              ${SELLER_COLUMNS}
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        ${where} 
@@ -494,24 +488,7 @@ router.get('/', async (req, res) => {
     );
 
     // Mappiamo i dati per farli digerire al frontend (che si aspetta l.seller.username)
-    const formatted = result.rows.map(row => {
-      const {
-        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
-        seller_seller_type, seller_company_name, ...listing
-      } = row;
-      return {
-        ...listing,
-        seller: {
-          username: seller_username,
-          avatar_url: seller_avatar,
-          rating_avg: seller_rating,
-          is_verified: seller_is_verified ?? false,
-          is_pro: seller_is_pro ?? false,
-          seller_type: seller_seller_type ?? null,
-          company_name: seller_company_name ?? null,
-        }
-      };
-    });
+    const formatted = result.rows.map(withSeller);
 
     res.json(formatted);
   } catch (err) {
@@ -527,37 +504,14 @@ router.get('/archive', async (req, res) => {
 
     const result = await query(
       `SELECT l.*,
-              u.username as seller_username,
-              u.avatar_url as seller_avatar,
-              u.rating_avg as seller_rating,
-              u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro,
-              u.seller_type as seller_seller_type,
-              u.company_name as seller_company_name
+              ${SELLER_COLUMNS}
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        WHERE l.status IN ('sold', 'expired')
        ORDER BY l.updated_at DESC, l.created_at DESC`
     );
 
-    const formatted = result.rows.map(row => {
-      const {
-        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
-        seller_seller_type, seller_company_name, ...listing
-      } = row;
-      return {
-        ...listing,
-        seller: {
-          username: seller_username,
-          avatar_url: seller_avatar,
-          rating_avg: seller_rating,
-          is_verified: seller_is_verified ?? false,
-          is_pro: seller_is_pro ?? false,
-          seller_type: seller_seller_type ?? null,
-          company_name: seller_company_name ?? null,
-        }
-      };
-    });
+    const formatted = result.rows.map(withSeller);
 
     res.json(formatted);
   } catch (err) {
@@ -574,13 +528,7 @@ router.get('/search', async (req, res) => {
     }
     const result = await query(
       `SELECT l.*,
-              u.username as seller_username,
-              u.avatar_url as seller_avatar,
-              u.rating_avg as seller_rating,
-              u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro,
-              u.seller_type as seller_seller_type,
-              u.company_name as seller_company_name
+              ${SELLER_COLUMNS}
        FROM listings l
        JOIN users u ON l.seller_id = u.id
        WHERE (l.title ILIKE $1 OR l.set_number ILIKE $1 OR l.theme ILIKE $1)
@@ -588,24 +536,7 @@ router.get('/search', async (req, res) => {
        ORDER BY l.created_at DESC`,
       [`%${q}%`]
     );
-    const formatted = result.rows.map(row => {
-      const {
-        seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
-        seller_seller_type, seller_company_name, ...listing
-      } = row;
-      return {
-        ...listing,
-        seller: {
-          username: seller_username,
-          avatar_url: seller_avatar,
-          rating_avg: seller_rating,
-          is_verified: seller_is_verified ?? false,
-          is_pro: seller_is_pro ?? false,
-          seller_type: seller_seller_type ?? null,
-          company_name: seller_company_name ?? null,
-        }
-      };
-    });
+    const formatted = result.rows.map(withSeller);
     res.json(formatted);
   } catch (err) {
     console.error('SEARCH ERROR:', err.message);
@@ -735,13 +666,7 @@ router.get('/:id', async (req, res) => {
     // Recuperiamo l'annuncio con JOIN venditore (u.country non è nella schema, usiamo 'it' come default)
     const result = await query(
       `SELECT l.*, 
-              u.username as seller_username, 
-              u.avatar_url as seller_avatar,
-              u.rating_avg as seller_rating,
-              u.is_verified as seller_is_verified,
-              u.is_pro as seller_is_pro,
-              u.seller_type as seller_seller_type,
-              u.company_name as seller_company_name,
+              ${SELLER_COLUMNS},
               (SELECT u2.username FROM bids b JOIN users u2 ON b.bidder_id = u2.id WHERE b.listing_id = l.id ORDER BY b.amount DESC, b.created_at ASC LIMIT 1) as highest_bidder_username
        FROM listings l
        JOIN users u ON l.seller_id = u.id
@@ -754,38 +679,17 @@ router.get('/:id', async (req, res) => {
     // Incrementa viste in background (opzionale: non blocca la risposta)
     query(`UPDATE listings SET views_count = views_count + 1 WHERE id = $1`, [req.params.id]).catch(console.error);
 
-    const row = result.rows[0];
-    const {
-      seller_username, seller_avatar, seller_rating, seller_is_verified, seller_is_pro,
-      seller_seller_type, seller_company_name, highest_bidder_username, ...listing
-    } = row;
-
-    const formatted = {
-      ...listing,
-      highest_bidder_username,
-      seller: {
-        username: seller_username,
-        avatar_url: seller_avatar,
-        rating_avg: seller_rating,
-        is_verified: seller_is_verified ?? false,
-        is_pro: seller_is_pro ?? false,
-        seller_type: seller_seller_type ?? null,
-        company_name: seller_company_name ?? null,
-        country: 'it'  // default
-      }
-    };
+    const formatted = withSeller(result.rows[0]);
+    formatted.seller.country = 'it'; // default (users has no country column for the seller here)
+    const listing = formatted;
 
     let buyerCountry = 'it';
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    const buyerId = optionalUserId(req, { bearerOnly: true });
+    if (buyerId) {
       try {
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, getJwtSecret());
-        if (decoded.userId) {
-          const userRes = await query('SELECT address_country FROM users WHERE id = $1', [decoded.userId]);
-          if (userRes.rows.length > 0 && userRes.rows[0].address_country) {
-            buyerCountry = userRes.rows[0].address_country;
-          }
+        const userRes = await query('SELECT address_country FROM users WHERE id = $1', [buyerId]);
+        if (userRes.rows.length > 0 && userRes.rows[0].address_country) {
+          buyerCountry = userRes.rows[0].address_country;
         }
       } catch (e) {}
     }

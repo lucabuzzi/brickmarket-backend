@@ -1,8 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { parseConsent, recordConsent } = require('../services/consentLog');
+const { optionalUserId } = require('../utils/authToken');
 
 const router = express.Router();
 
@@ -11,16 +11,6 @@ router.use(rateLimit({
   max: 20,
   message: { error: 'Troppe richieste, riprova tra poco.' },
 }));
-
-function optionalUserId(req) {
-  const header = req.header('Authorization');
-  if (!header) return null;
-  try {
-    return jwt.verify(header.startsWith('Bearer ') ? header.split(' ')[1] : header, process.env.JWT_SECRET).userId || null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * POST /api/consent
