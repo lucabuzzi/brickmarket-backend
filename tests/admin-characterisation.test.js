@@ -113,7 +113,7 @@ beforeAll(async () => {
   const app = express();
   app.use(express.json());
   app.set('broadcast', (msg) => mockLog.push(['broadcast', msg]));
-  app.use('/api/admin', require('../src/routes/admin'));
+  app.use('/api/admin', require('../src/modules/admin/admin.routes'));
   server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${server.address().port}/api/admin`;

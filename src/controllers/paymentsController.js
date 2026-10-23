@@ -159,7 +159,7 @@ async function createPaymentIntentHandler(req, res) {
 // 2b. Crea un PaymentIntent per il checkout multi-articolo del carrello
 // (può includere annunci di venditori diversi: l'incasso finisce sempre
 // sul saldo della piattaforma — CardBrix paga poi ciascun venditore
-// separatamente, fuori da Stripe; vedi payout tracking in admin.js).
+// separatamente, fuori da Stripe; vedi payout tracking in src/modules/admin/orders/).
 async function createCartPaymentIntentHandler(req, res) {
   // shippingSelections is keyed by shipping-group key ("<sellerId>::<macro>"),
   // each { method }: a carrier code for physical groups, a tier id for TCG.

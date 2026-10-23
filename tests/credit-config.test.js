@@ -1,4 +1,4 @@
-// Covers GET/PUT /api/admin/credit-config (src/routes/admin.js +
+// Covers GET/PUT /api/admin/credit-config (src/modules/admin/credits/ +
 // src/repositories/creditConfigRepository.js): admin-only access, unknown-key/invalid-value
 // rejection, and that a PUT round-trips through the DB (not just held in memory).
 //

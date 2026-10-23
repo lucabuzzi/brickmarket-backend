@@ -117,7 +117,7 @@ describe('admin routes', () => {
 
   beforeAll(async () => {
     const app = express();
-    app.use('/api/admin', require('../src/routes/admin'));
+    app.use('/api/admin', require('../src/modules/admin/admin.routes'));
     await new Promise((resolve) => { server = app.listen(0, '127.0.0.1', resolve); });
     baseUrl = `http://127.0.0.1:${server.address().port}`;
   });

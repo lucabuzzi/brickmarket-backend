@@ -1,4 +1,4 @@
-// Covers the card-only "in evidenza" flow (src/modules/listings/featuring.service.js, src/routes/admin.js,
+// Covers the card-only "in evidenza" flow (src/modules/listings/featuring.service.js, src/modules/admin/listings/,
 // src/services/featured.js): credits can no longer pay for a promotion, the public
 // tariff table is in euro cents, and admins can change prices (validated, DB round-trip).
 //
