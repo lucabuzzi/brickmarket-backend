@@ -6,21 +6,12 @@
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService } = require('./cardSets');
 const { slugify, languageOfPrintCode, mapYugiohPrints } = require('./ygoprodeckCards');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const YGO_BASE = 'https://db.ygoprodeck.com/api/v7';
 
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[YGOPRODeck] Network error:', err.message);
-    return null;
-  }
+  return getJson(url, { label: 'YGOPRODeck' });
 }
 
 // ── Expansions ─────────────────────────────────────────────────────────────────────────────────────

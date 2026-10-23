@@ -1,7 +1,6 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const mainDb = require('../db');
-const { getJwtSecret } = require('../config/jwtSecret');
+const { verifyToken } = require('../utils/authToken');
 const { upload } = require('../services/cloudinary');
 const contestController = require('../controllers/contestController');
 const { adminAuth } = require('../middleware/auth');
@@ -19,7 +18,7 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, getJwtSecret());
+    const decoded = verifyToken(token);
     const uId = decoded.userId || decoded.id;
 
     const userRes = await mainDb.query(

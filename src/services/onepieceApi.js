@@ -7,21 +7,12 @@ const cardCatalog = require('./cardCatalog');
 const { createCardSetsService } = require('./cardSets');
 const { mapOnePieceCard, variantOf, rarityLabel } = require('./onepieceCards');
 const { fetchPrintsByCode } = require('./onepiecePrints');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const OPTCG_BASE = 'https://optcgapi.com/api';
 
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[OPTCG] Network error:', err.message);
-    return null;
-  }
+  return getJson(url, { label: 'OPTCG' });
 }
 
 // ── Expansions ─────────────────────────────────────────────────────────────────────────────────────

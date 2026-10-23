@@ -7,22 +7,13 @@
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService, sleep } = require('./cardSets');
 const { mapScryfallCard, rarityLabel } = require('./scryfallCards');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const SCRYFALL_BASE = 'https://api.scryfall.com';
 const USER_AGENT = 'BrickMarket/1.0 (BrickMarket collectible catalog)';
 
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[Scryfall] Network error:', err.message);
-    return null;
-  }
+  return getJson(url, { label: 'Scryfall', headers: { 'User-Agent': USER_AGENT } });
 }
 
 // ── Expansions ─────────────────────────────────────────────────────────────────────────────────────

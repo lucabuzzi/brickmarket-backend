@@ -13,6 +13,7 @@ const { query } = require('../db');
 const cardCatalog = require('./cardCatalog');
 const { createCardSetsService, groupBySeries, compareLocalId, mapLimit } = require('./cardSets');
 const { imageUrl, setIdOfCard, mapCardDetail } = require('./tcgdexCards');
+const { fetchJson: getJson } = require('../utils/fetchJson');
 
 const BASE = 'https://api.tcgdex.net/v2';
 const GAME = 'pokemon';
@@ -21,14 +22,7 @@ const CARDS_TTL_DAYS = 30;
 const SERIES_CONCURRENCY = 5;
 
 async function fetchJson(path) {
-  try {
-    const res = await fetch(`${BASE}${path}`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10000) });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('[TCGdex] Network error:', err.message);
-    return null;
-  }
+  return getJson(`${BASE}${path}`, { label: 'TCGdex', timeoutMs: 10000 });
 }
 
 // ── Pure mappers (exported for tests) ──────────────────────────────────────────────────────────────

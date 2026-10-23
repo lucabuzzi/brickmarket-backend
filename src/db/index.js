@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { poolOptions, logIdleErrors } = require('./poolConfig');
 require('dotenv').config();
 
 // Refuses to open a connection pool unless the caller is either:
@@ -30,10 +31,7 @@ if (process.env.APP_SERVER_BOOT !== '1' && process.env.DB_TARGET_CONFIRMED !== '
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Obbligatorio per Supabase
-});
+const pool = logIdleErrors(new Pool(poolOptions(process.env.DATABASE_URL)), 'main');
 
 async function withTransaction(fn) {
   const client = await pool.connect();
