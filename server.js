@@ -1,3 +1,6 @@
+// Entry point: checks the environment, builds the app (src/app.js), opens the HTTP server with its two
+// WebSockets (the public Live Hub and the authenticated game plaza on /ws/game) and starts the background jobs.
+
 // Must be set before anything else is required: it's how src/db/index.js tells
 // the running application server apart from a migration/seed script required
 // directly (which it refuses to let connect — see that file). This is the
@@ -9,51 +12,24 @@ process.env.APP_SERVER_BOOT = '1';
 require('dotenv').config();
 // No JWT secret, no server: there is no safe default to fall back on (see src/config/jwtSecret.js).
 require('./src/config/jwtSecret').assertJwtSecret();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
-const fs = require('fs');
-const payments = require('./src/routes/payments');
-const { createSpaFallback } = require('./src/routes/spaFallback');
-const { localeRedirect } = require('./src/routes/localeRedirect');
 const http = require('http');
-const WebSocket = require('ws');
+const { createApp, IS_PRODUCTION } = require('./src/app');
+const { createLiveHub } = require('./src/realtime/liveHub');
+const { verifyToken } = require('./src/utils/authToken');
+const { startJobs } = require('./src/jobs/scheduler');
+const { JOBS } = require('./src/jobs');
 
-const app = express();
-// Behind Render's proxy: make req.ip the real visitor (rate limiting, anti-abuse, geo). See src/utils/trustProxy.js.
-app.set('trust proxy', require('./src/utils/trustProxy').parseTrustProxyHops(process.env.TRUST_PROXY_HOPS));
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
-
-const broadcast = (data) => {
-  const payload = JSON.stringify(data);
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
-};
-
-app.set('wss', wss);
-app.set('broadcast', broadcast);
-
-wss.on('connection', (ws) => {
-  console.log('Client connected to Live Hub.');
-  ws.send(JSON.stringify({ type: 'WELCOME', message: 'Connected to Live Hub' }));
-});
+const liveHub = createLiveHub();
 
 // Typed messages in the plaza, checked before anyone sees them; off until an admin switches them on. One repository
 // and one moderator shared by the plaza and the admin page (/api/admin/game-chat), so a change applies at once.
 const gameChatRepo = require('./src/repositories/gameChatRepository').gameChatRepository();
 const gameChatModerator = require('./src/services/chatModeration').createChatModerator({ repo: gameChatRepo });
 
-// Plaza of "CardBrix the game" (/ws/game): unlike the public Live Hub above, every connection must identify
+// Plaza of "CardBrix the game" (/ws/game): unlike the public Live Hub, every connection must identify
 // itself with the site's JWT, and players only ever see each other's username and character.
 const plaza = require('./src/services/gamePlazaSocket').createPlaza({
-  verifyToken: (token) => require('jsonwebtoken').verify(token, process.env.JWT_SECRET),
+  verifyToken,
   loadUser: async (userId) => {
     const { rows } = await require('./src/db').query(
       'SELECT id, username, avatar_config, is_active FROM users WHERE id = $1',
@@ -64,439 +40,30 @@ const plaza = require('./src/services/gamePlazaSocket').createPlaza({
   moderator: gameChatModerator,
 });
 
+const app = createApp({
+  broadcast: liveHub.broadcast,
+  wss: liveHub.wss,
+  gameChatRepo,
+  gameChatModerator,
+  onGameChatSettingsChanged: () => plaza.refreshChat(),
+});
+
+const server = http.createServer(app);
+
 server.on('upgrade', (request, socket, head) => {
   const { pathname } = new URL(request.url, 'http://localhost');
   if (pathname === '/ws/game') {
     plaza.handleUpgrade(request, socket, head);
     return;
   }
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
-});
-
-app.use(helmet({ contentSecurityPolicy: false }));
-
-// Verified via Content-Security-Policy-Report-Only against the production build
-// (home, login/Turnstile, cart) with zero violations: neither our own code (no
-// eval/Function/inline <script>, JSON-LD blocks aren't script-src-governed) nor
-// Cloudflare Turnstile need 'unsafe-eval'/'unsafe-inline', and Stripe.js's own
-// documented CSP requirements don't list them either. Kept permissive outside
-// production as a safety margin, since this header is only relevant when Express
-// serves the built client directly — the Vite dev server on :5173 doesn't go
-// through this middleware at all.
-const scriptSrc = process.env.NODE_ENV === 'production'
-  ? "script-src 'self' https://challenges.cloudflare.com https://js.stripe.com;"
-  : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://js.stripe.com;";
-
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", `${scriptSrc} frame-src https://challenges.cloudflare.com https://js.stripe.com;`);
-  next();
-});
-
-const corsOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin: corsOrigins.length ? corsOrigins : true,
-    credentials: true,
-  })
-);
-
-app.use(cookieParser());
-
-// IMPORTANTE: il webhook Stripe deve ricevere il body grezzo (raw)
-app.use('/api/payments/stripe-webhook',
-  express.raw({ type: 'application/json' }),
-  payments.webhook
-);
-
-// Webhook Stripe per ClutchVault (solo "featured listing" a pagamento: i crediti
-// non hanno valore monetario, quindi non esiste più nessun ramo che ricarica il wallet)
-app.use('/api/webhooks/stripe',
-  express.raw({ type: 'application/json' }),
-  require('./src/routes/stripe')
-);
-
-// Webhook Sendcloud (aggiornamenti stato spedizione) — stesso motivo degli
-// altri: la firma HMAC va verificata sui byte grezzi, prima che express.json
-// li consumi e li riserializzi.
-app.use('/api/webhooks/sendcloud',
-  express.raw({ type: 'application/json' }),
-  require('./src/routes/webhooksSendcloud')
-);
-
-// Liveness probe (no DB, outside the rate limiter). /api/health kept for existing callers.
-app.get(['/health', '/api/health'], require('./src/routes/health'));
-
-app.use(express.json({ limit: '10mb' }));
-
-// Rate limiting globale (escluso webhook Stripe)
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5000,
-  skip: (req) => req.originalUrl.includes('/stripe-webhook'),
-  message: { error: 'Troppe richieste, riprova tra poco.' }
-}));
-
-// Serve uploaded local images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.use('/api/auth', require('./src/routes/auth'));
-app.use('/api/listings', require('./src/routes/listings'));
-app.use('/api/users', require('./src/routes/users'));
-app.use('/api/payments', payments.router);
-app.use('/api/shipping', require('./src/routes/shipping'));
-app.use('/api/shipments', require('./src/routes/shipments'));
-app.use('/api/addresses', require('./src/routes/addresses'));
-app.use('/api/cart', require('./src/routes/cart'));
-app.use('/api/orders', require('./src/routes/orders'));
-app.use('/api/notifications', require('./src/routes/notifications'));
-app.use('/api/sets', require('./src/routes/sets'));
-app.use('/api/reviews', require('./src/routes/reviews'));
-app.use('/api/support', require('./src/routes/support'));
-app.use('/api/admin', require('./src/routes/admin'));
-app.use('/api/admin', require('./src/routes/adminBadges'));
-app.use('/api/admin/game-chat', require('./src/routes/adminGameChat').createAdminGameChatRouter({
-  repo: gameChatRepo, moderator: gameChatModerator, onSettingsChanged: () => plaza.refreshChat(),
-}));
-app.use('/api/analytics', require('./src/routes/analyticsTrack'));
-app.use('/api/consent', require('./src/routes/consent'));
-app.use('/api/geo', require('./src/routes/geo'));
-app.use('/api/catalog/magic', require('./src/routes/catalogMagic'));
-app.use('/api/catalog/yugioh', require('./src/routes/catalogYugioh'));
-app.use('/api/catalog/lorcana', require('./src/routes/catalogLorcana'));
-app.use('/api/catalog/pokemon', require('./src/routes/catalogPokemon'));
-app.use('/api/catalog/onepiece', require('./src/routes/catalogOnepiece'));
-app.use('/api/catalog/dragonball', require('./src/routes/catalogDragonball'));
-app.use('/api/catalog/funko', require('./src/routes/catalogFunko'));
-app.use('/api/catalog', require('./src/routes/catalog'));
-app.use('/api/cards', require('./src/routes/cardRecognize')); // photo -> One Piece card prints
-
-// ClutchVault specific integrations
-const cvDb = require('./src/db/clutchvault-db');
-const { authenticateToken } = require('./src/routes/contest');
-const { adminAuth } = require('./src/middleware/auth');
-
-app.use('/api/wallet', require('./src/routes/wallet'));
-app.use('/api/contest', require('./src/routes/contest').router);
-
-app.use(require('./src/routes/sitemap'));
-app.use(require('./src/routes/seoFiles')); // /llms.txt, /llms-full.txt, /<INDEXNOW_KEY>.txt
-
-// Admin Jigsaw Puzzle Image Upload Router
-const { upload } = require('./src/services/cloudinary');
-const { uploadOrSaveProcessedImage } = require('./src/services/image');
-const crypto = require('crypto');
-
-// Keep in sync with client/src/config/catalogGames.js CATALOG_GAMES slugs
-// and the products.category CHECK constraint (src/db/migrate_products_category_all_games.js).
-const ALLOWED_PUZZLE_CATEGORIES = ['lego', 'magic', 'yugioh', 'lorcana', 'pokemon', 'onepiece', 'dragonball', 'funko'];
-
-// adminAuth (src/middleware/auth.js) ricontrola role e is_active dal DB ad ogni
-// richiesta — un admin disattivato o degradato perde l'accesso anche con un JWT
-// ancora valido, a differenza del vecchio authenticateToken locale di contest.js
-// (che non ricontrollava is_active) + check inline su req.user.role.
-app.post('/api/admin/upload-puzzle-image', adminAuth, upload.single('image'), async (req, res) => {
-  try {
-    const {
-      title, description, category = 'lego', marketValue = 100,
-      slotCostCredits = 10, condition = 'New in Box', gradingInfo = 'Ungraded', totalSlots = 5
-    } = req.body;
-
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
-    }
-    if (!ALLOWED_PUZZLE_CATEGORIES.includes(category)) {
-      return res.status(400).json({ error: `Invalid category. Must be one of: ${ALLOWED_PUZZLE_CATEGORIES.join(', ')}` });
-    }
-
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = await uploadOrSaveProcessedImage(req.file.buffer, 'jigsaw_puzzles');
-    } else {
-      imageUrl = 'https://images.unsplash.com/photo-1585336139080-b019d07c312e?auto=format&fit=crop&w=800&q=80';
-    }
-
-    // Must be real UUIDs, not just UUID-shaped strings: the products/contests id
-    // columns are typed UUID in Postgres, which rejects anything non-hex (the old
-    // 'c'/'p' prefix here — copied from the mock DB's placeholder ids, which don't
-    // enforce a format — caused every real upload to fail with "invalid input
-    // syntax for type uuid").
-    const newContestId = crypto.randomUUID();
-    const newProductId = crypto.randomUUID();
-
-    if (cvDb.isMock) {
-      const mockDb = cvDb.getMockDbState();
-      const newProduct = {
-        id: newProductId,
-        title,
-        description: description || '',
-        image_url: imageUrl,
-        category,
-        market_value: parseFloat(marketValue),
-        condition,
-        grading_info: gradingInfo,
-        stock: 1
-      };
-      mockDb.products.push(newProduct);
-
-      const newContest = {
-        id: newContestId,
-        product_id: newProductId,
-        total_slots: parseInt(totalSlots, 10),
-        filled_slots: 0,
-        slot_cost_credits: parseFloat(slotCostCredits),
-        status: 'open',
-        winner_id: null
-      };
-      mockDb.contests.push(newContest);
-    } else {
-      await cvDb.query(`
-        INSERT INTO public.products (id, title, description, image_url, category, market_value, condition, grading_info, stock)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
-      `, [newProductId, title, description || '', imageUrl, category, parseFloat(marketValue), condition, gradingInfo]);
-
-      await cvDb.query(`
-        INSERT INTO public.contests (id, product_id, total_slots, filled_slots, slot_cost_credits, status)
-        VALUES ($1, $2, $3, 0, $4, 'open')
-      `, [newContestId, newProductId, parseInt(totalSlots, 10), parseFloat(slotCostCredits)]);
-    }
-
-    const broadcast = app.get('broadcast');
-    if (broadcast) {
-      broadcast({
-        type: 'CONTEST_CREATED',
-        payload: {
-          id: newContestId,
-          title,
-          imageUrl,
-          category,
-          marketValue: parseFloat(marketValue),
-          slotCostCredits: parseFloat(slotCostCredits),
-          totalSlots: parseInt(totalSlots, 10),
-          filledSlots: 0,
-          status: 'open'
-        }
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: 'Jigsaw puzzle uploaded successfully!',
-      contestId: newContestId,
-      imageUrl
-    });
-  } catch (err) {
-    console.error('Upload puzzle route error:', err);
-    return res.status(500).json({ error: 'Failed to upload puzzle image: ' + err.message });
-  }
-});
-
-// Fetch ClutchVault products
-app.get('/api/products', async (req, res) => {
-  try {
-    const result = await cvDb.query('SELECT * FROM public.products ORDER BY created_at DESC');
-    return res.json({ products: result.rows });
-  } catch (error) {
-    console.error('Fetch products error:', error);
-    return res.status(500).json({ error: 'Database error fetching products' });
-  }
-});
-
-// Fetch ClutchVault auctions
-app.get('/api/auctions', async (req, res) => {
-  try {
-    const result = await cvDb.query(
-      `SELECT a.*, p.title, p.description, p.image_url, p.category, p.market_value, p.condition, p.grading_info
-       FROM public.auctions a
-       JOIN public.products p ON a.product_id = p.id
-       WHERE a.status = 'active'
-       ORDER BY a.ends_at ASC`
-    );
-    const auctions = result.rows.map(row => ({
-      id: row.id,
-      productId: row.product_id,
-      title: row.title,
-      description: row.description,
-      imageUrl: row.image_url,
-      category: row.category,
-      marketValue: parseFloat(row.market_value),
-      condition: row.condition,
-      gradingInfo: row.grading_info,
-      currentBid: parseFloat(row.current_bid),
-      highestBidderId: row.highest_bidder_id,
-      buyNowPrice: parseFloat(row.buy_now_price),
-      endsAt: row.ends_at,
-      status: row.status
-    }));
-    return res.json({ auctions });
-  } catch (error) {
-    console.error('Fetch auctions error:', error);
-    return res.status(500).json({ error: 'Database error fetching auctions' });
-  }
-});
-
-// Place bid on ClutchVault auctions — DISATTIVATO (non cancellato). Questa via non
-// addebita mai il wallet né chiude/finalizza l'asta (nessun job di finalizzazione
-// esiste in questo codebase): verificato che oggi non ci sono aste attive né bid
-// registrati in public.auctions, ma tenerla attiva sarebbe rischioso se mai lo fossero.
-// Non esiste inoltre nessun endpoint di creazione asta raggiungibile da client/API:
-// le righe di public.auctions possono nascere solo da SQL/seed diretto.
-app.post('/api/auctions/bid', authenticateToken, async (req, res) => {
-  return res.status(503).json({ error: 'Aste temporaneamente non disponibili.' });
-});
-
-// eslint-disable-next-line no-unused-vars
-async function _disabledAuctionBidHandler(req, res) {
-  const { auctionId, bidAmount } = req.body;
-  if (!auctionId || !bidAmount || bidAmount <= 0) {
-    return res.status(400).json({ error: 'auctionId and positive bidAmount are required' });
-  }
-
-  try {
-    const auctionResult = await cvDb.query(
-      'SELECT current_bid, buy_now_price, status FROM public.auctions WHERE id = $1',
-      [auctionId]
-    );
-
-    if (auctionResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Auction not found' });
-    }
-
-    const auction = auctionResult.rows[0];
-    if (auction.status !== 'active') {
-      return res.status(400).json({ error: 'Auction has already ended' });
-    }
-
-    const currentBid = parseFloat(auction.current_bid);
-    if (bidAmount <= currentBid) {
-      return res.status(400).json({ error: `Bid must be higher than current bid of ${currentBid} credits.` });
-    }
-
-    const walletResult = await cvDb.query(
-      'SELECT balance_credits FROM public.user_wallets WHERE user_id = $1',
-      [req.user.id]
-    );
-
-    if (walletResult.rows.length === 0 || parseFloat(walletResult.rows[0].balance_credits) < bidAmount) {
-      return res.status(400).json({ error: 'Insufficient credits in wallet to place this bid' });
-    }
-
-    await cvDb.query(
-      'UPDATE public.auctions SET current_bid = $1, highest_bidder_id = $2 WHERE id = $3',
-      [bidAmount, req.user.id, auctionId]
-    );
-
-    broadcast({
-      type: 'BID_PLACED',
-      payload: {
-        auctionId,
-        currentBid: bidAmount,
-        highestBidderId: req.user.id,
-        highestBidderName: req.user.username
-      }
-    });
-
-    return res.json({
-      success: true,
-      message: 'Bid placed successfully!',
-      currentBid: bidAmount
-    });
-  } catch (error) {
-    console.error('Place bid error:', error);
-    return res.status(500).json({ error: 'Database error placing bid' });
-  }
-}
-
-// Health check under /api for the frontend helper
-
-// Serve the built React app (client/dist, produced by `npm run build`) and fall back to
-// index.html for any non-API, non-uploads GET path so React Router's client-side routes
-// (e.g. /product/:id) work on a hard refresh or a direct link, not just via in-app navigation.
-// The fallback rewrites canonical/OG meta tags per-request (and injects Product JSON-LD for
-// listings) since the static template always declares them as "/" — see src/services/seoMeta.js.
-const clientDistPath = path.join(__dirname, 'client', 'dist');
-// index: false -> GET "/" must reach the SPA fallback below (which puts the page text in the HTML and
-// rewrites the meta tags) instead of being answered by express.static with the raw dist/index.html.
-// /index.html is a raw copy of the shell reachable at a second address: send it to "/" with a permanent redirect.
-app.get('/index.html', (req, res) => res.redirect(301, '/'));
-// Old unprefixed structural URLs (and bare "/") -> their real /it or /en URL, before anything else can answer them.
-app.get(/^\/(?!api\/|uploads\/).*/, localeRedirect);
-app.use(express.static(clientDistPath, { index: false }));
-// Unknown URLs and missing listings answer HTTP 404 (with the same shell) — see src/routes/spaFallback.js.
-app.get(/^\/(?!api\/|uploads\/).*/, createSpaFallback(clientDistPath));
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    error: err.message || 'Errore interno del server'
-  });
+  liveHub.handleUpgrade(request, socket, head);
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Backend live on port ${PORT}`);
-  console.log(`CSP: ${process.env.NODE_ENV === 'production' ? 'strict (no unsafe-inline/unsafe-eval)' : 'permissive (dev)'}`);
+  console.log(`CSP: ${IS_PRODUCTION ? 'strict (no unsafe-inline/unsafe-eval)' : 'permissive (dev)'}`);
 });
 
-// --- Analytics daily snapshots: archive from July 2026 onward ---
-// On boot: backfill any day since ANALYTICS_ARCHIVE_START that's missing a
-// snapshot (covers days the server was down at midnight). Then a daily cron
-// keeps saving yesterday's snapshot going forward. Both paths are idempotent.
-const cron = require('node-cron');
-const { backfillSnapshots } = require('./src/services/analyticsSnapshot');
-const ANALYTICS_ARCHIVE_START = '2026-07-01';
-
-backfillSnapshots(ANALYTICS_ARCHIVE_START)
-  .then((results) => console.log(`[Analytics] Backfilled ${results.length} daily snapshot(s) since ${ANALYTICS_ARCHIVE_START}.`))
-  .catch((err) => console.error('[Analytics] Startup backfill failed:', err.message));
-
-cron.schedule('10 0 * * *', () => {
-  backfillSnapshots(ANALYTICS_ARCHIVE_START)
-    .then((results) => console.log(`[Analytics] Daily snapshot job: ${results.length} day(s) computed.`))
-    .catch((err) => console.error('[Analytics] Daily snapshot job failed:', err.message));
-});
-
-// Backstop for lapsed "in evidenza" windows. The public feed already lazy-expires
-// them on every GET /api/listings; this just catches listings that stop being
-// viewed while still flagged is_featured.
-const { expireFeaturedListings } = require('./src/services/featured');
-cron.schedule('5 * * * *', () => {
-  expireFeaturedListings().catch((err) => console.error('[Featured] Hourly expiry job failed:', err.message));
-});
-
-// Credit bonus maturation (sale_bonus/purchase_bonus, 15-day maturation window —
-// CLAUDE.md). Runs once at boot to catch anything overdue while the server was down,
-// then daily. Idempotent either way (see src/services/creditMaturation.js).
-const { processMaturedGrants } = require('./src/services/creditMaturation');
-
-processMaturedGrants()
-  .then(({ matured, cancelled, deferred, total }) => console.log(`[CreditMaturation] Startup pass: ${matured} matured, ${cancelled} cancelled, ${deferred} deferred (disputed), ${total} due.`))
-  .catch((err) => console.error('[CreditMaturation] Startup pass failed:', err.message));
-
-cron.schedule('20 0 * * *', () => {
-  processMaturedGrants()
-    .then(({ matured, cancelled, deferred, total }) => console.log(`[CreditMaturation] Daily job: ${matured} matured, ${cancelled} cancelled, ${deferred} deferred (disputed), ${total} due.`))
-    .catch((err) => console.error('[CreditMaturation] Daily job failed:', err.message));
-});
-
-// Auto-confirms delivery when the buyer never does within orders.confirm_deadline
-// (5 days from order creation). Runs once at boot, then hourly. Shares the exact same
-// transaction/effects as the manual "confirm delivery" button (order completed,
-// seller sales_count, pending credit bonus grants) — see paymentsRepository.js.
-const { processAutoConfirmations } = require('./src/services/orderAutoConfirm');
-
-processAutoConfirmations()
-  .then(({ confirmed, total }) => console.log(`[AutoConfirm] Startup pass: ${confirmed}/${total} order(s) auto-confirmed.`))
-  .catch((err) => console.error('[AutoConfirm] Startup pass failed:', err.message));
-
-cron.schedule('15 * * * *', () => {
-  processAutoConfirmations()
-    .then(({ confirmed, total }) => console.log(`[AutoConfirm] Hourly job: ${confirmed}/${total} order(s) auto-confirmed.`))
-    .catch((err) => console.error('[AutoConfirm] Hourly job failed:', err.message));
-});
+// Analytics snapshots, featured expiry, credit maturation, delivery auto-confirm: see src/jobs/index.js.
+startJobs(JOBS);

@@ -239,7 +239,7 @@ describe('injectShell', () => {
 
 describe('server wiring', () => {
   test('express.static must not serve index.html itself, or "/" would bypass the shell and the meta rewrite', () => {
-    const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+    const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8');
     expect(server).toMatch(/express\.static\(clientDistPath,\s*\{\s*index:\s*false\s*\}\)/);
     expect(server).toMatch(/createSpaFallback\(clientDistPath\)/);
   });
