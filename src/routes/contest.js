@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mainDb = require('../db');
-const JWT_SECRET = process.env.JWT_SECRET || 'clutchvault_secret_key_1337';
+const { getJwtSecret } = require('../config/jwtSecret');
 const { upload } = require('../services/cloudinary');
 const contestController = require('../controllers/contestController');
 const { adminAuth } = require('../middleware/auth');
@@ -19,7 +19,7 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     const uId = decoded.userId || decoded.id;
 
     const userRes = await mainDb.query(

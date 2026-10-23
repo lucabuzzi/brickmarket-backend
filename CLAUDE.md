@@ -28,7 +28,7 @@ npm run lint                  # eslint .
 npm run preview               # preview a production build
 ```
 
-There is no test suite: the root `npm test` is an unimplemented stub and `client/package.json` has no test script. Don't invent test commands.
+Tests are Jest, in `tests/`, run from the root with `npm test` (`client/package.json` has no test script). Suites that need a live server or DB go through `tests/helpers/guardAgainstProduction.js` and fail to start until `.env.test` points at a separate test database — that's expected, not a regression. Unit tests that require route files must `jest.mock('../src/db')` and `jest.mock('../src/db/clutchvault-db')`: the latter reads `.env` itself and opens a real pool on require.
 
 Database migrations are ad-hoc, not framework-managed: `src/db/*.sql` and `src/db/migrate_*.js` are one-off scripts — there's no migration runner to invoke. **Never run a migration or seed script directly** (`node src/db/migrate_x.js`, `node scripts/seed-dummy-data.js`, `node src/db/seed_funko_pop.js`) — `src/db/index.js` refuses to open a DB connection unless it was launched through the wrapper. Always go through it instead:
 ```bash

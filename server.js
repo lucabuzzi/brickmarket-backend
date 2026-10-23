@@ -7,6 +7,8 @@
 process.env.APP_SERVER_BOOT = '1';
 
 require('dotenv').config();
+// No JWT secret, no server: there is no safe default to fall back on (see src/config/jwtSecret.js).
+require('./src/config/jwtSecret').assertJwtSecret();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

@@ -27,7 +27,8 @@ if (hasCloudinaryConfig) {
 
 async function deleteSecureAsset(public_id) {
   if (!public_id || !hasCloudinaryConfig) return;
-  await cloudinary.uploader.destroy(public_id, { type: 'private', invalidate: true });
+  // Same delivery type privateDocuments.js uploads identity documents with.
+  await cloudinary.uploader.destroy(public_id, { type: 'authenticated', invalidate: true });
 }
 
 module.exports = { cloudinary, upload, secureUpload, deleteSecureAsset, hasCloudinaryConfig };
