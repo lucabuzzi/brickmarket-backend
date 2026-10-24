@@ -2634,7 +2634,8 @@
         "sash_brass": "Fajín y botones",
         "cyber_armor": "Armadura cyber",
         "visor_scarf_blade": "Visor, bufanda y hoja",
-        "armored_greaves": "Grebas"
+        "armored_greaves": "Grebas",
+        "cap": "Gorra"
       }
     },
     "places": {
@@ -2876,7 +2877,7 @@
       },
       "card_trainer": {
         "name": "Entrenadores",
-        "tagline": "Gorra, guantes y bandolera: siempre listo para un intercambio."
+        "tagline": "Gorra en la cabeza y cartas en el bolsillo: siempre a punto para un intercambio."
       },
       "card_duelist": {
         "name": "Maestros de cartas",
@@ -2909,6 +2910,7 @@
       "esploratore_collezionista": "Explorador coleccionista",
       "esploratrice_collezionista": "Exploradora coleccionista",
       "allenatore_carte": "Entrenador de cartas",
+      "allenatrice_carte": "Entrenadora de cartas",
       "maestro_carte": "Maestro de cartas",
       "maestra_carte": "Maestra de cartas",
       "arcanista": "Arcanista",

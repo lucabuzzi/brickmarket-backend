@@ -2642,7 +2642,8 @@
         "sash_brass": "Ceinture et boutons",
         "cyber_armor": "Armure cyber",
         "visor_scarf_blade": "Visière, écharpe et lame",
-        "armored_greaves": "Jambières"
+        "armored_greaves": "Jambières",
+        "cap": "Casquette"
       }
     },
     "places": {
@@ -2884,7 +2885,7 @@
       },
       "card_trainer": {
         "name": "Dresseurs",
-        "tagline": "Casquette, gants et besace : toujours prêt pour un échange."
+        "tagline": "Casquette sur la tête et cartes en poche : toujours partants pour un échange."
       },
       "card_duelist": {
         "name": "Maîtres des cartes",
@@ -2917,6 +2918,7 @@
       "esploratore_collezionista": "Explorateur collectionneur",
       "esploratrice_collezionista": "Exploratrice collectionneuse",
       "allenatore_carte": "Dresseur de cartes",
+      "allenatrice_carte": "Dresseuse de cartes",
       "maestro_carte": "Maître des cartes",
       "maestra_carte": "Maîtresse des cartes",
       "arcanista": "Arcaniste",

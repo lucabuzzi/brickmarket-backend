@@ -2634,7 +2634,8 @@
         "sash_brass": "Schärpe und Knöpfe",
         "cyber_armor": "Cyber-Rüstung",
         "visor_scarf_blade": "Visier, Schal und Klinge",
-        "armored_greaves": "Beinschienen"
+        "armored_greaves": "Beinschienen",
+        "cap": "Kappe"
       }
     },
     "places": {
@@ -2876,7 +2877,7 @@
       },
       "card_trainer": {
         "name": "Trainer",
-        "tagline": "Kappe, Handschuhe und Umhängetasche: immer bereit für einen Tausch."
+        "tagline": "Kappe auf dem Kopf und Karten in der Tasche: immer bereit für einen Tausch."
       },
       "card_duelist": {
         "name": "Kartenmeister",
@@ -2909,6 +2910,7 @@
       "esploratore_collezionista": "Sammler-Entdecker",
       "esploratrice_collezionista": "Sammler-Entdeckerin",
       "allenatore_carte": "Karten-Trainer",
+      "allenatrice_carte": "Karten-Trainerin",
       "maestro_carte": "Kartenmeister",
       "maestra_carte": "Kartenmeisterin",
       "arcanista": "Arkanist",

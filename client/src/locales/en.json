@@ -2634,7 +2634,8 @@
         "sash_brass": "Sash and buttons",
         "cyber_armor": "Cyber armour",
         "visor_scarf_blade": "Visor, scarf and blade",
-        "armored_greaves": "Greaves"
+        "armored_greaves": "Greaves",
+        "cap": "Cap"
       }
     },
     "places": {
@@ -2876,7 +2877,7 @@
       },
       "card_trainer": {
         "name": "Trainers",
-        "tagline": "Cap, gloves and satchel: always ready for a trade."
+        "tagline": "Cap on the head and cards in the pocket: always ready for a trade."
       },
       "card_duelist": {
         "name": "Card masters",
@@ -2909,6 +2910,7 @@
       "esploratore_collezionista": "Collector explorer",
       "esploratrice_collezionista": "Collector explorer",
       "allenatore_carte": "Card trainer",
+      "allenatrice_carte": "Card trainer",
       "maestro_carte": "Card master",
       "maestra_carte": "Card mistress",
       "arcanista": "Arcanist",

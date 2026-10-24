@@ -5,6 +5,10 @@ const {
 } = require('../src/services/avatarConfig');
 const { registerSchema, updateProfileSchema, validate } = require('../src/validators/authValidators');
 
+const CHARS = require('../client/src/config/gameCharacters.json');
+// look -> the colour parts it cannot recolour (null region in gameCharacters.json)
+const disabledParts = (look) => Object.entries(CHARS.characters.find((c) => c.id === look)?.regions || {}).filter(([, r]) => !r).map(([p]) => p);
+
 const baseRegister = { email: 'a@example.com', password: 'password123', username: 'brick_fan' };
 const v1 = { skin: 2, hairStyle: 1, hairColor: 3, outfit: 4, outfitColor: 5, accessory: 2 };
 
@@ -15,11 +19,19 @@ describe('normalizeAvatarConfig (version 2)', () => {
     expect(normalizeAvatarConfig(def)).toEqual(def);
   });
 
-  test('accepts every look and the highest index of every colour part', () => {
+  test('accepts every look and the highest index of every colour part it can recolour', () => {
     for (const look of AVATAR_LOOKS) {
-      const max = { v: 2, look, ...Object.fromEntries(AVATAR_COLOR_PARTS.map((p) => [p, AVATAR_SPEC[p] - 1])) };
+      const off = disabledParts(look);
+      const max = { v: 2, look, ...Object.fromEntries(AVATAR_COLOR_PARTS.map((p) => [p, off.includes(p) ? 0 : AVATAR_SPEC[p] - 1])) };
       expect(normalizeAvatarConfig(max)).toEqual(max);
     }
+  });
+
+  test('a part the character cannot recolour must stay as drawn (the card trainer girl keeps her hair)', () => {
+    expect(disabledParts('allenatrice_carte')).toEqual(['hairColor']);
+    const ok = { v: 2, look: 'allenatrice_carte', skin: 2, hairColor: 0, outfitColor: 3, accentColor: 4, legsColor: 1 };
+    expect(normalizeAvatarConfig(ok)).toEqual(ok);
+    expect(normalizeAvatarConfig({ ...ok, hairColor: 2 })).toBeNull();
   });
 
   test('accepts a JSON string (multipart forms send strings)', () => {
