@@ -81,11 +81,11 @@ module.exports = {
   listArchive: handle(listArchive, { log: 'ARCHIVE ERROR:', error: "Errore nel recupero dell'archivio" }),
   search: handle(search, { log: 'SEARCH ERROR:', error: 'Errore durante la ricerca' }),
   getDetail: handle(getDetail, { log: 'GET single listing:', error: 'Errore nel recupero dell\'annuncio' }),
-  // The pre-edit lookup had no catch-all; the UPDATE's own failure is answered inside the use case.
-  update: handle(update, null),
+  // The UPDATE's own failure is answered inside the use case; this catches the pre-edit lookup.
+  update: handle(update, { log: 'PATCH listing:', error: 'Errore aggiornamento' }),
   remove: handle(remove, { error: 'Errore cancellazione' }),
-  // Only a pool failure before the transaction can escape placeBid; it was never answered.
-  placeBid: handle(placeBid, null),
+  // Only a pool failure before the transaction (or a failed ROLLBACK) can escape placeBid.
+  placeBid: handle(placeBid, { log: 'BID ERROR:', error: "Errore durante l'offerta" }),
   // featured.getTariffs never throws (it falls back to the in-code defaults).
   listFeaturedTariffs: handle(listFeaturedTariffs, null),
   startFeature: handle(startFeature, { log: 'FEATURE ERROR:', error: 'Errore nella messa in evidenza' }),

@@ -255,7 +255,7 @@ async function updateListing(id, sellerId, body, files) {
   if (cardError) throw new HttpError(400, cardError);
   Object.assign(value, cardDetailsForDb(value, value.productType, { partial: true }));
 
-  // Not inside a catch-all: a DB failure here is not answered, exactly as before (see http/handle.js).
+  // A DB failure here is answered 500 by the controller's handle() fallback.
   const current = await repo.findEditableState(id, sellerId);
   if (current && current.status !== 'draft') {
     delete value.type;

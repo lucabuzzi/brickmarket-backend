@@ -85,7 +85,7 @@ function wire() {
         mockLog.push(['client.query', norm(sql), clean(params)]);
         return answer(sql, params);
       }),
-      release: jest.fn(() => mockLog.push(['release'])),
+      release: jest.fn((destroy) => mockLog.push(destroy ? ['release', 'destroyed'] : ['release'])),
     };
   });
   image.uploadOrSaveProcessedImage.mockImplementation(async (buf) => {
@@ -470,6 +470,14 @@ describe('PATCH /:id', () => {
     sqlRules.unshift([/^UPDATE listings SET/, new Error('down')]);
     expect(await call('PATCH', '/l1', { user: 'u1', json: { title: 'Nuovo titolo' } })).toMatchSnapshot();
   });
+  // Used to be an unhandled rejection (no answer, and a crash with no unhandledRejection handler).
+  test('pre-edit lookup fails -> 500', async () => {
+    rule(/^SELECT status, type, auction_start, auction_end FROM listings/, new Error('pool down'));
+    const res = await call('PATCH', '/l1', { user: 'u1', json: { title: 'Nuovo titolo' } });
+    expect(res.status).toBe(500);
+    expect(JSON.parse(res.body)).toEqual({ error: 'Errore aggiornamento' });
+    expect(res.trace.some(([k, sql]) => k === 'query' && /^UPDATE/.test(sql))).toBe(false);
+  });
 });
 
 // ─── DELETE /:id ──────────────────────────────────────────────────────────
@@ -523,5 +531,33 @@ describe('POST /:id/bid', () => {
     auction({});
     rule(/^INSERT INTO bids/, new Error('deadlock detected'));
     expect(await call('POST', '/l1/bid', { user: 'u1', json: { amount: 25 } })).toMatchSnapshot();
+  });
+
+  // Used to be an unhandled rejection (no answer, and a crash with no unhandledRejection handler).
+  test('no connection from the pool -> 500, nothing written', async () => {
+    db.getClient.mockImplementationOnce(async () => { throw new Error('timeout acquiring a client'); });
+    const res = await call('POST', '/l1/bid', { user: 'u1', json: { amount: 25 } });
+    expect(res.status).toBe(500);
+    expect(JSON.parse(res.body)).toEqual({ error: "Errore durante l'offerta" });
+    expect(res.trace).toEqual([]);
+  });
+
+  test('a failed ROLLBACK keeps the original answer and discards the connection', async () => {
+    auction({});
+    rule(/^INSERT INTO bids/, new Error('deadlock detected'));
+    rule(/^ROLLBACK/, new Error('connection terminated'));
+    const res = await call('POST', '/l1/bid', { user: 'u1', json: { amount: 25 } });
+    expect(res.status).toBe(400);
+    expect(JSON.parse(res.body)).toEqual({ error: 'deadlock detected' });
+    expect(res.trace.at(-1)).toEqual(['release', 'destroyed']);
+  });
+
+  test('the outbid notification goes through the pool, not the released transaction client', async () => {
+    auction({});
+    rule(/^SELECT bidder_id FROM bids/, { rows: [{ bidder_id: 'u7' }] });
+    const { trace } = await call('POST', '/l1/bid', { user: 'u1', json: { amount: 21 } });
+    const notify = trace.findIndex(([, sql]) => /^INSERT INTO notifications/.test(sql || ''));
+    expect(trace[notify][0]).toBe('query');
+    expect(trace[notify][2]).toEqual(['u7', 'notifications.outbid', 'l1']);
   });
 });

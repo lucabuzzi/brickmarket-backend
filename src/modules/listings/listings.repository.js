@@ -306,8 +306,8 @@ async function recordTopBid(client, listingId, amount, newAuctionEnd) {
   return result.rows[0];
 }
 
-function insertOutbidNotification(client, userId, listingId) {
-  return client.query(
+function insertOutbidNotification(userId, listingId) {
+  return query(
     `INSERT INTO notifications (user_id, message_key, listing_id) VALUES ($1, $2, $3)`,
     [userId, 'notifications.outbid', listingId]
   );
