@@ -12,7 +12,8 @@
     "test": "jest --runInBand --forceExit",
     "seo:audit": "node scripts/seo-audit/index.js",
     "sitemap:lastmod": "node scripts/update-sitemap-lastmod.js",
-    "game:skins": "node scripts/build-game-skins.js"
+    "game:skins": "node scripts/build-game-skins.js",
+    "game:shops": "node scripts/build-game-shops.js"
   },
   "jest": {
     "testEnvironment": "node",

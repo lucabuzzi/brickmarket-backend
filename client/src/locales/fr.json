@@ -2651,9 +2651,14 @@
       "arena": "Puzzle Arena",
       "catalog": "Catalogue Wiki",
       "credits": "Dragon des Crédits",
-      "lego": "LEGO",
-      "cards": "Cartes",
-      "funko": "Funko Pop",
+      "lego": "Lego",
+      "pokemon": "Pokémon",
+      "yugioh": "Yu-Gi-Oh!",
+      "lorcana": "Disney Lorcana",
+      "dragonball": "Dragon Ball Super Card Game",
+      "magic": "Magic: the Gathering",
+      "onepiece": "One Piece Card Game",
+      "funko": "FunkoPop",
       "exit": "Place"
     },
     "world": {
@@ -2686,7 +2691,7 @@
       },
       "listings": {
         "title": "Annonces",
-        "body": "Ici vous achetez et vendez des cartes à collectionner, des sets LEGO et des Funko. Vous publiez une annonce avec photos et prix et le paiement se fait dans CardBrix, avec une commission. Publier une annonce ne donne pas de crédits. Entrez dans le château : à l'intérieur, le marché avec les étals LEGO, cartes et Funko."
+        "body": "Ici vous achetez et vendez des cartes à collectionner, des sets LEGO et des Funko. Vous publiez une annonce avec photos et prix et le paiement se fait dans CardBrix, avec une commission. Publier une annonce ne donne pas de crédits. Entrez dans le château : à l'intérieur, le marché, avec une boutique pour LEGO, Funko et chaque jeu de cartes."
       },
       "auctions": {
         "title": "Enchères",
@@ -2737,7 +2742,7 @@
       "listings": {
         "title": "Château des Annonces",
         "subtitle": "Marché · LEGO · Cartes · Funko",
-        "flavour": "Derrière la porte se trouve le marché : un étal pour chaque type d'annonce."
+        "flavour": "Derrière la porte se trouve le marché : une boutique pour chaque type d'annonce."
       },
       "auctions": {
         "title": "Arène des Enchères",
@@ -2760,17 +2765,42 @@
         "flavour": "Les crédits servent à participer aux puzzles de la Skill Zone."
       },
       "lego": {
-        "title": "Étal LEGO",
+        "title": "Boutique LEGO",
         "subtitle": "Sets · Minifigurines · Briques",
         "flavour": "Sets scellés, sets d'occasion complets et minifigurines à vendre."
       },
-      "cards": {
-        "title": "Étal des cartes",
-        "subtitle": "Pokémon · Magic · Lorcana et plus",
-        "flavour": "Cartes à l'unité, boosters et boîtes de tous les jeux de cartes à collectionner."
+      "pokemon": {
+        "title": "Boutique Pokémon",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes Pokémon que vendent les utilisateurs."
+      },
+      "yugioh": {
+        "title": "Boutique Yu-Gi-Oh!",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes Yu-Gi-Oh! que vendent les utilisateurs."
+      },
+      "lorcana": {
+        "title": "Boutique Disney Lorcana",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes Disney Lorcana que vendent les utilisateurs."
+      },
+      "dragonball": {
+        "title": "Boutique Dragon Ball",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes du Dragon Ball Super Card Game que vendent les utilisateurs."
+      },
+      "magic": {
+        "title": "Boutique Magic",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes Magic: the Gathering que vendent les utilisateurs."
+      },
+      "onepiece": {
+        "title": "Boutique One Piece",
+        "subtitle": "À l'unité · Boosters · Boîtes",
+        "flavour": "Les cartes du One Piece Card Game que vendent les utilisateurs."
       },
       "funko": {
-        "title": "Étal Funko Pop",
+        "title": "Boutique Funko Pop",
         "subtitle": "En boîte · Exclusivités",
         "flavour": "Funko Pop en boîte, éditions spéciales et pièces rares."
       },
@@ -2918,14 +2948,7 @@
         "spend": "À quoi servent-ils ?",
         "show_products": "Montre-moi les produits",
         "how_market": "Comment fonctionne le marché ?",
-        "to_plaza": "Je retourne sur la place",
-        "categories": "Quelles catégories puis-je explorer ?",
-        "game_pokemon": "Pokémon",
-        "game_magic": "Magic: The Gathering",
-        "game_yugioh": "Yu-Gi-Oh!",
-        "game_onepiece": "One Piece",
-        "game_lorcana": "Lorcana",
-        "game_dragonball": "Dragon Ball"
+        "to_plaza": "Je retourne sur la place"
       }
     },
     "npcs": {
@@ -2969,22 +2992,56 @@
       "lego_merchant": {
         "name": "Mattia",
         "role": "Marchand LEGO",
-        "hello": "Bienvenue, collectionneur ! Je suis Mattia : sur mon étal, tu trouves les annonces LEGO publiées par les utilisateurs de CardBrix, sets et minifigurines. Jette un œil !",
+        "hello": "Bienvenue, collectionneur ! Je suis Mattia : dans ma boutique, tu trouves les annonces LEGO publiées par les utilisateurs de CardBrix, sets et minifigurines. Jette un œil !",
         "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis un objet, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
         "greet": "Des briques sur l’étal !"
       },
-      "cards_merchant": {
+      "pokemon_merchant": {
         "name": "Selene",
-        "role": "Marchande de cartes",
-        "hello": "Salut ! Je suis Selene, la marchande de cartes : Pokémon, Magic, Yu-Gi-Oh!, One Piece et d’autres jeux. Je te montre les cartes en vente en ce moment.",
-        "games": "Les cartes de quel jeu t’intéressent ?",
+        "role": "Marchande Pokémon",
+        "hello": "Salut ! Je suis Selene et voici la boutique Pokémon : je te montre les cartes Pokémon que vendent les utilisateurs de CardBrix, à l'unité, en boosters et en boîtes.",
         "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
-        "greet": "Des cartes de tous les jeux !"
+        "greet": "Des cartes Pokémon en vitrine !"
+      },
+      "yugioh_merchant": {
+        "name": "Yuri",
+        "role": "Marchand Yu-Gi-Oh!",
+        "hello": "Bienvenue, duelliste ! Je suis Yuri : ici tu trouves les cartes Yu-Gi-Oh! publiées par les utilisateurs de CardBrix.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
+        "greet": "C'est l'heure du duel !"
+      },
+      "lorcana_merchant": {
+        "name": "Aurora",
+        "role": "Marchande Disney Lorcana",
+        "hello": "Salut ! Je suis Aurora : ma boutique propose les cartes Disney Lorcana que vendent les utilisateurs de CardBrix.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
+        "greet": "Cartes Lorcana toutes fraîches !"
+      },
+      "dragonball_merchant": {
+        "name": "Rocco",
+        "role": "Marchand Dragon Ball",
+        "hello": "Salut ! Je suis Rocco : ici tu trouves les cartes du Dragon Ball Super Card Game publiées par les utilisateurs de CardBrix.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
+        "greet": "Cartes Dragon Ball au comptoir !"
+      },
+      "magic_merchant": {
+        "name": "Morgana",
+        "role": "Marchande Magic",
+        "hello": "Bienvenue, voyageur. Je suis Morgana : sur mes étagères, les cartes Magic: the Gathering que vendent les utilisateurs de CardBrix.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
+        "greet": "Cartes Magic pour chaque deck !"
+      },
+      "onepiece_merchant": {
+        "name": "Kenji",
+        "role": "Marchand One Piece",
+        "hello": "Ohé, pirate ! Je suis Kenji : ici tu trouves les cartes du One Piece Card Game publiées par les utilisateurs de CardBrix.",
+        "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis une carte, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
+        "greet": "Cartes One Piece, à l'abordage !"
       },
       "funko_merchant": {
         "name": "Fausto",
         "role": "Marchand de Funko Pop",
-        "hello": "Salut ! Je suis Fausto. Sur mon étal, il y a les Funko Pop mis en vente par les utilisateurs, des exclusivités aux pièces rares.",
+        "hello": "Salut ! Je suis Fausto. Dans ma boutique, il y a les Funko Pop mis en vente par les utilisateurs, des exclusivités aux pièces rares.",
         "how": "Je ne vends rien à moi : je te montre les vraies annonces des autres collectionneurs. Choisis un Funko, regarde le prix et l'état et ouvre l'annonce : l'achat et le paiement se font dans CardBrix.",
         "greet": "Des Funko Pop en vitrine !"
       }
@@ -3007,7 +3064,7 @@
         "tcg_lorcana": "Cartes Lorcana",
         "tcg_dragonball": "Cartes Dragon Ball"
       },
-      "goods_empty": "L'étal est vide : aucune annonce active dans cette catégorie pour le moment.",
+      "goods_empty": "La boutique est vide : aucune annonce active dans cette catégorie pour le moment.",
       "see_all": "Tout voir sur le site",
       "unit_d": "j",
       "unit_h": "h",
@@ -3047,7 +3104,7 @@
       "ok": "J'ai compris",
       "market": {
         "title": "Le marché du château",
-        "body": "Chaque étal a son marchand : touche celui qui a un « ! » pour voir les vraies annonces publiées par les utilisateurs. La porte au sud te ramène sur la place."
+        "body": "Chaque boutique a son marchand : touche celui qui a un « ! » pour voir les vraies annonces publiées par les utilisateurs. La porte au sud te ramène sur la place."
       }
     }
   },

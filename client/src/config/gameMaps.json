@@ -11,19 +11,24 @@
       }
     },
     "market": {
-      "w": 480,
-      "h": 320,
+      "w": 960,
+      "h": 720,
       "defaultSpawn": "gate",
       "spawns": {
-        "gate": { "x": 240, "y": 266 },
-        "lego": { "x": 88, "y": 150 },
-        "cards": { "x": 240, "y": 150 },
-        "funko": { "x": 392, "y": 150 }
+        "gate": { "x": 480, "y": 660 },
+        "pokemon": { "x": 342, "y": 224 },
+        "yugioh": { "x": 618, "y": 224 },
+        "lego": { "x": 813, "y": 348 },
+        "lorcana": { "x": 813, "y": 524 },
+        "funko": { "x": 618, "y": 648 },
+        "dragonball": { "x": 342, "y": 648 },
+        "magic": { "x": 147, "y": 524 },
+        "onepiece": { "x": 147, "y": 348 }
       }
     }
   },
   "links": [
     { "from": "plaza", "place": "listings", "door": { "x": 56, "y": 88, "w": 32, "h": 14 }, "to": "market", "spawn": "gate" },
-    { "from": "market", "place": "exit", "door": { "x": 224, "y": 276, "w": 32, "h": 14 }, "to": "plaza", "spawn": "castle" }
+    { "from": "market", "place": "exit", "door": { "x": 464, "y": 676, "w": 32, "h": 14 }, "to": "plaza", "spawn": "castle" }
   ]
 }

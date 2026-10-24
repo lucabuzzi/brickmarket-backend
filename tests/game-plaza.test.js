@@ -204,7 +204,7 @@ describe('maps and travel', () => {
     room.join(user('a'), { map: 'market' });
     const gate = PLAZA_MAPS.links.find((l) => l.from === 'market').door;
     clock.advance(1000);
-    expect(room.move('a', { x: 240, y: gate.y + gate.h, d: 'down', m: false })).toBe('ok');
+    expect(room.move('a', { x: gate.x + gate.w / 2, y: gate.y + gate.h, d: 'down', m: false })).toBe('ok');
     expect(room.travel('a', 'plaza')).toEqual({ from: 'market', to: 'plaza' });
     expect(room.get('a')).toMatchObject({ map: 'plaza', x: castleFront.x, y: castleFront.y });
   });
@@ -217,7 +217,8 @@ describe('maps and travel', () => {
     expect(room.visiblePlayers('x', 'market').map((p) => p.id)).toEqual(['b']);
     expect(room.visibleCount('market')).toBe(1);
     clock.advance(200);
-    room.move('b', { x: 242, y: 266, d: 'right', m: true });
-    expect(room.takeDirtyMoves()).toEqual([{ id: 'b', map: 'market', x: 242, y: 266, d: 'right', m: true }]);
+    const gate = PLAZA_MAPS.maps.market.spawns.gate;
+    room.move('b', { x: gate.x + 2, y: gate.y, d: 'right', m: true });
+    expect(room.takeDirtyMoves()).toEqual([{ id: 'b', map: 'market', x: gate.x + 2, y: gate.y, d: 'right', m: true }]);
   });
 });

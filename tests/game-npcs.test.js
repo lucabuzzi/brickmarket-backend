@@ -8,7 +8,8 @@ const {
 } = require('../client/src/lib/game/npcs');
 const { MAPS, MAP_IDS } = require('../client/src/lib/game/maps');
 const { isWalkable, overlaps, doorAt } = require('../client/src/lib/game/gameMap');
-const { cleanQuery } = require('../client/src/lib/game/marketQueries');
+const { cleanQuery, CARD_GAMES } = require('../client/src/lib/game/marketQueries');
+const { MARKET_SHOPS } = require('../client/src/lib/game/marketMap');
 const { isKnownRoute } = require('../src/services/knownRoutes');
 
 const LANGS = ['it', 'en', 'es', 'fr', 'de'];
@@ -66,24 +67,28 @@ describe('dialogues', () => {
   });
 
   test('dialogNode / chooseOption / startNode', () => {
-    const d = dialogNode('cards_merchant', 'hello');
-    expect(d.textKey).toBe('game.npcs.cards_merchant.hello');
-    expect(d.options.find((o) => o.id === 'categories').labelKey).toBe('game.dialog.opt.categories');
-    expect(chooseOption('cards_merchant', 'hello', 'categories')).toEqual({ type: 'node', node: 'games' });
-    expect(chooseOption('cards_merchant', 'games', 'game_pokemon')).toEqual({ type: 'action', action: { type: 'products', query: { product_type: 'tcg', game: 'pokemon' } } });
-    expect(chooseOption('cards_merchant', 'hello', 'nope')).toBeNull();
+    const d = dialogNode('pokemon_merchant', 'hello');
+    expect(d.textKey).toBe('game.npcs.pokemon_merchant.hello');
+    expect(d.options.find((o) => o.id === 'how_market').labelKey).toBe('game.dialog.opt.how_market');
+    expect(chooseOption('pokemon_merchant', 'hello', 'how_market')).toEqual({ type: 'node', node: 'how' });
+    expect(chooseOption('pokemon_merchant', 'hello', 'show_products')).toEqual({ type: 'action', action: { type: 'products', query: { product_type: 'tcg', game: 'pokemon' } } });
+    expect(chooseOption('pokemon_merchant', 'hello', 'nope')).toBeNull();
     expect(chooseOption('nobody', 'hello', 'bye')).toBeNull();
     expect(dialogNode('guide', 'nope')).toBeNull();
     expect(startNode('guide')).toBe('hello');
     expect(startNode('nobody')).toBeNull();
   });
 
-  test('the card merchant covers the main card games and every merchant shows real goods', () => {
-    const games = dialogNode('cards_merchant', 'games').options.filter((o) => o.do).map((o) => o.do.query.game);
-    expect(games).toEqual(expect.arrayContaining(['pokemon', 'magic', 'yugioh', 'onepiece']));
-    for (const id of ['lego_merchant', 'cards_merchant', 'funko_merchant']) {
-      expect(allOptions().some(({ npc, o }) => npc.id === id && o.do && o.do.type === 'products')).toBe(true);
+  test('every shop of the market has its merchant, who shows the real goods of that shop and nothing else', () => {
+    for (const shop of MARKET_SHOPS) {
+      const npc = npcForPlace('market', shop.id);
+      expect([shop.id, npc && npc.id]).toEqual([shop.id, `${shop.id}_merchant`]);
+      const queries = allOptions().filter(({ npc: n, o }) => n.id === npc.id && o.do && o.do.type === 'products').map(({ o }) => o.do.query);
+      expect(queries.length).toBeGreaterThan(0);
+      for (const q of queries) expect(q).toEqual(shop.query);
     }
+    // every card game of the site has a shop of its own
+    expect(MARKET_SHOPS.filter((s) => s.query.product_type === 'tcg').map((s) => s.query.game).sort()).toEqual([...CARD_GAMES].sort());
   });
 });
 

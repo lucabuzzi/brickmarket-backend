@@ -2643,9 +2643,14 @@
       "arena": "Puzzle Arena",
       "catalog": "Wiki Catalog",
       "credits": "Credits Dragon",
-      "lego": "LEGO",
-      "cards": "Cards",
-      "funko": "Funko Pop",
+      "lego": "Lego",
+      "pokemon": "Pokémon",
+      "yugioh": "Yu-Gi-Oh!",
+      "lorcana": "Disney Lorcana",
+      "dragonball": "Dragon Ball Super Card Game",
+      "magic": "Magic: the Gathering",
+      "onepiece": "One Piece Card Game",
+      "funko": "FunkoPop",
       "exit": "Plaza"
     },
     "world": {
@@ -2678,7 +2683,7 @@
       },
       "listings": {
         "title": "Listings",
-        "body": "Here you buy and sell trading cards, LEGO sets and Funko. You post a listing with photos and a price, and payment happens inside CardBrix, with a fee. Posting a listing does not give credits. Step into the castle: inside is the market with the LEGO, card and Funko stalls."
+        "body": "Here you buy and sell trading cards, LEGO sets and Funko. You post a listing with photos and a price, and payment happens inside CardBrix, with a fee. Posting a listing does not give credits. Step into the castle: inside is the market, with a shop for LEGO, Funko and every card game."
       },
       "auctions": {
         "title": "Auctions",
@@ -2729,7 +2734,7 @@
       "listings": {
         "title": "Castle of Listings",
         "subtitle": "Market · LEGO · Cards · Funko",
-        "flavour": "Past the gate is the market: one stall for each kind of listing."
+        "flavour": "Past the gate is the market: one shop for each kind of listing."
       },
       "auctions": {
         "title": "Auction Arena",
@@ -2752,17 +2757,42 @@
         "flavour": "Credits are used to join the Skill Zone puzzles."
       },
       "lego": {
-        "title": "LEGO stall",
+        "title": "LEGO shop",
         "subtitle": "Sets · Minifigures · Bricks",
         "flavour": "Sealed sets, complete used sets and minifigures for sale."
       },
-      "cards": {
-        "title": "Card stall",
-        "subtitle": "Pokémon · Magic · Lorcana and more",
-        "flavour": "Single cards, packs and boxes from every trading card game."
+      "pokemon": {
+        "title": "Pokémon shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The Pokémon cards users are selling."
+      },
+      "yugioh": {
+        "title": "Yu-Gi-Oh! shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The Yu-Gi-Oh! cards users are selling."
+      },
+      "lorcana": {
+        "title": "Disney Lorcana shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The Disney Lorcana cards users are selling."
+      },
+      "dragonball": {
+        "title": "Dragon Ball shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The Dragon Ball Super Card Game cards users are selling."
+      },
+      "magic": {
+        "title": "Magic shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The Magic: the Gathering cards users are selling."
+      },
+      "onepiece": {
+        "title": "One Piece shop",
+        "subtitle": "Singles · Packs · Boxes",
+        "flavour": "The One Piece Card Game cards users are selling."
       },
       "funko": {
-        "title": "Funko Pop stall",
+        "title": "Funko Pop shop",
         "subtitle": "Boxed · Exclusives",
         "flavour": "Boxed Funko Pops, special editions and rare pieces."
       },
@@ -2910,14 +2940,7 @@
         "spend": "What are they for?",
         "show_products": "Show me the products",
         "how_market": "How does the market work?",
-        "to_plaza": "Back to the plaza",
-        "categories": "Which categories can I explore?",
-        "game_pokemon": "Pokémon",
-        "game_magic": "Magic: The Gathering",
-        "game_yugioh": "Yu-Gi-Oh!",
-        "game_onepiece": "One Piece",
-        "game_lorcana": "Lorcana",
-        "game_dragonball": "Dragon Ball"
+        "to_plaza": "Back to the plaza"
       }
     },
     "npcs": {
@@ -2961,22 +2984,56 @@
       "lego_merchant": {
         "name": "Mattia",
         "role": "LEGO merchant",
-        "hello": "Welcome, collector! I'm Mattia: on my stall you'll find the LEGO listings published by CardBrix users, sets and minifigures. Have a look!",
+        "hello": "Welcome, collector! I'm Mattia: in my shop you'll find the LEGO listings published by CardBrix users, sets and minifigures. Have a look!",
         "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick an item, check price and condition and open the listing: buying and payment happen inside CardBrix.",
         "greet": "Bricks on the counter!"
       },
-      "cards_merchant": {
+      "pokemon_merchant": {
         "name": "Selene",
-        "role": "Card merchant",
-        "hello": "Hi! I'm Selene, the card merchant: Pokémon, Magic, Yu-Gi-Oh!, One Piece and other games. I'll show you the cards on sale right now.",
-        "games": "Which game are you after?",
+        "role": "Pokémon merchant",
+        "hello": "Hi! I'm Selene and this is the Pokémon shop: I'll show you the Pokémon cards CardBrix users are selling, singles, packs and boxes.",
         "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
-        "greet": "Cards from every game!"
+        "greet": "Pokémon cards on display!"
+      },
+      "yugioh_merchant": {
+        "name": "Yuri",
+        "role": "Yu-Gi-Oh! merchant",
+        "hello": "Welcome, duelist! I'm Yuri: here you'll find the Yu-Gi-Oh! cards published by CardBrix users.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "It's time to duel!"
+      },
+      "lorcana_merchant": {
+        "name": "Aurora",
+        "role": "Disney Lorcana merchant",
+        "hello": "Hi! I'm Aurora: my shop holds the Disney Lorcana cards CardBrix users are selling.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Fresh Lorcana cards!"
+      },
+      "dragonball_merchant": {
+        "name": "Rocco",
+        "role": "Dragon Ball merchant",
+        "hello": "Hey there! I'm Rocco: here you'll find the Dragon Ball Super Card Game cards published by CardBrix users.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Dragon Ball cards on the counter!"
+      },
+      "magic_merchant": {
+        "name": "Morgana",
+        "role": "Magic merchant",
+        "hello": "Welcome, traveller. I'm Morgana: my shelves hold the Magic: the Gathering cards CardBrix users are selling.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "Magic cards for every deck!"
+      },
+      "onepiece_merchant": {
+        "name": "Kenji",
+        "role": "One Piece merchant",
+        "hello": "Ahoy, pirate! I'm Kenji: here you'll find the One Piece Card Game cards published by CardBrix users.",
+        "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a card, check price and condition and open the listing: buying and payment happen inside CardBrix.",
+        "greet": "One Piece cards, all aboard!"
       },
       "funko_merchant": {
         "name": "Fausto",
         "role": "Funko Pop merchant",
-        "hello": "Hey there! I'm Fausto. My stall has the Funko Pops put on sale by users, from exclusives to rare pieces.",
+        "hello": "Hey there! I'm Fausto. My shop has the Funko Pops put on sale by users, from exclusives to rare pieces.",
         "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a Funko, check price and condition and open the listing: buying and payment happen inside CardBrix.",
         "greet": "Funko Pops on show!"
       }
@@ -2999,7 +3056,7 @@
         "tcg_lorcana": "Lorcana cards",
         "tcg_dragonball": "Dragon Ball cards"
       },
-      "goods_empty": "The stall is empty: no active listings in this category right now.",
+      "goods_empty": "The shop is empty: no active listings in this category right now.",
       "see_all": "See them all on the site",
       "unit_d": "d",
       "unit_h": "h",
@@ -3039,7 +3096,7 @@
       "ok": "Got it",
       "market": {
         "title": "The castle market",
-        "body": "Every stall has its merchant: tap whoever has a «!» to see the real listings published by users. The gate to the south takes you back to the plaza."
+        "body": "Every shop has its merchant: tap whoever has a «!» to see the real listings published by users. The gate to the south takes you back to the plaza."
       }
     }
   },

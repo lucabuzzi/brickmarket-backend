@@ -198,9 +198,11 @@ describe('maps (plaza and the market inside the castle)', () => {
     return { ws, welcome: await waitFor(ws, (m) => m.t === 'welcome') };
   };
 
-  test('a hello can start in the market at a stall; the welcome says where', async () => {
+  const MARKET = require('../client/src/config/gameMaps.json').maps.market;
+
+  test('a hello can start in the market at a shop; the welcome says where', async () => {
     const { welcome } = await hello('tok-a', { map: 'market', spawn: 'lego' });
-    expect(welcome).toMatchObject({ map: 'market', x: 88, y: 150, players: [] });
+    expect(welcome).toMatchObject({ map: 'market', ...MARKET.spawns.lego, players: [] });
   });
 
   test('walking through the castle gate: the plaza sees a leave, the traveller gets a market welcome', async () => {
@@ -210,7 +212,7 @@ describe('maps (plaza and the market inside the castle)', () => {
     sendJson(b, { t: 'travel', to: 'market' });
     expect((await waitFor(a, (m) => m.t === 'leave')).id).toBe('b');
     const w = await waitFor(b, (m) => m.t === 'welcome' && m.map === 'market');
-    expect(w).toMatchObject({ map: 'market', x: 240, y: 266, players: [] });
+    expect(w).toMatchObject({ map: 'market', ...MARKET.spawns.gate, players: [] });
   });
 
   test('a travel far from the door is refused with a correction to the current map', async () => {
