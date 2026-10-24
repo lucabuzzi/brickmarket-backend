@@ -5,7 +5,7 @@
 import CONFIG from '../../config/gameNpcs.json';
 
 /** Every action an option may carry, with the fields it needs. */
-export const ACTION_TYPES = ['products', 'auctions', 'arena', 'link', 'walk', 'tutorial', 'close'];
+export const ACTION_TYPES = ['products', 'auctions', 'arena', 'link', 'walk', 'tutorial', 'close', 'sell', 'mylistings'];
 
 export const NPCS = Object.entries(CONFIG.npcs).map(([id, n]) => ({ id, ...n, place: n.place || null }));
 

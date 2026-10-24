@@ -5,6 +5,8 @@ import { formatEUR } from '../../components/landing/landingUtils';
 import { normalizeImageUrl } from '../../api';
 import { useAuth } from '../../auth/useAuth';
 import { useLocalizedNav } from '../../routing/useLocalizedNav';
+import { LISTING_ENDPOINTS } from '../../api';
+import { ownListings } from '../../lib/game/sellFlow';
 import {
   listingsUrl, auctionsUrl, siteCategoryPath, goodsTitleKey, runningAuctions, displayPrice, isAuction, isOwn,
   bidCount, sellerName, timeLeft, formatTimeLeft,
@@ -139,6 +141,23 @@ export function ArenaView({ color }) {
       )}
       <p className="text-xs leading-relaxed text-white/55">{t('game.panel.arena_rules')}</p>
       <SiteLink to="/skill-zone" color={color}>{t('game.panel.open_arena')}</SiteLink>
+    </div>
+  );
+}
+
+/** The player's own listings (from their shop): what is on sale first, then drafts and the rest; managed on the site. */
+export function MineView({ color, onPick }) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { status, data, retry } = useApiData(LISTING_ENDPOINTS.mine);
+  const items = ownListings(data).map((it) => ({ ...it, seller: { username: user?.username } }));
+  return (
+    <div className="flex flex-col gap-3 p-3">
+      <h3 className="cbg-pixel text-[0.6rem] leading-relaxed" style={{ color }}>{t('game.sell.mine_title')}</h3>
+      {status === 'ready' && items.length > 0
+        ? <ItemList items={items} onPick={onPick} color={color} />
+        : <PanelStatus status={status} empty={t('game.sell.mine_empty')} onRetry={retry} />}
+      <SiteLink to="/my-listings" ghost>{t('game.sell.manage')}</SiteLink>
     </div>
   );
 }

@@ -315,6 +315,7 @@
 .cbg-item:hover, .cbg-item:focus-visible { background: rgba(255, 255, 255, 0.06); border-color: #3a3358; outline: none; }
 .cbg-item--static { cursor: default; }
 .cbg-item--static:hover { background: rgba(0, 0, 0, 0.3); border-color: rgba(0, 0, 0, 0.6); }
+.cbg-alert { padding: 0.55rem 0.7rem; background: rgba(255, 90, 54, 0.12); border: 2px solid #ff5a36; color: #ffd8cf; }
 .cbg-badge {
   padding: 0.1rem 0.35rem; border: 1px solid #22d3ee; color: #22d3ee;
   font-family: 'Press Start 2P', ui-monospace, monospace; font-size: 0.45rem; line-height: 1.6; text-transform: uppercase;

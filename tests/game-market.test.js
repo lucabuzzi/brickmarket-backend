@@ -6,7 +6,7 @@ const WORLD_CFG = require('../client/src/config/gameWorld.json');
 const CONFIG = require('../client/src/config/gameMaps.json');
 const { BUILDINGS, isWalkable, doorAt, footRect, overlaps, propBox } = require('../client/src/lib/game/gameMap');
 const {
-  MARKET_WORLD, MARKET_SHOPS, SHOP_ARTS, MARKET_CENTRE, PLAZA, EXIT_GATE, GATE_TOWERS, MARKET_PROPS, MARKET_BLOCKED,
+  MARKET_WORLD, MARKET_SHOPS, MY_SHOP, SHOP_ARTS, MARKET_CENTRE, PLAZA, EXIT_GATE, GATE_TOWERS, MARKET_PROPS, MARKET_BLOCKED,
   MARKET_WAYS, WALLS, WALL_N, WALL_SIDE, WALL_S,
 } = require('../client/src/lib/game/marketMap');
 const { MAPS, MAP_IDS, MAP_LINKS, ALL_PLACES, spawnPoint, nearestSpawn, mapById } = require('../client/src/lib/game/maps');
@@ -168,7 +168,21 @@ describe('market layout', () => {
       expect([s.id, Math.abs(sp.x - s.cx) <= 2 && sp.y > s.door.y + s.door.h && sp.y < s.door.y + 40]).toEqual([s.id, true]);
     }
     expect(nearestSpawn('market', { x: MARKET_SHOPS[0].cx, y: MARKET_SHOPS[0].base + 30 })).toBe(MARKET_SHOPS[0].id);
-    expect(isWalkable({ x: PLAZA.x - 30, y: PLAZA.y }, MAPS.market.blocked, MAPS.market.world)).toBe(true);
+    // in front of the player's own shop the plaza is free to walk on
+    expect(isWalkable({ x: MY_SHOP.cx, y: MY_SHOP.base + 30 }, MAPS.market.blocked, MAPS.market.world)).toBe(true);
+  });
+
+  test("the player's own shop stands in the middle of the plaza, door to the south, clear of the other shops", () => {
+    expect([MY_SHOP.cx, MY_SHOP.base > PLAZA.y]).toEqual([PLAZA.x, true]);
+    expect(MY_SHOP.base + MY_SHOP.door.h).toBeLessThan(PLAZA.y + PLAZA.ry); // its door opens onto the plaza
+    expect(MY_SHOP.drawn.y).toBeGreaterThan(PLAZA.y - PLAZA.ry - 20);
+    for (const shop of MARKET_SHOPS) expect([shop.id, overlaps(MY_SHOP.drawn, shop.drawn)]).toEqual([shop.id, false]);
+    expect(SHOP_ARTS[MY_SHOP.art]).toBeDefined();
+    expect(MAPS.market.places.map((p) => p.id)).toContain('myshop');
+    expect(MARKET_BLOCKED).toContainEqual({ x: MY_SHOP.x, y: MY_SHOP.y, w: MY_SHOP.w, h: MY_SHOP.h });
+    const sp = MAPS.market.spawns.myshop;
+    expect(sp.x).toBe(MY_SHOP.cx);
+    expect(sp.y).toBeGreaterThan(MY_SHOP.door.y + MY_SHOP.door.h);
   });
 
   test('props stay inside the walls and never block a door or a spawn', () => {
@@ -178,7 +192,7 @@ describe('market layout', () => {
       const box = propBox(p);
       if (!box) continue;
       expect(MARKET_BLOCKED).toContainEqual(box);
-      for (const place of [...MARKET_SHOPS, EXIT_GATE]) expect([p.id, place.id, overlaps(box, place.door)]).toEqual([p.id, place.id, false]);
+      for (const place of [...MARKET_SHOPS, MY_SHOP, EXIT_GATE]) expect([p.id, place.id, overlaps(box, place.door)]).toEqual([p.id, place.id, false]);
       for (const [name, sp] of Object.entries(MAPS.market.spawns)) expect([p.id, name, overlaps(box, footRect(sp))]).toEqual([p.id, name, false]);
     }
   });

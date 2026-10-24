@@ -82,7 +82,7 @@ describe('POST /api/cards/recognize', () => {
     expect(body).toEqual({
       game: 'onepiece',
       status: 'matched',
-      reading: { code: 'OP01-077', name: 'Perona', number: null, setCode: null, rarity: 'UC', language: 'en' },
+      reading: { code: 'OP01-077', name: 'Perona', number: null, setCode: null, rarity: 'UC', language: 'en', condition: null },
       nameMatches: true,
       prints: MATCHED.prints,
     });
@@ -234,11 +234,13 @@ describe('enabledGames', () => {
   const saved = process.env.CARD_RECOGNITION_GAMES;
   afterEach(() => { process.env.CARD_RECOGNITION_GAMES = saved ?? ''; });
 
-  test('every game with an adapter, unless CARD_RECOGNITION_GAMES lists some', () => {
+  test('every game with an adapter and LEGO, unless CARD_RECOGNITION_GAMES lists some', () => {
     process.env.CARD_RECOGNITION_GAMES = '';
-    expect(enabledGames()).toEqual(['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana']);
+    expect(enabledGames()).toEqual(['onepiece', 'magic', 'pokemon', 'yugioh', 'lorcana', 'lego']);
     process.env.CARD_RECOGNITION_GAMES = ' Pokemon, onepiece ,dragonball';
     expect(enabledGames()).toEqual(['onepiece', 'pokemon']);
+    process.env.CARD_RECOGNITION_GAMES = 'lego';
+    expect(enabledGames()).toEqual(['lego']);
   });
 });
 

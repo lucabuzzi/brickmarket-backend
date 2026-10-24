@@ -9,9 +9,11 @@
 //   { kind: 'player', player }            another player's inventory ({ u, a })
 //   { kind: 'auctions', npc }             the board of the running auctions
 //   { kind: 'arena', npc }                the Skill Zone: challenges, credits, open contests
+//   { kind: 'sell', npc }                 the player's shop: photograph a product and put it on sale (lib/game/sellFlow.js)
+//   { kind: 'mine', npc }                 the player's own listings
 
 export const MAX_DEPTH = 8;
-export const VIEW_KINDS = ['dialog', 'goods', 'product', 'player', 'auctions', 'arena'];
+export const VIEW_KINDS = ['dialog', 'goods', 'product', 'player', 'auctions', 'arena', 'sell', 'mine'];
 
 export const EMPTY_PANEL = { stack: [] };
 

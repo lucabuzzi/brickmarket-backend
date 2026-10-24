@@ -8,6 +8,8 @@
  *
  * The reader is swappable (`reader` option): Gemini today, a dedicated recognition API tomorrow.
  * The photo is never stored or logged: it lives in memory for the duration of the request.
+ * The reader also gives a hint of the card's condition (worn corners, scratches...): only a suggestion the seller
+ * confirms or changes, never a grade.
  */
 
 const sharp = require('sharp');
@@ -26,10 +28,14 @@ function promptFor(adapter) {
     'Report only what is actually printed and legible on the card. Never guess or complete from memory.',
     ...adapter.prompt,
     '- language: the language the card text is printed in, as an ISO 639-1 code (en, it, ja, zh, ko, fr, de, es, pt, ...).',
+    `- condition: how worn the card looks in the photo (corners, edges, scratches, creases): one of ${CARD_CONDITIONS.join(', ')}. Null if the photo does not let you judge it.`,
     `- isCard: false if the photo does not show a ${adapter.title} card.`,
     'Use null for anything that is not clearly legible.',
   ].join('\n');
 }
+
+/** Condition grades a reading may suggest: the card grades of the sell form (client/src/lib/sell/form.js). */
+const CARD_CONDITIONS = ['near_mint', 'slightly_played', 'moderately_played', 'heavy_played', 'poor_damaged'];
 
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
@@ -41,8 +47,9 @@ const RESPONSE_SCHEMA = {
     setCode: { type: 'STRING', nullable: true },
     rarity: { type: 'STRING', nullable: true },
     language: { type: 'STRING', nullable: true },
+    condition: { type: 'STRING', nullable: true },
   },
-  required: ['isCard', 'code', 'name', 'number', 'setCode', 'rarity', 'language'],
+  required: ['isCard', 'code', 'name', 'number', 'setCode', 'rarity', 'language', 'condition'],
 };
 
 class RecognitionError extends Error {
@@ -71,12 +78,16 @@ const cleanText = (v, max) => {
   return s && !/^(null|unknown|n\/a)$/i.test(s) ? s : null;
 };
 
-/** The model's JSON -> { isCard, code, name, number, setCode, rarity, language }; anything malformed is null, never thrown. */
+/**
+ * The model's JSON -> { isCard, code, name, number, setCode, rarity, language, condition }; anything malformed is null,
+ * never thrown.
+ */
 function parseReading(text) {
   let data;
   try { data = JSON.parse(text); } catch { return null; }
   if (!data || typeof data !== 'object') return null;
   const language = cleanText(data.language, 8);
+  const condition = String(data.condition || '').trim().toLowerCase();
   return {
     isCard: data.isCard !== false,
     code: cleanText(data.code, 24),
@@ -85,19 +96,21 @@ function parseReading(text) {
     setCode: cleanText(data.setCode, 8),
     rarity: cleanText(data.rarity, 8),
     language: language && /^[a-z]{2}$/i.test(language) ? language.toLowerCase() : null,
+    condition: CARD_CONDITIONS.includes(condition) ? condition : null,
   };
 }
 
 /**
- * Gemini reader: (JPEG buffer, { prompt }) -> { reading, usage }. Throws RecognitionError on configuration, network or
- * provider errors; a reply it cannot parse becomes reading = null.
+ * Gemini reader: (JPEG buffer, { prompt, schema, parse }) -> { reading, usage }. `schema` / `parse` default to the card
+ * reading (the LEGO box reader brings its own). Throws RecognitionError on configuration, network or provider errors;
+ * a reply it cannot parse becomes reading = null.
  */
 function geminiReader({ apiKey = process.env.GEMINI_API_KEY, model = process.env.GEMINI_VISION_MODEL || DEFAULT_MODEL, fetchImpl = fetch } = {}) {
-  return async function read(jpeg, { prompt = promptFor(adapterFor('onepiece')) } = {}) {
+  return async function read(jpeg, { prompt = promptFor(adapterFor('onepiece')), schema = RESPONSE_SCHEMA, parse = parseReading } = {}) {
     if (!apiKey) throw new RecognitionError('not_configured', 'GEMINI_API_KEY is not set.');
     const body = {
       contents: [{ role: 'user', parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: jpeg.toString('base64') } }] }],
-      generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA },
+      generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: schema },
     };
     let res;
     try {
@@ -119,7 +132,7 @@ function geminiReader({ apiKey = process.env.GEMINI_API_KEY, model = process.env
     const usage = data?.usageMetadata
       ? { inputTokens: data.usageMetadata.promptTokenCount ?? null, outputTokens: data.usageMetadata.candidatesTokenCount ?? null }
       : null;
-    return { reading: parseReading(text), usage, model };
+    return { reading: parse(text), usage, model };
   };
 }
 
@@ -160,16 +173,19 @@ const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
 // opened to sellers only on purpose (CARD_RECOGNITION_ENABLED=1): on Gemini's free tier Google may use the photos
 const isEnabled = () => isConfigured() && process.env.CARD_RECOGNITION_ENABLED === '1';
 
+/** Everything a photo can be recognised as: the card games with an adapter, plus LEGO sets (legoRecognition.js). */
+const RECOGNIZABLE = [...GAMES, 'lego'];
+
 /**
- * The games offered to sellers: every game with an adapter, or only those listed in CARD_RECOGNITION_GAMES
- * ("onepiece,pokemon"), so one game can be switched off on Render without a deploy.
+ * The games offered to sellers: every recognisable one, or only those listed in CARD_RECOGNITION_GAMES
+ * ("onepiece,pokemon,lego"), so one can be switched off on Render without a deploy.
  */
 function enabledGames() {
   const listed = String(process.env.CARD_RECOGNITION_GAMES || '').split(',').map((g) => g.trim().toLowerCase()).filter(Boolean);
-  return listed.length ? GAMES.filter((g) => listed.includes(g)) : [...GAMES];
+  return listed.length ? RECOGNIZABLE.filter((g) => listed.includes(g)) : [...RECOGNIZABLE];
 }
 
 module.exports = {
-  recognizeCard, recognizeOnePiece, promptFor, GAMES, enabledGames,
+  recognizeCard, recognizeOnePiece, promptFor, GAMES, RECOGNIZABLE, CARD_CONDITIONS, enabledGames,
   geminiReader, prepareImage, parseReading, isConfigured, isEnabled, RecognitionError, DEFAULT_MODEL, MAX_SIDE,
 };

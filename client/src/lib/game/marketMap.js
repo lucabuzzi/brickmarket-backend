@@ -1,7 +1,7 @@
 // "CardBrix the game": the market inside the castle (entered from the Annunci castle of the plaza). A courtyard
-// closed by the castle walls: eight shops on the corners of an octagon round a paved plaza with a well, one shop
-// per kind of listing (LEGO, Funko Pop and six card games), a ring of brick ways in front of their doors and the
-// gate back to the plaza in the south wall.
+// closed by the castle walls: eight shops on the corners of an octagon round a paved plaza, one shop per kind of
+// listing (LEGO, Funko Pop and six card games), a ring of brick ways in front of their doors and the gate back to
+// the plaza in the south wall. In the middle of the plaza stands the player's own shop, where they sell their things.
 // Pure layout data, like gameMap.js (unit-tested in tests/game-market.test.js); marketGround.js paints the floor
 // and the walls, the shop art comes from scripts/build-game-shops.js, gameScene.js draws the live parts. Sizes,
 // spawns and the gate door come from config/gameMaps.json, which the server reads too.
@@ -72,7 +72,23 @@ export const GATE_TOWERS = [
   { x: EXIT_GATE.x + EXIT_GATE.w - 10, y: CFG.h - 56, w: 22, h: 56 },
 ];
 
-export const MARKET_PLACES = [...MARKET_SHOPS, EXIT_GATE];
+// The player's own shop, in the middle of the plaza: every player sees it as theirs ("your shop"); its clerk sells the
+// player's things (lib/game/sellFlow.js). Generic shop art for now, its door facing the south way and the gate.
+const MY_SHOP_ART = 'dice_shop';
+const MY_SHOP_BASE = MARKET_CENTRE.y + 30;
+export const MY_SHOP = {
+  id: 'myshop', art: MY_SHOP_ART, cx: MARKET_CENTRE.x, base: MY_SHOP_BASE,
+  x: MARKET_CENTRE.x - FOOT_W / 2, y: MY_SHOP_BASE - FOOT_H, w: FOOT_W, h: FOOT_H,
+  drawn: {
+    x: MARKET_CENTRE.x - SHOP_ART.arts[MY_SHOP_ART].w / 2, y: MY_SHOP_BASE - SHOP_ART.arts[MY_SHOP_ART].h,
+    w: SHOP_ART.arts[MY_SHOP_ART].w, h: SHOP_ART.arts[MY_SHOP_ART].h,
+  },
+  door: { x: MARKET_CENTRE.x - 16, y: MY_SHOP_BASE, w: 32, h: 14 },
+  color: '#c6ff3d', auraColor: '#c6ff3d',
+  path: '/sell',
+};
+
+export const MARKET_PLACES = [...MARKET_SHOPS, MY_SHOP, EXIT_GATE];
 
 // The castle walls round the courtyard (the south wall is split by the gate).
 export const WALLS = [
@@ -83,7 +99,7 @@ export const WALLS = [
   { x: EXIT_GATE.x + EXIT_GATE.w, y: CFG.h - WALL_S, w: CFG.w - EXIT_GATE.x - EXIT_GATE.w, h: WALL_S },
 ];
 
-// The paved plaza in the middle (an octagon too) and the well at its centre (collision box of its stone ring).
+// The paved plaza in the middle (an octagon too), where the player's shop stands.
 export const PLAZA = { x: MARKET_CENTRE.x, y: MARKET_CENTRE.y, rx: 128, ry: 94 };
 export function octagonPoints(o, grow = 0) {
   return Array.from({ length: 8 }, (_, k) => {
@@ -91,7 +107,6 @@ export function octagonPoints(o, grow = 0) {
     return [o.x + (o.rx + grow) * Math.cos(a), o.y + (o.ry + grow) * Math.sin(a)];
   });
 }
-export const WELL = { x: MARKET_CENTRE.x - 16, y: MARKET_CENTRE.y - 4, w: 32, h: 12 };
 
 // The brick ways (visual only): a ring joining the bit of way in front of every shop, round the outside of the
 // side shops, and straight ways from the ring to the plaza (north and south) and on to the gate.
@@ -117,9 +132,9 @@ const lanterns = octagonPoints(PLAZA, -6).map(([x, y], i) => ({ id: `lantern_${i
 const C = MARKET_CENTRE;
 export const MARKET_PROPS = [
   ...lanterns,
-  // benches facing the well and flower boxes on the plaza
-  ...[[C.x - 62, C.y - 40], [C.x + 62, C.y - 40], [C.x - 70, C.y + 30], [C.x + 70, C.y + 30]].map(([x, y], i) => ({ id: `bench_${i}`, type: 'bench', x, y, w: 24, h: 13, solid: 'base' })),
-  ...[[C.x - 40, C.y - 62], [C.x + 40, C.y - 62], [C.x - 40, C.y + 74], [C.x + 40, C.y + 74]].map(([x, y], i) => ({ id: `plaza_planter_${i}`, type: 'planter', x, y, w: 18, h: 12, solid: 'base' })),
+  // benches and flower boxes on the plaza, in front of the player's shop
+  ...[[C.x - 84, C.y + 78], [C.x + 84, C.y + 78]].map(([x, y], i) => ({ id: `bench_${i}`, type: 'bench', x, y, w: 24, h: 13, solid: 'base' })),
+  ...[[C.x - 40, C.y + 74], [C.x + 40, C.y + 74]].map(([x, y], i) => ({ id: `plaza_planter_${i}`, type: 'planter', x, y, w: 18, h: 12, solid: 'base' })),
   // flower boxes between the shops and the plaza
   ...[[224, 300], [736, 300], [224, 470], [736, 470], [430, 190], [530, 190], [430, 610], [530, 610]].map(([x, y], i) => ({ id: `planter_${i}`, type: 'planter', x, y, w: 22, h: 12, solid: 'base' })),
   // bushes, barrels, crates and carts in the corners of the courtyard
@@ -134,9 +149,9 @@ export const MARKET_PROPS = [
 
 export const MARKET_BLOCKED = [
   ...MARKET_SHOPS.map(({ x, y, w, h }) => ({ x, y, w, h })),
+  { x: MY_SHOP.x, y: MY_SHOP.y, w: MY_SHOP.w, h: MY_SHOP.h },
   { x: EXIT_GATE.x, y: EXIT_GATE.y, w: EXIT_GATE.w, h: EXIT_GATE.h },
   ...GATE_TOWERS,
   ...WALLS,
-  WELL,
   ...MARKET_PROPS.map(propBox).filter(Boolean),
 ];

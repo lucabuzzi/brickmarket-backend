@@ -1,5 +1,5 @@
 {
-  "_comment": "The NPCs of CardBrix the game and their dialogues. Read by client/src/lib/game/npcs.js (validated in tests/game-npcs.test.js). Every text is in the locale files: the NPC's name/role under game.npcs.<id>.name/.role, each dialogue node under game.npcs.<id>.<node>, each option label under game.dialog.opt.<option id>. An NPC either stands next to a place of the map (`place`: entering that place talks to them) or on its own (`place` null: it gets its own interaction zone). `avatar` is a normal avatar config (same sheets as the players, see avatarSpec.json); `portrait: 'dragon'` uses the dragon statue instead and draws nothing in the scene. Option actions: products {query} (real listings, query keys whitelisted in marketQueries.js), auctions, arena, link {path} (a page of the site), walk {place} (walks the player to that place of the current map and enters it), tutorial, close. An option with `next` goes to another node of the same dialogue.",
+  "_comment": "The NPCs of CardBrix the game and their dialogues. Read by client/src/lib/game/npcs.js (validated in tests/game-npcs.test.js). Every text is in the locale files: the NPC's name/role under game.npcs.<id>.name/.role, each dialogue node under game.npcs.<id>.<node>, each option label under game.dialog.opt.<option id>. An NPC either stands next to a place of the map (`place`: entering that place talks to them) or on its own (`place` null: it gets its own interaction zone). `avatar` is a normal avatar config (same sheets as the players, see avatarSpec.json); `portrait: 'dragon'` uses the dragon statue instead and draws nothing in the scene. Option actions: products {query} (real listings, query keys whitelisted in marketQueries.js), auctions, arena, link {path} (a page of the site), walk {place} (walks the player to that place of the current map and enters it), tutorial, close, sell (the player's shop: photograph a product and put it on sale), mylistings (the player's own listings). An option with `next` goes to another node of the same dialogue.",
   "npcs": {
     "guide": {
       "map": "plaza", "place": null, "x": 194, "y": 286, "color": "#22d3ee",
@@ -256,6 +256,25 @@
           ] },
           "how": { "options": [
             { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "onepiece" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
+    "shop_clerk": {
+      "map": "market", "place": "myshop", "x": 403, "y": 446, "color": "#c6ff3d",
+      "avatar": { "v": 2, "look": "esploratrice_collezionista", "skin": 1, "hairColor": 5, "outfitColor": 9, "accentColor": 6, "legsColor": 4 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "sell_photo", "do": { "type": "sell" } },
+            { "id": "my_listings", "do": { "type": "mylistings" } },
+            { "id": "how_shop", "next": "how" },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "sell_photo", "do": { "type": "sell" } },
             { "id": "back", "next": "hello" }
           ] }
         }

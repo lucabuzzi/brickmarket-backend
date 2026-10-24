@@ -4,7 +4,8 @@ import { npcById, npcNameKey, npcRoleKey } from '../../lib/game/npcs';
 import { currentView, canGoBack } from '../../lib/game/contextPanel';
 import DialogView from './DialogView';
 import NpcPortrait from './NpcPortrait';
-import { GoodsView, ProductView, AuctionsView, ArenaView, PlayerView } from './Views';
+import { GoodsView, ProductView, AuctionsView, ArenaView, PlayerView, MineView } from './Views';
+import SellView from './SellView';
 
 const DEFAULT_COLOR = '#c6ff3d';
 
@@ -38,6 +39,8 @@ export default function ContextPanel({ panel, dispatch, onChoose, emptyHint, cla
   else if (view.kind === 'auctions') body = <AuctionsView color={color} onPick={pick} />;
   else if (view.kind === 'arena') body = <ArenaView color={color} />;
   else if (view.kind === 'player') body = <PlayerView username={view.player.u} onPick={pick} />;
+  else if (view.kind === 'sell') body = <SellView color={color} onMine={() => dispatch({ type: 'push', view: { kind: 'mine', npc: view.npc || null } })} />;
+  else if (view.kind === 'mine') body = <MineView color={color} onPick={pick} />;
 
   return (
     <aside className={`cbg-panel cbg-context flex min-h-0 flex-col ${className}`} style={{ borderColor: color }} aria-label={name || t('game.panel.label')}>

@@ -19,7 +19,7 @@ import {
   WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
 } from './gameMap';
-import { MARKET_SHOPS, MARKET_PROPS, EXIT_GATE, WELL, GATE_TOWERS, MARKET_WORLD } from './marketMap';
+import { MARKET_SHOPS, MY_SHOP, MARKET_PROPS, EXIT_GATE, GATE_TOWERS, MARKET_WORLD } from './marketMap';
 import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
 import { drawnNpcs, npcHitBox } from './npcs';
@@ -470,24 +470,6 @@ export async function startGame({
     k.drawText({ font: FONT, text, size, pos: k.vec2(cx, y + h / 2), anchor: 'center', color: col('#3a2210') });
   }
 
-  // the well in the middle of the plaza: stone ring, water, two posts, a tiled roof, the rope and the bucket
-  function drawWell(wx, wb) {
-    ellipse(wx, wb - 1, 19, 5, '#000000', 0.28);
-    ['#9aa1ad', '#8a919d', '#a3a9b4', '#7b828e'].forEach((c, i) => rect(wx - 16, wb - 15 + i * 3.5, 32, 3.5, c));
-    for (let x = -16; x < 16; x += 6) for (let i = 0; i < 4; i++) rect(wx + x + (i & 1) * 3, wb - 15 + i * 3.5, 0.5, 3.5, '#5d6470');
-    rect(wx - 16, wb - 15, 32, 1, '#d3d8df');
-    ellipse(wx, wb - 15, 14, 4, '#1e3a5f');
-    ellipse(wx - 3, wb - 16, 5, 1.2, '#4f86b8');
-    rect(wx - 14, wb - 38, 2.5, 23, '#5e3a18');
-    rect(wx + 11.5, wb - 38, 2.5, 23, '#5e3a18');
-    k.drawTriangle({ p1: k.vec2(wx - 20, wb - 36), p2: k.vec2(wx + 20, wb - 36), p3: k.vec2(wx, wb - 47), color: col('#8b2e1a') });
-    for (let i = 0; i < 5; i++) rect(wx - 18 + i * 2, wb - 37 - i * 2, 36 - i * 4, 0.5, '#c0523a');
-    rect(wx - 20, wb - 37, 40, 2, '#5e3a18');
-    rect(wx - 0.5, wb - 35, 1.5, 9, '#3a2a18');
-    rect(wx - 3, wb - 27, 6, 4, '#8b5a2b');
-    rect(wx - 3, wb - 27, 6, 1, '#c08a3e');
-  }
-
   // a gate tower: stone blocks, a window, a cone of red tiles and a lime pennant on top
   const TOWER_STONES = ['#a3a9b4', '#99a0ac', '#aeb4be', '#949ba7'];
   function drawTower({ x, y, w, h }) {
@@ -520,14 +502,15 @@ export async function startGame({
     add([k.pos(0, 0), k.z(1), {
       draw() {
         const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
-        for (const b of [...MARKET_SHOPS, EXIT_GATE]) {
+        for (const b of [...MARKET_SHOPS, MY_SHOP, EXIT_GATE]) {
           const c = doorCentre(b);
           k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor), opacity: 0.08 + 0.1 * pulse });
         }
       },
     }]);
-    // the eight shops (characters walk behind their roofs), each name on a board above the roof
-    for (const s of MARKET_SHOPS) {
+    // the eight shops and the player's own one in the middle (characters walk behind their roofs), each name on a
+    // board above the roof
+    for (const s of [...MARKET_SHOPS, MY_SHOP]) {
       const label = String(labels[s.id] || s.id);
       add([k.pos(0, 0), k.z(s.base - 0.5), { draw() { ellipse(s.cx, s.base - 1, s.drawn.w / 2 - 4, 3.5, '#000000', 0.28); } }]);
       add([k.sprite(`shop-${s.art}`), k.pos(s.drawn.x, s.drawn.y), k.scale(SHOP_ART.texScale), k.z(s.base)]);
@@ -538,8 +521,6 @@ export async function startGame({
         },
       }]);
     }
-    const wellBottom = WELL.y + WELL.h;
-    add([k.pos(0, 0), k.z(wellBottom), { draw() { drawWell(WELL.x + WELL.w / 2, wellBottom); } }]);
     for (const p of MARKET_PROPS) {
       const drawProp = MARKET_PROP_DRAW[p.type];
       if (drawProp) add([k.pos(p.x, p.y), k.z(p.solid === 'none' ? p.y + 1 : p.y), { draw() { drawProp(p); } }]);
