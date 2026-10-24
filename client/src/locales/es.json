@@ -2651,7 +2651,8 @@
       "magic": "Magic: the Gathering",
       "onepiece": "One Piece Card Game",
       "funko": "FunkoPop",
-      "exit": "Plaza"
+      "exit": "Plaza",
+      "myshop": "Tu tienda"
     },
     "world": {
       "loading": "Cargando el juego…",
@@ -2800,6 +2801,11 @@
         "title": "Portón del castillo",
         "subtitle": "Salida",
         "flavour": "Vuelve a la plaza de CardBrix."
+      },
+      "myshop": {
+        "title": "Tu tienda",
+        "subtitle": "Vende tus cartas y tus LEGO",
+        "flavour": "Fotografía un producto: Vittoria prepara el anuncio, tú eliges el precio."
       }
     },
     "chat": {
@@ -2940,7 +2946,10 @@
         "spend": "¿Para qué sirven?",
         "show_products": "Enséñame los productos",
         "how_market": "¿Cómo funciona el mercado?",
-        "to_plaza": "Vuelvo a la plaza"
+        "to_plaza": "Vuelvo a la plaza",
+        "sell_photo": "Fotografía tu producto y ponlo a la venta",
+        "my_listings": "Mis anuncios",
+        "how_shop": "¿Cómo funciona mi tienda?"
       }
     },
     "npcs": {
@@ -3036,6 +3045,13 @@
         "hello": "¡Qué tal! Soy Fausto. En mi tienda están los Funko Pop que ponen a la venta los usuarios, desde exclusivos hasta piezas raras.",
         "how": "No vendo nada mío: te enseño los anuncios reales de otros coleccionistas. Elige un Funko, mira precio y estado y abre el anuncio: la compra y el pago se hacen dentro de CardBrix.",
         "greet": "¡Funko Pop en el escaparate!"
+      },
+      "shop_clerk": {
+        "name": "Vittoria",
+        "role": "Dependienta de tu tienda",
+        "hello": "¡Bienvenido a tu tienda! Soy Vittoria. Aquí pones a la venta tus cartas y tus sets LEGO: tú fotografías el producto, yo preparo el anuncio. Solo te queda decidir el precio.",
+        "how": "Elige qué vendes y haz una foto: Gemini lee la carta o la caja y el sitio comprueba en el catálogo que el producto existe de verdad. Elige la versión correcta, confirma el estado y escribe el precio. El anuncio se publica con Poste Italiane y BRT como transportistas, que puedes cambiar desde el sitio.",
+        "greet": "¡Bienvenido a tu tienda!"
       }
     },
     "panel": {
@@ -3097,6 +3113,67 @@
       "market": {
         "title": "El mercado del castillo",
         "body": "Cada tienda tiene su mercader: toca a quien tenga un «!» para ver los anuncios reales publicados por los usuarios. La puerta del sur te devuelve a la plaza."
+      }
+    },
+    "sell": {
+      "kind_title": "¿Qué vendes?",
+      "photo_take": "Fotografía el producto",
+      "photo_hint_card": "Encuadra la carta de frente, bien iluminada y legible.",
+      "photo_hint_lego": "Encuadra el lado de la caja donde se lee el número del set.",
+      "photo_pick": "Elige una foto del dispositivo",
+      "photo_note": "La foto será la primera imagen de tu anuncio.",
+      "change_kind": "Cambiar producto",
+      "reading": "Vittoria está mirando la foto…",
+      "publishing": "Publicando el anuncio…",
+      "retry_not_found": "No he encontrado este producto en el catálogo. Prueba con otra foto o usa la página Vender del sitio.",
+      "retry_unreadable": "No consigo leer la foto. Inténtalo más cerca y con más luz.",
+      "retake": "Hacer otra foto",
+      "open_sell": "Abrir la página Vender del sitio",
+      "unavailable": "El reconocimiento de fotos no está disponible ahora. Puedes vender desde la página Vender del sitio.",
+      "pick_title": "¡La he encontrado en el catálogo! ¿Qué versión tienes?",
+      "field": {
+        "game": "Juego",
+        "set": "Set",
+        "number": "Número",
+        "language": "Idioma",
+        "rarity": "Rareza",
+        "set_number": "Número de set",
+        "year": "Año",
+        "pieces": "Piezas",
+        "condition": "Estado",
+        "shipping": "Envío"
+      },
+      "shipping_value": "Poste Italiane · BRT",
+      "shipping_note": "Puedes cambiar los transportistas desde el sitio, en Mis anuncios.",
+      "condition_hint": "Estado sugerido por Gemini: confírmalo o cámbialo.",
+      "condition_pick": "Elige el estado del producto.",
+      "price_label": "Tu precio (€)",
+      "price_placeholder": "ej. 25,00",
+      "market_value": "Valor de mercado estimado: {{amount}}",
+      "buyer_pays": "El comprador pagará {{amount}}, comisión de CardBrix incluida. Tú recibes el precio que eliges.",
+      "publish": "Poner a la venta",
+      "blocker": {
+        "condition": "Elige el estado",
+        "price": "Escribe el precio",
+        "title": "Falta el nombre del producto: usa la página Vender del sitio"
+      },
+      "done_title": "¡Anuncio publicado!",
+      "done_text": "Tu anuncio ya está en línea, en la tienda de su categoría.",
+      "open_listing": "Abrir el anuncio",
+      "sell_another": "Vender otro producto",
+      "my_listings": "Mis anuncios",
+      "mine_title": "Tus anuncios",
+      "mine_empty": "Todavía no tienes anuncios. ¡Fotografía un producto y ponlo a la venta!",
+      "manage": "Gestiona tus anuncios en el sitio",
+      "error": {
+        "login": "Vuelve a iniciar sesión para continuar.",
+        "limit": "Has alcanzado el límite de fotos por ahora, inténtalo más tarde.",
+        "too_large": "La foto es demasiado grande.",
+        "too_small": "La foto es demasiado pequeña: haz una más de cerca.",
+        "bad_image": "No se puede abrir esta foto, prueba con otra.",
+        "unavailable": "El reconocimiento de fotos no está disponible ahora.",
+        "generic": "Algo ha fallado, inténtalo de nuevo.",
+        "publish": "No he podido publicar el anuncio, inténtalo de nuevo."
       }
     }
   },

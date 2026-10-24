@@ -248,6 +248,8 @@ export default function WorldScreen({ avatar, onEdit }) {
     if (a.type === 'products') panelDispatch({ type: 'push', view: { kind: 'goods', npc: npcId, query: a.query } });
     else if (a.type === 'auctions') panelDispatch({ type: 'push', view: { kind: 'auctions', npc: npcId } });
     else if (a.type === 'arena') panelDispatch({ type: 'push', view: { kind: 'arena', npc: npcId } });
+    else if (a.type === 'sell') panelDispatch({ type: 'push', view: { kind: 'sell', npc: npcId } });
+    else if (a.type === 'mylistings') panelDispatch({ type: 'push', view: { kind: 'mine', npc: npcId } });
     else if (a.type === 'link') navigate(navTo(a.path));
     else if (a.type === 'walk') { panelDispatch({ type: 'close' }); gameRef.current?.walkTo(a.place); }
     else if (a.type === 'tutorial') { panelDispatch({ type: 'close' }); replay(); }

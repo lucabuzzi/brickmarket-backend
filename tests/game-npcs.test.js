@@ -87,7 +87,12 @@ describe('dialogues', () => {
       expect(queries.length).toBeGreaterThan(0);
       for (const q of queries) expect(q).toEqual(shop.query);
     }
-    // every card game of the site has a shop of its own
+    // the player's own shop has its clerk, who sells and shows the player's listings
+    expect(npcForPlace('market', 'myshop').id).toBe('shop_clerk');
+    const clerkActions = allOptions().filter(({ npc: n, o }) => n.id === 'shop_clerk' && o.do).map(({ o }) => o.do.type);
+    expect(clerkActions).toEqual(expect.arrayContaining(['sell', 'mylistings', 'close']));
+    expect(clerkActions).not.toContain('products');
+        // every card game of the site has a shop of its own
     expect(MARKET_SHOPS.filter((s) => s.query.product_type === 'tcg').map((s) => s.query.game).sort()).toEqual([...CARD_GAMES].sort());
   });
 });

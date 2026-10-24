@@ -2651,7 +2651,8 @@
       "magic": "Magic: the Gathering",
       "onepiece": "One Piece Card Game",
       "funko": "FunkoPop",
-      "exit": "Plaza"
+      "exit": "Plaza",
+      "myshop": "Your shop"
     },
     "world": {
       "loading": "Loading the game…",
@@ -2800,6 +2801,11 @@
         "title": "Castle gate",
         "subtitle": "Exit",
         "flavour": "Back to the CardBrix plaza."
+      },
+      "myshop": {
+        "title": "Your shop",
+        "subtitle": "Sell your cards and your LEGO",
+        "flavour": "Photograph a product: Vittoria writes the listing, you pick the price."
       }
     },
     "chat": {
@@ -2940,7 +2946,10 @@
         "spend": "What are they for?",
         "show_products": "Show me the products",
         "how_market": "How does the market work?",
-        "to_plaza": "Back to the plaza"
+        "to_plaza": "Back to the plaza",
+        "sell_photo": "Photograph your product and put it on sale",
+        "my_listings": "My listings",
+        "how_shop": "How does my shop work?"
       }
     },
     "npcs": {
@@ -3036,6 +3045,13 @@
         "hello": "Hey there! I'm Fausto. My shop has the Funko Pops put on sale by users, from exclusives to rare pieces.",
         "how": "I don't sell anything of my own: I show you the real listings of other collectors. Pick a Funko, check price and condition and open the listing: buying and payment happen inside CardBrix.",
         "greet": "Funko Pops on show!"
+      },
+      "shop_clerk": {
+        "name": "Vittoria",
+        "role": "Clerk of your shop",
+        "hello": "Welcome to your shop! I'm Vittoria. Here you put your cards and LEGO sets on sale: you photograph the product, I write the listing. All you decide is the price.",
+        "how": "Pick what you sell and take a photo: Gemini reads the card or the box and the site checks in the catalog that the product really exists. Pick the right version, confirm the condition and type the price. The listing goes online with Poste Italiane and BRT as carriers, which you can change on the site.",
+        "greet": "Welcome to your shop!"
       }
     },
     "panel": {
@@ -3097,6 +3113,67 @@
       "market": {
         "title": "The castle market",
         "body": "Every shop has its merchant: tap whoever has a «!» to see the real listings published by users. The gate to the south takes you back to the plaza."
+      }
+    },
+    "sell": {
+      "kind_title": "What are you selling?",
+      "photo_take": "Photograph the product",
+      "photo_hint_card": "Frame the front of the card, well lit and legible.",
+      "photo_hint_lego": "Frame the side of the box where the set number can be read.",
+      "photo_pick": "Choose a photo from your device",
+      "photo_note": "The photo becomes the first picture of your listing.",
+      "change_kind": "Change product",
+      "reading": "Vittoria is looking at the photo…",
+      "publishing": "Publishing the listing…",
+      "retry_not_found": "I couldn't find this product in the catalog. Try another photo, or use the site's Sell page.",
+      "retry_unreadable": "I can't read the photo. Try again closer and with more light.",
+      "retake": "Take another photo",
+      "open_sell": "Open the site's Sell page",
+      "unavailable": "Photo recognition isn't available right now. You can sell from the site's Sell page.",
+      "pick_title": "Found it in the catalog! Which version do you have?",
+      "field": {
+        "game": "Game",
+        "set": "Set",
+        "number": "Number",
+        "language": "Language",
+        "rarity": "Rarity",
+        "set_number": "Set number",
+        "year": "Year",
+        "pieces": "Pieces",
+        "condition": "Condition",
+        "shipping": "Shipping"
+      },
+      "shipping_value": "Poste Italiane · BRT",
+      "shipping_note": "You can change the carriers on the site, in My listings.",
+      "condition_hint": "Condition suggested by Gemini: confirm it or change it.",
+      "condition_pick": "Pick the condition of the product.",
+      "price_label": "Your price (€)",
+      "price_placeholder": "e.g. 25.00",
+      "market_value": "Estimated market value: {{amount}}",
+      "buyer_pays": "The buyer will pay {{amount}}, CardBrix fee included. You get the price you set.",
+      "publish": "Put on sale",
+      "blocker": {
+        "condition": "Pick the condition",
+        "price": "Type the price",
+        "title": "The product name is missing: use the site's Sell page"
+      },
+      "done_title": "Listing published!",
+      "done_text": "Your listing is online, in the shop of its category.",
+      "open_listing": "Open the listing",
+      "sell_another": "Sell another product",
+      "my_listings": "My listings",
+      "mine_title": "Your listings",
+      "mine_empty": "You don't have any listings yet. Photograph a product and put it on sale!",
+      "manage": "Manage your listings on the site",
+      "error": {
+        "login": "Please log in again to continue.",
+        "limit": "You've reached the photo limit for now, try again later.",
+        "too_large": "The photo is too large.",
+        "too_small": "The photo is too small: take one from closer.",
+        "bad_image": "This photo can't be opened, try another one.",
+        "unavailable": "Photo recognition isn't available right now.",
+        "generic": "Something went wrong, please try again.",
+        "publish": "I couldn't publish the listing, please try again."
       }
     }
   },
