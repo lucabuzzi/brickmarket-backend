@@ -2710,7 +2710,8 @@
         "sash_brass": "Fascia e bottoni",
         "cyber_armor": "Corazza cyber",
         "visor_scarf_blade": "Visore, sciarpa e lama",
-        "armored_greaves": "Schinieri"
+        "armored_greaves": "Schinieri",
+        "cap": "Cappellino"
       }
     },
     "places": {
@@ -2952,7 +2953,7 @@
       },
       "card_trainer": {
         "name": "Allenatori",
-        "tagline": "Cappellino, guanti e tracolla: sempre pronto per uno scambio."
+        "tagline": "Cappellino in testa e carte in tasca: sempre pronti per uno scambio."
       },
       "card_duelist": {
         "name": "Maestri delle carte",
@@ -2985,6 +2986,7 @@
       "esploratore_collezionista": "Esploratore collezionista",
       "esploratrice_collezionista": "Esploratrice collezionista",
       "allenatore_carte": "Allenatore di carte",
+      "allenatrice_carte": "Allenatrice di carte",
       "maestro_carte": "Maestro delle carte",
       "maestra_carte": "Maestra delle carte",
       "arcanista": "Arcanista",

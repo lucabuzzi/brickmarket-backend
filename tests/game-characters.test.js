@@ -113,13 +113,16 @@ describe('with the sheets built today (avatarSpec.json)', () => {
     expect(C.editableParts('esploratore_collezionista').map((e) => e.part)).toEqual(PARTS);
   });
 
-  test('the card trainer is playable as a class of its own, with only a man (no gender switch)', () => {
-    expect(SPEC.looks).toContain('allenatore_carte');
+  test('the card trainers are playable as a class of their own: a man and a woman (gender switch)', () => {
+    expect(SPEC.looks).toEqual(expect.arrayContaining(['allenatore_carte', 'allenatrice_carte']));
     expect(C.resolveLook('allenatore_carte')).toBe('allenatore_carte');
     const cls = C.creatorClasses().find((c) => c.pair === 'card_trainer');
-    expect(cls.members).toEqual(['allenatore_carte']);
-    expect(C.memberOf('card_trainer', 'female')).toBe('allenatore_carte');
+    expect(cls.members).toEqual(['allenatore_carte', 'allenatrice_carte']);
+    expect(C.memberOf('card_trainer', 'female')).toBe('allenatrice_carte');
+    expect(C.memberOf('card_trainer', 'male')).toBe('allenatore_carte');
     expect(C.editableParts('allenatore_carte').map((e) => e.part)).toEqual(PARTS);
+    // her hair and backpack share the same browns: the hair stays as drawn, the cap is a zone of its own
+    expect(C.editableParts('allenatrice_carte').map((e) => e.part)).toEqual(PARTS.filter((p) => p !== 'hairColor'));
   });
 
   test('every class and character has its name in the 5 languages', () => {

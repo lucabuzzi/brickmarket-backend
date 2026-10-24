@@ -107,6 +107,31 @@
         }
       }
     },
+    "allenatrice_carte": {
+      "scale": 0.1605,
+      "regions": {
+        "1": {
+          "count": 620,
+          "sref": 0.3658,
+          "vref": 0.8317
+        },
+        "3": {
+          "count": 930,
+          "sref": 0.6007,
+          "vref": 0.5799
+        },
+        "4": {
+          "count": 1254,
+          "sref": 0.6804,
+          "vref": 0.599
+        },
+        "5": {
+          "count": 1231,
+          "sref": 0.4385,
+          "vref": 0.2618
+        }
+      }
+    },
     "uomo_base": {
       "scale": 0.1424,
       "regions": {

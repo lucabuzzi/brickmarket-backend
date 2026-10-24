@@ -507,6 +507,70 @@
       }
     },
     {
+      "id": "allenatrice_carte",
+      "pair": "card_trainer",
+      "gender": "female",
+      "regions": {
+        "skin": {
+          "label": "skin",
+          "ref": [
+            "#FFC0A0",
+            "#E0A080",
+            "#C08060",
+            "#F0B090"
+          ],
+          "band": [
+            0,
+            1
+          ]
+        },
+        "hairColor": null,
+        "outfitColor": {
+          "label": "outfit",
+          "ref": [
+            "#4060A0",
+            "#4060C0",
+            "#4080C0",
+            "#2060A0",
+            "#204080",
+            "#60A0E0",
+            "#2060C0"
+          ],
+          "band": [
+            0.24,
+            0.7
+          ]
+        },
+        "accentColor": {
+          "label": "cap",
+          "ref": [
+            "#4060A0",
+            "#4060C0",
+            "#4080C0",
+            "#204080",
+            "#204060",
+            "#2060C0"
+          ],
+          "band": [
+            0,
+            0.24
+          ]
+        },
+        "legsColor": {
+          "label": "jeans",
+          "ref": [
+            "#202040",
+            "#204040",
+            "#404060"
+          ],
+          "band": [
+            0.68,
+            1
+          ]
+        }
+      }
+    },
+    {
       "id": "maestro_carte",
       "pair": "card_duelist",
       "gender": "male",
