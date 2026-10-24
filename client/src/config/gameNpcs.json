@@ -109,8 +109,46 @@
         }
       }
     },
+    "pokemon_merchant": {
+      "map": "market", "place": "pokemon", "x": 266, "y": 204, "color": "#ffd23f",
+      "avatar": { "v": 2, "look": "donna_cyber", "skin": 3, "hairColor": 1, "outfitColor": 3, "accentColor": 9, "legsColor": 5 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "pokemon" } } },
+            { "id": "how_market", "next": "how" },
+            { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "pokemon" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
+    "yugioh_merchant": {
+      "map": "market", "place": "yugioh", "x": 695, "y": 204, "color": "#fbbf24",
+      "avatar": { "v": 2, "look": "allenatore_carte", "skin": 2, "hairColor": 6, "outfitColor": 8, "accentColor": 4, "legsColor": 1 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "yugioh" } } },
+            { "id": "how_market", "next": "how" },
+            { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "yugioh" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
     "lego_merchant": {
-      "map": "market", "place": "lego", "x": 58, "y": 136, "color": "#ff6b5e",
+      "map": "market", "place": "lego", "x": 885, "y": 328, "color": "#ff6b5e",
       "avatar": { "v": 2, "look": "esploratore_collezionista", "skin": 1, "hairColor": 3, "outfitColor": 2, "accentColor": 6, "legsColor": 3 },
       "dialog": {
         "start": "hello",
@@ -128,37 +166,27 @@
         }
       }
     },
-    "cards_merchant": {
-      "map": "market", "place": "cards", "x": 210, "y": 136, "color": "#6ea8ff",
-      "avatar": { "v": 2, "look": "donna_cyber", "skin": 3, "hairColor": 1, "outfitColor": 3, "accentColor": 9, "legsColor": 5 },
+    "lorcana_merchant": {
+      "map": "market", "place": "lorcana", "x": 890, "y": 504, "color": "#60a5fa",
+      "avatar": { "v": 2, "look": "esploratrice_collezionista", "skin": 4, "hairColor": 2, "outfitColor": 5, "accentColor": 7, "legsColor": 6 },
       "dialog": {
         "start": "hello",
         "nodes": {
           "hello": { "options": [
-            { "id": "categories", "next": "games" },
-            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg" } } },
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "lorcana" } } },
             { "id": "how_market", "next": "how" },
             { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
             { "id": "bye", "do": { "type": "close" } }
           ] },
-          "games": { "options": [
-            { "id": "game_pokemon", "do": { "type": "products", "query": { "product_type": "tcg", "game": "pokemon" } } },
-            { "id": "game_magic", "do": { "type": "products", "query": { "product_type": "tcg", "game": "magic" } } },
-            { "id": "game_yugioh", "do": { "type": "products", "query": { "product_type": "tcg", "game": "yugioh" } } },
-            { "id": "game_onepiece", "do": { "type": "products", "query": { "product_type": "tcg", "game": "onepiece" } } },
-            { "id": "game_lorcana", "do": { "type": "products", "query": { "product_type": "tcg", "game": "lorcana" } } },
-            { "id": "game_dragonball", "do": { "type": "products", "query": { "product_type": "tcg", "game": "dragonball" } } },
-            { "id": "back", "next": "hello" }
-          ] },
           "how": { "options": [
-            { "id": "categories", "next": "games" },
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "lorcana" } } },
             { "id": "back", "next": "hello" }
           ] }
         }
       }
     },
     "funko_merchant": {
-      "map": "market", "place": "funko", "x": 362, "y": 136, "color": "#ffa04d",
+      "map": "market", "place": "funko", "x": 691, "y": 628, "color": "#ffa04d",
       "avatar": { "v": 2, "look": "uomo_cyber", "skin": 6, "hairColor": 5, "outfitColor": 7, "accentColor": 1, "legsColor": 7 },
       "dialog": {
         "start": "hello",
@@ -171,6 +199,63 @@
           ] },
           "how": { "options": [
             { "id": "show_products", "do": { "type": "products", "query": { "product_type": "funko" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
+    "dragonball_merchant": {
+      "map": "market", "place": "dragonball", "x": 265, "y": 628, "color": "#fb923c",
+      "avatar": { "v": 2, "look": "esploratore_collezionista", "skin": 0, "hairColor": 7, "outfitColor": 10, "accentColor": 3, "legsColor": 2 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "dragonball" } } },
+            { "id": "how_market", "next": "how" },
+            { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "dragonball" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
+    "magic_merchant": {
+      "map": "market", "place": "magic", "x": 72, "y": 504, "color": "#a78bfa",
+      "avatar": { "v": 2, "look": "donna_cyber", "skin": 5, "hairColor": 0, "outfitColor": 12, "accentColor": 10, "legsColor": 8 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "magic" } } },
+            { "id": "how_market", "next": "how" },
+            { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "magic" } } },
+            { "id": "back", "next": "hello" }
+          ] }
+        }
+      }
+    },
+    "onepiece_merchant": {
+      "map": "market", "place": "onepiece", "x": 78, "y": 328, "color": "#f87171",
+      "avatar": { "v": 2, "look": "uomo_cyber", "skin": 2, "hairColor": 8, "outfitColor": 1, "accentColor": 2, "legsColor": 0 },
+      "dialog": {
+        "start": "hello",
+        "nodes": {
+          "hello": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "onepiece" } } },
+            { "id": "how_market", "next": "how" },
+            { "id": "to_plaza", "do": { "type": "walk", "place": "exit" } },
+            { "id": "bye", "do": { "type": "close" } }
+          ] },
+          "how": { "options": [
+            { "id": "show_products", "do": { "type": "products", "query": { "product_type": "tcg", "game": "onepiece" } } },
             { "id": "back", "next": "hello" }
           ] }
         }

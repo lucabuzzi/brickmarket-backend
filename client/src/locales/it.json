@@ -2719,9 +2719,14 @@
       "arena": "Puzzle Arena",
       "catalog": "Catalogo Wiki",
       "credits": "Drago dei Crediti",
-      "lego": "LEGO",
-      "cards": "Carte",
-      "funko": "Funko Pop",
+      "lego": "Lego",
+      "pokemon": "Pokémon",
+      "yugioh": "Yu-Gi-Oh!",
+      "lorcana": "Disney Lorcana",
+      "dragonball": "Dragon Ball Super Card Game",
+      "magic": "Magic: the Gathering",
+      "onepiece": "One Piece Card Game",
+      "funko": "FunkoPop",
       "exit": "Piazza"
     },
     "world": {
@@ -2754,7 +2759,7 @@
       },
       "listings": {
         "title": "Annunci",
-        "body": "Qui compri e vendi carte collezionabili, set LEGO e Funko. Pubblichi un annuncio con foto e prezzo e il pagamento avviene dentro CardBrix, con una commissione. Pubblicare un annuncio non dà crediti. Entra nel castello: dentro c'è il mercato con le bancarelle di LEGO, carte e Funko."
+        "body": "Qui compri e vendi carte collezionabili, set LEGO e Funko. Pubblichi un annuncio con foto e prezzo e il pagamento avviene dentro CardBrix, con una commissione. Pubblicare un annuncio non dà crediti. Entra nel castello: dentro c'è il mercato, con un negozio per LEGO, Funko e ogni gioco di carte."
       },
       "auctions": {
         "title": "Aste",
@@ -2805,7 +2810,7 @@
       "listings": {
         "title": "Castello degli Annunci",
         "subtitle": "Mercato · LEGO · Carte · Funko",
-        "flavour": "Oltre il portone c'è il mercato: una bancarella per ogni tipo di annuncio."
+        "flavour": "Oltre il portone c'è il mercato: un negozio per ogni tipo di annuncio."
       },
       "auctions": {
         "title": "Arena delle Aste",
@@ -2828,17 +2833,42 @@
         "flavour": "I crediti servono per partecipare ai puzzle della Skill Zone."
       },
       "lego": {
-        "title": "Bancarella LEGO",
+        "title": "Negozio LEGO",
         "subtitle": "Set · Minifigure · Mattoncini",
         "flavour": "Set sigillati, set usati completi e minifigure in vendita."
       },
-      "cards": {
-        "title": "Bancarella delle Carte",
-        "subtitle": "Pokémon · Magic · Lorcana e altre",
-        "flavour": "Carte singole, buste e box di tutti i giochi di carte collezionabili."
+      "pokemon": {
+        "title": "Negozio Pokémon",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte Pokémon messe in vendita dagli utenti."
+      },
+      "yugioh": {
+        "title": "Negozio Yu-Gi-Oh!",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte Yu-Gi-Oh! messe in vendita dagli utenti."
+      },
+      "lorcana": {
+        "title": "Negozio Disney Lorcana",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte Disney Lorcana messe in vendita dagli utenti."
+      },
+      "dragonball": {
+        "title": "Negozio Dragon Ball",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte del Dragon Ball Super Card Game messe in vendita dagli utenti."
+      },
+      "magic": {
+        "title": "Negozio Magic",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte Magic: the Gathering messe in vendita dagli utenti."
+      },
+      "onepiece": {
+        "title": "Negozio One Piece",
+        "subtitle": "Carte singole · Buste · Box",
+        "flavour": "Le carte del One Piece Card Game messe in vendita dagli utenti."
       },
       "funko": {
-        "title": "Bancarella Funko Pop",
+        "title": "Negozio Funko Pop",
         "subtitle": "In scatola · Esclusive",
         "flavour": "Funko Pop in scatola, edizioni speciali e pezzi rari."
       },
@@ -2986,14 +3016,7 @@
         "spend": "A cosa servono?",
         "show_products": "Mostrami i prodotti",
         "how_market": "Come funziona il mercato?",
-        "to_plaza": "Torno alla piazza",
-        "categories": "Quali categorie posso esplorare?",
-        "game_pokemon": "Pokémon",
-        "game_magic": "Magic: The Gathering",
-        "game_yugioh": "Yu-Gi-Oh!",
-        "game_onepiece": "One Piece",
-        "game_lorcana": "Lorcana",
-        "game_dragonball": "Dragon Ball"
+        "to_plaza": "Torno alla piazza"
       }
     },
     "npcs": {
@@ -3037,22 +3060,56 @@
       "lego_merchant": {
         "name": "Mattia",
         "role": "Mercante LEGO",
-        "hello": "Benvenuto, collezionista! Sono Mattia: sul mio banco trovi gli annunci LEGO pubblicati dagli utenti di CardBrix, set e minifigure. Dai un’occhiata!",
+        "hello": "Benvenuto, collezionista! Sono Mattia: nel mio negozio trovi gli annunci LEGO pubblicati dagli utenti di CardBrix, set e minifigure. Dai un’occhiata!",
         "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli un oggetto, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
         "greet": "Mattoncini sul banco!"
       },
-      "cards_merchant": {
+      "pokemon_merchant": {
         "name": "Selene",
-        "role": "Mercante di carte",
-        "hello": "Ciao! Sono Selene, la mercante di carte: Pokémon, Magic, Yu-Gi-Oh!, One Piece e altri giochi. Ti mostro le carte in vendita adesso.",
-        "games": "Di quale gioco ti interessano le carte?",
+        "role": "Mercante Pokémon",
+        "hello": "Ciao! Sono Selene e questo è il negozio Pokémon: ti mostro le carte Pokémon messe in vendita dagli utenti di CardBrix, singole, buste e box.",
         "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
-        "greet": "Carte di ogni gioco!"
+        "greet": "Carte Pokémon in vetrina!"
+      },
+      "yugioh_merchant": {
+        "name": "Yuri",
+        "role": "Mercante Yu-Gi-Oh!",
+        "hello": "Benvenuto, duellante! Sono Yuri: qui trovi le carte Yu-Gi-Oh! pubblicate dagli utenti di CardBrix.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
+        "greet": "È l'ora del duello!"
+      },
+      "lorcana_merchant": {
+        "name": "Aurora",
+        "role": "Mercante Disney Lorcana",
+        "hello": "Ciao! Sono Aurora: nel mio negozio ci sono le carte Disney Lorcana messe in vendita dagli utenti di CardBrix.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
+        "greet": "Carte Lorcana appena arrivate!"
+      },
+      "dragonball_merchant": {
+        "name": "Rocco",
+        "role": "Mercante Dragon Ball",
+        "hello": "Ehilà! Sono Rocco: qui trovi le carte del Dragon Ball Super Card Game pubblicate dagli utenti di CardBrix.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
+        "greet": "Carte Dragon Ball sul bancone!"
+      },
+      "magic_merchant": {
+        "name": "Morgana",
+        "role": "Mercante Magic",
+        "hello": "Benvenuto, viandante. Sono Morgana: sui miei scaffali ci sono le carte Magic: the Gathering messe in vendita dagli utenti di CardBrix.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
+        "greet": "Carte Magic per ogni mazzo!"
+      },
+      "onepiece_merchant": {
+        "name": "Kenji",
+        "role": "Mercante One Piece",
+        "hello": "Ciao, pirata! Sono Kenji: qui trovi le carte del One Piece Card Game pubblicate dagli utenti di CardBrix.",
+        "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli una carta, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
+        "greet": "Carte One Piece all'arrembaggio!"
       },
       "funko_merchant": {
         "name": "Fausto",
         "role": "Mercante Funko Pop",
-        "hello": "Ehilà! Sono Fausto. Sul mio banco ci sono i Funko Pop messi in vendita dagli utenti, dalle esclusive ai pezzi rari.",
+        "hello": "Ehilà! Sono Fausto. Nel mio negozio ci sono i Funko Pop messi in vendita dagli utenti, dalle esclusive ai pezzi rari.",
         "how": "Non vendo niente di mio: ti mostro gli annunci veri degli altri collezionisti. Scegli un Funko, guarda prezzo e condizione e apri l'annuncio: acquisto e pagamento avvengono dentro CardBrix.",
         "greet": "Funko Pop in vetrina!"
       }
@@ -3115,7 +3172,7 @@
       "ok": "Ho capito",
       "market": {
         "title": "Il mercato del castello",
-        "body": "Ogni bancarella ha il suo mercante: tocca chi ha il «!» per vedere gli annunci veri pubblicati dagli utenti. Il portone a sud ti riporta in piazza."
+        "body": "Ogni negozio ha il suo mercante: tocca chi ha il «!» per vedere gli annunci veri pubblicati dagli utenti. Il portone a sud ti riporta in piazza."
       }
     }
   }

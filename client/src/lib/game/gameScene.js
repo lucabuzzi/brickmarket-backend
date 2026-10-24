@@ -1,23 +1,25 @@
 // "CardBrix the game": the Kaplay scene. Layout, collisions and movement rules come from gameMap.js, marketMap.js
 // and maps.js (pure and unit-tested); the static art (ground, stalls, castle, dragon, character) is painted in
-// code by groundSprite.js, marketGround.js, buildingSprite.js, dragonSprite.js and the character sheets (skins.js)
-// and shown here as sprites. This file adds the live parts (floating coins, blue flames, torches, cloud shadows,
+// code by groundSprite.js, marketGround.js, buildingSprite.js, dragonSprite.js and the character sheets (skins.js),
+// the market shops are artwork (scripts/build-game-shops.js); all of it is shown here as sprites. This file adds the live parts (floating coins, blue flames, torches, cloud shadows,
 // door hints, tutorial guide arrow), wires input and switches between the maps (plaza <-> market in the castle):
 // everything that belongs to a map is tagged 'map' and rebuilt on a switch, the player and the overlay stay.
 // Kaplay is imported dynamically so the engine stays out of the main marketplace bundle - it is downloaded
 // only when someone opens /game.
 import { FRAME, COLS, ROWS, IDLE_COL } from './skins';
 import { buildGroundCanvas } from './groundSprite';
-import { buildMarketGroundCanvas } from './marketGround';
+import { buildMarketGroundCanvas, GROUND_SCALE, hash } from './marketGround';
 import { buildBuildingCanvas, BUILDING_PAD, ROOF_EXTRA, AUCTION_TIMER_BOX } from './buildingSprite';
 // The dragon statue artwork (built by scripts/build-game-dragon.js): image + size and centre of its golden disc.
 import DRAGON_STATUE_URL from '../../assets/game/dragon-statue.png';
 import DRAGON_STATUE from '../../assets/game/dragon-statue.json';
+// The market shops (built by scripts/build-game-shops.js): one image per building + their size in world units.
+import SHOP_ART from '../../assets/game/shops/shops.json';
 import {
   WORLD, BUILDINGS, TREES, PROPS, CREDITS_PLACE, WALK_SPEED, moveWithCollision, doorAt, doorCentre,
   facingFor, stepToward, keyVector,
 } from './gameMap';
-import { MARKET_STALLS, MARKET_PROPS, EXIT_GATE, WELL } from './marketMap';
+import { MARKET_SHOPS, MARKET_PROPS, EXIT_GATE, WELL, GATE_TOWERS, MARKET_WORLD } from './marketMap';
 import { mapById, spawnPoint, nearestSpawn } from './maps';
 import { approach } from './plazaState';
 import { drawnNpcs, npcHitBox } from './npcs';
@@ -32,6 +34,7 @@ const VIEW_H = 240;
 // The character sheet cells are 48x56 pixels of detail; shown at this scale they are ~26 world units tall,
 // the same size as the door of a stall.
 const CHAR_SCALE = 0.55;
+const SHOP_ART_URLS = import.meta.glob('../../assets/game/shops/*.png', { eager: true, import: 'default' });
 const FADE_S = 0.22; // each half of the fade when changing map
 
 // Kaplay caches its text glyph atlases in a module-level object keyed by font name, so a second scene in the same
@@ -109,7 +112,7 @@ export async function startGame({
   const col = (hex) => k.Color.fromHex(hex);
   const rect = (x, y, w, h, hex, opacity = 1) => k.drawRect({ pos: k.vec2(x, y), width: w, height: h, color: col(hex), opacity });
 
-  // ── sprites: character sheet, ground, dragon, one per stall ──────────────────
+  // ── sprites: character sheet, grounds, dragon, one per building and per shop artwork ──
   const anims = {};
   ROWS.forEach((dir, row) => {
     anims[`${dir}-idle`] = { from: row * COLS + IDLE_COL[dir], to: row * COLS + IDLE_COL[dir] };
@@ -119,9 +122,10 @@ export async function startGame({
     k.loadFont(FONT, PIXEL_FONT_URL, { filter: 'linear' }),
     k.loadSprite('me', sheet.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims }),
     k.loadSprite('ground', buildGroundCanvas().toDataURL()),
-    k.loadSprite('ground-market', buildMarketGroundCanvas().toDataURL()),
+    k.loadSprite('ground-market', buildMarketGroundCanvas()), // big: handed over as a canvas, no PNG round trip
     k.loadSprite('dragon-statue', DRAGON_STATUE_URL),
-    ...[...BUILDINGS, ...MARKET_STALLS].map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
+    ...BUILDINGS.map((b) => k.loadSprite(`b-${b.id}`, buildBuildingCanvas(b).toDataURL())),
+    ...Object.keys(SHOP_ART.arts).map((art) => k.loadSprite(`shop-${art}`, SHOP_ART_URLS[`../../assets/game/shops/${art}.png`])),
     ...Object.entries(npcSheets).map(([id, c]) => k.loadSprite(`npc-${id}`, c.toDataURL(), { sliceX: COLS, sliceY: ROWS.length, anims })),
   ]);
 
@@ -362,17 +366,21 @@ export async function startGame({
   }
 
   // ── the market inside the castle ───────────────────────────────────────────────
+  const FLOWERS = ['#f472b6', '#facc15', '#ffffff', '#fb7185', '#a78bfa', '#38bdf8'];
+  const ellipse = (x, y, rx, ry, hex, opacity = 1) => k.drawEllipse({ pos: k.vec2(x, y), radiusX: rx, radiusY: ry, color: col(hex), opacity });
   const MARKET_PROP_DRAW = {
     barrel() {
-      k.drawEllipse({ pos: k.vec2(0, 0), radiusX: 7, radiusY: 2, color: col('#000000'), opacity: 0.25 });
+      ellipse(0, 0, 7, 2, '#000000', 0.25);
       rect(-6, -14, 12, 14, '#7a4a22');
       rect(-6, -14, 12, 2, '#a8702f');
       rect(-6, -10, 12, 1, '#3a2a18');
       rect(-6, -4, 12, 1, '#3a2a18');
       rect(-4, -14, 1, 14, '#5e3a18');
       rect(3, -14, 1, 14, '#5e3a18');
+      rect(-5, -13.5, 2, 12, '#ffffff', 0.12);
     },
     crate(p) {
+      if (p.solid !== 'none') ellipse(0, 0, p.w / 2 + 1, 2, '#000000', 0.22);
       rect(-p.w / 2, -p.h, p.w, p.h, '#8b5a2b');
       rect(-p.w / 2, -p.h, p.w, 1, '#c08a3e');
       rect(-p.w / 2, -p.h, 1, p.h, '#5e3a18');
@@ -383,16 +391,8 @@ export async function startGame({
         rect(p.w / 2 - 1 - off, -p.h + i, 1, 1, '#5e3a18');
       }
     },
-    torch() {
-      const t = k.time();
-      const flick = Math.sin(t * 12) * 0.6 + Math.sin(t * 7.3) * 0.4;
-      k.drawEllipse({ pos: k.vec2(0, -22), radiusX: 14, radiusY: 10, color: col('#ffb347'), opacity: 0.14 + 0.05 * flick });
-      rect(-1, -18, 3, 18, '#3a2a18');
-      rect(-3, -21, 7, 3, '#5e3a18');
-      k.drawTriangle({ p1: k.vec2(-3, -21), p2: k.vec2(4, -21), p3: k.vec2(0.5 + flick, -29 - flick), color: col('#ff9f1c') });
-      k.drawTriangle({ p1: k.vec2(-1.5, -21), p2: k.vec2(2.5, -21), p3: k.vec2(0.5 + flick * 0.6, -26), color: col('#ffe14d') });
-    },
     cart(p) {
+      ellipse(0, 0, p.w / 2, 2.5, '#000000', 0.22);
       rect(-p.w / 2, -p.h + 2, p.w, p.h - 6, '#8b5a2b');
       rect(-p.w / 2, -p.h + 2, p.w, 2, '#c08a3e');
       for (let i = 0; i < 5; i++) rect(-p.w / 2 + 2 + i * 5, -p.h - 1 - (i % 2) * 2, 5, 4, i % 2 ? p.color : '#fdfdf6'); // goods
@@ -401,57 +401,154 @@ export async function startGame({
         k.drawCircle({ pos: k.vec2(wx, -3), radius: 2, color: col('#8b5a2b') });
       }
     },
+    // a black iron post with a warm lantern, like the ones hanging on the shops
+    lantern(p) {
+      const flick = 0.5 + 0.5 * Math.sin(k.time() * 3 + p.x);
+      ellipse(0, 0, 5, 1.5, '#000000', 0.25);
+      ellipse(0, -26, 12, 9, '#ffcf6b', 0.12 + 0.06 * flick);
+      rect(-2.5, -2, 5, 2, '#1f2328');
+      rect(-0.5, -24, 1.5, 22, '#1f2328');
+      rect(0, -23, 0.5, 20, '#4b5563');
+      rect(-3, -31, 7, 1, '#1f2328');
+      rect(-2.5, -30, 6, 6, '#1f2328');
+      rect(-1.5, -29, 4, 4, '#ffd77a');
+      rect(-1, -28.5, 1.5, 3, '#fff3c4');
+    },
+    // a wooden box of flowers
+    planter(p) {
+      const { w } = p;
+      ellipse(0, 0, w / 2 + 1, 2, '#000000', 0.22);
+      rect(-w / 2, -6, w, 6, '#8b5a2b');
+      rect(-w / 2, -6, w, 1, '#c08a3e');
+      rect(-w / 2, -1, w, 1, '#5e3a18');
+      for (let x = -w / 2 + 3; x < w / 2; x += 5) rect(x, -5, 0.5, 4, '#6b4423');
+      for (let i = 0; i < w * 0.9; i++) {
+        rect(-w / 2 + 1 + hash(p.x, i, 1) * (w - 2), -7 - hash(p.x, i, 2) * 5, 1.5, 1.5, hash(i, p.x, 3) > 0.45 ? '#3f8f3a' : '#5bb143');
+      }
+      for (let i = 0; i < w / 3; i++) {
+        const fx = -w / 2 + 2 + hash(p.x, i, 4) * (w - 4);
+        const fy = -8 - hash(p.x, i, 5) * 4;
+        rect(fx, fy, 1.5, 1.5, FLOWERS[i % FLOWERS.length]);
+        rect(fx + 0.5, fy + 0.5, 0.5, 0.5, '#fde047');
+      }
+    },
+    bush(p) {
+      ellipse(0, 0, 9, 2.5, '#000000', 0.22);
+      ellipse(0, -6, 9, 7, '#2f6d2a');
+      ellipse(-1, -7, 7.5, 6, '#3f8f3a');
+      ellipse(-2.5, -8.5, 4, 3, '#5bb143');
+      for (let i = 0; i < 4; i++) rect(-6 + hash(p.x, i) * 12, -11 + hash(i, p.y) * 8, 1.5, 1.5, FLOWERS[(i + p.x) % 4]);
+    },
+    bench() {
+      ellipse(0, 0, 13, 2, '#000000', 0.22);
+      rect(-12, -12, 24, 4, '#a8692f');
+      rect(-12, -12, 24, 1, '#d08f4a');
+      rect(-12, -7, 24, 4, '#a8692f');
+      rect(-12, -7, 24, 1, '#d08f4a');
+      rect(-11, -3, 1.5, 3, '#1f2328');
+      rect(9.5, -3, 1.5, 3, '#1f2328');
+      rect(-11, -13, 1.5, 2, '#1f2328');
+      rect(9.5, -13, 1.5, 2, '#1f2328');
+    },
   };
 
+  // the name of a shop on a wooden board above its roof (long names shrink to fit)
+  const signWidths = new Map();
+  function drawShopSign(cx, y, text) {
+    const size = fit(text, 6, 132);
+    let tw = signWidths.get(text);
+    if (tw === undefined) { tw = k.formatText({ font: FONT, text, size }).width; signWidths.set(text, tw); }
+    const w = Math.round(tw + 10);
+    const h = Math.round(size + 7);
+    const x = Math.round(cx - w / 2);
+    rect(x, y, w, h, '#2a1d17');
+    rect(x + 1, y + 1, w - 2, h - 2, '#c58a4a');
+    rect(x + 1, y + 1, w - 2, 1, '#e3a964');
+    rect(x + 1, y + h - 2, w - 2, 1, '#8f5d2c');
+    for (const [nx, ny] of [[x + 2, y + 2], [x + w - 3, y + 2], [x + 2, y + h - 3], [x + w - 3, y + h - 3]]) rect(nx, ny, 1, 1, '#2a1d17');
+    k.drawText({ font: FONT, text, size, pos: k.vec2(cx + 0.6, y + h / 2 + 0.6), anchor: 'center', color: col('#000000'), opacity: 0.3 });
+    k.drawText({ font: FONT, text, size, pos: k.vec2(cx, y + h / 2), anchor: 'center', color: col('#3a2210') });
+  }
+
+  // the well in the middle of the plaza: stone ring, water, two posts, a tiled roof, the rope and the bucket
+  function drawWell(wx, wb) {
+    ellipse(wx, wb - 1, 19, 5, '#000000', 0.28);
+    ['#9aa1ad', '#8a919d', '#a3a9b4', '#7b828e'].forEach((c, i) => rect(wx - 16, wb - 15 + i * 3.5, 32, 3.5, c));
+    for (let x = -16; x < 16; x += 6) for (let i = 0; i < 4; i++) rect(wx + x + (i & 1) * 3, wb - 15 + i * 3.5, 0.5, 3.5, '#5d6470');
+    rect(wx - 16, wb - 15, 32, 1, '#d3d8df');
+    ellipse(wx, wb - 15, 14, 4, '#1e3a5f');
+    ellipse(wx - 3, wb - 16, 5, 1.2, '#4f86b8');
+    rect(wx - 14, wb - 38, 2.5, 23, '#5e3a18');
+    rect(wx + 11.5, wb - 38, 2.5, 23, '#5e3a18');
+    k.drawTriangle({ p1: k.vec2(wx - 20, wb - 36), p2: k.vec2(wx + 20, wb - 36), p3: k.vec2(wx, wb - 47), color: col('#8b2e1a') });
+    for (let i = 0; i < 5; i++) rect(wx - 18 + i * 2, wb - 37 - i * 2, 36 - i * 4, 0.5, '#c0523a');
+    rect(wx - 20, wb - 37, 40, 2, '#5e3a18');
+    rect(wx - 0.5, wb - 35, 1.5, 9, '#3a2a18');
+    rect(wx - 3, wb - 27, 6, 4, '#8b5a2b');
+    rect(wx - 3, wb - 27, 6, 1, '#c08a3e');
+  }
+
+  // a gate tower: stone blocks, a window, a cone of red tiles and a lime pennant on top
+  const TOWER_STONES = ['#a3a9b4', '#99a0ac', '#aeb4be', '#949ba7'];
+  function drawTower({ x, y, w, h }) {
+    rect(x, y, w, h, '#5d6470');
+    for (let yy = y, row = 0; yy < y + h; yy += 5, row++) {
+      for (let xx = x - (row & 1) * 4; xx < x + w; xx += 8) {
+        const a = Math.max(x, xx);
+        const b = Math.min(x + w, xx + 8);
+        if (b - a < 1) continue;
+        rect(a + 0.5, yy + 0.5, b - a - 1, 4, TOWER_STONES[Math.floor(hash(xx, yy, 3) * TOWER_STONES.length)]);
+        rect(a + 0.5, yy + 0.5, b - a - 1, 0.5, '#d3d8df');
+      }
+    }
+    rect(x, y, 1, h, '#4b525d');
+    rect(x + w - 1, y, 1, h, '#4b525d');
+    rect(x + w / 2 - 2.5, y + 12, 5, 9, '#1f2430');
+    rect(x + w / 2 - 2.5, y + 12, 5, 1, '#3b4250');
+    for (let i = 0; i < 18; i++) {
+      const half = 2 + (i / 17) * (w / 2 + 3);
+      rect(x + w / 2 - half, y - 18 + i, half * 2, 1, i % 3 === 0 ? '#7f2a1e' : '#b8402e');
+      if (i % 3 === 1) for (let xx = x + w / 2 - half + 2; xx < x + w / 2 + half - 1; xx += 4) rect(xx, y - 18 + i, 1, 1, '#e0705a');
+    }
+    rect(x + w / 2 - 0.5, y - 24, 1, 6, '#3a2a18');
+    rect(x + w / 2 + 0.5, y - 24, 6, 3, '#c6ff3d');
+  }
+
   function buildMarket() {
-    add([k.sprite('ground-market'), k.pos(0, 0), k.z(0)]);
-    // a soft glow in front of every stall and of the gate
+    add([k.sprite('ground-market'), k.pos(0, 0), k.scale(1 / GROUND_SCALE), k.z(0)]);
+    // a soft glow in front of every shop and of the gate
     add([k.pos(0, 0), k.z(1), {
       draw() {
         const pulse = 0.5 + 0.5 * Math.sin(k.time() * 2);
-        for (const b of [...MARKET_STALLS, EXIT_GATE]) {
+        for (const b of [...MARKET_SHOPS, EXIT_GATE]) {
           const c = doorCentre(b);
           k.drawEllipse({ pos: k.vec2(c.x, c.y), radiusX: 18, radiusY: 7, color: col(b.auraColor), opacity: 0.08 + 0.1 * pulse });
         }
       },
     }]);
-    // the three stalls with their names on the sign boards
-    for (const b of MARKET_STALLS) {
-      const label = String(labels[b.id] || b.id).toUpperCase();
-      add([k.sprite(`b-${b.id}`), k.pos(b.x - BUILDING_PAD, b.y - ROOF_EXTRA), k.z(b.y + b.h)]);
-      add([k.pos(b.x, b.y), k.z(b.y + b.h + 1), {
+    // the eight shops (characters walk behind their roofs), each name on a board above the roof
+    for (const s of MARKET_SHOPS) {
+      const label = String(labels[s.id] || s.id);
+      add([k.pos(0, 0), k.z(s.base - 0.5), { draw() { ellipse(s.cx, s.base - 1, s.drawn.w / 2 - 4, 3.5, '#000000', 0.28); } }]);
+      add([k.sprite(`shop-${s.art}`), k.pos(s.drawn.x, s.drawn.y), k.scale(SHOP_ART.texScale), k.z(s.base)]);
+      add([k.pos(0, 0), k.z(s.base + 1), {
         draw() {
-          k.drawText({ font: FONT, text: label, size: fit(label, 8, b.w - 18), pos: k.vec2(b.w / 2, 34.5), anchor: 'center', color: col(b.color) });
-          drawDoorHints(b, b.x, b.y);
+          drawShopSign(s.cx, Math.round(s.drawn.y - 12), label);
+          drawDoorHints(s, 0, 0);
         },
       }]);
     }
-    // the well in the middle of the square
-    const wx = WELL.x + WELL.w / 2;
-    const wb = WELL.y + WELL.h;
-    add([k.pos(wx, wb), k.z(wb), {
-      draw() {
-        k.drawEllipse({ pos: k.vec2(0, -1), radiusX: 17, radiusY: 5, color: col('#000000'), opacity: 0.25 });
-        rect(-14, -14, 28, 13, '#6b7280');
-        rect(-14, -14, 28, 2, '#cdd2da');
-        for (let x = -14; x < 14; x += 7) rect(x, -12, 1, 11, '#4b5563');
-        k.drawEllipse({ pos: k.vec2(0, -14), radiusX: 13, radiusY: 4, color: col('#1e3a5f') });
-        rect(-13, -34, 2, 20, '#5e3a18');
-        rect(11, -34, 2, 20, '#5e3a18');
-        k.drawTriangle({ p1: k.vec2(-18, -32), p2: k.vec2(18, -32), p3: k.vec2(0, -42), color: col('#8b2e1a') });
-        rect(-18, -33, 36, 2, '#5e3a18');
-        rect(-1, -32, 2, 8, '#3a2a18'); // rope
-        rect(-3, -25, 6, 4, '#8b5a2b'); // bucket
-      },
-    }]);
+    const wellBottom = WELL.y + WELL.h;
+    add([k.pos(0, 0), k.z(wellBottom), { draw() { drawWell(WELL.x + WELL.w / 2, wellBottom); } }]);
     for (const p of MARKET_PROPS) {
       const drawProp = MARKET_PROP_DRAW[p.type];
-      if (drawProp) add([k.pos(p.x, p.y), k.z(p.y), { draw() { drawProp(p); } }]);
+      if (drawProp) add([k.pos(p.x, p.y), k.z(p.solid === 'none' ? p.y + 1 : p.y), { draw() { drawProp(p); } }]);
     }
-    // the gate back to the plaza: name board + door hint
+    // the gate back to the plaza: its two towers (in front of anyone walking past), name board + door hint
     const gateLabel = String(labels.exit || 'exit').toUpperCase();
-    add([k.pos(0, 0), k.z(EXIT_GATE.y + EXIT_GATE.h + 1), {
+    add([k.pos(0, 0), k.z(MARKET_WORLD.h), {
       draw() {
+        for (const t of GATE_TOWERS) drawTower(t);
         const cx = EXIT_GATE.x + EXIT_GATE.w / 2;
         const gs = fit(gateLabel, 8, 90);
         const lw = k.formatText({ font: FONT, text: gateLabel, size: gs }).width + 8;
@@ -639,6 +736,7 @@ export async function startGame({
   /** What a place looks like on screen (roofs and the dragon rise above their collision box): its tap area. */
   function drawnBox(pl) {
     if (pl.id === CREDITS_PLACE.id) return dragonBox();
+    if (pl.drawn) return pl.drawn; // a market shop: its artwork
     return { x: pl.x, y: pl.y - ROOF_EXTRA, w: pl.w, h: pl.h + ROOF_EXTRA };
   }
   /** Walks to the door of `placeId` (current map) around obstacles and enters it on arrival. false = no way there. */

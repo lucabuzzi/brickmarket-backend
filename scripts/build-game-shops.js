@@ -1,0 +1,138 @@
+// Builds the shop buildings of the market inside the castle ("CardBrix the game") from the artwork sheet.
+//   node scripts/build-game-shops.js   (or: npm run game:shops)
+//
+// Source: client/brand-src/game/sei_negozi.cardbrix.png, 3 x 2 shops on a flat magenta background, in this
+// order: card shop, brick shop, figure shop / wizard shop, japanese shop, dice shop.
+// Output (client/src/assets/game/shops):
+//   <art>.png    each shop cut out (background removed by a flood fill from the edges, pink fringe dropped),
+//                trimmed and scaled to 3 texture pixels per world unit (the game canvas renders up to 3x)
+//   shops.json   per art: its size in world units; texScale = world units per texture pixel
+// Which shop of the market uses which art is in client/src/lib/game/marketMap.js.
+// Does not touch the database, so it does not need scripts/run-db-script.js.
+const fs = require('fs');
+const path = require('path');
+const sharp = require('sharp');
+
+const ROOT = path.join(__dirname, '..');
+const SRC = path.join(ROOT, 'client', 'brand-src', 'game', 'sei_negozi.cardbrix.png');
+const OUT_DIR = path.join(ROOT, 'client', 'src', 'assets', 'game', 'shops');
+
+const ARTS = ['card_shop', 'brick_shop', 'figure_shop', 'wizard_shop', 'japan_shop', 'dice_shop'];
+const COLS = 3;
+const ROWS = 2;
+const WORLD_PER_SRC = 0.28; // a shop door (~150 source px) becomes ~42 world units: a character is ~31
+const TEX_PER_WORLD = 3;
+const SPECK = 60;
+
+/** How magenta a pixel is: high when red and blue are both well above green. */
+const magenta = (d, i) => Math.min(d[i], d[i + 2]) - d[i + 1];
+
+/**
+ * Background mask of an RGBA buffer: 1 = background. Flood fill from the edges through strongly magenta pixels,
+ * plus the pure-magenta pockets enclosed by the art (behind lanterns, between banners), then two passes that also
+ * drop the pinkish anti-aliasing fringe touching the background.
+ */
+function backgroundMask(data, w, h) {
+  const gone = new Uint8Array(w * h);
+  const stack = [];
+  for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
+  for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
+  while (stack.length) {
+    const k = stack.pop();
+    if (gone[k] || magenta(data, k * 4) < 110) continue;
+    gone[k] = 1;
+    const x = k % w;
+    if (x > 0) stack.push(k - 1);
+    if (x < w - 1) stack.push(k + 1);
+    if (k >= w) stack.push(k - w);
+    if (k < w * (h - 1)) stack.push(k + w);
+  }
+  for (let k = 0; k < w * h; k++) if (magenta(data, k * 4) >= 170) gone[k] = 1;
+  for (let pass = 0; pass < 2; pass++) {
+    const edge = [];
+    for (let k = 0; k < w * h; k++) {
+      if (gone[k] || magenta(data, k * 4) <= 45) continue;
+      const x = k % w;
+      if ((x > 0 && gone[k - 1]) || (x < w - 1 && gone[k + 1]) || (k >= w && gone[k - w]) || (k < w * (h - 1) && gone[k + w])) edge.push(k);
+    }
+    for (const k of edge) gone[k] = 1;
+  }
+  return gone;
+}
+
+/**
+ * Which shop every pixel of art belongs to: each connected piece of art goes to the cell (of a cols x rows grid)
+ * holding its centre, so a banner poking into the neighbouring cell stays with its own shop. Pieces of fewer than
+ * SPECK pixels are dropped as noise. Returns an Int8Array: cell index, or -1 for background.
+ */
+function shopOwners(gone, w, h, cols, rows) {
+  const owner = new Int8Array(w * h).fill(-1);
+  const seen = new Uint8Array(w * h);
+  for (let k0 = 0; k0 < w * h; k0++) {
+    if (gone[k0] || seen[k0]) continue;
+    const piece = [];
+    const todo = [k0];
+    seen[k0] = 1;
+    let sx = 0; let sy = 0;
+    while (todo.length) {
+      const k = todo.pop();
+      piece.push(k);
+      const x = k % w;
+      sx += x; sy += (k - x) / w;
+      for (const n of [x > 0 ? k - 1 : -1, x < w - 1 ? k + 1 : -1, k - w, k + w]) {
+        if (n >= 0 && n < w * h && !gone[n] && !seen[n]) { seen[n] = 1; todo.push(n); }
+      }
+    }
+    if (piece.length < SPECK) continue;
+    const cell = Math.min(rows - 1, Math.floor((sy / piece.length) / (h / rows))) * cols + Math.min(cols - 1, Math.floor((sx / piece.length) / (w / cols)));
+    for (const k of piece) owner[k] = cell;
+  }
+  return owner;
+}
+
+/** Bounding box of the pixels owned by `cell`, or null. */
+function boundsOf(owner, w, cell) {
+  let left = Infinity; let right = -1; let top = Infinity; let bottom = -1;
+  for (let k = 0; k < owner.length; k++) {
+    if (owner[k] !== cell) continue;
+    const x = k % w; const y = (k - x) / w;
+    if (x < left) left = x; if (x > right) right = x; if (y < top) top = y; if (y > bottom) bottom = y;
+  }
+  return right < 0 ? null : { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+
+async function main() {
+  const { data, info } = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: W, height: H } = info;
+  const owner = shopOwners(backgroundMask(data, W, H), W, H, COLS, ROWS);
+
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const meta = {
+    _comment: 'Generated by scripts/build-game-shops.js from client/brand-src/game/sei_negozi.cardbrix.png. Sizes in world units; texScale = world units per texture pixel.',
+    texScale: 1 / TEX_PER_WORLD,
+    arts: {},
+  };
+  for (let i = 0; i < ARTS.length; i++) {
+    const box = boundsOf(owner, W, i);
+    if (!box) throw new Error(`No shop found in cell ${i} (${ARTS[i]})`);
+    const own = Buffer.from(data);
+    for (let k = 0; k < W * H; k++) if (owner[k] !== i) own[k * 4 + 3] = 0;
+    const texW = Math.round(box.width * WORLD_PER_SRC * TEX_PER_WORLD);
+    const texH = Math.round(box.height * WORLD_PER_SRC * TEX_PER_WORLD);
+    await sharp(own, { raw: { width: W, height: H, channels: 4 } })
+      .extract(box)
+      .resize({ width: texW, height: texH, kernel: 'lanczos3' })
+      .png({ compressionLevel: 9, palette: true, quality: 90, effort: 10 })
+      .toFile(path.join(OUT_DIR, `${ARTS[i]}.png`));
+    meta.arts[ARTS[i]] = { w: Math.round((texW / TEX_PER_WORLD) * 10) / 10, h: Math.round((texH / TEX_PER_WORLD) * 10) / 10 };
+    console.log(`${ARTS[i]}: ${box.width}x${box.height} source px -> ${texW}x${texH} texture px`);
+  }
+  fs.writeFileSync(path.join(OUT_DIR, 'shops.json'), `${JSON.stringify(meta, null, 2)}
+`);
+}
+
+if (require.main === module) {
+  main().catch((err) => { console.error(err); process.exit(1); });
+}
+
+module.exports = { backgroundMask, shopOwners, boundsOf, magenta, ARTS };

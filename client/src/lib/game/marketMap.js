@@ -1,77 +1,142 @@
-// "CardBrix the game": the market inside the castle (entered from the Annunci castle of the plaza). A medieval
-// market square closed by the castle walls: three stalls along the north wall, one per kind of listing (LEGO,
-// collectible cards, Funko Pop), a well in the middle and the gate back to the plaza in the south wall.
-// Pure layout data, like gameMap.js (unit-tested in tests/game-market.test.js); groundSprite.js paints the
-// cobblestones and walls, gameScene.js draws the live parts. Sizes, spawns and the gate door come from
-// config/gameMaps.json, which the server reads too.
+// "CardBrix the game": the market inside the castle (entered from the Annunci castle of the plaza). A courtyard
+// closed by the castle walls: eight shops on the corners of an octagon round a paved plaza with a well, one shop
+// per kind of listing (LEGO, Funko Pop and six card games), a ring of brick ways in front of their doors and the
+// gate back to the plaza in the south wall.
+// Pure layout data, like gameMap.js (unit-tested in tests/game-market.test.js); marketGround.js paints the floor
+// and the walls, the shop art comes from scripts/build-game-shops.js, gameScene.js draws the live parts. Sizes,
+// spawns and the gate door come from config/gameMaps.json, which the server reads too.
 import MAPS from '../../config/gameMaps.json';
+import SHOP_ART from '../../assets/game/shops/shops.json';
 import { propBox } from './gameMap';
+import { siteCategoryPath } from './marketQueries';
 
 const CFG = MAPS.maps.market;
 export const MARKET_WORLD = { w: CFG.w, h: CFG.h };
 export const MARKET_SPAWNS = CFG.spawns;
 
-// The stalls: `color` is the Annunci pillar colour (sign text, door hint, glow), `awning` the stripes of the
-// tent, `path` the real page of the site. Door zones sit in front of each stall, like in the plaza.
-const STALL_Y = 60;
-export const MARKET_STALLS = [
-  { id: 'lego', x: 44, awning: '#e53935', signIcon: 'brick', path: '/annunci/lego' },
-  { id: 'cards', x: 196, awning: '#2f6fe0', signIcon: 'card', path: '/annunci/carte-collezionabili' },
-  { id: 'funko', x: 348, awning: '#ff8a2a', signIcon: 'funko', path: '/annunci/funko' },
-].map((b) => ({
-  ...b, y: STALL_Y, w: 88, h: 66, color: '#c6ff3d', auraColor: '#c6ff3d', roofStyle: 'pennants',
-  door: { x: b.x + 28, y: STALL_Y + 66, w: 32, h: 14 },
-}));
+export const WALL_N = 52; // depth of the north wall (battlements, banners)
+export const WALL_SIDE = 16;
+export const WALL_S = 22;
 
-// The gate in the south wall: standing in front of it and pressing "enter" goes back to the plaza.
+// The octagon: shop k stands on its corner at angle 22.5 + 45k degrees (k = 0 east-south-east, clockwise), so the
+// north and the south of the ring stay open (the south opening is the way to the gate).
+export const MARKET_CENTRE = { x: 480, y: 410 };
+const RX = 333 / Math.cos(Math.PI / 8);
+const RY = 212 / Math.sin((3 * Math.PI) / 8);
+function corner(k) {
+  const a = ((22.5 + 45 * k) * Math.PI) / 180;
+  return { x: Math.round(MARKET_CENTRE.x + RX * Math.cos(a)), y: Math.round(MARKET_CENTRE.y + RY * Math.sin(a)) };
+}
+
+// The shops: `art` is the building (client/src/assets/game/shops; the three card games without art of their own
+// share the dice shop for now, never side by side), `query` the real listings its merchant shows, `path` the page
+// of the site with the same listings. The collision box is the bottom of the building (FOOT_W x FOOT_H, roof and
+// sign rise above it and can be walked behind); the door zone is in front of the door, on the brick way.
+const FOOT_W = 112;
+const FOOT_H = 46;
+const SHOP_DEFS = [
+  { id: 'pokemon', k: 5, art: 'card_shop', query: { product_type: 'tcg', game: 'pokemon' } },
+  { id: 'yugioh', k: 6, art: 'dice_shop', query: { product_type: 'tcg', game: 'yugioh' } },
+  { id: 'lego', k: 7, art: 'brick_shop', query: { product_type: 'lego' } },
+  { id: 'lorcana', k: 0, art: 'dice_shop', query: { product_type: 'tcg', game: 'lorcana' } },
+  { id: 'funko', k: 1, art: 'figure_shop', query: { product_type: 'funko' } },
+  { id: 'dragonball', k: 2, art: 'dice_shop', query: { product_type: 'tcg', game: 'dragonball' } },
+  { id: 'magic', k: 3, art: 'wizard_shop', query: { product_type: 'tcg', game: 'magic' } },
+  { id: 'onepiece', k: 4, art: 'japan_shop', query: { product_type: 'tcg', game: 'onepiece' } },
+];
+export const SHOP_ARTS = SHOP_ART.arts;
+export const MARKET_SHOPS = SHOP_DEFS.map((s) => {
+  const { x: cx, y: base } = corner(s.k);
+  const art = SHOP_ART.arts[s.art];
+  return {
+    ...s,
+    cx,
+    base,
+    x: cx - FOOT_W / 2, y: base - FOOT_H, w: FOOT_W, h: FOOT_H,
+    drawn: { x: cx - art.w / 2, y: base - art.h, w: art.w, h: art.h },
+    door: { x: cx - 16, y: base, w: 32, h: 14 },
+    color: '#c6ff3d', auraColor: '#c6ff3d',
+    path: siteCategoryPath(s.query),
+  };
+});
+
+// The gate in the south wall, between two small towers: standing in front of it and pressing "enter" goes back
+// to the plaza.
 const exitLink = MAPS.links.find((l) => l.from === 'market' && l.place === 'exit');
 export const EXIT_GATE = {
-  id: 'exit', x: 212, y: 290, w: 56, h: 30, color: '#c6ff3d', auraColor: '#c6ff3d',
+  id: 'exit', x: 452, y: CFG.h - 30, w: 56, h: 30, color: '#c6ff3d', auraColor: '#c6ff3d',
   door: { ...exitLink.door }, travel: { to: exitLink.to, spawn: exitLink.spawn },
 };
-
-export const MARKET_PLACES = [...MARKET_STALLS, EXIT_GATE];
-
-// The castle walls around the square (the south wall is split by the gate).
-export const WALLS = [
-  { x: 0, y: 0, w: 480, h: 44 },
-  { x: 0, y: 0, w: 16, h: 320 },
-  { x: 464, y: 0, w: 16, h: 320 },
-  { x: 0, y: 298, w: 212, h: 22 },
-  { x: 268, y: 298, w: 212, h: 22 },
+export const GATE_TOWERS = [
+  { x: EXIT_GATE.x - 12, y: CFG.h - 56, w: 22, h: 56 },
+  { x: EXIT_GATE.x + EXIT_GATE.w - 10, y: CFG.h - 56, w: 22, h: 56 },
 ];
 
-// The well in the middle of the square (collision box of its stone ring).
-export const WELL = { x: 226, y: 194, w: 28, h: 12 };
+export const MARKET_PLACES = [...MARKET_SHOPS, EXIT_GATE];
+
+// The castle walls round the courtyard (the south wall is split by the gate).
+export const WALLS = [
+  { x: 0, y: 0, w: CFG.w, h: WALL_N },
+  { x: 0, y: 0, w: WALL_SIDE, h: CFG.h },
+  { x: CFG.w - WALL_SIDE, y: 0, w: WALL_SIDE, h: CFG.h },
+  { x: 0, y: CFG.h - WALL_S, w: EXIT_GATE.x, h: WALL_S },
+  { x: EXIT_GATE.x + EXIT_GATE.w, y: CFG.h - WALL_S, w: CFG.w - EXIT_GATE.x - EXIT_GATE.w, h: WALL_S },
+];
+
+// The paved plaza in the middle (an octagon too) and the well at its centre (collision box of its stone ring).
+export const PLAZA = { x: MARKET_CENTRE.x, y: MARKET_CENTRE.y, rx: 128, ry: 94 };
+export function octagonPoints(o, grow = 0) {
+  return Array.from({ length: 8 }, (_, k) => {
+    const a = ((22.5 + 45 * k) * Math.PI) / 180;
+    return [o.x + (o.rx + grow) * Math.cos(a), o.y + (o.ry + grow) * Math.sin(a)];
+  });
+}
+export const WELL = { x: MARKET_CENTRE.x - 16, y: MARKET_CENTRE.y - 4, w: 32, h: 12 };
+
+// The brick ways (visual only): a ring joining the bit of way in front of every shop, round the outside of the
+// side shops, and straight ways from the ring to the plaza (north and south) and on to the gate.
+const at = (k) => MARKET_SHOPS.find((s) => s.k === k);
+const PORCH = 66;
+const WAY_Y = 9;
+const L = (s) => [s.cx - PORCH, s.base + WAY_Y];
+const R = (s) => [s.cx + PORCH, s.base + WAY_Y];
+export const WAY_WIDTH = 16;
+export const MARKET_WAYS = [
+  [
+    L(at(5)), R(at(5)), L(at(6)), R(at(6)), L(at(7)), R(at(7)),
+    [R(at(7))[0] + 20, at(7).base + 18], [R(at(0))[0] + 20, at(0).base], R(at(0)), L(at(0)),
+    R(at(1)), L(at(1)), R(at(2)), L(at(2)),
+    R(at(3)), L(at(3)), [L(at(3))[0] - 20, at(3).base], [L(at(4))[0] - 20, at(4).base + 18], L(at(4)), R(at(4)), L(at(5)),
+  ],
+  [[MARKET_CENTRE.x, at(5).base + WAY_Y], [MARKET_CENTRE.x, PLAZA.y - PLAZA.ry + 4]],
+  [[MARKET_CENTRE.x, PLAZA.y + PLAZA.ry - 4], [MARKET_CENTRE.x, CFG.h - 12]],
+];
 
 // Market props: (x, y) = bottom-centre, solid like the plaza props ('base' = thin strip, 'full' = whole box).
+const lanterns = octagonPoints(PLAZA, -6).map(([x, y], i) => ({ id: `lantern_${i}`, type: 'lantern', x: Math.round(x), y: Math.round(y), w: 6, h: 32, solid: 'base' }));
+const C = MARKET_CENTRE;
 export const MARKET_PROPS = [
-  { id: 'barrel_nw', type: 'barrel', x: 30, y: 122, w: 12, h: 14, solid: 'base' },
-  { id: 'barrel_ne', type: 'barrel', x: 450, y: 122, w: 12, h: 14, solid: 'base' },
-  { id: 'barrel_sw', type: 'barrel', x: 30, y: 270, w: 12, h: 14, solid: 'base' },
-  { id: 'barrel_se', type: 'barrel', x: 450, y: 270, w: 12, h: 14, solid: 'base' },
-  { id: 'crate_w', type: 'crate', x: 164, y: 118, w: 14, h: 12, solid: 'full' },
-  { id: 'crate_e', type: 'crate', x: 316, y: 118, w: 14, h: 12, solid: 'full' },
-  { id: 'torch_w', type: 'torch', x: 168, y: 252, w: 6, h: 24, solid: 'base' },
-  { id: 'torch_e', type: 'torch', x: 312, y: 252, w: 6, h: 24, solid: 'base' },
-  { id: 'torch_nw', type: 'torch', x: 64, y: 196, w: 6, h: 24, solid: 'base' },
-  { id: 'torch_ne', type: 'torch', x: 416, y: 196, w: 6, h: 24, solid: 'base' },
-  { id: 'cart_w', type: 'cart', x: 92, y: 250, w: 30, h: 16, solid: 'full', color: '#ffd23f' },
-  { id: 'cart_e', type: 'cart', x: 388, y: 250, w: 30, h: 16, solid: 'full', color: '#8b5cf6' },
+  ...lanterns,
+  // benches facing the well and flower boxes on the plaza
+  ...[[C.x - 62, C.y - 40], [C.x + 62, C.y - 40], [C.x - 70, C.y + 30], [C.x + 70, C.y + 30]].map(([x, y], i) => ({ id: `bench_${i}`, type: 'bench', x, y, w: 24, h: 13, solid: 'base' })),
+  ...[[C.x - 40, C.y - 62], [C.x + 40, C.y - 62], [C.x - 40, C.y + 74], [C.x + 40, C.y + 74]].map(([x, y], i) => ({ id: `plaza_planter_${i}`, type: 'planter', x, y, w: 18, h: 12, solid: 'base' })),
+  // flower boxes between the shops and the plaza
+  ...[[224, 300], [736, 300], [224, 470], [736, 470], [430, 190], [530, 190], [430, 610], [530, 610]].map(([x, y], i) => ({ id: `planter_${i}`, type: 'planter', x, y, w: 22, h: 12, solid: 'base' })),
+  // bushes, barrels, crates and carts in the corners of the courtyard
+  ...[[40, 80], [920, 80], [40, 676], [920, 676], [250, 120], [710, 120], [250, 676], [710, 676], [36, 250], [924, 250]].map(([x, y], i) => ({ id: `bush_${i}`, type: 'bush', x, y, w: 16, h: 14, solid: 'base' })),
+  ...[[40, 130], [52, 134], [920, 130], [908, 134], [130, 670], [142, 674], [830, 670], [818, 674], [430, 80], [530, 80]].map(([x, y], i) => ({ id: `barrel_${i}`, type: 'barrel', x, y, w: 12, h: 14, solid: 'base' })),
+  ...[[100, 140], [114, 140], [860, 140], [846, 140], [60, 600], [900, 600], [400, 670], [560, 670]].map(([x, y], i) => ({ id: `crate_${i}`, type: 'crate', x, y, w: 14, h: 12, solid: 'full' })),
+  { id: 'crate_top_w', type: 'crate', x: 107, y: 128, w: 14, h: 12, solid: 'none' }, // stacked on the two below
+  { id: 'crate_top_e', type: 'crate', x: 853, y: 128, w: 14, h: 12, solid: 'none' },
+  ...[[150, 96, '#ffd23f'], [810, 96, '#8b5cf6'], [200, 664, '#ef4444'], [760, 664, '#22d3ee'], [330, 410, '#22c55e'], [630, 410, '#3b82f6']]
+    .map(([x, y, color], i) => ({ id: `cart_${i}`, type: 'cart', x, y, w: 30, h: 16, solid: 'full', color })),
 ];
 
 export const MARKET_BLOCKED = [
-  ...MARKET_STALLS.map(({ x, y, w, h }) => ({ x, y, w, h })),
+  ...MARKET_SHOPS.map(({ x, y, w, h }) => ({ x, y, w, h })),
   { x: EXIT_GATE.x, y: EXIT_GATE.y, w: EXIT_GATE.w, h: EXIT_GATE.h },
+  ...GATE_TOWERS,
   ...WALLS,
   WELL,
   ...MARKET_PROPS.map(propBox).filter(Boolean),
-];
-
-// Paved ways of the square (visual only): the road from the gate to the well and on to the stalls.
-export const MARKET_PATHS = [
-  { x: 228, y: 210, w: 24, h: 80 },
-  { x: 40, y: 140, w: 400, h: 20 },
-  ...MARKET_STALLS.map((b) => ({ x: b.door.x + b.door.w / 2 - 10, y: b.y + b.h, w: 20, h: 16 })),
-  { x: 228, y: 158, w: 24, h: 38 },
 ];
