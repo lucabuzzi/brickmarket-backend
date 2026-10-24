@@ -1,0 +1,2694 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`GET /stats error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle statistiche admin."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_users, COUNT(*) FILTER (WHERE role = 'admin')::int AS total_admins, (SELECT COUNT(DISTINCT seller_id) FROM listings)::int AS total_sellers, COUNT(*) FILTER (WHERE is_pro = true)::int AS total_pro, COUNT(*) FILTER (WHERE is_verified = true)::int AS total_verified, COUNT(*) FILTER (WHERE is_active = false)::int AS total_inactive, COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days')::int AS new_last_30d FROM users",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_listings, COUNT(*) FILTER (WHERE status = 'active')::int AS active_listings, COUNT(*) FILTER (WHERE status = 'sold')::int AS sold_listings, COUNT(*) FILTER (WHERE status = 'draft')::int AS draft_listings, COUNT(*) FILTER (WHERE type = 'auction')::int AS auction_listings FROM listings",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_orders, COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_orders, COUNT(*) FILTER (WHERE status = 'pending_payment')::int AS pending_orders, COUNT(*) FILTER (WHERE status = 'disputed')::int AS disputed_orders, COALESCE(SUM(total_buyer) FILTER (WHERE status = 'completed'), 0)::numeric AS total_gmv FROM orders",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_reviews, ROUND(AVG(rating)::numeric, 2)::numeric AS platform_avg_rating FROM reviews",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int as total_sets FROM master_sets",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`GET /stats ok 1`] = `
+{
+  "body": "{"users":{"total_users":10},"listings":{"total_listings":4,"catalogTotal":99},"orders":{"total_orders":2},"reviews":{"total_reviews":1},"generated_at":"2026-07-15T10:00:00.000Z"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_users, COUNT(*) FILTER (WHERE role = 'admin')::int AS total_admins, (SELECT COUNT(DISTINCT seller_id) FROM listings)::int AS total_sellers, COUNT(*) FILTER (WHERE is_pro = true)::int AS total_pro, COUNT(*) FILTER (WHERE is_verified = true)::int AS total_verified, COUNT(*) FILTER (WHERE is_active = false)::int AS total_inactive, COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days')::int AS new_last_30d FROM users",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_listings, COUNT(*) FILTER (WHERE status = 'active')::int AS active_listings, COUNT(*) FILTER (WHERE status = 'sold')::int AS sold_listings, COUNT(*) FILTER (WHERE status = 'draft')::int AS draft_listings, COUNT(*) FILTER (WHERE type = 'auction')::int AS auction_listings FROM listings",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_orders, COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_orders, COUNT(*) FILTER (WHERE status = 'pending_payment')::int AS pending_orders, COUNT(*) FILTER (WHERE status = 'disputed')::int AS disputed_orders, COALESCE(SUM(total_buyer) FILTER (WHERE status = 'completed'), 0)::numeric AS total_gmv FROM orders",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_reviews, ROUND(AVG(rating)::numeric, 2)::numeric AS platform_avg_rating FROM reviews",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int as total_sets FROM master_sets",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`GET /wallet/transactions defaults 1`] = `
+{
+  "body": "{"transactions":[{"id":"t1","userId":"u1","username":"mario","email":"m@x","amount":5,"type":"bonus","referenceId":"r","createdAt":"c","currentBalance":10},{"id":"t2","userId":"u2","username":"luigi","email":"l@x","amount":-2,"type":"entry","referenceId":null,"createdAt":"c","currentBalance":null}],"total":2,"limit":100,"offset":0}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT ct.id, ct.user_id, u.username, u.email, ct.amount, ct.type, ct.reference_id, ct.created_at, w.balance_credits AS current_balance FROM public.credit_transactions ct JOIN users u ON u.id = ct.user_id LEFT JOIN public.user_wallets w ON w.user_id = ct.user_id ORDER BY ct.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        100,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM public.credit_transactions ct",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`GET /wallet/transactions error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dello storico transazioni wallet."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT ct.id, ct.user_id, u.username, u.email, ct.amount, ct.type, ct.reference_id, ct.created_at, w.balance_credits AS current_balance FROM public.credit_transactions ct JOIN users u ON u.id = ct.user_id LEFT JOIN public.user_wallets w ON w.user_id = ct.user_id ORDER BY ct.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        100,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`GET /wallet/transactions one user, paged 1`] = `
+{
+  "body": "{"transactions":[{"id":"t1","userId":"u1","username":"mario","email":"m@x","amount":5,"type":"bonus","referenceId":"r","createdAt":"c","currentBalance":10},{"id":"t2","userId":"u2","username":"luigi","email":"l@x","amount":-2,"type":"entry","referenceId":null,"createdAt":"c","currentBalance":null}],"total":2,"limit":500,"offset":5}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT ct.id, ct.user_id, u.username, u.email, ct.amount, ct.type, ct.reference_id, ct.created_at, w.balance_credits AS current_balance FROM public.credit_transactions ct JOIN users u ON u.id = ct.user_id LEFT JOIN public.user_wallets w ON w.user_id = ct.user_id WHERE ct.user_id = $1 ORDER BY ct.created_at DESC LIMIT $2 OFFSET $3",
+      [
+        "u1",
+        500,
+        5,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM public.credit_transactions ct WHERE ct.user_id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`an unknown admin path falls through (404 from Express, no guard) 1`] = `
+{
+  "body": "<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /api/admin/nope</pre>
+</body>
+</html>
+",
+  "status": 404,
+  "trace": [],
+}
+`;
+
+exports[`analytics GET /analytics/behavior 1`] = `
+{
+  "body": "{"top_pages_by_time":[{"path":"/","views":3,"avg_duration_seconds":20}],"top_clicks":[{"target_label":"Vendi","count":4}],"top_clicks_by_page":[{"path":"/","target_label":"Vendi","count":2}],"generated_at":"2026-07-15T10:00:00.000Z"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "WITH page_durations AS ( SELECT p.path, COALESCE( LEAD(p.viewed_at) OVER (PARTITION BY p.session_id ORDER BY p.viewed_at), s.last_seen_at ) AS next_ts, p.viewed_at FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE p.viewed_at >= NOW() - INTERVAL '30 days' ) SELECT path, COUNT(*)::int AS views, ROUND(AVG(LEAST(EXTRACT(EPOCH FROM (next_ts - viewed_at)), 1800)))::int AS avg_duration_seconds FROM page_durations WHERE next_ts > viewed_at GROUP BY path ORDER BY views DESC LIMIT 20",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT target_label, target_type, target_href, COUNT(*)::int AS count FROM analytics_clicks WHERE created_at >= NOW() - INTERVAL '30 days' AND target_label IS NOT NULL AND target_label <> '' GROUP BY target_label, target_type, target_href ORDER BY count DESC LIMIT 20",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT path, target_label, COUNT(*)::int AS count FROM analytics_clicks WHERE created_at >= NOW() - INTERVAL '30 days' AND target_label IS NOT NULL AND target_label <> '' GROUP BY path, target_label ORDER BY count DESC LIMIT 20",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/behavior error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero del comportamento utenti."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "WITH page_durations AS ( SELECT p.path, COALESCE( LEAD(p.viewed_at) OVER (PARTITION BY p.session_id ORDER BY p.viewed_at), s.last_seen_at ) AS next_ts, p.viewed_at FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE p.viewed_at >= NOW() - INTERVAL '30 days' ) SELECT path, COUNT(*)::int AS views, ROUND(AVG(LEAST(EXTRACT(EPOCH FROM (next_ts - viewed_at)), 1800)))::int AS avg_duration_seconds FROM page_durations WHERE next_ts > viewed_at GROUP BY path ORDER BY views DESC LIMIT 20",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT target_label, target_type, target_href, COUNT(*)::int AS count FROM analytics_clicks WHERE created_at >= NOW() - INTERVAL '30 days' AND target_label IS NOT NULL AND target_label <> '' GROUP BY target_label, target_type, target_href ORDER BY count DESC LIMIT 20",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT path, target_label, COUNT(*)::int AS count FROM analytics_clicks WHERE created_at >= NOW() - INTERVAL '30 days' AND target_label IS NOT NULL AND target_label <> '' GROUP BY path, target_label ORDER BY count DESC LIMIT 20",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/calendar bad params 1`] = `
+{
+  "body": "{"error":"Parametri year/month non validi."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics GET /analytics/calendar current month adds today live 1`] = `
+{
+  "body": "{"year":2026,"month":7,"days":[{"date":"2026-07-14","visitors":2},{"date":"2026-07-15","visitors":3,"live":true}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors FROM analytics_daily_snapshots WHERE date >= $1::date AND date < ($1::date + INTERVAL '1 month') ORDER BY date ASC",
+      [
+        "2026-07-01",
+      ],
+    ],
+    [
+      "computeDaySnapshot",
+      "2026-07-15",
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/calendar current month already has today 1`] = `
+{
+  "body": "{"year":2026,"month":7,"days":[{"date":"2026-07-15","visitors":2}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors FROM analytics_daily_snapshots WHERE date >= $1::date AND date < ($1::date + INTERVAL '1 month') ORDER BY date ASC",
+      [
+        "2026-07-01",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/calendar error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero del calendario analytics."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors FROM analytics_daily_snapshots WHERE date >= $1::date AND date < ($1::date + INTERVAL '1 month') ORDER BY date ASC",
+      [
+        "2026-06-01",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/calendar month 13 1`] = `
+{
+  "body": "{"error":"Parametri year/month non validi."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics GET /analytics/calendar past month 1`] = `
+{
+  "body": "{"year":2026,"month":6,"days":[{"date":"2026-06-01","visitors":1}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors FROM analytics_daily_snapshots WHERE date >= $1::date AND date < ($1::date + INTERVAL '1 month') ORDER BY date ASC",
+      [
+        "2026-06-01",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/day bad date 1`] = `
+{
+  "body": "{"error":"Parametro date non valido (atteso YYYY-MM-DD)."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics GET /analytics/day computed live 1`] = `
+{
+  "body": "{"date":"2026-07-15","visitors":3,"live":true}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors, countries FROM analytics_daily_snapshots WHERE date = $1",
+      [
+        "2026-07-15",
+      ],
+    ],
+    [
+      "computeDaySnapshot",
+      "2026-07-15",
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/day error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei dati del giorno."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors, countries FROM analytics_daily_snapshots WHERE date = $1",
+      [
+        "2026-07-01",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/day missing date 1`] = `
+{
+  "body": "{"error":"Parametro date non valido (atteso YYYY-MM-DD)."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics GET /analytics/day stored 1`] = `
+{
+  "body": "{"date":"2026-07-01","visitors":4}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT TO_CHAR(date, 'YYYY-MM-DD') AS date, visitors, sessions, avg_duration_seconds, pageviews, new_registrations, logins, bounced_visitors, countries FROM analytics_daily_snapshots WHERE date = $1",
+      [
+        "2026-07-01",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/interactions 1`] = `
+{
+  "body": "[{"buyer_id":"b","trade_count":2}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT ub.id as buyer_id, ub.username as buyer_username, us.id as seller_id, us.username as seller_username, COUNT(o.id)::int as trade_count, SUM(o.total_buyer)::numeric as total_volume FROM orders o JOIN users ub ON o.buyer_id = ub.id JOIN users us ON o.seller_id = us.id WHERE o.status = 'completed' GROUP BY ub.id, ub.username, us.id, us.username ORDER BY trade_count DESC, total_volume DESC LIMIT 100",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/interactions error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle interazioni."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT ub.id as buyer_id, ub.username as buyer_username, us.id as seller_id, us.username as seller_username, COUNT(o.id)::int as trade_count, SUM(o.total_buyer)::numeric as total_volume FROM orders o JOIN users ub ON o.buyer_id = ub.id JOIN users us ON o.seller_id = us.id WHERE o.status = 'completed' GROUP BY ub.id, ub.username, us.id, us.username ORDER BY trade_count DESC, total_volume DESC LIMIT 100",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/overview 1`] = `
+{
+  "body": "{"visitors":{"today":1,"last_7d":5,"last_30d":9},"sessions":{"today":2,"last_7d":6,"avg_duration_seconds":40},"pageviews":{"today":3,"last_7d":30,"top_paths":[{"path":"/","count":20}]},"registrations":{"today":0,"last_7d":1},"funnel":{"started":7,"completed":3,"conversion_rate":42.9},"geo":{"countries":[{"country":"IT","visitors":7}]},"auth_funnel":{"total_visitors":9,"authenticated_visitors":2,"bounced_visitors":7,"authentication_rate":22.2},"daily_series":[{"date":"2026-07-14","visitors":4,"pageviews":8}],"generated_at":"2026-07-15T10:00:00.000Z"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '30 days')::int AS last_30d FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COALESCE(ROUND(AVG(duration_seconds) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')), 0)::int AS avg_duration_seconds FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE viewed_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE viewed_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM analytics_pageviews",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT path, COUNT(*)::int AS count FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '7 days' GROUP BY path ORDER BY count DESC LIMIT 10",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM users",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE event_type = 'registration_started')::int AS started, COUNT(*) FILTER (WHERE event_type = 'registration_completed')::int AS completed FROM analytics_events WHERE created_at >= NOW() - INTERVAL '30 days'",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT d.date, COALESCE(v.visitors, 0)::int AS visitors, COALESCE(pv.pageviews, 0)::int AS pageviews FROM generate_series(CURRENT_DATE - INTERVAL '13 days', CURRENT_DATE, INTERVAL '1 day') AS d(date) LEFT JOIN ( SELECT date_trunc('day', started_at)::date AS date, COUNT(DISTINCT visitor_id) AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) v ON v.date = d.date::date LEFT JOIN ( SELECT date_trunc('day', viewed_at)::date AS date, COUNT(*) AS pageviews FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) pv ON pv.date = d.date::date ORDER BY d.date ASC",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COALESCE(country, '??') AS country, COUNT(DISTINCT visitor_id)::int AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' GROUP BY country ORDER BY visitors DESC LIMIT 15",
+      undefined,
+    ],
+    [
+      "query",
+      "WITH visited AS ( SELECT DISTINCT visitor_id FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' ), authenticated AS ( SELECT DISTINCT visitor_id FROM analytics_events WHERE event_type IN ('login', 'registration_completed') AND created_at >= NOW() - INTERVAL '30 days' ) SELECT (SELECT COUNT(*) FROM visited)::int AS total_visitors, (SELECT COUNT(*) FROM visited v JOIN authenticated a ON a.visitor_id = v.visitor_id)::int AS authenticated_visitors",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/overview error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle statistiche di analytics."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '30 days')::int AS last_30d FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COALESCE(ROUND(AVG(duration_seconds) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')), 0)::int AS avg_duration_seconds FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE viewed_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE viewed_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM analytics_pageviews",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT path, COUNT(*)::int AS count FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '7 days' GROUP BY path ORDER BY count DESC LIMIT 10",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM users",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE event_type = 'registration_started')::int AS started, COUNT(*) FILTER (WHERE event_type = 'registration_completed')::int AS completed FROM analytics_events WHERE created_at >= NOW() - INTERVAL '30 days'",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT d.date, COALESCE(v.visitors, 0)::int AS visitors, COALESCE(pv.pageviews, 0)::int AS pageviews FROM generate_series(CURRENT_DATE - INTERVAL '13 days', CURRENT_DATE, INTERVAL '1 day') AS d(date) LEFT JOIN ( SELECT date_trunc('day', started_at)::date AS date, COUNT(DISTINCT visitor_id) AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) v ON v.date = d.date::date LEFT JOIN ( SELECT date_trunc('day', viewed_at)::date AS date, COUNT(*) AS pageviews FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) pv ON pv.date = d.date::date ORDER BY d.date ASC",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COALESCE(country, '??') AS country, COUNT(DISTINCT visitor_id)::int AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' GROUP BY country ORDER BY visitors DESC LIMIT 15",
+      undefined,
+    ],
+    [
+      "query",
+      "WITH visited AS ( SELECT DISTINCT visitor_id FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' ), authenticated AS ( SELECT DISTINCT visitor_id FROM analytics_events WHERE event_type IN ('login', 'registration_completed') AND created_at >= NOW() - INTERVAL '30 days' ) SELECT (SELECT COUNT(*) FROM visited)::int AS total_visitors, (SELECT COUNT(*) FROM visited v JOIN authenticated a ON a.visitor_id = v.visitor_id)::int AS authenticated_visitors",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/overview with no traffic 1`] = `
+{
+  "body": "{"visitors":{"today":1,"last_7d":5,"last_30d":9},"sessions":{"today":2,"last_7d":6,"avg_duration_seconds":40},"pageviews":{"today":3,"last_7d":30,"top_paths":[{"path":"/","count":20}]},"registrations":{"today":0,"last_7d":1},"funnel":{"started":0,"completed":0,"conversion_rate":0},"geo":{"countries":[{"country":"IT","visitors":7}]},"auth_funnel":{"total_visitors":0,"authenticated_visitors":0,"bounced_visitors":0,"authentication_rate":0},"daily_series":[{"date":"2026-07-14","visitors":4,"pageviews":8}],"generated_at":"2026-07-15T10:00:00.000Z"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COUNT(DISTINCT visitor_id) FILTER (WHERE started_at >= NOW() - INTERVAL '30 days')::int AS last_30d FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE started_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')::int AS last_7d, COALESCE(ROUND(AVG(duration_seconds) FILTER (WHERE started_at >= NOW() - INTERVAL '7 days')), 0)::int AS avg_duration_seconds FROM analytics_sessions",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE viewed_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE viewed_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM analytics_pageviews",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT path, COUNT(*)::int AS count FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '7 days' GROUP BY path ORDER BY count DESC LIMIT 10",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE)::int AS today, COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days')::int AS last_7d FROM users",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COUNT(*) FILTER (WHERE event_type = 'registration_started')::int AS started, COUNT(*) FILTER (WHERE event_type = 'registration_completed')::int AS completed FROM analytics_events WHERE created_at >= NOW() - INTERVAL '30 days'",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT d.date, COALESCE(v.visitors, 0)::int AS visitors, COALESCE(pv.pageviews, 0)::int AS pageviews FROM generate_series(CURRENT_DATE - INTERVAL '13 days', CURRENT_DATE, INTERVAL '1 day') AS d(date) LEFT JOIN ( SELECT date_trunc('day', started_at)::date AS date, COUNT(DISTINCT visitor_id) AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) v ON v.date = d.date::date LEFT JOIN ( SELECT date_trunc('day', viewed_at)::date AS date, COUNT(*) AS pageviews FROM analytics_pageviews WHERE viewed_at >= NOW() - INTERVAL '14 days' GROUP BY 1 ) pv ON pv.date = d.date::date ORDER BY d.date ASC",
+      undefined,
+    ],
+    [
+      "query",
+      "SELECT COALESCE(country, '??') AS country, COUNT(DISTINCT visitor_id)::int AS visitors FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' GROUP BY country ORDER BY visitors DESC LIMIT 15",
+      undefined,
+    ],
+    [
+      "query",
+      "WITH visited AS ( SELECT DISTINCT visitor_id FROM analytics_sessions WHERE started_at >= NOW() - INTERVAL '30 days' ), authenticated AS ( SELECT DISTINCT visitor_id FROM analytics_events WHERE event_type IN ('login', 'registration_completed') AND created_at >= NOW() - INTERVAL '30 days' ) SELECT (SELECT COUNT(*) FROM visited)::int AS total_visitors, (SELECT COUNT(*) FROM visited v JOIN authenticated a ON a.visitor_id = v.visitor_id)::int AS authenticated_visitors",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/sessions bad 1`] = `
+{
+  "body": "[{"id":"s1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT s.id, s.visitor_id, s.user_id, u.username, s.entry_path, s.started_at, s.last_seen_at, s.duration_seconds, (SELECT COUNT(*) FROM analytics_pageviews p WHERE p.session_id = s.id)::int AS pageview_count FROM analytics_sessions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.started_at DESC LIMIT $1",
+      [
+        50,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/sessions capped 1`] = `
+{
+  "body": "[{"id":"s1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT s.id, s.visitor_id, s.user_id, u.username, s.entry_path, s.started_at, s.last_seen_at, s.duration_seconds, (SELECT COUNT(*) FROM analytics_pageviews p WHERE p.session_id = s.id)::int AS pageview_count FROM analytics_sessions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.started_at DESC LIMIT $1",
+      [
+        200,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/sessions default 1`] = `
+{
+  "body": "[{"id":"s1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT s.id, s.visitor_id, s.user_id, u.username, s.entry_path, s.started_at, s.last_seen_at, s.duration_seconds, (SELECT COUNT(*) FROM analytics_pageviews p WHERE p.session_id = s.id)::int AS pageview_count FROM analytics_sessions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.started_at DESC LIMIT $1",
+      [
+        50,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/sessions error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle sessioni."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT s.id, s.visitor_id, s.user_id, u.username, s.entry_path, s.started_at, s.last_seen_at, s.duration_seconds, (SELECT COUNT(*) FROM analytics_pageviews p WHERE p.session_id = s.id)::int AS pageview_count FROM analytics_sessions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.started_at DESC LIMIT $1",
+      [
+        50,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics GET /analytics/sessions small 1`] = `
+{
+  "body": "[{"id":"s1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT s.id, s.visitor_id, s.user_id, u.username, s.entry_path, s.started_at, s.last_seen_at, s.duration_seconds, (SELECT COUNT(*) FROM analytics_pageviews p WHERE p.session_id = s.id)::int AS pageview_count FROM analytics_sessions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.started_at DESC LIMIT $1",
+      [
+        3,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`analytics POST /analytics/snapshot/backfill bad date 1`] = `
+{
+  "body": "{"error":"Parametro fromDate non valido (atteso YYYY-MM-DD)."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics POST /analytics/snapshot/backfill error 1`] = `
+{
+  "body": "{"error":"Errore durante il backfill degli snapshot."}",
+  "status": 500,
+  "trace": [
+    [
+      "backfillSnapshots",
+      "2026-07-01",
+    ],
+  ],
+}
+`;
+
+exports[`analytics POST /analytics/snapshot/backfill no body 1`] = `
+{
+  "body": "{"error":"Parametro fromDate non valido (atteso YYYY-MM-DD)."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`analytics POST /analytics/snapshot/backfill ok 1`] = `
+{
+  "body": "{"success":true,"days_computed":3}",
+  "status": 200,
+  "trace": [
+    [
+      "backfillSnapshots",
+      "2026-07-01",
+    ],
+  ],
+}
+`;
+
+exports[`credits GET /credit-bonus-grants/flagged 1`] = `
+{
+  "body": "{"grants":[{"id":"g1"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "findFlaggedGrants",
+    ],
+  ],
+}
+`;
+
+exports[`credits GET /credit-bonus-grants/flagged error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei bonus in revisione."}",
+  "status": 500,
+  "trace": [
+    [
+      "findFlaggedGrants",
+    ],
+  ],
+}
+`;
+
+exports[`credits GET /credit-config 1`] = `
+{
+  "body": "{"config":[{"key":"signup_bonus","value":5,"isDefault":true}]}",
+  "status": 200,
+  "trace": [
+    [
+      "creditConfig.getAll",
+    ],
+  ],
+}
+`;
+
+exports[`credits GET /credit-config error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero della configurazione crediti."}",
+  "status": 500,
+  "trace": [
+    [
+      "creditConfig.getAll",
+    ],
+  ],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/:id/review approve 1`] = `
+{
+  "body": "{"success":true,"grantId":"g1","status":"matured"}",
+  "status": 200,
+  "trace": [
+    [
+      "reviewFlaggedGrant",
+      "g1",
+      "approve",
+    ],
+  ],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/:id/review bad decision 1`] = `
+{
+  "body": "{"error":"decision deve essere 'approve' o 'reject'."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/:id/review error 1`] = `
+{
+  "body": "{"error":"Errore nella revisione del bonus."}",
+  "status": 500,
+  "trace": [
+    [
+      "reviewFlaggedGrant",
+      "g1",
+      "approve",
+    ],
+  ],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/:id/review reject, not found 1`] = `
+{
+  "body": "{"error":"Grant non trovato o non più in revisione."}",
+  "status": 404,
+  "trace": [
+    [
+      "reviewFlaggedGrant",
+      "g9",
+      "reject",
+    ],
+  ],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/mature-now 1`] = `
+{
+  "body": "{"matured":2,"skipped":1}",
+  "status": 200,
+  "trace": [
+    [
+      "processMaturedGrants",
+    ],
+  ],
+}
+`;
+
+exports[`credits POST /credit-bonus-grants/mature-now error 1`] = `
+{
+  "body": "{"error":"Errore durante la maturazione dei bonus crediti."}",
+  "status": 500,
+  "trace": [
+    [
+      "processMaturedGrants",
+    ],
+  ],
+}
+`;
+
+exports[`credits PUT /credit-config/:key error 1`] = `
+{
+  "body": "{"error":"Errore nell'aggiornamento della configurazione crediti."}",
+  "status": 500,
+  "trace": [
+    [
+      "creditConfig.set",
+      "signup_bonus",
+      1,
+      "a1",
+    ],
+  ],
+}
+`;
+
+exports[`credits PUT /credit-config/:key negative 1`] = `
+{
+  "body": "{"error":"Valore non valido: deve essere un numero maggiore o uguale a 0."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`credits PUT /credit-config/:key not a number 1`] = `
+{
+  "body": "{"error":"Valore non valido: deve essere un numero maggiore o uguale a 0."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`credits PUT /credit-config/:key ok 1`] = `
+{
+  "body": "{"success":true,"key":"signup_bonus","value":7.5}",
+  "status": 200,
+  "trace": [
+    [
+      "creditConfig.set",
+      "signup_bonus",
+      7.5,
+      "a1",
+    ],
+  ],
+}
+`;
+
+exports[`credits PUT /credit-config/:key unknown key 1`] = `
+{
+  "body": "{"error":"Chiave di configurazione sconosciuta."}",
+  "status": 404,
+  "trace": [],
+}
+`;
+
+exports[`credits PUT /credit-config/:key zero 1`] = `
+{
+  "body": "{"success":true,"key":"maturation_days","value":0}",
+  "status": 200,
+  "trace": [
+    [
+      "creditConfig.set",
+      "maturation_days",
+      0,
+      "a1",
+    ],
+  ],
+}
+`;
+
+exports[`every admin route but the signed document link requires an admin 1`] = `
+[
+  "GET /stats 403",
+  "GET /users/detailed 403",
+  "GET /users/u1/history 403",
+  "GET /users 403",
+  "GET /users/u1 403",
+  "GET /users/u1/documents 403",
+  "GET /users/u1/activity 403",
+  "PATCH /users/u1 403",
+  "GET /wallet/transactions 403",
+  "GET /credit-config 403",
+  "PUT /credit-config/signup_bonus 403",
+  "GET /featured-tariffs 403",
+  "PUT /featured-tariffs/7 403",
+  "POST /credit-bonus-grants/mature-now 403",
+  "GET /credit-bonus-grants/flagged 403",
+  "POST /credit-bonus-grants/g1/review 403",
+  "POST /orders/auto-confirm-now 403",
+  "GET /orders/disputed 403",
+  "POST /orders/o1/dispute-resolution 403",
+  "GET /payouts 403",
+  "POST /payouts/o1/mark-paid 403",
+  "POST /payouts/o1/unmark 403",
+  "POST /payouts/o1/archive 403",
+  "GET /archive 403",
+  "GET /analytics/interactions 403",
+  "GET /analytics/overview 403",
+  "GET /analytics/sessions 403",
+  "GET /analytics/behavior 403",
+  "GET /listings 403",
+  "POST /listings/l1/hide 403",
+  "POST /listings/l1/unhide 403",
+  "DELETE /listings/l1 403",
+  "POST /listings/l1/feature 403",
+  "POST /listings/l1/restore 403",
+  "GET /analytics/calendar 403",
+  "GET /analytics/day 403",
+  "POST /analytics/snapshot/backfill 403",
+]
+`;
+
+exports[`featured tariffs GET 1`] = `
+{
+  "body": "{"tariffs":[{"id":"7","days":7,"priceCents":500,"isDefault":true}]}",
+  "status": 200,
+  "trace": [
+    [
+      "getTariffs",
+    ],
+  ],
+}
+`;
+
+exports[`featured tariffs GET error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle tariffe in evidenza."}",
+  "status": 500,
+  "trace": [
+    [
+      "getTariffs",
+    ],
+  ],
+}
+`;
+
+exports[`featured tariffs PUT error 1`] = `
+{
+  "body": "{"error":"Errore nell'aggiornamento della tariffa."}",
+  "status": 500,
+  "trace": [
+    [
+      "setTariffPrice",
+      "7",
+      500,
+      "a1",
+    ],
+  ],
+}
+`;
+
+exports[`featured tariffs PUT missing 1`] = `
+{
+  "body": "{"error":"Prezzo non valido: deve essere un importo fra 0.5 € e 1000 €."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured tariffs PUT not an integer 1`] = `
+{
+  "body": "{"error":"Prezzo non valido: deve essere un importo fra 0.5 € e 1000 €."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured tariffs PUT ok 1`] = `
+{
+  "body": "{"success":true,"id":"14","priceCents":1200}",
+  "status": 200,
+  "trace": [
+    [
+      "setTariffPrice",
+      "14",
+      1200,
+      "a1",
+    ],
+  ],
+}
+`;
+
+exports[`featured tariffs PUT too cheap 1`] = `
+{
+  "body": "{"error":"Prezzo non valido: deve essere un importo fra 0.5 € e 1000 €."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`featured tariffs PUT unknown tariff 1`] = `
+{
+  "body": "{"error":"Tariffa sconosciuta."}",
+  "status": 404,
+  "trace": [],
+}
+`;
+
+exports[`listings moderation /listings/l1/restore error 1`] = `
+{
+  "body": "{"error":"Errore nel ripristino dell'annuncio."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation /listings/l1/restore not found 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation /listings/l1/unhide error 1`] = `
+{
+  "body": "{"error":"Errore nel ripristino dall'oscuramento."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 AND status = 'hidden' RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation /listings/l1/unhide not found 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato o non oscurato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 AND status = 'hidden' RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation GET /listings bad numbers 1`] = `
+{
+  "body": "[{"id":"l1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction, l.auction_end, l.current_bid, l.bids_count, l.is_featured, l.featured_until, l.featured_source, l.created_at, l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username, u.username AS seller_username, u.id AS seller_id FROM listings l JOIN users u ON u.id = l.seller_id LEFT JOIN users hb ON hb.id = l.hidden_by ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC, l.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation GET /listings defaults 1`] = `
+{
+  "body": "[{"id":"l1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction, l.auction_end, l.current_bid, l.bids_count, l.is_featured, l.featured_until, l.featured_source, l.created_at, l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username, u.username AS seller_username, u.id AS seller_id FROM listings l JOIN users u ON u.id = l.seller_id LEFT JOIN users hb ON hb.id = l.hidden_by ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC, l.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation GET /listings error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero degli annunci."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction, l.auction_end, l.current_bid, l.bids_count, l.is_featured, l.featured_until, l.featured_source, l.created_at, l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username, u.username AS seller_username, u.id AS seller_id FROM listings l JOIN users u ON u.id = l.seller_id LEFT JOIN users hb ON hb.id = l.hidden_by ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC, l.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation GET /listings every filter 1`] = `
+{
+  "body": "[{"id":"l1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction, l.auction_end, l.current_bid, l.bids_count, l.is_featured, l.featured_until, l.featured_source, l.created_at, l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username, u.username AS seller_username, u.id AS seller_id FROM listings l JOIN users u ON u.id = l.seller_id LEFT JOIN users hb ON hb.id = l.hidden_by WHERE (l.title ILIKE $1 OR u.username ILIKE $1) AND l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW()) AND l.status = $2 AND (l.type = 'auction' OR l.is_auction = true) ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC, l.created_at DESC LIMIT $3 OFFSET $4",
+      [
+        "%fal%",
+        "hidden",
+        200,
+        10,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation GET /listings not featured, fixed, status all 1`] = `
+{
+  "body": "[{"id":"l1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price, l.type, l.is_auction, l.auction_end, l.current_bid, l.bids_count, l.is_featured, l.featured_until, l.featured_source, l.created_at, l.hidden_reason, l.hidden_at, hb.username AS hidden_by_username, u.username AS seller_username, u.id AS seller_id FROM listings l JOIN users u ON u.id = l.seller_id LEFT JOIN users hb ON hb.id = l.hidden_by WHERE (l.is_featured = false OR l.is_featured IS NULL) AND (l.type <> 'auction' AND (l.is_auction IS NULL OR l.is_auction = false)) ORDER BY (l.is_featured = true AND (l.featured_until IS NULL OR l.featured_until > NOW())) DESC, l.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature days 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":true,"days":30,"source":"admin"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "applyFeature",
+      "l1",
+      {
+        "days": 30,
+        "source": "admin",
+      },
+    ],
+    [
+      "recordPurchase",
+      {
+        "days": 30,
+        "listingId": "l1",
+        "method": "admin",
+        "tariff": "admin",
+        "userId": "a1",
+      },
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_FEATURED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature days too many 1`] = `
+{
+  "body": "{"error":"days deve essere un intero fra 1 e 365"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature days zero 1`] = `
+{
+  "body": "{"error":"days deve essere un intero fra 1 e 365"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature error 1`] = `
+{
+  "body": "{"error":"Errore nella gestione evidenza."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "applyFeature",
+      "l1",
+      {
+        "days": null,
+        "source": "admin",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature no body 1`] = `
+{
+  "body": "{"error":"days deve essere un intero fra 1 e 365"}",
+  "status": 400,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature not found 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature pin 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":true,"days":null,"source":"admin"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "applyFeature",
+      "l1",
+      {
+        "days": null,
+        "source": "admin",
+      },
+    ],
+    [
+      "recordPurchase",
+      {
+        "days": 0,
+        "listingId": "l1",
+        "method": "admin",
+        "tariff": "admin",
+        "userId": "a1",
+      },
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_FEATURED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature unfeature 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":false}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "unfeature",
+      "l1",
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_FEATURED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation POST /listings/:id/feature: a failed purchase record is ignored 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","is_featured":true,"days":7,"source":"admin"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT id FROM listings WHERE id = $1",
+      [
+        "l1",
+      ],
+    ],
+    [
+      "applyFeature",
+      "l1",
+      {
+        "days": 7,
+        "source": "admin",
+      },
+    ],
+    [
+      "recordPurchase",
+      {
+        "days": 7,
+        "listingId": "l1",
+        "method": "admin",
+        "tariff": "admin",
+        "userId": "a1",
+      },
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_FEATURED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation delete needs a reason 1`] = `
+{
+  "body": "{"error":"Specifica un motivo per cancellare l'annuncio."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`listings moderation delete ok: notifies the seller and broadcasts 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","seller_id":"s1","status":"x"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status <> 'sold' RETURNING *",
+      [
+        "Foto non sue",
+        "a1",
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)",
+      [
+        "s1",
+        "notifications.listingRemovedByAdmin",
+        "l1",
+        "Foto non sue",
+      ],
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_REMOVED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation delete without a body 1`] = `
+{
+  "body": "{"error":"Specifica un motivo per cancellare l'annuncio."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`listings moderation delete: a failed notification does not fail the request 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","seller_id":"s1"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status <> 'sold' RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)",
+      [
+        "s1",
+        "notifications.listingRemovedByAdmin",
+        "l1",
+        "spam",
+      ],
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_REMOVED",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation delete: error 1`] = `
+{
+  "body": "{"error":"Errore nella cancellazione dell'annuncio."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status <> 'sold' RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation delete: not found 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato o non cancellabile (es. già venduto)."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'removed', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status <> 'sold' RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation hide needs a reason 1`] = `
+{
+  "body": "{"error":"Specifica un motivo per oscurare l'annuncio."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`listings moderation hide ok: notifies the seller and broadcasts 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","seller_id":"s1","status":"x"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'hidden', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status NOT IN ('sold', 'removed') RETURNING *",
+      [
+        "Foto non sue",
+        "a1",
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)",
+      [
+        "s1",
+        "notifications.listingHidden",
+        "l1",
+        "Foto non sue",
+      ],
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_HIDDEN",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation hide without a body 1`] = `
+{
+  "body": "{"error":"Specifica un motivo per oscurare l'annuncio."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`listings moderation hide: a failed notification does not fail the request 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","seller_id":"s1"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'hidden', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status NOT IN ('sold', 'removed') RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+    [
+      "query",
+      "INSERT INTO notifications (user_id, message_key, listing_id, reason) VALUES ($1, $2, $3, $4)",
+      [
+        "s1",
+        "notifications.listingHidden",
+        "l1",
+        "spam",
+      ],
+    ],
+    [
+      "broadcast",
+      {
+        "listingId": "l1",
+        "type": "LISTING_HIDDEN",
+      },
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation hide: error 1`] = `
+{
+  "body": "{"error":"Errore nell'oscuramento dell'annuncio."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'hidden', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status NOT IN ('sold', 'removed') RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation hide: not found 1`] = `
+{
+  "body": "{"error":"Annuncio non trovato o non oscurabile nel suo stato attuale."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'hidden', hidden_reason = $1, hidden_by = $2, hidden_at = NOW(), updated_at = NOW() WHERE id = $3 AND status NOT IN ('sold', 'removed') RETURNING *",
+      [
+        "spam",
+        "a1",
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation restore 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","status":"active"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`listings moderation unhide 1`] = `
+{
+  "body": "{"success":true,"listing":{"id":"l1","status":"active"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE listings SET status = 'active', hidden_reason = NULL, hidden_by = NULL, hidden_at = NULL, updated_at = NOW() WHERE id = $1 AND status = 'hidden' RETURNING *",
+      [
+        "l1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /archive 1`] = `
+{
+  "body": "[{"id":"l1","order_id":"o1"}]",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price as listing_price, l.updated_at as archived_at, o.id as order_id, o.buyer_id, o.seller_id, ub.username as buyer_username, us.username as seller_username, o.shipping_cost, o.platform_fee, o.total_buyer, o.created_at as sale_date, o.selected_carrier FROM listings l LEFT JOIN orders o ON l.id = o.listing_id LEFT JOIN users ub ON o.buyer_id = ub.id LEFT JOIN users us ON l.seller_id = us.id WHERE l.status IN ('sold', 'expired', 'removed') ORDER BY l.updated_at DESC",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /archive error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dell'archivio admin."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT l.id, l.title, l.status, l.price as listing_price, l.updated_at as archived_at, o.id as order_id, o.buyer_id, o.seller_id, ub.username as buyer_username, us.username as seller_username, o.shipping_cost, o.platform_fee, o.total_buyer, o.created_at as sale_date, o.selected_carrier FROM listings l LEFT JOIN orders o ON l.id = o.listing_id LEFT JOIN users ub ON o.buyer_id = ub.id LEFT JOIN users us ON l.seller_id = us.id WHERE l.status IN ('sold', 'expired', 'removed') ORDER BY l.updated_at DESC",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /orders/disputed 1`] = `
+{
+  "body": "{"orders":[{"id":"o1"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "listDisputedOrders",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /orders/disputed error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero delle contestazioni."}",
+  "status": 500,
+  "trace": [
+    [
+      "listDisputedOrders",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /payouts archived 1`] = `
+{
+  "body": "{"payouts":[{"orderId":"o1","itemPrice":10,"shippingCost":5,"sellerPayout":9.1,"orderStatus":"completed","payoutStatus":"pending","payoutPaidAt":null,"payoutNotes":null,"createdAt":"c","listingTitle":"Falcon","setNumber":"75192","sellerId":"s1","sellerUsername":"mario","buyerUsername":"luigi"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status, o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at, l.title AS listing_title, l.set_number, us.username AS seller_username, us.id AS seller_id, ub.username AS buyer_username FROM orders o JOIN listings l ON l.id = o.listing_id JOIN users us ON us.id = o.seller_id JOIN users ub ON ub.id = o.buyer_id WHERE o.status IN ('payment_received', 'completed') AND o.payout_status = $1 ORDER BY o.created_at DESC",
+      [
+        "archived",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /payouts bogus 1`] = `
+{
+  "body": "{"payouts":[{"orderId":"o1","itemPrice":10,"shippingCost":5,"sellerPayout":9.1,"orderStatus":"completed","payoutStatus":"pending","payoutPaidAt":null,"payoutNotes":null,"createdAt":"c","listingTitle":"Falcon","setNumber":"75192","sellerId":"s1","sellerUsername":"mario","buyerUsername":"luigi"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status, o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at, l.title AS listing_title, l.set_number, us.username AS seller_username, us.id AS seller_id, ub.username AS buyer_username FROM orders o JOIN listings l ON l.id = o.listing_id JOIN users us ON us.id = o.seller_id JOIN users ub ON ub.id = o.buyer_id WHERE o.status IN ('payment_received', 'completed') AND o.payout_status = $1 ORDER BY o.created_at DESC",
+      [
+        "pending",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /payouts default 1`] = `
+{
+  "body": "{"payouts":[{"orderId":"o1","itemPrice":10,"shippingCost":5,"sellerPayout":9.1,"orderStatus":"completed","payoutStatus":"pending","payoutPaidAt":null,"payoutNotes":null,"createdAt":"c","listingTitle":"Falcon","setNumber":"75192","sellerId":"s1","sellerUsername":"mario","buyerUsername":"luigi"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status, o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at, l.title AS listing_title, l.set_number, us.username AS seller_username, us.id AS seller_id, ub.username AS buyer_username FROM orders o JOIN listings l ON l.id = o.listing_id JOIN users us ON us.id = o.seller_id JOIN users ub ON ub.id = o.buyer_id WHERE o.status IN ('payment_received', 'completed') AND o.payout_status = $1 ORDER BY o.created_at DESC",
+      [
+        "pending",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /payouts error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei payout venditori."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status, o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at, l.title AS listing_title, l.set_number, us.username AS seller_username, us.id AS seller_id, ub.username AS buyer_username FROM orders o JOIN listings l ON l.id = o.listing_id JOIN users us ON us.id = o.seller_id JOIN users ub ON ub.id = o.buyer_id WHERE o.status IN ('payment_received', 'completed') AND o.payout_status = $1 ORDER BY o.created_at DESC",
+      [
+        "pending",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts GET /payouts paid 1`] = `
+{
+  "body": "{"payouts":[{"orderId":"o1","itemPrice":10,"shippingCost":5,"sellerPayout":9.1,"orderStatus":"completed","payoutStatus":"pending","payoutPaidAt":null,"payoutNotes":null,"createdAt":"c","listingTitle":"Falcon","setNumber":"75192","sellerId":"s1","sellerUsername":"mario","buyerUsername":"luigi"}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT o.id, o.item_price, o.shipping_cost, o.seller_payout, o.status AS order_status, o.payout_status, o.payout_paid_at, o.payout_notes, o.created_at, l.title AS listing_title, l.set_number, us.username AS seller_username, us.id AS seller_id, ub.username AS buyer_username FROM orders o JOIN listings l ON l.id = o.listing_id JOIN users us ON us.id = o.seller_id JOIN users ub ON ub.id = o.buyer_id WHERE o.status IN ('payment_received', 'completed') AND o.payout_status = $1 ORDER BY o.created_at DESC",
+      [
+        "paid",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /orders/:id/dispute-resolution bad outcome 1`] = `
+{
+  "body": "{"error":"outcome deve essere 'reject' o 'refund'."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`orders and payouts POST /orders/:id/dispute-resolution error 1`] = `
+{
+  "body": "{"error":"Errore nella risoluzione della contestazione."}",
+  "status": 500,
+  "trace": [
+    [
+      "resolveDispute",
+      "o1",
+      "refund",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /orders/:id/dispute-resolution refund 1`] = `
+{
+  "body": "{"success":true,"orderId":"o1","status":"completed"}",
+  "status": 200,
+  "trace": [
+    [
+      "resolveDispute",
+      "o1",
+      "refund",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /orders/:id/dispute-resolution reject, not found 1`] = `
+{
+  "body": "{"error":"Ordine non trovato o stato non valido per questa risoluzione."}",
+  "status": 404,
+  "trace": [
+    [
+      "resolveDispute",
+      "o9",
+      "reject",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /orders/auto-confirm-now 1`] = `
+{
+  "body": "{"confirmed":1}",
+  "status": 200,
+  "trace": [
+    [
+      "processAutoConfirmations",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /orders/auto-confirm-now error 1`] = `
+{
+  "body": "{"error":"Errore durante l'auto-conferma degli ordini."}",
+  "status": 500,
+  "trace": [
+    [
+      "processAutoConfirmations",
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/archive 1`] = `
+{
+  "body": "{"success":true}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='archived' WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/archive error 1`] = `
+{
+  "body": "{"error":"Errore nell'archiviazione del payout."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='archived' WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/archive not paid 1`] = `
+{
+  "body": "{"error":"Ordine non trovato o non è ancora stato pagato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='archived' WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/mark-paid error 1`] = `
+{
+  "body": "{"error":"Errore nella registrazione del payout."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='paid', payout_paid_at=NOW(), payout_notes=$1 WHERE id=$2 AND payout_status='pending' RETURNING id",
+      [
+        null,
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/mark-paid not pending 1`] = `
+{
+  "body": "{"error":"Ordine non trovato o payout già registrato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='paid', payout_paid_at=NOW(), payout_notes=$1 WHERE id=$2 AND payout_status='pending' RETURNING id",
+      [
+        null,
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/mark-paid with notes 1`] = `
+{
+  "body": "{"success":true}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='paid', payout_paid_at=NOW(), payout_notes=$1 WHERE id=$2 AND payout_status='pending' RETURNING id",
+      [
+        "bonifico",
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/mark-paid without notes 1`] = `
+{
+  "body": "{"success":true}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='paid', payout_paid_at=NOW(), payout_notes=$1 WHERE id=$2 AND payout_status='pending' RETURNING id",
+      [
+        null,
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/unmark 1`] = `
+{
+  "body": "{"success":true}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='pending', payout_paid_at=NULL, payout_notes=NULL WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/unmark error 1`] = `
+{
+  "body": "{"error":"Errore nell'annullamento del payout."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='pending', payout_paid_at=NULL, payout_notes=NULL WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`orders and payouts POST /payouts/:orderId/unmark not paid 1`] = `
+{
+  "body": "{"error":"Ordine non trovato o non è in stato \\"pagato\\"."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE orders SET payout_status='pending', payout_paid_at=NULL, payout_notes=NULL WHERE id=$1 AND payout_status='paid' RETURNING id",
+      [
+        "o1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /documents/:filename bad signature (no bearer) 1`] = `
+{
+  "body": "{"error":"Link non valido o scaduto."}",
+  "status": 403,
+  "trace": [
+    [
+      "resolveSignedLocalDocument",
+      "present.txt",
+      "1",
+      "bad",
+    ],
+  ],
+}
+`;
+
+exports[`users GET /documents/:filename file gone (no bearer) 1`] = `
+{
+  "body": "{"error":"Documento non trovato."}",
+  "cacheControl": "no-store",
+  "status": 404,
+  "trace": [
+    [
+      "resolveSignedLocalDocument",
+      "missing.txt",
+      "1",
+      "good",
+    ],
+  ],
+}
+`;
+
+exports[`users GET /documents/:filename valid link (no bearer) 1`] = `
+{
+  "body": "documento",
+  "cacheControl": "no-store",
+  "status": 200,
+  "trace": [
+    [
+      "resolveSignedLocalDocument",
+      "present.txt",
+      "1",
+      "good",
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users bad numbers 1`] = `
+{
+  "body": "{"users":[{"id":"u1","username":"mario","email":"m@x","role":"user","isActive":true,"createdAt":"c","balanceCredits":10.5,"walletUpdatedAt":"w"},{"id":"u2","username":"luigi","email":"l@x","role":"admin","isActive":false,"createdAt":"c","balanceCredits":null,"walletUpdatedAt":null}],"total":2,"limit":50,"offset":0}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.role, u.is_active, u.created_at, w.balance_credits, w.updated_at AS wallet_updated_at FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id ORDER BY u.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM users u",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users defaults 1`] = `
+{
+  "body": "{"users":[{"id":"u1","username":"mario","email":"m@x","role":"user","isActive":true,"createdAt":"c","balanceCredits":10.5,"walletUpdatedAt":"w"},{"id":"u2","username":"luigi","email":"l@x","role":"admin","isActive":false,"createdAt":"c","balanceCredits":null,"walletUpdatedAt":null}],"total":2,"limit":50,"offset":0}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.role, u.is_active, u.created_at, w.balance_credits, w.updated_at AS wallet_updated_at FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id ORDER BY u.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM users u",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dell'elenco utenti."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.role, u.is_active, u.created_at, w.balance_credits, w.updated_at AS wallet_updated_at FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id ORDER BY u.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users search and paging 1`] = `
+{
+  "body": "{"users":[{"id":"u1","username":"mario","email":"m@x","role":"user","isActive":true,"createdAt":"c","balanceCredits":10.5,"walletUpdatedAt":"w"},{"id":"u2","username":"luigi","email":"l@x","role":"admin","isActive":false,"createdAt":"c","balanceCredits":null,"walletUpdatedAt":null}],"total":2,"limit":200,"offset":20}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.role, u.is_active, u.created_at, w.balance_credits, w.updated_at AS wallet_updated_at FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id WHERE u.username ILIKE $1 OR u.email ILIKE $1 ORDER BY u.created_at DESC LIMIT $2 OFFSET $3",
+      [
+        "%mar%",
+        200,
+        20,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM users u WHERE u.username ILIKE $1 OR u.email ILIKE $1",
+      [
+        "%mar%",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users with no count row 1`] = `
+{
+  "body": "{"users":[],"total":0,"limit":50,"offset":0}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.role, u.is_active, u.created_at, w.balance_credits, w.updated_at AS wallet_updated_at FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id ORDER BY u.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        50,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total FROM users u",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id 1`] = `
+{
+  "body": "{"id":"u1","username":"mario","email":"m@x","fullName":"Mario","avatarUrl":"a","role":"user","isActive":true,"accountStatus":"active","isVerified":true,"isPro":false,"sellerType":"private","companyName":null,"country":"IT","city":"Roma","ratingAvg":4.5,"ratingCount":3,"salesCount":2,"createdAt":"c","balanceCredits":7}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.full_name, u.avatar_url, u.role, u.is_active, u.account_status, u.is_verified, u.is_pro, u.seller_type, u.company_name, u.address_country, u.city, u.rating_avg, u.rating_count, u.sales_count, u.created_at, w.balance_credits FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id WHERE u.id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero del profilo utente."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.full_name, u.avatar_url, u.role, u.is_active, u.account_status, u.is_verified, u.is_pro, u.seller_type, u.company_name, u.address_country, u.city, u.rating_avg, u.rating_count, u.sales_count, u.created_at, w.balance_credits FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id WHERE u.id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id not found 1`] = `
+{
+  "body": "{"error":"Utente non trovato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.full_name, u.avatar_url, u.role, u.is_active, u.account_status, u.is_verified, u.is_pro, u.seller_type, u.company_name, u.address_country, u.city, u.rating_avg, u.rating_count, u.sales_count, u.created_at, w.balance_credits FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id WHERE u.id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id with null numbers 1`] = `
+{
+  "body": "{"id":"u1","accountStatus":"banned","ratingAvg":null,"balanceCredits":null}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.full_name, u.avatar_url, u.role, u.is_active, u.account_status, u.is_verified, u.is_pro, u.seller_type, u.company_name, u.address_country, u.city, u.rating_avg, u.rating_count, u.sales_count, u.created_at, w.balance_credits FROM users u LEFT JOIN public.user_wallets w ON w.user_id = u.id WHERE u.id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/activity 1`] = `
+{
+  "body": "{"sessionCount":4,"totalTimeSeconds":300,"totalPageviews":12,"firstSeenAt":"f","lastSeenAt":"l","topPages":[{"path":"/","views":5}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*)::int AS session_count, COALESCE(SUM(duration_seconds), 0)::int AS total_time_seconds, MIN(started_at) AS first_seen_at, MAX(last_seen_at) AS last_seen_at FROM analytics_sessions WHERE user_id = $1",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_pageviews FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE s.user_id = $1",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT p.path, COUNT(*)::int AS views FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE s.user_id = $1 GROUP BY p.path ORDER BY views DESC LIMIT 10",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/activity error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dell'attività utente."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*)::int AS session_count, COALESCE(SUM(duration_seconds), 0)::int AS total_time_seconds, MIN(started_at) AS first_seen_at, MAX(last_seen_at) AS last_seen_at FROM analytics_sessions WHERE user_id = $1",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT COUNT(*)::int AS total_pageviews FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE s.user_id = $1",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT p.path, COUNT(*)::int AS views FROM analytics_pageviews p JOIN analytics_sessions s ON s.id = p.session_id WHERE s.user_id = $1 GROUP BY p.path ORDER BY views DESC LIMIT 10",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/documents 1`] = `
+{
+  "body": "{"idScan":"signed:private/id.jpg","businessLicense":null,"expiresInSeconds":300}",
+  "cacheControl": "no-store",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT id_scan_url, business_license_url FROM users WHERE id = $1",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "getDocumentUrl",
+      "private/id.jpg",
+    ],
+    [
+      "getDocumentUrl",
+      null,
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/documents error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei documenti."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT id_scan_url, business_license_url FROM users WHERE id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/documents not found 1`] = `
+{
+  "body": "{"error":"Utente non trovato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "SELECT id_scan_url, business_license_url FROM users WHERE id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/history 1`] = `
+{
+  "body": "{"bids":[{"id":"b1"}],"topCategories":[{"theme":"Star Wars","sales_count":2}],"avgBid":"12.50"}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT b.id, b.amount, b.is_winning, b.created_at, l.title as listing_title, l.id as listing_id FROM bids b JOIN listings l ON b.listing_id = l.id WHERE b.bidder_id = $1 ORDER BY b.created_at DESC LIMIT 50",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT l.theme, COUNT(*)::int as sales_count FROM orders o JOIN listings l ON o.listing_id = l.id WHERE o.seller_id = $1 AND o.status = 'completed' AND l.theme IS NOT NULL GROUP BY l.theme ORDER BY sales_count DESC LIMIT 5",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT ROUND(AVG(amount)::numeric, 2)::numeric as avg_bid_amount FROM bids WHERE bidder_id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/history error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero della history utente."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT b.id, b.amount, b.is_winning, b.created_at, l.title as listing_title, l.id as listing_id FROM bids b JOIN listings l ON b.listing_id = l.id WHERE b.bidder_id = $1 ORDER BY b.created_at DESC LIMIT 50",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT l.theme, COUNT(*)::int as sales_count FROM orders o JOIN listings l ON o.listing_id = l.id WHERE o.seller_id = $1 AND o.status = 'completed' AND l.theme IS NOT NULL GROUP BY l.theme ORDER BY sales_count DESC LIMIT 5",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT ROUND(AVG(amount)::numeric, 2)::numeric as avg_bid_amount FROM bids WHERE bidder_id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/:id/history without bids 1`] = `
+{
+  "body": "{"bids":[],"topCategories":[],"avgBid":0}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT b.id, b.amount, b.is_winning, b.created_at, l.title as listing_title, l.id as listing_id FROM bids b JOIN listings l ON b.listing_id = l.id WHERE b.bidder_id = $1 ORDER BY b.created_at DESC LIMIT 50",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT l.theme, COUNT(*)::int as sales_count FROM orders o JOIN listings l ON o.listing_id = l.id WHERE o.seller_id = $1 AND o.status = 'completed' AND l.theme IS NOT NULL GROUP BY l.theme ORDER BY sales_count DESC LIMIT 5",
+      [
+        "u1",
+      ],
+    ],
+    [
+      "query",
+      "SELECT ROUND(AVG(amount)::numeric, 2)::numeric as avg_bid_amount FROM bids WHERE bidder_id = $1",
+      [
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/detailed country, role, page and limit 1`] = `
+{
+  "body": "{"users":[{"id":"u1"}],"pagination":{"total":41,"page":3,"pages":9},"geoData":[{"country":"IT","user_count":3}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*) FROM users WHERE 1=1 AND UPPER(address_country) = UPPER($1) AND role = $2",
+      [
+        "it",
+        "admin",
+      ],
+    ],
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.address_country, u.created_at, u.role, u.is_pro, u.is_verified, u.is_active, u.rating_avg, u.sales_count, u.rating_count, u.seller_type, u.company_name, (SELECT COUNT(*) FROM orders o WHERE o.buyer_id = u.id AND o.status = 'completed')::int as total_purchases, (SELECT COUNT(*) FROM orders o WHERE o.seller_id = u.id AND o.status = 'completed')::int as total_sales, (SELECT COUNT(*) FROM listings l WHERE l.seller_id = u.id AND l.type = 'auction')::int as auctions_created, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id)::int as total_bids, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id AND b.is_winning = true)::int as auctions_won FROM users u WHERE 1=1 AND UPPER(address_country) = UPPER($1) AND role = $2 ORDER BY u.created_at DESC LIMIT $3 OFFSET $4",
+      [
+        "it",
+        "admin",
+        "5",
+        10,
+      ],
+    ],
+    [
+      "query",
+      "SELECT UPPER(address_country) as country, COUNT(*)::int as user_count FROM users WHERE address_country IS NOT NULL GROUP BY UPPER(address_country)",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/detailed defaults 1`] = `
+{
+  "body": "{"users":[{"id":"u1"}],"pagination":{"total":41,"page":1,"pages":3},"geoData":[{"country":"IT","user_count":3}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*) FROM users WHERE 1=1",
+      [],
+    ],
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.address_country, u.created_at, u.role, u.is_pro, u.is_verified, u.is_active, u.rating_avg, u.sales_count, u.rating_count, u.seller_type, u.company_name, (SELECT COUNT(*) FROM orders o WHERE o.buyer_id = u.id AND o.status = 'completed')::int as total_purchases, (SELECT COUNT(*) FROM orders o WHERE o.seller_id = u.id AND o.status = 'completed')::int as total_sales, (SELECT COUNT(*) FROM listings l WHERE l.seller_id = u.id AND l.type = 'auction')::int as auctions_created, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id)::int as total_bids, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id AND b.is_winning = true)::int as auctions_won FROM users u WHERE 1=1 ORDER BY u.created_at DESC LIMIT $1 OFFSET $2",
+      [
+        20,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT UPPER(address_country) as country, COUNT(*)::int as user_count FROM users WHERE address_country IS NOT NULL GROUP BY UPPER(address_country)",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/detailed error 1`] = `
+{
+  "body": "{"error":"Errore nel recupero dei dati CRM utenti."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*) FROM users WHERE 1=1",
+      [],
+    ],
+  ],
+}
+`;
+
+exports[`users GET /users/detailed role only 1`] = `
+{
+  "body": "{"users":[{"id":"u1"}],"pagination":{"total":41,"page":1,"pages":3},"geoData":[{"country":"IT","user_count":3}]}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "SELECT COUNT(*) FROM users WHERE 1=1 AND role = $1",
+      [
+        "user",
+      ],
+    ],
+    [
+      "query",
+      "SELECT u.id, u.username, u.email, u.address_country, u.created_at, u.role, u.is_pro, u.is_verified, u.is_active, u.rating_avg, u.sales_count, u.rating_count, u.seller_type, u.company_name, (SELECT COUNT(*) FROM orders o WHERE o.buyer_id = u.id AND o.status = 'completed')::int as total_purchases, (SELECT COUNT(*) FROM orders o WHERE o.seller_id = u.id AND o.status = 'completed')::int as total_sales, (SELECT COUNT(*) FROM listings l WHERE l.seller_id = u.id AND l.type = 'auction')::int as auctions_created, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id)::int as total_bids, (SELECT COUNT(*) FROM bids b WHERE b.bidder_id = u.id AND b.is_winning = true)::int as auctions_won FROM users u WHERE 1=1 AND role = $1 ORDER BY u.created_at DESC LIMIT $2 OFFSET $3",
+      [
+        "user",
+        20,
+        0,
+      ],
+    ],
+    [
+      "query",
+      "SELECT UPPER(address_country) as country, COUNT(*)::int as user_count FROM users WHERE address_country IS NOT NULL GROUP BY UPPER(address_country)",
+      undefined,
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id bad role 1`] = `
+{
+  "body": "{"error":"\\"role\\" must be one of [user, admin]"}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`users PATCH /users/:id ban self 1`] = `
+{
+  "body": "{"error":"Non puoi bannare o cancellare il tuo stesso account."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`users PATCH /users/:id both 1`] = `
+{
+  "body": "{"success":true,"user":{"id":"u1","username":"mario","role":"user","isActive":false,"accountStatus":"banned"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET role = $1, account_status = $2, is_active = $3 WHERE id = $4 RETURNING id, username, role, is_active, account_status",
+      [
+        "user",
+        "deleted",
+        false,
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id demote self 1`] = `
+{
+  "body": "{"error":"Non puoi rimuovere il ruolo admin dal tuo stesso account."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`users PATCH /users/:id empty body 1`] = `
+{
+  "body": "{"error":"Specificare almeno uno tra role e status."}",
+  "status": 400,
+  "trace": [],
+}
+`;
+
+exports[`users PATCH /users/:id error 1`] = `
+{
+  "body": "{"error":"Errore nell'aggiornamento dell'utente."}",
+  "status": 500,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role, is_active, account_status",
+      [
+        "admin",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id not found 1`] = `
+{
+  "body": "{"error":"Utente non trovato."}",
+  "status": 404,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET account_status = $1, is_active = $2 WHERE id = $3 RETURNING id, username, role, is_active, account_status",
+      [
+        "active",
+        true,
+        "zz",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id role only 1`] = `
+{
+  "body": "{"success":true,"user":{"id":"u1","username":"mario","role":"user","isActive":false,"accountStatus":"banned"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role, is_active, account_status",
+      [
+        "admin",
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id self, harmless 1`] = `
+{
+  "body": "{"success":true,"user":{"id":"a1","username":"mario","role":"user","isActive":false,"accountStatus":"banned"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET role = $1, account_status = $2, is_active = $3 WHERE id = $4 RETURNING id, username, role, is_active, account_status",
+      [
+        "admin",
+        "active",
+        true,
+        "a1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id status only 1`] = `
+{
+  "body": "{"success":true,"user":{"id":"u1","username":"mario","role":"user","isActive":false,"accountStatus":"banned"}}",
+  "status": 200,
+  "trace": [
+    [
+      "query",
+      "UPDATE users SET account_status = $1, is_active = $2 WHERE id = $3 RETURNING id, username, role, is_active, account_status",
+      [
+        "banned",
+        false,
+        "u1",
+      ],
+    ],
+  ],
+}
+`;
+
+exports[`users PATCH /users/:id unknown field 1`] = `
+{
+  "body": "{"error":"\\"foo\\" is not allowed"}",
+  "status": 400,
+  "trace": [],
+}
+`;

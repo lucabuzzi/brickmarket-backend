@@ -117,7 +117,7 @@ function createApp({ broadcast, wss, gameChatRepo, gameChatModerator, onGameChat
   app.use('/api/sets', require('./routes/sets'));
   app.use('/api/reviews', require('./routes/reviews'));
   app.use('/api/support', require('./routes/support'));
-  app.use('/api/admin', require('./routes/admin'));
+  app.use('/api/admin', require('./modules/admin/admin.routes'));
   app.use('/api/admin', require('./routes/adminBadges'));
   app.use('/api/admin/game-chat', require('./routes/adminGameChat').createAdminGameChatRouter({
     repo: gameChatRepo, moderator: gameChatModerator, onSettingsChanged: onGameChatSettingsChanged,
