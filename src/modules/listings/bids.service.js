@@ -14,8 +14,9 @@ async function placeBid(listingId, bidderId, rawAmount) {
   const amount = parseFloat(rawAmount);
   if (isNaN(amount) || amount <= 0) throw new HttpError(400, 'Invalid Number');
 
-  // Outside the try on purpose: a pool failure here is not answered, exactly as before (see http/handle.js).
+  // Outside the try: there's no transaction to roll back yet; the controller answers a pool failure with 500.
   const client = await getClient();
+  let brokenConnection;
   try {
     await client.query('BEGIN');
 
@@ -31,18 +32,24 @@ async function placeBid(listingId, bidderId, rawAmount) {
 
     await client.query('COMMIT');
 
-    // Not awaited: the bid is already committed, the notification must not delay the answer.
+    // Not awaited: the bid is already committed, the notification must not delay the answer. It goes through
+    // the pool, not `client`, which is released (and may be handed to another request) before it runs.
     if (previousBidderId && previousBidderId !== bidderId) {
-      repo.insertOutbidNotification(client, previousBidderId, listingId)
+      repo.insertOutbidNotification(previousBidderId, listingId)
         .catch((err) => console.error('Outbid notification error:', err));
     }
     return updated;
   } catch (err) {
-    await client.query('ROLLBACK');
+    // A failed ROLLBACK (connection lost) must not hide the error that caused it, and that connection must
+    // not go back to the pool.
+    await client.query('ROLLBACK').catch((rbErr) => {
+      console.error('Bid ROLLBACK error:', rbErr.message);
+      brokenConnection = rbErr;
+    });
     if (err instanceof HttpError) throw err;
     throw new HttpError(err.status || 400, err.message);
   } finally {
-    client.release();
+    client.release(brokenConnection);
   }
 }
 

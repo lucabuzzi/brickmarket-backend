@@ -1946,7 +1946,7 @@ exports[`POST /:id/bid outbids someone else 1`] = `
       undefined,
     ],
     [
-      "client.query",
+      "query",
       "INSERT INTO notifications (user_id, message_key, listing_id) VALUES ($1, $2, $3)",
       [
         "u7",
