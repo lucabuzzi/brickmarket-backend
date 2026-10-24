@@ -60,7 +60,7 @@
     "nodemailer": "^10.2.1",
     "pg": "^8.11.5",
     "sharp": "^0.35.5",
-    "stripe": "^22.0.0",
+    "stripe": "^23.0.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {
