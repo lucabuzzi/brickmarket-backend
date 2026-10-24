@@ -4,7 +4,7 @@ const Joi = require('joi');
 const auth = require('../middleware/auth');
 const shipmentRepository = require('../repositories/shipmentRepository');
 const paymentsRepository = require('../repositories/paymentsRepository');
-const sendcloud = require('../services/sendcloud');
+const sendcloud = require('../integrations/sendcloud');
 
 // Seller-facing shipment endpoints, backing the "Le mie spedizioni" page
 // (client/src/pages/SellerShipments.jsx).

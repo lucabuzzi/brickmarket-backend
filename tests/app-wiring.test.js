@@ -4,7 +4,7 @@
 jest.mock('../src/db', () => ({ query: jest.fn(), getClient: jest.fn(), withTransaction: jest.fn() }));
 jest.mock('../src/db/clutchvault-db', () => ({ isMock: false, query: jest.fn(), getMockDbState: jest.fn() }));
 // its JWKS client is ESM-only under Jest (same mock as tests/avatar-controller.test.js)
-jest.mock('../src/services/appleAuth', () => ({ verifyAppleIdToken: jest.fn() }));
+jest.mock('../src/integrations/appleAuth', () => ({ verifyAppleIdToken: jest.fn() }));
 const http = require('http');
 const jwt = require('jsonwebtoken');
 const mainDb = require('../src/db');

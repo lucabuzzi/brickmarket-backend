@@ -1,7 +1,7 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const authRateLimit = require('../middleware/authRateLimit');
-const { upload, secureUpload } = require('../services/cloudinary');
+const { upload, secureUpload } = require('../integrations/cloudinary');
 const authController = require('../controllers/authController');
 const router = express.Router();
 

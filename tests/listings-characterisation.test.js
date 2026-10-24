@@ -27,7 +27,7 @@ jest.mock('../src/utils/authToken', () => ({
   optionalUserId: jest.fn((req) => req.headers['x-user'] || null),
 }));
 jest.mock('../src/services/image', () => ({ uploadOrSaveProcessedImage: jest.fn() }));
-jest.mock('../src/services/indexnow', () => ({ notifyListingChanged: jest.fn() }));
+jest.mock('../src/integrations/indexnow', () => ({ notifyListingChanged: jest.fn() }));
 jest.mock('../src/services/auctionExpiry', () => ({ expireEndedAuctions: jest.fn() }));
 jest.mock('../src/services/featured', () => ({
   expireFeaturedListings: jest.fn(),
@@ -40,7 +40,7 @@ jest.mock('../src/services/featured', () => ({
 
 const db = require('../src/db');
 const image = require('../src/services/image');
-const indexnow = require('../src/services/indexnow');
+const indexnow = require('../src/integrations/indexnow');
 const auctionExpiry = require('../src/services/auctionExpiry');
 const featured = require('../src/services/featured');
 const { optionalUserId } = require('../src/utils/authToken');

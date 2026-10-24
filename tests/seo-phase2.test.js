@@ -7,7 +7,7 @@ const express = require('express');
 const { query } = require('../src/db');
 const { buildProductJsonLd, breadcrumbForListing, brandFor, conditionUrl, sellerJsonLd } = require('../src/services/seoJsonLd');
 const { buildLlmsTxt, buildLlmsFullTxt } = require('../src/services/llmsTxt');
-const indexnow = require('../src/services/indexnow');
+const indexnow = require('../src/integrations/indexnow');
 
 const BASE = 'https://cardbrix.com';
 

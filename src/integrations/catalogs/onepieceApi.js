@@ -3,11 +3,11 @@
  * No API key required. See https://optcgapi.com/documentation
  */
 
-const cardCatalog = require('./cardCatalog');
-const { createCardSetsService } = require('./cardSets');
+const cardCatalog = require('../../services/cardCatalog');
+const { createCardSetsService } = require('../../services/cardSets');
 const { mapOnePieceCard, variantOf, rarityLabel } = require('./onepieceCards');
 const { fetchPrintsByCode } = require('./onepiecePrints');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const OPTCG_BASE = 'https://optcgapi.com/api';
 

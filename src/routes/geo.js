@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { lookupCountry } = require('../services/geoip');
+const { lookupCountry } = require('../integrations/geoip');
 
 const SUPPORTED_LANGUAGES = ['it', 'en', 'de', 'es', 'fr'];
 

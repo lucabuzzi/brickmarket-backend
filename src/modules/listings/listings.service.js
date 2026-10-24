@@ -15,7 +15,7 @@ const { calculateShippingRates } = require('../../services/shipping');
 const { applyDimensionDefaults, packageSizeFromWeight } = require('../../services/productDimensions');
 const { expireEndedAuctions } = require('../../services/auctionExpiry');
 const featured = require('../../services/featured');
-const { notifyListingChanged } = require('../../services/indexnow');
+const { notifyListingChanged } = require('../../integrations/indexnow');
 
 /** Sellers ship from Italy (users has no seller-country column), and buyers without an address count as Italian. */
 const DEFAULT_COUNTRY = 'it';

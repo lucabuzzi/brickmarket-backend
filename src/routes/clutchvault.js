@@ -7,7 +7,7 @@ const express = require('express');
 const cvDb = require('../db/clutchvault-db');
 const { adminAuth } = require('../middleware/auth');
 const { authenticateToken } = require('./contest');
-const { upload } = require('../services/cloudinary');
+const { upload } = require('../integrations/cloudinary');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 
 const router = express.Router();

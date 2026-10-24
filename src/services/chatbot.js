@@ -4,7 +4,7 @@
  * Strategy: no vector DB / RAG pipeline — the whole knowledge base is small
  * enough (site overview + FAQ + condensed legal rules) to stuff directly into
  * the prompt on every request. Mirrors the graceful-degradation pattern used
- * by services/gemini.js: if GEMINI_API_KEY is missing or the call fails, we
+ * by integrations/gemini.js: if GEMINI_API_KEY is missing or the call fails, we
  * return a canned reply pointing to the FAQ page / support email instead of
  * throwing, so the Help page chat widget always has something to show.
  */

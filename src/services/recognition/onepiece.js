@@ -4,8 +4,8 @@
  */
 
 const { normalizeCode } = require('../onepieceCode');
-const { fetchPrintsByCode } = require('../onepiecePrints');
-const { mapOnePieceCard } = require('../onepieceCards');
+const { fetchPrintsByCode } = require('../../integrations/catalogs/onepiecePrints');
+const { mapOnePieceCard } = require('../../integrations/catalogs/onepieceCards');
 
 module.exports = {
   game: 'onepiece',

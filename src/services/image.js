@@ -1,5 +1,5 @@
 const sharp = require('sharp');
-const { cloudinary, hasCloudinaryConfig } = require('./cloudinary');
+const { cloudinary, hasCloudinaryConfig } = require('../integrations/cloudinary');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');

@@ -7,7 +7,7 @@
  */
 
 const { fetchJson, toDigits, numberKey } = require('./http');
-const { mapCardDetail } = require('../tcgdexCards');
+const { mapCardDetail } = require('../../integrations/catalogs/tcgdexCards');
 
 const BASE = 'https://api.tcgdex.net/v2';
 const LANGUAGES = new Set(['en', 'it', 'fr', 'de', 'es', 'pt']); // card names TCGdex can be searched in

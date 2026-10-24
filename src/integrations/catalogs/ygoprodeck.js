@@ -3,10 +3,10 @@
  * No API key required. See https://ygoprodeck.com/api-guide/
  */
 
-const cardCatalog = require('./cardCatalog');
-const { createCardSetsService } = require('./cardSets');
+const cardCatalog = require('../../services/cardCatalog');
+const { createCardSetsService } = require('../../services/cardSets');
 const { slugify, languageOfPrintCode, mapYugiohPrints } = require('./ygoprodeckCards');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const YGO_BASE = 'https://db.ygoprodeck.com/api/v7';
 

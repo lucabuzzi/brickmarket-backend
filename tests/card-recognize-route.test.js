@@ -1,6 +1,6 @@
 // /api/cards/recognize (src/routes/cardRecognize.js): only logged-in sellers, only when switched on, one photo at a
 // time, with per-seller and site-wide allowances; the recognised prints are cached, and the photo never leaves the
-// request. Plus the One Piece catalog fixes that came with it (src/services/onepieceApi.js).
+// request. Plus the One Piece catalog fixes that came with it (src/integrations/catalogs/onepieceApi.js).
 // The database, the auth middleware and the recognition itself are fakes, so this runs offline.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 jest.mock('../src/middleware/auth', () => (req, res, next) => {
@@ -243,7 +243,7 @@ describe('enabledGames', () => {
 });
 
 describe('One Piece catalog (onepieceApi)', () => {
-  const onepieceApi = require('../src/services/onepieceApi');
+  const onepieceApi = require('../src/integrations/catalogs/onepieceApi');
   const realFetch = global.fetch;
   afterEach(() => { global.fetch = realFetch; query.mockReset(); });
 

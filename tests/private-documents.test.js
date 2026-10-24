@@ -16,7 +16,7 @@ const mockCloudinary = {
     utils: { private_download_url: jest.fn((id, fmt, opts) => `https://api.cloudinary.com/download?public_id=${id}&expires_at=${opts.expires_at}`) },
   },
 };
-jest.mock('../src/services/cloudinary', () => mockCloudinary);
+jest.mock('../src/integrations/cloudinary', () => mockCloudinary);
 jest.mock('../src/db', () => ({ query: jest.fn(), getClient: jest.fn() }));
 // admin.js pulls this in transitively, and it reads .env by itself and opens a real pool: never in a unit test.
 jest.mock('../src/db/clutchvault-db', () => ({ query: jest.fn(), getClient: jest.fn(), isMock: true }));

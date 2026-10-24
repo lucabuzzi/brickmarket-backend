@@ -1,7 +1,7 @@
 const express = require('express');
 const mainDb = require('../db');
 const { verifyToken } = require('../utils/authToken');
-const { upload } = require('../services/cloudinary');
+const { upload } = require('../integrations/cloudinary');
 const contestController = require('../controllers/contestController');
 const { adminAuth } = require('../middleware/auth');
 

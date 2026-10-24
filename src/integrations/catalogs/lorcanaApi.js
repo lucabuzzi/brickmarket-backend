@@ -3,10 +3,10 @@
  * No API key required. See https://lorcana-api.com/How-To.html
  */
 
-const cardCatalog = require('./cardCatalog');
-const { createCardSetsService } = require('./cardSets');
+const cardCatalog = require('../../services/cardCatalog');
+const { createCardSetsService } = require('../../services/cardSets');
 const { mapLorcanaCard } = require('./lorcanaCards');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const LORCANA_BASE = 'https://api.lorcana-api.com';
 

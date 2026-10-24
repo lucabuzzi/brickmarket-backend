@@ -3,7 +3,7 @@
 // Everything is offline: the reader and the database are fakes.
 const sharp = require('sharp');
 const { normalizeCode, codeKind, namesMatch } = require('../src/services/onepieceCode');
-const { fetchPrintsByCode } = require('../src/services/onepiecePrints');
+const { fetchPrintsByCode } = require('../src/integrations/catalogs/onepiecePrints');
 const { recognizeOnePiece, geminiReader, parseReading, prepareImage, MAX_SIDE } = require('../src/services/cardRecognition');
 
 const jpeg = (w = 300, h = 420) => sharp({ create: { width: w, height: h, channels: 3, background: '#777' } }).jpeg().toBuffer();

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
 const { buildLlmsTxt, buildLlmsFullTxt } = require('../services/llmsTxt');
-const { getKey } = require('../services/indexnow');
+const { getKey } = require('../integrations/indexnow');
 
 const BASE_URL = 'https://cardbrix.com';
 

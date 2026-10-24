@@ -1,7 +1,7 @@
 // HTTP adapter for /api/listings: reads the request, calls one use case, writes the answer.
 // Each handler's `handle()` fallback is the log label and 500 message its route always had.
 const handle = require('../../http/handle');
-const { upload } = require('../../services/cloudinary');
+const { upload } = require('../../integrations/cloudinary');
 const { optionalUserId } = require('../../utils/authToken');
 const listings = require('./listings.service');
 const bids = require('./bids.service');

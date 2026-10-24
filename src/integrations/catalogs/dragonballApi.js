@@ -6,8 +6,8 @@
  * same fallback behavior as rebrickable.js when REBRICKABLE_API_KEY is unset.
  */
 
-const cardCatalog = require('./cardCatalog');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const cardCatalog = require('../../services/cardCatalog');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const APITCG_BASE = 'https://www.apitcg.com/api';
 const TCG_SLUG = 'dragon-ball-super-fusion-world';

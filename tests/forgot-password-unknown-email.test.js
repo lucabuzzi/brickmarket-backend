@@ -7,13 +7,13 @@ jest.mock('../src/repositories/userRepository', () => ({
   findByEmail: jest.fn(),
   setResetToken: jest.fn(),
 }));
-jest.mock('../src/services/email', () => ({
+jest.mock('../src/integrations/email', () => ({
   sendRecoveryEmail: jest.fn(),
   sendVerificationEmail: jest.fn(),
 }));
 
 const userRepository = require('../src/repositories/userRepository');
-const { sendRecoveryEmail } = require('../src/services/email');
+const { sendRecoveryEmail } = require('../src/integrations/email');
 const authService = require('../src/services/authService');
 
 beforeEach(() => jest.clearAllMocks());

@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { cloudinary, hasCloudinaryConfig } = require('./cloudinary');
+const { cloudinary, hasCloudinaryConfig } = require('../integrations/cloudinary');
 const { processImage } = require('./image');
 const { getJwtSecret } = require('../config/jwtSecret');
 

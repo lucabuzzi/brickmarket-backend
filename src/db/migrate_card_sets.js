@@ -1,7 +1,7 @@
 /**
  * Migration: card expansions ("sets") for the trading-card catalogs, and the link from listings to them.
  *
- *   card_sets   one row per expansion, filled and refreshed automatically from TCGdex (services/tcgdex.js).
+ *   card_sets   one row per expansion, filled and refreshed automatically from TCGdex (integrations/catalogs/tcgdex.js).
  *               PK (game, id): the id is the source's own (e.g. "30th", "me05"); sort_order follows the
  *               source's chronology (series order, then set order inside the series) so "newest first" works.
  *   listings    card_set_id / card_number / card_external_id, all optional: a seller who cannot find the card

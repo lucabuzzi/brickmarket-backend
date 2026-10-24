@@ -2,7 +2,7 @@
 // /featured/tariffs) must stay above /:id.
 const express = require('express');
 const auth = require('../../middleware/auth');
-const { upload } = require('../../services/cloudinary');
+const { upload } = require('../../integrations/cloudinary');
 const c = require('./listings.controller');
 
 const router = express.Router();

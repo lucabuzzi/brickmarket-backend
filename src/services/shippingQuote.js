@@ -5,7 +5,7 @@
 // only; TCG keeps the card-tier system in shipping.js entirely separately.
 const crypto = require('crypto');
 const { query } = require('../db');
-const sendcloud = require('./sendcloud');
+const sendcloud = require('../integrations/sendcloud');
 const { physicalGroupCarriers } = require('./shipping');
 
 const QUOTE_TTL_MINUTES = Number(process.env.SHIPPING_QUOTE_TTL_MINUTES) || 10;
