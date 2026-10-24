@@ -33,7 +33,7 @@ user explicitly asks; you propose.
      (`tests/not-found.test.js` fails otherwise). The client shows `pages/NotFound.jsx` for the catch-all
    - `robots.txt` -> `client/public/robots.txt`; sitemap -> `src/routes/sitemap.js`
    - `llms.txt`, IndexNow key file -> `src/routes/seoFiles.js`, `src/services/llmsTxt.js`,
-     `src/services/indexnow.js` (IndexNow is inert until `INDEXNOW_KEY` is set in the environment)
+     `src/integrations/indexnow.js` (IndexNow is inert until `INDEXNOW_KEY` is set in the environment)
    - What crawlers without JavaScript see -> the content shell in `src/services/seoContent/`:
      `pages.js` (per-route headline/body from `client/src/locales/it.json`, so no second copy of the
      text), `listings.js` (active listings for hubs/home, and the text of a listing page; 5-minute

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { searchSetsExternal, bulkUpsertSets } = require('./src/services/rebrickable');
+const { searchSetsExternal, bulkUpsertSets } = require('./src/integrations/catalogs/rebrickable');
 
 const THEMES = [
   'Technic', 'Star Wars', 'Icons', 'Creator Expert', 'Ideas', 'Harry Potter', 'Marvel Super Heroes', 'Architecture'

@@ -1,4 +1,4 @@
-// Pokémon expansions and cards from TCGdex (src/services/tcgdex.js) + the catalog routes + the card_set listing filter.
+// Pokémon expansions and cards from TCGdex (src/integrations/catalogs/tcgdex.js) + the catalog routes + the card_set listing filter.
 // The database and the network are mocked: nothing here can reach a real DB or the real API.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 jest.mock('../src/middleware/auth', () => (req, res, next) => { req.user = { userId: 'seller-1', role: 'user' }; next(); });
@@ -6,7 +6,7 @@ jest.mock('../src/middleware/auth', () => (req, res, next) => { req.user = { use
 const http = require('http');
 const express = require('express');
 const { query } = require('../src/db');
-const tcgdex = require('../src/services/tcgdex');
+const tcgdex = require('../src/integrations/catalogs/tcgdex');
 
 const realFetch = global.fetch; // the real one, for calling the test server (global.fetch is replaced by the fake TCGdex)
 const json = (body, ok = true) => ({ ok, json: async () => body });

@@ -3,8 +3,8 @@
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 
 const { query } = require('../src/db');
-const scryfall = require('../src/services/scryfall');
-const onepiece = require('../src/services/onepieceApi');
+const scryfall = require('../src/integrations/catalogs/scryfall');
+const onepiece = require('../src/integrations/catalogs/onepieceApi');
 const { createCardSetsService } = require('../src/services/cardSets');
 
 const json = (body, ok = true) => ({ ok, json: async () => body });

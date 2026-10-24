@@ -4,10 +4,10 @@
  * User-Agent and Accept header — see https://scryfall.com/docs/api
  */
 
-const cardCatalog = require('./cardCatalog');
-const { createCardSetsService, sleep } = require('./cardSets');
+const cardCatalog = require('../../services/cardCatalog');
+const { createCardSetsService, sleep } = require('../../services/cardSets');
 const { mapScryfallCard, rarityLabel } = require('./scryfallCards');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const SCRYFALL_BASE = 'https://api.scryfall.com';
 const USER_AGENT = 'BrickMarket/1.0 (BrickMarket collectible catalog)';

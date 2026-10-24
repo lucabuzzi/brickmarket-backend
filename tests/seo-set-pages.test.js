@@ -1,14 +1,14 @@
 // SEO for the Pokémon expansion pages (src/services/seoSetPages.js): own meta, real 404 for an unknown expansion,
 // sitemap entries only for pages that have something to show. The database module is mocked.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
-jest.mock('../src/services/tcgdex', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
-jest.mock('../src/services/scryfall', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
-jest.mock('../src/services/onepieceApi', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../src/integrations/catalogs/tcgdex', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../src/integrations/catalogs/scryfall', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../src/integrations/catalogs/onepieceApi', () => ({ ensureSets: jest.fn().mockResolvedValue(undefined) }));
 
 const { query } = require('../src/db');
-const tcgdex = require('../src/services/tcgdex');
-const scryfall = require('../src/services/scryfall');
-const onepieceApi = require('../src/services/onepieceApi');
+const tcgdex = require('../src/integrations/catalogs/tcgdex');
+const scryfall = require('../src/integrations/catalogs/scryfall');
+const onepieceApi = require('../src/integrations/catalogs/onepieceApi');
 const { parseSetPath, buildSetMeta, fetchSetPageMeta, listSetSitemapPaths } = require('../src/services/seoSetPages');
 const { renderPage } = require('../src/services/seoMeta');
 const { isKnownRoute } = require('../src/services/knownRoutes');

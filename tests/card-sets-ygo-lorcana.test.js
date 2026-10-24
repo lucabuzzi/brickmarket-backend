@@ -2,8 +2,8 @@
 // The database is mocked: nothing here can reach a real DB.
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 
-const ygo = require('../src/services/ygoprodeck');
-const lorcana = require('../src/services/lorcanaApi');
+const ygo = require('../src/integrations/catalogs/ygoprodeck');
+const lorcana = require('../src/integrations/catalogs/lorcanaApi');
 
 const NOW = new Date('2026-10-09T12:00:00Z');
 

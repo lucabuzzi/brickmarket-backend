@@ -14,7 +14,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const { lookupSet, normalizeSetNum } = require('../services/rebrickable');
+const { lookupSet, normalizeSetNum } = require('../integrations/catalogs/rebrickable');
 const { computeMarketValue, CONDITION_MULTIPLIERS } = require('../services/marketValue');
 
 // Simple in-memory rate limiter: max 10 lookups per IP per minute

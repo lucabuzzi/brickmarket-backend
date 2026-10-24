@@ -6,7 +6,7 @@ const axios = require('axios');
 const loadEmail = () => {
   jest.resetModules();
   jest.doMock('axios', () => axios);
-  return require('../src/services/email');
+  return require('../src/integrations/email');
 };
 
 describe('parseAddress', () => {
@@ -78,7 +78,7 @@ describe('sendVerificationEmail with a SendGrid key', () => {
 });
 
 describe('verification email content', () => {
-  const { verificationEmail, VERIFY_LINK_TTL_HOURS } = require('../src/services/emailTemplates');
+  const { verificationEmail, VERIFY_LINK_TTL_HOURS } = require('../src/integrations/emailTemplates');
   const link = 'https://cardbrix.com/verifica-email?token=abc123';
   const mail = verificationEmail(link);
 
@@ -167,7 +167,7 @@ describe('no SendGrid key', () => {
     jest.resetModules();
     jest.doMock('axios', () => axios);
     jest.doMock('nodemailer', () => fakeNodemailer);
-    const { sendVerificationEmail } = require('../src/services/email');
+    const { sendVerificationEmail } = require('../src/integrations/email');
     await expect(sendVerificationEmail('u@example.com', 'https://x/y')).resolves.toBe(true);
     expect(sendMail).toHaveBeenCalledTimes(1);
     jest.dontMock('nodemailer');

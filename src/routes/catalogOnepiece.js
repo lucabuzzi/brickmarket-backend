@@ -1,4 +1,4 @@
 const { createCardCatalogRouter } = require('./cardCatalogRouter');
-const onepieceApi = require('../services/onepieceApi');
+const onepieceApi = require('../integrations/catalogs/onepieceApi');
 
 module.exports = createCardCatalogRouter('onepiece', onepieceApi);

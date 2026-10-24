@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 jest.mock('../src/db', () => ({ query: jest.fn() }));
 // Every handler is a no-op: only the auth middleware in front of them is under test.
 jest.mock('../src/controllers/contestController', () => new Proxy({}, { get: () => (req, res) => res.end() }));
-jest.mock('../src/services/cloudinary', () => ({ upload: { single: () => (req, res, next) => next() } }));
+jest.mock('../src/integrations/cloudinary', () => ({ upload: { single: () => (req, res, next) => next() } }));
 jest.mock('../src/middleware/auth', () => ({ adminAuth: (req, res, next) => next() }));
 
 const { assertJwtSecret, getJwtSecret, MIN_JWT_SECRET_LENGTH } = require('../src/config/jwtSecret');

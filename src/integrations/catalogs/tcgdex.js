@@ -9,11 +9,11 @@
  *
  * Also exposes lookupCard / searchCardsExternal, the adapter interface of routes/cardCatalogRouter.js.
  */
-const { query } = require('../db');
-const cardCatalog = require('./cardCatalog');
-const { createCardSetsService, groupBySeries, compareLocalId, mapLimit } = require('./cardSets');
+const { query } = require('../../db');
+const cardCatalog = require('../../services/cardCatalog');
+const { createCardSetsService, groupBySeries, compareLocalId, mapLimit } = require('../../services/cardSets');
 const { imageUrl, setIdOfCard, mapCardDetail } = require('./tcgdexCards');
-const { fetchJson: getJson } = require('../utils/fetchJson');
+const { fetchJson: getJson } = require('../../utils/fetchJson');
 
 const BASE = 'https://api.tcgdex.net/v2';
 const GAME = 'pokemon';

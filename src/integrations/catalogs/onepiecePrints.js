@@ -4,7 +4,7 @@
  * this list, so a misread or invented code never becomes a listing. See https://optcgapi.com/documentation
  */
 
-const { codeKind } = require('./onepieceCode');
+const { codeKind } = require('../../services/onepieceCode');
 
 const OPTCG_BASE = 'https://optcgapi.com/api';
 

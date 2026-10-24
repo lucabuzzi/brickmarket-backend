@@ -9,8 +9,8 @@
  *      can show a graceful fallback (manual entry).
  */
 
-const { query } = require('../db');
-const { translateSetName } = require('./gemini');
+const { query } = require('../../db');
+const { translateSetName } = require('../gemini');
 
 const REBRICKABLE_BASE = 'https://rebrickable.com/api/v3/lego';
 const CACHE_TTL_DAYS = 30; // Refresh cached sets older than 30 days

@@ -1,6 +1,6 @@
 // Every uploaded photo is re-encoded by processImage before it is stored, so this is the guard that a sharp
 // upgrade still produces what the rest of the app expects: webp, at most 1200px, EXIF rotation applied.
-jest.mock('../src/services/cloudinary', () => ({ cloudinary: {}, hasCloudinaryConfig: false }));
+jest.mock('../src/integrations/cloudinary', () => ({ cloudinary: {}, hasCloudinaryConfig: false }));
 
 const sharp = require('sharp');
 const { processImage } = require('../src/services/image');

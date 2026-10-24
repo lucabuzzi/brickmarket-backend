@@ -7,7 +7,7 @@
  */
 
 const { fetchJson, toDigits, numberKey } = require('./http');
-const { mapScryfallCard } = require('../scryfallCards');
+const { mapScryfallCard } = require('../../integrations/catalogs/scryfallCards');
 
 const BASE = 'https://api.scryfall.com';
 const HEADERS = { 'User-Agent': 'CardBrix/1.0 (card recognition)' };

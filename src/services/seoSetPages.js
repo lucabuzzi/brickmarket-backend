@@ -8,11 +8,11 @@ const BASE_URL = 'https://cardbrix.com';
 
 /** Games with an expansion catalog: label used in titles, and the module that fills their card_sets rows. */
 const GAMES = Object.freeze({
-  pokemon: { label: 'Pokémon', provider: () => require('./tcgdex') },
-  magic: { label: 'Magic', provider: () => require('./scryfall') },
-  onepiece: { label: 'One Piece', provider: () => require('./onepieceApi') },
-  yugioh: { label: 'Yu-Gi-Oh!', provider: () => require('./ygoprodeck') },
-  lorcana: { label: 'Lorcana', provider: () => require('./lorcanaApi') },
+  pokemon: { label: 'Pokémon', provider: () => require('../integrations/catalogs/tcgdex') },
+  magic: { label: 'Magic', provider: () => require('../integrations/catalogs/scryfall') },
+  onepiece: { label: 'One Piece', provider: () => require('../integrations/catalogs/onepieceApi') },
+  yugioh: { label: 'Yu-Gi-Oh!', provider: () => require('../integrations/catalogs/ygoprodeck') },
+  lorcana: { label: 'Lorcana', provider: () => require('../integrations/catalogs/lorcanaApi') },
 });
 const CATALOG_GAME_SLUGS = Object.keys(GAMES);
 

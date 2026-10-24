@@ -8,13 +8,13 @@ jest.mock('../src/services/authService', () => ({
 jest.mock('../src/repositories/userRepository', () => ({ findById: jest.fn(), updateProfile: jest.fn() }));
 jest.mock('../src/repositories/identitySignalRepository', () => ({ recordAddressSignal: jest.fn() }));
 jest.mock('../src/services/image', () => ({ uploadOrSaveProcessedImage: jest.fn() }));
-jest.mock('../src/services/turnstile', () => ({ verifyTurnstile: jest.fn() }));
-jest.mock('../src/services/googleAuth', () => ({ verifyGoogleIdToken: jest.fn() }));
-jest.mock('../src/services/appleAuth', () => ({ verifyAppleIdToken: jest.fn() }));
+jest.mock('../src/integrations/turnstile', () => ({ verifyTurnstile: jest.fn() }));
+jest.mock('../src/integrations/googleAuth', () => ({ verifyGoogleIdToken: jest.fn() }));
+jest.mock('../src/integrations/appleAuth', () => ({ verifyAppleIdToken: jest.fn() }));
 
 const authService = require('../src/services/authService');
 const userRepository = require('../src/repositories/userRepository');
-const { verifyTurnstile } = require('../src/services/turnstile');
+const { verifyTurnstile } = require('../src/integrations/turnstile');
 const { registerHandler, updateMeHandler, meHandler } = require('../src/controllers/authController');
 const { defaultAvatarConfig } = require('../src/services/avatarConfig');
 

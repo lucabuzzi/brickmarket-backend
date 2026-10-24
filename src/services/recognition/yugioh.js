@@ -6,7 +6,7 @@
  */
 
 const { fetchJson, toDigits } = require('./http');
-const { slugify, languageOfPrintCode, mapYugiohPrints, REGION_LANGUAGE } = require('../ygoprodeckCards');
+const { slugify, languageOfPrintCode, mapYugiohPrints, REGION_LANGUAGE } = require('../../integrations/catalogs/ygoprodeckCards');
 
 const BASE = 'https://db.ygoprodeck.com/api/v7';
 const MAX_PRINTS = 24;

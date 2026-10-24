@@ -3,7 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { query } = require('../db');
-const { lookupCountry } = require('../services/geoip');
+const { lookupCountry } = require('../integrations/geoip');
 const { optionalUserId: getOptionalUserId } = require('../utils/authToken');
 
 const VISITOR_COOKIE = 'bm_visitor_id';

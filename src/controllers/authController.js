@@ -3,9 +3,9 @@ const userRepository = require('../repositories/userRepository');
 const identitySignalRepository = require('../repositories/identitySignalRepository');
 const { uploadOrSaveProcessedImage } = require('../services/image');
 const { savePrivateDocument } = require('../services/privateDocuments');
-const { verifyTurnstile } = require('../services/turnstile');
-const { verifyGoogleIdToken } = require('../services/googleAuth');
-const { verifyAppleIdToken } = require('../services/appleAuth');
+const { verifyTurnstile } = require('../integrations/turnstile');
+const { verifyGoogleIdToken } = require('../integrations/googleAuth');
+const { verifyAppleIdToken } = require('../integrations/appleAuth');
 const {
   registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, updateProfileSchema,
   googleAuthSchema, appleAuthSchema, validate,

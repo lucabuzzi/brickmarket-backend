@@ -5,7 +5,7 @@
  */
 
 const { fetchJson, toDigits } = require('./http');
-const { mapLorcanaCard } = require('../lorcanaCards');
+const { mapLorcanaCard } = require('../../integrations/catalogs/lorcanaCards');
 
 const BASE = 'https://api.lorcana-api.com';
 const MAX_PRINTS = 12;

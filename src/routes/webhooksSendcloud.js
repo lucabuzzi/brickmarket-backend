@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sendcloud = require('../services/sendcloud');
+const sendcloud = require('../integrations/sendcloud');
 const shipmentRepository = require('../repositories/shipmentRepository');
 
 // Sendcloud's parcel_status_changed webhook — tracking updates for shipments

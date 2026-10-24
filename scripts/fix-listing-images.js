@@ -1,12 +1,12 @@
 /**
  * One-off maintenance script: replaces placeholder (picsum.photos / unsplash)
  * images on listings/auctions that have a known LEGO set_number with the real
- * set image fetched via the Rebrickable lookup service (src/services/rebrickable.js).
+ * set image fetched via the Rebrickable lookup service (src/integrations/catalogs/rebrickable.js).
  *
  * Usage: node scripts/fix-listing-images.js [--dry-run]
  */
 const { query } = require('../src/db');
-const { lookupSet } = require('../src/services/rebrickable');
+const { lookupSet } = require('../src/integrations/catalogs/rebrickable');
 
 const PLACEHOLDER_PATTERNS = ['picsum.photos', 'images.unsplash.com'];
 

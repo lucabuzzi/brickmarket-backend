@@ -5,7 +5,7 @@ const userRepository = require('../repositories/userRepository');
 const walletRepository = require('../repositories/walletRepository');
 const creditConfigRepository = require('../repositories/creditConfigRepository');
 const identitySignalRepository = require('../repositories/identitySignalRepository');
-const { sendRecoveryEmail, sendVerificationEmail } = require('./email');
+const { sendRecoveryEmail, sendVerificationEmail } = require('../integrations/email');
 const { getFrontendUrl } = require('../utils/frontendUrl');
 const { withTransaction } = require('../db');
 
